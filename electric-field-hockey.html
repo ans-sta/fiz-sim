@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Electric Field Hockey</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Language switch */
+      .lang-switch {
+        font-family: "Orbitron", monospace;
+        font-size: 12px;
+        letter-spacing: 1px;
+        margin-left: 12px;
+        display: flex;
+        align-items: center;
+      }
+      .lang-switch button {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px 6px;
+        transition: color 0.2s;
+        font-family: inherit;
+        font-size: inherit;
+      }
+      .lang-switch button:hover {
+        color: var(--text-dim);
+      }
+      .lang-switch button.active {
+        color: var(--accent);
+      }
+      .lang-switch .lang-sep {
+        color: var(--text-muted);
+      }
+
+      :root {
+        --bg: #060a14;
+        --panel: #0c1220;
+        --panel-border: #1a2540;
+        --accent: #00ccff;
+        --accent-dim: #00ccff44;
+        --positive: #ff3355;
+        --positive-glow: #ff335566;
+        --negative: #3388ff;
+        --negative-glow: #3388ff66;
+        --puck: #00ff88;
+        --puck-glow: #00ff8866;
+        --goal: #ffd700;
+        --text: #c8d6e8;
+        --text-dim: #5a6d88;
+        --text-muted: #354050;
+        --wall-color: #8899bb;
+        --success: #00ff88;
+        --radius: 8px;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Exo 2", sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 20px;
+        background: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
+        border-bottom: 1px solid var(--panel-border);
+        flex-shrink: 0;
+        min-height: 48px;
+      }
+      header h1 {
+        font-family: "Orbitron", monospace;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, var(--accent), #66eeff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        white-space: nowrap;
+      }
+      header .subtitle {
+        font-size: 13px;
+        color: var(--text-dim);
+        font-style: italic;
+      }
+      header .status {
+        margin-left: auto;
+        font-family: "Orbitron", monospace;
+        font-size: 12px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel);
+        white-space: nowrap;
+      }
+      header .status.running {
+        border-color: var(--puck);
+        color: var(--puck);
+      }
+      header .status.won {
+        border-color: var(--goal);
+        color: var(--goal);
+      }
+
+      #main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        width: 220px;
+        min-width: 220px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        border-right: 1px solid var(--panel-border);
+        background: var(--panel);
+      }
+
+      .panel {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+      }
+      .panel h3 {
+        font-family: "Orbitron", monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .btn-group button {
+        flex: 1;
+        min-width: 45%;
+      }
+
+      button {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-family: "Exo 2", sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      button:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--accent);
+      }
+      button.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      button.active-pos {
+        background: var(--positive-glow);
+        border-color: var(--positive);
+        color: #fff;
+      }
+      button.active-neg {
+        background: var(--negative-glow);
+        border-color: var(--negative);
+        color: #fff;
+      }
+
+      button.primary {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        width: 100%;
+        padding: 10px;
+        font-size: 13px;
+        letter-spacing: 1px;
+      }
+      button.primary:hover {
+        background: rgba(0, 204, 255, 0.3);
+      }
+
+      .controls-row {
+        display: flex;
+        gap: 4px;
+      }
+      .controls-row button {
+        flex: 1;
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        padding: 4px 0;
+        cursor: pointer;
+        color: var(--text-dim);
+      }
+      label:hover {
+        color: var(--text);
+      }
+
+      input[type="checkbox"] {
+        accent-color: var(--accent);
+        width: 14px;
+        height: 14px;
+      }
+
+      .mass-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .mass-control input[type="range"] {
+        flex: 1;
+        accent-color: var(--accent);
+        height: 4px;
+      }
+      .mass-control span {
+        font-family: "Orbitron", monospace;
+        font-size: 11px;
+        min-width: 24px;
+        text-align: right;
+        color: var(--accent);
+      }
+
+      .info-text {
+        font-size: 11px;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+      .info-text kbd {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--panel-border);
+        border-radius: 3px;
+        padding: 1px 5px;
+        font-size: 10px;
+        font-family: "Exo 2", sans-serif;
+      }
+
+      #canvas-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        border-radius: 6px;
+        box-shadow:
+          0 0 40px rgba(0, 204, 255, 0.05),
+          0 0 1px rgba(0, 204, 255, 0.3);
+        cursor: crosshair;
+      }
+
+      @media (max-width: 760px) {
+        #main {
+          flex-direction: column;
+        }
+        #sidebar {
+          width: 100%;
+          min-width: unset;
+          flex-direction: row;
+          flex-wrap: wrap;
+          border-right: none;
+          border-bottom: 1px solid var(--panel-border);
+          padding: 8px;
+          gap: 6px;
+          overflow-y: unset;
+          overflow-x: auto;
+        }
+        .panel {
+          min-width: 140px;
+          flex: 1;
+          padding: 8px;
+        }
+        #canvas-wrap {
+          padding: 6px;
+        }
+        header {
+          padding: 6px 12px;
+        }
+        header h1 {
+          font-size: 14px;
+        }
+        header .subtitle {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 data-i18n="heading">⚡ ELECTRIC FIELD HOCKEY</h1>
+      <span class="subtitle" data-i18n="subtitle"
+        >Place charges to guide the puck into the goal</span
+      >
+      <span class="status" id="statusBadge" data-i18n="setup">SETUP</span>
+      <div class="lang-switch">
+        <button data-lang="lv">LV</button>
+        <span class="lang-sep">|</span>
+        <button data-lang="en">EN</button>
+      </div>
+    </header>
+
+    <div id="main">
+      <div id="sidebar">
+        <!-- Difficulty -->
+        <div class="panel">
+          <h3 data-i18n="difficulty">Difficulty</h3>
+          <div class="btn-group" id="levelBtns">
+            <button class="active" data-level="practice" data-i18n="practice">
+              Practice
+            </button>
+            <button data-level="1" data-i18n="level1">Level 1</button>
+            <button data-level="2" data-i18n="level2">Level 2</button>
+            <button data-level="3" data-i18n="level3">Level 3</button>
+          </div>
+          <h3 data-i18n="gameMode" style="margin-top: 10px">Game Mode</h3>
+          <div class="btn-group" id="modeBtns">
+            <button class="active" data-mode="easy" data-i18n="easyMode">Easy</button>
+            <button data-mode="hard" data-i18n="hardMode">Hard</button>
+          </div>
+        </div>
+
+        <!-- Charge Selection -->
+        <div class="panel">
+          <h3 data-i18n="placeCharge">Place Charge</h3>
+          <div class="btn-group" id="chargeBtns">
+            <button class="active-pos" data-charge="+1" data-i18n="positive">
+              ⊕ Positive
+            </button>
+            <button data-charge="-1" data-i18n="negative">⊖ Negative</button>
+          </div>
+          <div style="margin-top: 6px; font-size: 11px; color: var(--text-dim)">
+            <span data-i18n="chargesPlaced">Charges placed:</span>
+            <span id="chargeCount" style="color: var(--accent)">0</span>
+          </div>
+        </div>
+
+        <!-- Puck Settings -->
+        <div class="panel">
+          <h3 data-i18n="puckMass">Puck Mass</h3>
+          <div class="mass-control">
+            <input type="range" id="massSlider" min="1" max="100" value="25" />
+            <span id="massVal">25</span>
+          </div>
+          <h3 data-i18n="puckCharge" style="margin-top: 10px">Puck Charge</h3>
+          <div class="mass-control">
+            <input type="range" id="chargeSlider" min="-10" max="10" value="5" />
+            <span id="chargeVal">+5</span>
+          </div>
+        </div>
+
+        <!-- Display Options -->
+        <div class="panel">
+          <h3 data-i18n="display">Display</h3>
+          <label
+            ><input type="checkbox" id="chkField" />
+            <span data-i18n="electricField">Electric Field</span></label
+          >
+          <label
+            ><input type="checkbox" id="chkTrace" checked />
+            <span data-i18n="puckTrace">Puck Trace</span></label
+          >
+          <label
+            ><input type="checkbox" id="chkForce" checked />
+            <span data-i18n="forceArrow">Force Arrow</span></label
+          >
+        </div>
+
+        <!-- Game Controls -->
+        <div class="panel">
+          <h3 data-i18n="controls">Controls</h3>
+          <button class="primary" id="btnStart" data-i18n="start">
+            ▶ START
+          </button>
+          <div class="controls-row" style="margin-top: 6px">
+            <button id="btnReset" data-i18n="reset">↺ Reset</button>
+            <button id="btnClear" data-i18n="clear">✕ Clear</button>
+          </div>
+        </div>
+
+        <!-- Help -->
+        <div class="panel">
+          <h3 data-i18n="howToPlay">How to Play</h3>
+          <div class="info-text" id="helpText">
+            <span data-i18n="helpClick"
+              >Click on the field to place charges.</span
+            ><br />
+            <span data-i18n="helpDrag">Drag charges to move them.</span><br />
+            <span data-i18n="helpRemove"
+              >Right-click a charge to remove it.</span
+            ><br />
+            <span data-i18n="helpSpace"
+              >Press <kbd>Space</kbd> to start/pause.</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div id="canvas-wrap">
+        <canvas id="gameCanvas"></canvas>
+      </div>
+    </div>
+
+    <script>
+      // ═══════════════════════════════════════════
+      //  TRANSLATIONS
+      // ═══════════════════════════════════════════
+      const TRANSLATIONS = {
+        en: {
+          title: "Electric Field Hockey",
+          heading: "⚡ ELECTRIC FIELD HOCKEY",
+          subtitle: "Place charges to guide the puck into the goal",
+          difficulty: "Difficulty",
+          gameMode: "Game Mode",
+          easyMode: "Easy",
+          hardMode: "Hard",
+          placeCharge: "Place Charge",
+          puckMass: "Puck Mass",
+          puckCharge: "Puck Charge",
+          display: "Display",
+          controls: "Controls",
+          howToPlay: "How to Play",
+          practice: "Practice",
+          level1: "Level 1",
+          level2: "Level 2",
+          level3: "Level 3",
+          positive: "⊕ Positive",
+          negative: "⊖ Negative",
+          start: "▶ START",
+          pause: "⏸ PAUSE",
+          resume: "▶ RESUME",
+          reset: "↺ Reset",
+          clear: "✕ Clear",
+          chargesPlaced: "Charges placed:",
+          electricField: "Electric Field",
+          puckTrace: "Puck Trace",
+          forceArrow: "Force Arrow",
+          helpClick: "Click on the field to place charges.",
+          helpDrag: "Drag charges to move them.",
+          helpRemove: "Right-click a charge to remove it.",
+          helpSpace: "Press <kbd>Space</kbd> to start/pause.",
+          setup: "SETUP",
+          running: "RUNNING",
+          paused: "PAUSED",
+          goalStatus: "🎉 GOAL!",
+          goalLabel: "GOAL",
+          goalText: "GOAL!",
+          outOfBounds: "PUCK OVERBOARD!",
+          playAgain: "[ Space ]",
+        },
+        lv: {
+          title: "Elektriskā lauka hokejs",
+          heading: "⚡ ELEKTRISKĀ LAUKA HOKEJS",
+          subtitle: "Novieto lādiņus, lai vadītu ripu vārtos!",
+          difficulty: "Grūtības pakāpe",
+          gameMode: "Spēles režīms",
+          easyMode: "Viegls",
+          hardMode: "Grūts",
+          placeCharge: "Novietot lādiņu",
+          puckMass: "Ripas masa",
+          puckCharge: "Ripas lādiņš",
+          display: "Rādīt",
+          controls: "Kontrole",
+          howToPlay: "Kā spēlēt",
+          practice: "Treniņš",
+          level1: "1. līmenis",
+          level2: "2. līmenis",
+          level3: "3. līmenis",
+          positive: "⊕ Pozitīvs",
+          negative: "⊖ Negatīvs",
+          start: "▶ SĀKT",
+          pause: "⏸ PAUZE",
+          resume: "▶ TURPINĀT",
+          reset: "↺ No jauna",
+          clear: "✕ Notīrīt",
+          chargesPlaced: "Lādiņu skaits:",
+          electricField: "Elektriskais lauks",
+          puckTrace: "Ripas trajektorija",
+          forceArrow: "Spēka vektors",
+          helpClick: "Noklikšķini uz laukuma, lai novietotu lādiņus.",
+          helpDrag: "Velc lādiņus, lai tos pārvietotu.",
+          helpRemove: "Ar labo klikšķi noņem lādiņu.",
+          helpSpace: "Spied <kbd>Space</kbd>, lai sāktu/iepauzētu.",
+          setup: "SAGATAVOŠANĀS",
+          running: "DARBĪBĀ",
+          paused: "PAUZE",
+          goalStatus: "🎉 VĀRTI!",
+          goalLabel: "VĀRTI",
+          goalText: "VĀRTI!",
+          outOfBounds: "RIPA PĀRI BORTAM!",
+          playAgain: "[ Space ]",
+        },
+      };
+
+      // ═══════════════════════════════════════════
+      //  LANGUAGE SWITCH
+      // ═══════════════════════════════════════════
+      function getDefaultLang() {
+        const saved = localStorage.getItem("physics-sims-lang");
+        if (saved) return saved;
+        const browserLang = navigator.language.toLowerCase();
+        return browserLang.startsWith("lv") ? "lv" : "en";
+      }
+
+      let currentLang = getDefaultLang();
+
+      function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem("physics-sims-lang", lang);
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.dataset.i18n;
+          if (TRANSLATIONS[lang][key]) {
+            el.innerHTML = TRANSLATIONS[lang][key];
+          }
+        });
+
+        if (TRANSLATIONS[lang].title) {
+          document.title = TRANSLATIONS[lang].title;
+        }
+
+        document.querySelectorAll(".lang-switch button").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.lang === lang);
+        });
+
+        document.documentElement.lang = lang;
+
+        // Update dynamic UI elements
+        updateUI();
+      }
+
+      function initLanguage() {
+        setLanguage(currentLang);
+        document.querySelectorAll(".lang-switch button").forEach((btn) => {
+          btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+        });
+      }
+
+      // ═══════════════════════════════════════════
+      //  CONFIGURATION
+      // ═══════════════════════════════════════════
+      const FIELD_W = 880;
+      const FIELD_H = 560;
+      const PUCK_R = 13;
+      const CHARGE_R = 16;
+      const GOAL_OPENING = 110;
+      const GOAL_DEPTH = 36;
+      const WALL_T = 8;
+
+      // Physics (tuned for fun gameplay)
+      const COULOMB_K = 1000000;
+      const MIN_DIST = 22;
+      const BOUNCE_COEFF = 0.88;
+      const MAX_SPEED = 2500;
+      const SUB_STEPS = 20;
+      const DT = 1 / 60;
+
+      // Physics field is 2x bigger than visible field (centered)
+      // Puck can move freely outside visible area, but resets if exits physics field
+      const PHYSICS_FIELD_W = FIELD_W * 2;
+      const PHYSICS_FIELD_H = FIELD_H * 2;
+      const PHYSICS_OFFSET_X = -FIELD_W / 2; // left edge of physics field
+      const PHYSICS_OFFSET_Y = -FIELD_H / 2; // top edge of physics field
+
+      // Charge placement area extends beyond visible field by 1.2x charge diameter
+      const CHARGE_MARGIN = CHARGE_R * 2 * 1.2; // ~38 pixels
+
+      // Visual margin to show charges placed outside field (top/bottom)
+      const VISUAL_MARGIN = 40;
+
+      // Colors
+      const COL = {
+        bg: "#080d18",
+        grid: "rgba(100,160,255,0.04)",
+        wall: "#6878a0",
+        wallGlow: "rgba(100,130,200,0.15)",
+        goalFill: "rgba(255,215,0,0.08)",
+        goalBorder: "#ffd700",
+        goalNet: "rgba(255,215,0,0.25)",
+        positive: "#ff3355",
+        posBright: "#ff6b8a",
+        posGlow: "rgba(255,51,85,0.35)",
+        posCore: "rgba(255,150,170,0.8)",
+        negative: "#3388ff",
+        negBright: "#6ba3ff",
+        negGlow: "rgba(51,136,255,0.35)",
+        negCore: "rgba(150,180,255,0.8)",
+        puck: "#00ff88",
+        puckGlow: "rgba(0,255,136,0.4)",
+        trail: "rgba(0,255,136,",
+        fieldArrow: "rgba(100,200,255,0.2)",
+        forceArrow: "#ffcc00",
+      };
+
+      // ═══════════════════════════════════════════
+      //  LEVEL DEFINITIONS
+      // ═══════════════════════════════════════════
+      // Walls defined as {x, y, w, h} rectangles
+      function makeLevelWalls(level) {
+        const walls = [];
+        const cw = FIELD_W,
+          ch = FIELD_H;
+        switch (level) {
+          case "practice":
+            // No internal walls
+            break;
+          case "1":
+            // Single vertical line in center, length = 2x goal width
+            const wallLen1 = GOAL_OPENING * 2;
+            walls.push({ x: cw * 0.5, y: (ch - wallLen1) / 2, w: WALL_T, h: wallLen1 });
+            break;
+          case "2":
+            // Two barriers forming a chicane
+            walls.push({ x: cw * 0.35, y: 0, w: WALL_T, h: ch * 0.65 });
+            walls.push({ x: cw * 0.62, y: ch * 0.35, w: WALL_T, h: ch * 0.65 });
+            break;
+          case "3":
+            // Three barriers - maze-like
+            walls.push({ x: cw * 0.25, y: 0, w: WALL_T, h: ch * 0.6 });
+            walls.push({ x: cw * 0.48, y: ch * 0.3, w: WALL_T, h: ch * 0.7 });
+            walls.push({ x: cw * 0.71, y: 0, w: WALL_T, h: ch * 0.55 });
+            break;
+        }
+        return walls;
+      }
+
+      // ═══════════════════════════════════════════
+      //  GAME STATE
+      // ═══════════════════════════════════════════
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      let scale = 1;
+      let offsetX = 0,
+        offsetY = 0;
+
+      // State
+      let gameState = "setup"; // setup | running | paused | won
+      let currentLevel = "practice";
+      let puckMass = 25;
+      let puckCharge = 5;
+      let selectedCharge = +1;
+      let showField = false;
+      let showTrace = true;
+      let showForce = true;
+      let hardMode = false;
+
+      // Objects
+      let puck = null;
+      let charges = [];
+      let walls = [];
+      let trail = [];
+      let particles = []; // celebration particles
+      let fieldCache = null;
+      let fieldCacheDirty = true;
+      let oobFlashTimer = 0; // out-of-bounds flash timer
+
+      // Interaction
+      let dragTarget = null; // { type:'charge', index } or null
+      let mouseField = { x: -1, y: -1 }; // mouse position in field coordinates
+      let mouseOnField = false;
+
+      // ═══════════════════════════════════════════
+      //  INITIALIZATION
+      // ═══════════════════════════════════════════
+      function resetPuck() {
+        puck = {
+          x: FIELD_W * 0.12,
+          y: FIELD_H / 2,
+          vx: 0,
+          vy: 0,
+          charge: puckCharge,
+          radius: PUCK_R,
+        };
+        trail = [];
+      }
+
+      function initLevel(level) {
+        currentLevel = level;
+        walls = makeLevelWalls(level);
+        resetPuck();
+        gameState = "setup";
+        particles = [];
+        fieldCacheDirty = true;
+        updateUI();
+      }
+
+      function resizeCanvas() {
+        const wrap = document.getElementById("canvas-wrap");
+        const maxW = wrap.clientWidth - 10;
+        const maxH = wrap.clientHeight - 10;
+        // Include VISUAL_MARGIN at top and bottom for charges placed outside field
+        const totalW = FIELD_W + GOAL_DEPTH + WALL_T * 2;
+        const totalH = FIELD_H + WALL_T * 2 + VISUAL_MARGIN * 2;
+        const aspect = totalW / totalH;
+
+        let w, h;
+        if (maxW / maxH > aspect) {
+          h = maxH;
+          w = h * aspect;
+        } else {
+          w = maxW;
+          h = w / aspect;
+        }
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+
+        scale = w / totalW;
+        offsetX = WALL_T;
+        offsetY = WALL_T + VISUAL_MARGIN; // Shift field down to make room for top margin
+
+        ctx.setTransform(
+          dpr * scale,
+          0,
+          0,
+          dpr * scale,
+          dpr * scale * offsetX,
+          dpr * scale * offsetY,
+        );
+      }
+
+      // ═══════════════════════════════════════════
+      //  GOAL GEOMETRY
+      // ═══════════════════════════════════════════
+      function goalTop() {
+        return (FIELD_H - GOAL_OPENING) / 2;
+      }
+      function goalBot() {
+        return (FIELD_H + GOAL_OPENING) / 2;
+      }
+
+      // ═══════════════════════════════════════════
+      //  PHYSICS
+      // ═══════════════════════════════════════════
+      function computeForceOn(px, py, pCharge, excludeIndex) {
+        let fx = 0,
+          fy = 0;
+        for (let i = 0; i < charges.length; i++) {
+          if (i === excludeIndex) continue;
+          const c = charges[i];
+          let dx = px - c.x;
+          let dy = py - c.y;
+          let distSq = dx * dx + dy * dy;
+          let dist = Math.sqrt(distSq);
+          if (dist < MIN_DIST) dist = MIN_DIST;
+          distSq = dist * dist;
+
+          const forceMag = (COULOMB_K * pCharge * c.charge) / distSq;
+          fx += (forceMag * dx) / dist;
+          fy += (forceMag * dy) / dist;
+        }
+        return { fx, fy };
+      }
+
+      function stepPhysics() {
+        if (gameState !== "running") return;
+
+        const subDt = DT / SUB_STEPS;
+
+        for (let s = 0; s < SUB_STEPS; s++) {
+          // Compute net force on puck
+          const { fx, fy } = computeForceOn(puck.x, puck.y, puck.charge, -1);
+
+          // Acceleration (F = ma)
+          const ax = fx / puckMass;
+          const ay = fy / puckMass;
+
+          // Velocity Verlet: half-step velocity
+          puck.vx += ax * subDt * 0.5;
+          puck.vy += ay * subDt * 0.5;
+
+          // Clamp speed
+          const speed = Math.sqrt(puck.vx * puck.vx + puck.vy * puck.vy);
+          if (speed > MAX_SPEED) {
+            puck.vx = (puck.vx / speed) * MAX_SPEED;
+            puck.vy = (puck.vy / speed) * MAX_SPEED;
+          }
+
+          // Update position
+          puck.x += puck.vx * subDt;
+          puck.y += puck.vy * subDt;
+
+          // Second half-step velocity (with new position force)
+          const f2 = computeForceOn(puck.x, puck.y, puck.charge, -1);
+          puck.vx += (f2.fx / puckMass) * subDt * 0.5;
+          puck.vy += (f2.fy / puckMass) * subDt * 0.5;
+
+          // Wall collisions (internal)
+          for (const wall of walls) {
+            resolveCircleRect(puck, wall);
+          }
+
+          // Boundary collisions
+          handleBoundary();
+
+          // Goal check
+          if (checkGoal()) {
+            gameState = "won";
+            spawnCelebration();
+            updateUI();
+            return;
+          }
+        }
+
+        // Record trail
+        if (showTrace) {
+          trail.push({ x: puck.x, y: puck.y });
+          if (trail.length > 2000) trail.shift();
+        }
+      }
+
+      function resolveCircleRect(circle, rect) {
+        // Find closest point on rectangle to circle center
+        const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w));
+        const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h));
+
+        const dx = circle.x - closestX;
+        const dy = circle.y - closestY;
+        const distSq = dx * dx + dy * dy;
+        const r = circle.radius;
+
+        if (distSq < r * r && distSq > 0.001) {
+          const dist = Math.sqrt(distSq);
+          const nx = dx / dist;
+          const ny = dy / dist;
+          const overlap = r - dist + 0.5; // extra push to prevent sticking
+
+          // Push out
+          circle.x += nx * overlap;
+          circle.y += ny * overlap;
+
+          // Reflect velocity along collision normal
+          const vDotN = circle.vx * nx + circle.vy * ny;
+          if (vDotN < 0) {
+            circle.vx -= (1 + BOUNCE_COEFF) * vDotN * nx;
+            circle.vy -= (1 + BOUNCE_COEFF) * vDotN * ny;
+          }
+        } else if (distSq <= 0.001) {
+          // Circle center is inside the rectangle - push out to nearest edge
+          const dLeft = circle.x - rect.x;
+          const dRight = rect.x + rect.w - circle.x;
+          const dTop = circle.y - rect.y;
+          const dBot = rect.y + rect.h - circle.y;
+          const minD = Math.min(dLeft, dRight, dTop, dBot);
+
+          if (minD === dLeft) {
+            circle.x = rect.x - r - 1;
+            circle.vx = -Math.abs(circle.vx) * BOUNCE_COEFF;
+          } else if (minD === dRight) {
+            circle.x = rect.x + rect.w + r + 1;
+            circle.vx = Math.abs(circle.vx) * BOUNCE_COEFF;
+          } else if (minD === dTop) {
+            circle.y = rect.y - r - 1;
+            circle.vy = -Math.abs(circle.vy) * BOUNCE_COEFF;
+          } else {
+            circle.y = rect.y + rect.h + r + 1;
+            circle.vy = Math.abs(circle.vy) * BOUNCE_COEFF;
+          }
+        }
+      }
+
+      function handleBoundary() {
+        const r = puck.radius;
+        const gt = goalTop();
+        const gb = goalBot();
+
+        // --- Out-of-bounds check: reset if puck exits the LARGE physics field (2x visible) ---
+        if (
+          puck.x < PHYSICS_OFFSET_X ||
+          puck.x > PHYSICS_OFFSET_X + PHYSICS_FIELD_W ||
+          puck.y < PHYSICS_OFFSET_Y ||
+          puck.y > PHYSICS_OFFSET_Y + PHYSICS_FIELD_H
+        ) {
+          gameState = "setup";
+          oobFlashTimer = 90; // ~1.5 seconds of flash
+          resetPuck();
+          updateUI();
+          return;
+        }
+
+        // NO bouncing off visible field borders - puck passes through freely
+        // Puck ONLY bounces off: obstacles, goal poles, goal back wall
+
+        // --- Goal area collisions (only when puck is near the goal) ---
+        if (puck.x > FIELD_W - r - 10) {
+          const inGoalY = puck.y > gt + r + 2 && puck.y < gb - r - 2;
+
+          if (inGoalY) {
+            // Inside goal corridor — constrain to goal walls (top/bottom posts)
+            if (puck.y < gt + r) {
+              puck.y = gt + r;
+              puck.vy = Math.abs(puck.vy) * BOUNCE_COEFF;
+            }
+            if (puck.y > gb - r) {
+              puck.y = gb - r;
+              puck.vy = -Math.abs(puck.vy) * BOUNCE_COEFF;
+            }
+            // Back wall of goal (net)
+            if (puck.x > FIELD_W + GOAL_DEPTH - r) {
+              puck.x = FIELD_W + GOAL_DEPTH - r;
+              puck.vx = -Math.abs(puck.vx) * BOUNCE_COEFF;
+            }
+          }
+        }
+
+        // Goal post collision boxes (top and bottom posts)
+        resolveCircleRect(puck, {
+          x: FIELD_W - WALL_T / 2,
+          y: gt - WALL_T,
+          w: GOAL_DEPTH + WALL_T / 2,
+          h: WALL_T,
+        });
+        resolveCircleRect(puck, {
+          x: FIELD_W - WALL_T / 2,
+          y: gb,
+          w: GOAL_DEPTH + WALL_T / 2,
+          h: WALL_T,
+        });
+      }
+
+      function checkGoal() {
+        const gt = goalTop();
+        const gb = goalBot();
+        return (
+          puck.x > FIELD_W + GOAL_DEPTH * 0.4 && puck.y > gt && puck.y < gb
+        );
+      }
+
+      // ═══════════════════════════════════════════
+      //  FIELD VISUALIZATION
+      // ═══════════════════════════════════════════
+      function computeFieldGrid() {
+        if (!fieldCacheDirty && fieldCache) return fieldCache;
+
+        const spacing = 40;
+        const cols = Math.floor(FIELD_W / spacing);
+        const rows = Math.floor(FIELD_H / spacing);
+        const grid = [];
+
+        for (let r = 0; r <= rows; r++) {
+          for (let c = 0; c <= cols; c++) {
+            const x = c * spacing + spacing / 2;
+            const y = r * spacing + spacing / 2;
+            if (x > FIELD_W || y > FIELD_H) continue;
+
+            let ex = 0,
+              ey = 0;
+            for (const ch of charges) {
+              const dx = x - ch.x;
+              const dy = y - ch.y;
+              let dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < MIN_DIST) dist = MIN_DIST;
+              const eMag = (COULOMB_K * ch.charge) / (dist * dist);
+              ex += (eMag * dx) / dist;
+              ey += (eMag * dy) / dist;
+            }
+
+            const mag = Math.sqrt(ex * ex + ey * ey);
+            grid.push({ x, y, ex, ey, mag });
+          }
+        }
+
+        fieldCache = grid;
+        fieldCacheDirty = false;
+        return grid;
+      }
+
+      // ═══════════════════════════════════════════
+      //  CELEBRATION PARTICLES
+      // ═══════════════════════════════════════════
+      function spawnCelebration() {
+        const cx = FIELD_W + GOAL_DEPTH / 2;
+        const cy = FIELD_H / 2;
+        for (let i = 0; i < 120; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = 2 + Math.random() * 8;
+          particles.push({
+            x: cx,
+            y: cy,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 2,
+            life: 1,
+            decay: 0.008 + Math.random() * 0.015,
+            hue: Math.random() * 360,
+            size: 2 + Math.random() * 6,
+          });
+        }
+      }
+
+      function updateParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.08;
+          p.life -= p.decay;
+          if (p.life <= 0) particles.splice(i, 1);
+        }
+      }
+
+      // ═══════════════════════════════════════════
+      //  RENDERING
+      // ═══════════════════════════════════════════
+      function render() {
+        // Clear everything (including outside field)
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = COL.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        drawFieldBackground();
+        drawGoal();
+        if (showField && charges.length > 0) drawFieldVectors();
+        if (showTrace && trail.length > 1) drawTrail();
+        drawWalls();
+        drawCharges();
+        drawPuck();
+        if (showForce && charges.length > 0) drawForceArrow();
+        drawParticles();
+        if (gameState === "won") drawWinOverlay();
+        if (mouseOnField && canManipulateCharges() && !dragTarget)
+          drawGhostCharge();
+        if (oobFlashTimer > 0) drawOobFlash();
+      }
+
+      function drawOobFlash() {
+        const alpha = Math.min(oobFlashTimer / 30, 1) * 0.35;
+        ctx.save();
+        ctx.fillStyle = `rgba(255, 50, 50, ${alpha})`;
+        ctx.fillRect(
+          -WALL_T,
+          -WALL_T - VISUAL_MARGIN,
+          FIELD_W + GOAL_DEPTH + WALL_T * 2,
+          FIELD_H + WALL_T * 2 + VISUAL_MARGIN * 2,
+        );
+
+        if (oobFlashTimer > 40) {
+          ctx.font = "bold 28px Orbitron, monospace";
+          ctx.fillStyle = `rgba(255, 100, 100, ${Math.min(oobFlashTimer / 40, 1)})`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(
+            TRANSLATIONS[currentLang].outOfBounds,
+            FIELD_W / 2,
+            FIELD_H / 2,
+          );
+        }
+        ctx.restore();
+      }
+
+      function drawFieldBackground() {
+        // Field area
+        ctx.fillStyle = "#0a1020";
+        ctx.fillRect(0, 0, FIELD_W, FIELD_H);
+
+        // Subtle grid
+        ctx.strokeStyle = COL.grid;
+        ctx.lineWidth = 0.5;
+        const spacing = 40;
+        for (let x = spacing; x < FIELD_W; x += spacing) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, FIELD_H);
+          ctx.stroke();
+        }
+        for (let y = spacing; y < FIELD_H; y += spacing) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(FIELD_W, y);
+          ctx.stroke();
+        }
+
+        // Border
+        ctx.strokeStyle = COL.wall;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, FIELD_W, FIELD_H);
+
+        // Starting position indicator (when in setup)
+        if (gameState === "setup") {
+          ctx.save();
+          ctx.globalAlpha = 0.15;
+          ctx.beginPath();
+          ctx.arc(FIELD_W * 0.12, FIELD_H / 2, 30, 0, Math.PI * 2);
+          ctx.fillStyle = COL.puck;
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      function drawGoal() {
+        const gt = goalTop();
+        const gb = goalBot();
+
+        // Goal area fill
+        ctx.fillStyle = COL.goalFill;
+        ctx.fillRect(FIELD_W, gt, GOAL_DEPTH, GOAL_OPENING);
+
+        // Net pattern
+        ctx.strokeStyle = COL.goalNet;
+        ctx.lineWidth = 0.5;
+        const step = 12;
+        for (let x = FIELD_W + step; x < FIELD_W + GOAL_DEPTH; x += step) {
+          ctx.beginPath();
+          ctx.moveTo(x, gt);
+          ctx.lineTo(x, gb);
+          ctx.stroke();
+        }
+        for (let y = gt + step; y < gb; y += step) {
+          ctx.beginPath();
+          ctx.moveTo(FIELD_W, y);
+          ctx.lineTo(FIELD_W + GOAL_DEPTH, y);
+          ctx.stroke();
+        }
+
+        // Goal frame
+        ctx.strokeStyle = COL.goalBorder;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(FIELD_W, gt);
+        ctx.lineTo(FIELD_W + GOAL_DEPTH, gt);
+        ctx.lineTo(FIELD_W + GOAL_DEPTH, gb);
+        ctx.lineTo(FIELD_W, gb);
+        ctx.stroke();
+
+        // Goal posts glow
+        ctx.save();
+        ctx.shadowColor = COL.goalBorder;
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = COL.goalBorder;
+        ctx.beginPath();
+        ctx.arc(FIELD_W, gt, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(FIELD_W, gb, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Goal label
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.font = "bold 11px Orbitron, monospace";
+        ctx.fillStyle = COL.goalBorder;
+        ctx.textAlign = "center";
+        ctx.fillText(
+          TRANSLATIONS[currentLang].goalLabel,
+          FIELD_W + GOAL_DEPTH / 2,
+          FIELD_H / 2 + 4,
+        );
+        ctx.restore();
+      }
+
+      function drawWalls() {
+        for (const w of walls) {
+          // Glow
+          ctx.save();
+          ctx.shadowColor = COL.wallGlow;
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = COL.wall;
+          ctx.fillRect(w.x, w.y, w.w, w.h);
+          ctx.restore();
+
+          // Highlight edge
+          ctx.strokeStyle = "rgba(200,210,230,0.3)";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(w.x, w.y, w.w, w.h);
+        }
+      }
+
+      // ═══════════════════════════════════════════
+      //  ENHANCED: Glowing charges
+      // ═══════════════════════════════════════════
+      function drawCharges() {
+        for (let i = 0; i < charges.length; i++) {
+          const c = charges[i];
+          const isPos = c.charge > 0;
+          const color = isPos ? COL.positive : COL.negative;
+          const bright = isPos ? COL.posBright : COL.negBright;
+          const glow = isPos ? COL.posGlow : COL.negGlow;
+          const core = isPos ? COL.posCore : COL.negCore;
+
+          // Animated pulse
+          const pulsePhase = ((Date.now() + i * 200) % 1500) / 1500;
+          const pulseScale = 1 + Math.sin(pulsePhase * Math.PI * 2) * 0.08;
+
+          ctx.save();
+
+          // Outer glow rings
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 25;
+
+          // Outermost glow ring
+          ctx.globalAlpha = 0.2;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R * 1.8 * pulseScale, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          // Middle glow ring
+          ctx.globalAlpha = 0.3;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R * 1.4 * pulseScale, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Main circle with gradient
+          ctx.globalAlpha = 1;
+          const chargeGradient = ctx.createRadialGradient(
+            c.x - CHARGE_R * 0.3, c.y - CHARGE_R * 0.3, 0,
+            c.x, c.y, CHARGE_R * 1.2
+          );
+          chargeGradient.addColorStop(0, core);
+          chargeGradient.addColorStop(0.4, glow);
+          chargeGradient.addColorStop(1, "rgba(0,0,0,0)");
+
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R * 1.1, 0, Math.PI * 2);
+          ctx.fillStyle = chargeGradient;
+          ctx.fill();
+
+          // Main stroke
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R, 0, Math.PI * 2);
+          ctx.strokeStyle = bright;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          // Inner highlight
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R - 3, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.4;
+          ctx.stroke();
+
+          ctx.restore();
+
+          // Symbol with glow
+          ctx.save();
+          ctx.shadowColor = bright;
+          ctx.shadowBlur = 8;
+          ctx.strokeStyle = bright;
+          ctx.lineCap = "round";
+          ctx.lineWidth = 3;
+          const symLen = 7;
+
+          // Horizontal line
+          ctx.beginPath();
+          ctx.moveTo(c.x - symLen, c.y);
+          ctx.lineTo(c.x + symLen, c.y);
+          ctx.stroke();
+
+          // Vertical line (+ only)
+          if (isPos) {
+            ctx.beginPath();
+            ctx.moveTo(c.x, c.y - symLen);
+            ctx.lineTo(c.x, c.y + symLen);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+
+      function drawPuck() {
+        if (!puck) return;
+
+        // Color based on charge
+        const isPositive = puck.charge >= 0;
+        const puckColor = isPositive ? COL.puck : "#ff6688";
+        const puckFill = isPositive ? "rgba(0,255,136,0.2)" : "rgba(255,102,136,0.2)";
+
+        // Glow
+        ctx.save();
+        ctx.shadowColor = puckColor;
+        ctx.shadowBlur = 20;
+
+        // Main circle
+        ctx.beginPath();
+        ctx.arc(puck.x, puck.y, PUCK_R, 0, Math.PI * 2);
+        ctx.fillStyle = puckFill;
+        ctx.fill();
+        ctx.strokeStyle = puckColor;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // Symbol based on charge (+ or -)
+        ctx.strokeStyle = puckColor;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 2.5;
+        const puckSymLen = 6;
+        // Horizontal line (both + and -)
+        ctx.beginPath();
+        ctx.moveTo(puck.x - puckSymLen, puck.y);
+        ctx.lineTo(puck.x + puckSymLen, puck.y);
+        ctx.stroke();
+        // Vertical line (only for positive)
+        if (isPositive) {
+          ctx.beginPath();
+          ctx.moveTo(puck.x, puck.y - puckSymLen);
+          ctx.lineTo(puck.x, puck.y + puckSymLen);
+          ctx.stroke();
+        }
+      }
+
+      function drawTrail() {
+        if (trail.length < 2) return;
+        for (let i = 1; i < trail.length; i++) {
+          const alpha = (i / trail.length) * 0.6;
+          ctx.strokeStyle = COL.trail + alpha.toFixed(3) + ")";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+          ctx.lineTo(trail[i].x, trail[i].y);
+          ctx.stroke();
+        }
+      }
+
+      // ═══════════════════════════════════════════
+      //  ENHANCED: Field vectors with gradient colors
+      // ═══════════════════════════════════════════
+      function drawFieldVectors() {
+        const grid = computeFieldGrid();
+        if (!grid.length) return;
+
+        const maxMag = Math.max(...grid.map((g) => g.mag), 1);
+        const arrowLen = 42; // 1.5x longer (was 28)
+
+        for (const pt of grid) {
+          if (pt.mag < 0.01) continue;
+
+          const strength = Math.min(pt.mag / maxMag, 1);
+          const len = arrowLen * Math.pow(strength, 0.35);
+          const angle = Math.atan2(pt.ey, pt.ex);
+
+          const endX = pt.x + Math.cos(angle) * len;
+          const endY = pt.y + Math.sin(angle) * len;
+
+          // Color gradient based on strength
+          const hue = 180 + strength * 20; // Cyan to slightly more blue
+          const lightness = 50 + strength * 20;
+          const alpha = 0.25 + strength * 0.5;
+
+          ctx.save();
+
+          // Glow for strong fields
+          if (strength > 0.5) {
+            ctx.shadowColor = `hsla(${hue}, 100%, ${lightness}%, 0.4)`;
+            ctx.shadowBlur = 4;
+          }
+
+          // Arrow shaft gradient
+          const arrowGradient = ctx.createLinearGradient(pt.x, pt.y, endX, endY);
+          arrowGradient.addColorStop(0, `hsla(${hue}, 80%, ${lightness}%, ${alpha * 0.3})`);
+          arrowGradient.addColorStop(1, `hsla(${hue}, 100%, ${lightness}%, ${alpha})`);
+
+          ctx.strokeStyle = arrowGradient;
+          ctx.lineWidth = 0.8 + strength * 0.8;
+          ctx.lineCap = "round";
+
+          // Line
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+
+          // Arrowhead (filled triangle for better visibility)
+          const headLen = 4 + strength * 3;
+          const headAngle = 0.5;
+          ctx.fillStyle = `hsla(${hue}, 100%, ${lightness}%, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(endX, endY);
+          ctx.lineTo(
+            endX - Math.cos(angle - headAngle) * headLen,
+            endY - Math.sin(angle - headAngle) * headLen,
+          );
+          ctx.lineTo(
+            endX - Math.cos(angle + headAngle) * headLen,
+            endY - Math.sin(angle + headAngle) * headLen,
+          );
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
+
+      function drawForceArrow() {
+        if (!puck) return;
+        const { fx, fy } = computeForceOn(puck.x, puck.y, puck.charge, -1);
+        const mag = Math.sqrt(fx * fx + fy * fy);
+        if (mag < 0.1) return;
+
+        // Scale arrow length - 5x longer, max 400px
+        const maxArrowLen = 400;
+        const arrowLen = Math.min(mag * 0.1, maxArrowLen);
+        const angle = Math.atan2(fy, fx);
+
+        // Scale line width with arrow length (2 to 6 pixels)
+        const lineWidth = 2 + (arrowLen / maxArrowLen) * 4;
+
+        const endX = puck.x + Math.cos(angle) * arrowLen;
+        const endY = puck.y + Math.sin(angle) * arrowLen;
+
+        ctx.save();
+        ctx.strokeStyle = COL.forceArrow;
+        ctx.fillStyle = COL.forceArrow;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = "round";
+        ctx.shadowColor = COL.forceArrow;
+        ctx.shadowBlur = 6 + lineWidth;
+
+        // Shaft
+        ctx.beginPath();
+        ctx.moveTo(puck.x, puck.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Arrowhead - scales with line width
+        const headLen = 8 + lineWidth * 2;
+        const headAngle = 0.4;
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(
+          endX - Math.cos(angle - headAngle) * headLen,
+          endY - Math.sin(angle - headAngle) * headLen,
+        );
+        ctx.lineTo(
+          endX - Math.cos(angle + headAngle) * headLen,
+          endY - Math.sin(angle + headAngle) * headLen,
+        );
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawParticles() {
+        for (const p of particles) {
+          ctx.save();
+          ctx.globalAlpha = p.life;
+          ctx.fillStyle = `hsl(${p.hue}, 100%, 65%)`;
+          ctx.shadowColor = `hsl(${p.hue}, 100%, 65%)`;
+          ctx.shadowBlur = 6;
+          ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+          ctx.restore();
+        }
+      }
+
+      function drawWinOverlay() {
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = "#000";
+        ctx.fillRect(
+          -WALL_T,
+          -WALL_T - VISUAL_MARGIN,
+          FIELD_W + GOAL_DEPTH + WALL_T * 2,
+          FIELD_H + WALL_T * 2 + VISUAL_MARGIN * 2,
+        );
+        ctx.restore();
+
+        ctx.save();
+        ctx.shadowColor = COL.goalBorder;
+        ctx.shadowBlur = 40;
+        ctx.font = "bold 96px Orbitron, monospace";
+        ctx.fillStyle = COL.goalBorder;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          TRANSLATIONS[currentLang].goalText,
+          FIELD_W / 2,
+          FIELD_H / 2 - 30,
+        );
+
+        ctx.restore();
+      }
+
+      function drawGhostCharge() {
+        if (mouseField.x < -CHARGE_MARGIN || mouseField.y < -CHARGE_MARGIN) return;
+        if (mouseField.x > FIELD_W + CHARGE_MARGIN || mouseField.y > FIELD_H + CHARGE_MARGIN) return;
+
+        const isPos = selectedCharge > 0;
+        const color = isPos ? COL.positive : COL.negative;
+
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(mouseField.x, mouseField.y, CHARGE_R, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Symbol (drawn with lines)
+        ctx.strokeStyle = color;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 3;
+        const ghostSymLen = 8;
+        ctx.beginPath();
+        ctx.moveTo(mouseField.x - ghostSymLen, mouseField.y);
+        ctx.lineTo(mouseField.x + ghostSymLen, mouseField.y);
+        ctx.stroke();
+        if (isPos) {
+          ctx.beginPath();
+          ctx.moveTo(mouseField.x, mouseField.y - ghostSymLen);
+          ctx.lineTo(mouseField.x, mouseField.y + ghostSymLen);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // ═══════════════════════════════════════════
+      //  INPUT HANDLING
+      // ═══════════════════════════════════════════
+      function canvasToField(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (clientX - rect.left) / scale - offsetX;
+        const y = (clientY - rect.top) / scale - offsetY;
+        return { x, y };
+      }
+
+      function findChargeAt(fx, fy) {
+        for (let i = charges.length - 1; i >= 0; i--) {
+          const c = charges[i];
+          const dx = fx - c.x;
+          const dy = fy - c.y;
+          if (dx * dx + dy * dy < (CHARGE_R + 8) * (CHARGE_R + 8)) return i;
+        }
+        return -1;
+      }
+
+      function isInsideWall(x, y) {
+        for (const w of walls) {
+          if (
+            x > w.x - CHARGE_R &&
+            x < w.x + w.w + CHARGE_R &&
+            y > w.y - CHARGE_R &&
+            y < w.y + w.h + CHARGE_R
+          )
+            return true;
+        }
+        return false;
+      }
+
+      function isNearPuck(x, y) {
+        if (!puck) return false;
+        const dx = x - puck.x;
+        const dy = y - puck.y;
+        return (
+          dx * dx + dy * dy < (PUCK_R + CHARGE_R + 5) * (PUCK_R + CHARGE_R + 5)
+        );
+      }
+
+      // Check if charge manipulation is allowed (blocked in hard mode while running)
+      function canManipulateCharges() {
+        return !hardMode || gameState === "setup" || gameState === "won";
+      }
+
+      // Mouse events
+      canvas.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        const { x, y } = canvasToField(e.clientX, e.clientY);
+
+        if (e.button === 2) {
+          // Right-click: remove charge
+          if (!canManipulateCharges()) return;
+          const idx = findChargeAt(x, y);
+          if (idx >= 0) {
+            charges.splice(idx, 1);
+            fieldCacheDirty = true;
+            updateChargeCount();
+          }
+          return;
+        }
+
+        // Left-click: drag or place
+        if (!canManipulateCharges()) return;
+        const idx = findChargeAt(x, y);
+        if (idx >= 0) {
+          dragTarget = {
+            type: "charge",
+            index: idx,
+            ox: charges[idx].x - x,
+            oy: charges[idx].y - y,
+          };
+        } else if (x > -CHARGE_MARGIN && x < FIELD_W + CHARGE_MARGIN &&
+                   y > -CHARGE_MARGIN && y < FIELD_H + CHARGE_MARGIN) {
+          // Place new charge if not on a wall or puck (extended area around field)
+          if (!isInsideWall(x, y) && !isNearPuck(x, y)) {
+            charges.push({ x, y, charge: selectedCharge });
+            fieldCacheDirty = true;
+            updateChargeCount();
+            // Start dragging the new charge immediately
+            dragTarget = {
+              type: "charge",
+              index: charges.length - 1,
+              ox: 0,
+              oy: 0,
+            };
+          }
+        }
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        const { x, y } = canvasToField(e.clientX, e.clientY);
+        mouseField.x = x;
+        mouseField.y = y;
+        // Extended area for charge placement
+        mouseOnField = x >= -CHARGE_MARGIN && x <= FIELD_W + CHARGE_MARGIN &&
+                       y >= -CHARGE_MARGIN && y <= FIELD_H + CHARGE_MARGIN;
+
+        if (dragTarget) {
+          const c = charges[dragTarget.index];
+          if (c) {
+            c.x = x + dragTarget.ox;
+            c.y = y + dragTarget.oy;
+            // Clamp to extended charge placement area
+            c.x = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_W + CHARGE_MARGIN - CHARGE_R, c.x));
+            c.y = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_H + CHARGE_MARGIN - CHARGE_R, c.y));
+            fieldCacheDirty = true;
+          }
+        }
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        dragTarget = null;
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        mouseOnField = false;
+        dragTarget = null;
+      });
+
+      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      // Touch events
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          if (!canManipulateCharges()) return;
+          const touch = e.touches[0];
+          const { x, y } = canvasToField(touch.clientX, touch.clientY);
+
+          const idx = findChargeAt(x, y);
+          if (idx >= 0) {
+            dragTarget = {
+              type: "charge",
+              index: idx,
+              ox: charges[idx].x - x,
+              oy: charges[idx].y - y,
+            };
+          } else if (x > -CHARGE_MARGIN && x < FIELD_W + CHARGE_MARGIN &&
+                     y > -CHARGE_MARGIN && y < FIELD_H + CHARGE_MARGIN) {
+            if (!isInsideWall(x, y) && !isNearPuck(x, y)) {
+              charges.push({ x, y, charge: selectedCharge });
+              fieldCacheDirty = true;
+              updateChargeCount();
+              dragTarget = {
+                type: "charge",
+                index: charges.length - 1,
+                ox: 0,
+                oy: 0,
+              };
+            }
+          }
+        },
+        { passive: false },
+      );
+
+      canvas.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const { x, y } = canvasToField(touch.clientX, touch.clientY);
+          mouseField.x = x;
+          mouseField.y = y;
+          mouseOnField = true;
+
+          if (dragTarget) {
+            const c = charges[dragTarget.index];
+            if (c) {
+              c.x = x + dragTarget.ox;
+              c.y = y + dragTarget.oy;
+              // Clamp to extended charge placement area
+              c.x = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_W + CHARGE_MARGIN - CHARGE_R, c.x));
+              c.y = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_H + CHARGE_MARGIN - CHARGE_R, c.y));
+              fieldCacheDirty = true;
+            }
+          }
+        },
+        { passive: false },
+      );
+
+      canvas.addEventListener("touchend", () => {
+        dragTarget = null;
+        mouseOnField = false;
+      });
+
+      // Long press to remove (mobile)
+      let longPressTimer = null;
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          if (!canManipulateCharges()) return;
+          const touch = e.touches[0];
+          const { x, y } = canvasToField(touch.clientX, touch.clientY);
+          const idx = findChargeAt(x, y);
+          if (idx >= 0) {
+            longPressTimer = setTimeout(() => {
+              if (!canManipulateCharges()) return;
+              charges.splice(idx, 1);
+              fieldCacheDirty = true;
+              updateChargeCount();
+              dragTarget = null;
+            }, 500);
+          }
+        },
+        { passive: true },
+      );
+      canvas.addEventListener("touchend", () => {
+        clearTimeout(longPressTimer);
+      });
+      canvas.addEventListener(
+        "touchmove",
+        () => {
+          clearTimeout(longPressTimer);
+        },
+        { passive: true },
+      );
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          toggleStartPause();
+        } else if (e.code === "KeyR") {
+          doReset();
+        } else if (e.code === "KeyC") {
+          doClear();
+        } else if (e.code === "KeyF") {
+          showField = !showField;
+          document.getElementById("chkField").checked = showField;
+          fieldCacheDirty = true;
+        } else if (e.code === "KeyT") {
+          showTrace = !showTrace;
+          document.getElementById("chkTrace").checked = showTrace;
+        }
+      });
+
+      // ═══════════════════════════════════════════
+      //  UI CONTROLS
+      // ═══════════════════════════════════════════
+      function updateUI() {
+        const badge = document.getElementById("statusBadge");
+        const btn = document.getElementById("btnStart");
+        const t = TRANSLATIONS[currentLang];
+
+        switch (gameState) {
+          case "setup":
+            badge.textContent = t.setup;
+            badge.className = "status";
+            btn.textContent = t.start;
+            btn.classList.remove("active");
+            break;
+          case "running":
+            badge.textContent = t.running;
+            badge.className = "status running";
+            btn.textContent = t.pause;
+            break;
+          case "paused":
+            badge.textContent = t.paused;
+            badge.className = "status";
+            btn.textContent = t.resume;
+            break;
+          case "won":
+            badge.textContent = t.goalStatus;
+            badge.className = "status won";
+            btn.textContent = t.start;
+            break;
+        }
+      }
+
+      function updateChargeCount() {
+        document.getElementById("chargeCount").textContent = charges.length;
+      }
+
+      function toggleStartPause() {
+        if (gameState === "setup" || gameState === "won") {
+          if (gameState === "won") {
+            resetPuck();
+            particles = [];
+          }
+          gameState = "running";
+        } else if (gameState === "running") {
+          gameState = "paused";
+        } else if (gameState === "paused") {
+          gameState = "running";
+        }
+        updateUI();
+      }
+
+      function doReset() {
+        resetPuck();
+        gameState = "setup";
+        particles = [];
+        updateUI();
+      }
+
+      function doClear() {
+        charges = [];
+        fieldCacheDirty = true;
+        updateChargeCount();
+        doReset();
+      }
+
+      // Level buttons
+      document.getElementById("levelBtns").addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        document
+          .querySelectorAll("#levelBtns button")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        charges = [];
+        updateChargeCount();
+        initLevel(btn.dataset.level);
+      });
+
+      // Mode buttons (Easy/Hard)
+      document.getElementById("modeBtns").addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        document
+          .querySelectorAll("#modeBtns button")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        hardMode = btn.dataset.mode === "hard";
+      });
+
+      // Charge type buttons
+      document.getElementById("chargeBtns").addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        document.querySelectorAll("#chargeBtns button").forEach((b) => {
+          b.classList.remove("active-pos", "active-neg");
+        });
+        const val = parseFloat(btn.dataset.charge);
+        selectedCharge = val;
+        btn.classList.add(val > 0 ? "active-pos" : "active-neg");
+      });
+
+      // Start/Pause button
+      document
+        .getElementById("btnStart")
+        .addEventListener("click", toggleStartPause);
+
+      // Reset button
+      document.getElementById("btnReset").addEventListener("click", doReset);
+
+      // Clear button
+      document.getElementById("btnClear").addEventListener("click", doClear);
+
+      // Mass slider
+      document.getElementById("massSlider").addEventListener("input", (e) => {
+        puckMass = parseInt(e.target.value);
+        document.getElementById("massVal").textContent = puckMass;
+      });
+
+      // Charge slider
+      document.getElementById("chargeSlider").addEventListener("input", (e) => {
+        puckCharge = parseInt(e.target.value);
+        document.getElementById("chargeVal").textContent =
+          puckCharge > 0 ? "+" + puckCharge : puckCharge;
+        if (puck) puck.charge = puckCharge;
+      });
+
+      // Display checkboxes
+      document.getElementById("chkField").addEventListener("change", (e) => {
+        showField = e.target.checked;
+        fieldCacheDirty = true;
+      });
+      document.getElementById("chkTrace").addEventListener("change", (e) => {
+        showTrace = e.target.checked;
+        if (!showTrace) trail = [];
+      });
+      document.getElementById("chkForce").addEventListener("change", (e) => {
+        showForce = e.target.checked;
+      });
+
+      // ═══════════════════════════════════════════
+      //  GAME LOOP
+      // ═══════════════════════════════════════════
+      function gameLoop() {
+        stepPhysics();
+        updateParticles();
+        if (oobFlashTimer > 0) oobFlashTimer--;
+        render();
+        requestAnimationFrame(gameLoop);
+      }
+
+      // ═══════════════════════════════════════════
+      //  START
+      // ═══════════════════════════════════════════
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      initLanguage();
+      initLevel("practice");
+      gameLoop();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics Simulations Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ═══════════ LANGUAGE SWITCH ═══════════ */
+  .lang-switch {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    z-index: 100;
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+  .lang-switch button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s;
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+  }
+  .lang-switch button:hover { color: var(--text-dim); }
+  .lang-switch button.active { color: var(--accent); }
+  .lang-switch .lang-sep { color: var(--text-muted); }
+
+  :root {
+    --bg: #060a14;
+    --bg-card: #0c1220;
+    --bg-card-hover: #111a2e;
+    --border: #1a2540;
+    --border-hover: #2a3a5a;
+    --accent: #00ccff;
+    --accent-dim: #00ccff33;
+    --accent-glow: #00ccff22;
+    --positive: #ff3355;
+    --negative: #3388ff;
+    --green: #00ff88;
+    --gold: #ffd700;
+    --text: #c8d6e8;
+    --text-dim: #5a6d88;
+    --text-muted: #3a4d68;
+    --radius: 12px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ═══════════ BACKGROUND GRID ═══════════ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(var(--accent-glow) 1px, transparent 1px),
+      linear-gradient(90deg, var(--accent-glow) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, #0a1628 0%, var(--bg) 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ═══════════ HEADER ═══════════ */
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 60px 24px 40px;
+  }
+
+  .logo-icon {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 20px;
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(24px, 5vw, 42px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, var(--accent), #66eeff, var(--accent));
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 6s ease-in-out infinite;
+    margin-bottom: 12px;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .subtitle {
+    font-size: clamp(14px, 2.5vw, 18px);
+    color: var(--text-dim);
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 1px;
+  }
+
+  .divider {
+    width: 80px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 28px auto 0;
+  }
+
+  /* ═══════════ MAIN GRID ═══════════ */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  .section-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    padding-left: 4px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  /* ═══════════ SIMULATION CARD ═══════════ */
+  .card {
+    position: relative;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px -8px rgba(0, 204, 255, 0.12);
+  }
+
+  .card:hover .card-visual {
+    border-bottom-color: var(--border-hover);
+  }
+
+  .card:hover .card-visual svg {
+    transform: scale(1.05);
+  }
+
+  .card.coming-soon {
+    cursor: default;
+    opacity: 0.55;
+  }
+
+  .card.coming-soon:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--bg-card);
+    border-color: var(--border);
+  }
+
+  /* Card visual area */
+  .card-visual {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #0f1a30 0%, var(--bg-card) 100%);
+  }
+
+  .card-visual svg {
+    transition: transform 0.35s ease;
+  }
+
+  /* Card content */
+  .card-body {
+    padding: 20px 22px 22px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .card-tag {
+    display: inline-block;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    width: fit-content;
+  }
+
+  .tag-electrostatics {
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid #00ccff44;
+  }
+
+  .tag-quantum {
+    color: var(--gold);
+    background: #ffd70022;
+    border: 1px solid #ffd70033;
+  }
+
+  .card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    color: #e0eaf4;
+  }
+
+  .card-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-dim);
+    font-weight: 300;
+    flex: 1;
+  }
+
+  .card-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .status-live .status-dot {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .status-live span { color: var(--green); }
+
+  .status-dev .status-dot {
+    background: var(--gold);
+    box-shadow: 0 0 6px #ffd70066;
+  }
+
+  .status-dev span { color: var(--gold); }
+
+  .status-planned .status-dot {
+    background: var(--text-muted);
+  }
+
+  .status-planned span { color: var(--text-muted); }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* ═══════════ COMING SOON BADGE ═══════════ */
+  .badge-soon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: #0c1220cc;
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 4px;
+    z-index: 2;
+  }
+
+  /* ═══════════ FOOTER ═══════════ */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 32px 24px 40px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  footer a {
+    color: var(--text-dim);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  footer a:hover {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+  @media (max-width: 720px) {
+    header { padding: 40px 20px 28px; }
+    main { padding: 28px 16px 60px; }
+    .grid { grid-template-columns: 1fr; gap: 18px; }
+    .card-visual { height: 150px; }
+  }
+
+  /* ═══════════ ENTRANCE ANIMATIONS ═══════════ */
+  .card {
+    opacity: 0;
+    transform: translateY(24px);
+    animation: card-enter 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.25s; }
+  .card:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes card-enter {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card.coming-soon {
+    animation-name: card-enter-dim;
+  }
+
+  @keyframes card-enter-dim {
+    to { opacity: 0.55; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang-switch">
+  <button data-lang="lv">LV</button>
+  <span class="lang-sep">|</span>
+  <button data-lang="en">EN</button>
+</div>
+
+<header>
+  <!-- Atom icon -->
+  <svg class="logo-icon" viewBox="0 0 64 64" fill="none">
+    <circle cx="32" cy="32" r="4" fill="#00ccff"/>
+    <ellipse cx="32" cy="32" rx="28" ry="10" stroke="#00ccff" stroke-width="1.2" opacity="0.6" transform="rotate(0 32 32)"/>
+    <ellipse cx="32" cy="32" rx="28" ry="10" stroke="#00ccff" stroke-width="1.2" opacity="0.6" transform="rotate(60 32 32)"/>
+    <ellipse cx="32" cy="32" rx="28" ry="10" stroke="#00ccff" stroke-width="1.2" opacity="0.6" transform="rotate(120 32 32)"/>
+    <circle cx="32" cy="32" r="2" fill="#66eeff"/>
+  </svg>
+
+  <h1 data-i18n="heading">Physics Lab</h1>
+  <p class="subtitle" data-i18n="subtitle">Interactive simulations for exploring electrostatics &amp; more</p>
+  <div class="divider"></div>
+</header>
+
+<main>
+  <div class="section-label" data-i18n="sectionLabel">Simulations</div>
+
+  <div class="grid">
+
+    <!-- ══════ CARD 1: Electric Field Hockey ══════ -->
+    <a href="electric-field-hockey.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Field boundary -->
+          <rect x="20" y="10" width="160" height="120" rx="4" fill="none" stroke="#1a2540" stroke-width="1.5"/>
+          <!-- Goal -->
+          <rect x="170" y="45" width="10" height="50" rx="2" fill="none" stroke="#ffd700" stroke-width="1.5" opacity="0.7"/>
+          <!-- Wall -->
+          <line x1="100" y1="10" x2="100" y2="50" stroke="#8899bb" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="100" y1="90" x2="100" y2="130" stroke="#8899bb" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Positive charge -->
+          <circle cx="65" cy="85" r="10" fill="#ff335522" stroke="#ff3355" stroke-width="1.2"/>
+          <line x1="60" y1="85" x2="70" y2="85" stroke="#ff3355" stroke-width="1.5"/>
+          <line x1="65" y1="80" x2="65" y2="90" stroke="#ff3355" stroke-width="1.5"/>
+          <!-- Negative charge -->
+          <circle cx="130" cy="45" r="10" fill="#3388ff22" stroke="#3388ff" stroke-width="1.2"/>
+          <line x1="125" y1="45" x2="135" y2="45" stroke="#3388ff" stroke-width="1.5"/>
+          <!-- Puck -->
+          <circle cx="35" cy="70" r="7" fill="#00ff8833" stroke="#00ff88" stroke-width="1.5"/>
+          <!-- Trajectory -->
+          <path d="M 42 70 Q 70 55 85 65 Q 105 80 140 60 Q 160 50 175 70" fill="none" stroke="#00ff8844" stroke-width="1" stroke-dasharray="4 3"/>
+          <!-- Force arrow -->
+          <line x1="35" y1="70" x2="52" y2="58" stroke="#ffaa00" stroke-width="1.2"/>
+          <polygon points="52,58 48,63 54,62" fill="#ffaa00"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electrostatics" data-i18n="tagElectrostatics">Electrostatics</div>
+        <div class="card-title" data-i18n="hockeyTitle">Electric Field Hockey</div>
+        <p class="card-desc" data-i18n="hockeyDesc">Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ══════ CARD 2: Millikan Oil Drop ══════ -->
+    <a href="millikan.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Top plate -->
+          <rect x="30" y="18" width="140" height="6" rx="2" fill="#5a6d88" opacity="0.5"/>
+          <text x="100" y="14" text-anchor="middle" font-size="8" fill="#ff3355" opacity="0.6">+  +  +  +  +</text>
+          <!-- Bottom plate -->
+          <rect x="30" y="116" width="140" height="6" rx="2" fill="#5a6d88" opacity="0.5"/>
+          <text x="100" y="134" text-anchor="middle" font-size="8" fill="#3388ff" opacity="0.6">−  −  −  −  −</text>
+          <!-- Microscope circle -->
+          <circle cx="100" cy="70" r="38" fill="none" stroke="#1a2540" stroke-width="1.5"/>
+          <circle cx="100" cy="70" r="38" fill="#06091166"/>
+          <!-- Crosshair -->
+          <line x1="62" y1="70" x2="138" y2="70" stroke="#1a254088" stroke-width="0.5"/>
+          <line x1="100" y1="32" x2="100" y2="108" stroke="#1a254088" stroke-width="0.5"/>
+          <!-- Oil drops at various positions -->
+          <circle cx="82" cy="55" r="3" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="108" cy="68" r="2.5" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="93" cy="82" r="3.5" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="118" cy="58" r="2" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="88" cy="72" r="2.8" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <!-- Down arrows on some -->
+          <line x1="82" y1="59" x2="82" y2="66" stroke="#ffd70066" stroke-width="0.7"/>
+          <line x1="118" y1="61" x2="118" y2="67" stroke="#ffd70066" stroke-width="0.7"/>
+          <!-- Up arrows on some -->
+          <line x1="108" y1="64" x2="108" y2="57" stroke="#ffd70066" stroke-width="0.7"/>
+          <!-- Voltage label -->
+          <text x="100" y="108" text-anchor="middle" font-family="'Orbitron', monospace" font-size="7" fill="#00ccff" opacity="0.5">V = 1840 V</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-quantum" data-i18n="tagQuantization">Charge quantization</div>
+        <div class="card-title" data-i18n="millikanTitle">Millikan Experiment</div>
+        <p class="card-desc" data-i18n="millikanDesc">Balance oil droplets in an electric field to discover that charge comes in discrete units — just as Millikan did in 1913.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ══════ CARD 3: Electric Field Visualizer ══════ -->
+    <a href="electric-field.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Positive charge -->
+          <circle cx="70" cy="70" r="12" fill="#ff335522" stroke="#ff3355" stroke-width="1.2"/>
+          <line x1="64" y1="70" x2="76" y2="70" stroke="#ff3355" stroke-width="1.5"/>
+          <line x1="70" y1="64" x2="70" y2="76" stroke="#ff3355" stroke-width="1.5"/>
+          <!-- Negative charge -->
+          <circle cx="140" cy="70" r="12" fill="#3388ff22" stroke="#3388ff" stroke-width="1.2"/>
+          <line x1="134" y1="70" x2="146" y2="70" stroke="#3388ff" stroke-width="1.5"/>
+          <!-- Field vectors radiating from positive -->
+          <g stroke="#00ccff" stroke-width="0.8" opacity="0.5">
+            <!-- Right side vectors (between charges) -->
+            <line x1="86" y1="70" x2="96" y2="70"/>
+            <polygon points="96,70 93,68 93,72" fill="#00ccff" opacity="0.5"/>
+            <line x1="105" y1="70" x2="115" y2="70"/>
+            <polygon points="115,70 112,68 112,72" fill="#00ccff" opacity="0.5"/>
+            <!-- Top vectors -->
+            <line x1="70" y1="54" x2="70" y2="44"/>
+            <polygon points="70,44 68,47 72,47" fill="#00ccff" opacity="0.5"/>
+            <line x1="83" y1="57" x2="90" y2="48"/>
+            <polygon points="90,48 86,49 88,53" fill="#00ccff" opacity="0.5"/>
+            <line x1="57" y1="57" x2="50" y2="48"/>
+            <polygon points="50,48 52,53 54,49" fill="#00ccff" opacity="0.5"/>
+            <!-- Bottom vectors -->
+            <line x1="70" y1="86" x2="70" y2="96"/>
+            <polygon points="70,96 68,93 72,93" fill="#00ccff" opacity="0.5"/>
+            <line x1="83" y1="83" x2="90" y2="92"/>
+            <polygon points="90,92 86,91 88,87" fill="#00ccff" opacity="0.5"/>
+            <line x1="57" y1="83" x2="50" y2="92"/>
+            <polygon points="50,92 54,91 52,87" fill="#00ccff" opacity="0.5"/>
+            <!-- Left vectors -->
+            <line x1="54" y1="70" x2="44" y2="70"/>
+            <polygon points="44,70 47,68 47,72" fill="#00ccff" opacity="0.5"/>
+            <!-- Vectors approaching negative -->
+            <line x1="140" y1="54" x2="140" y2="44"/>
+            <polygon points="140,44 138,47 142,47" fill="#00ccff" opacity="0.5"/>
+            <line x1="140" y1="86" x2="140" y2="96"/>
+            <polygon points="140,96 138,93 142,93" fill="#00ccff" opacity="0.5"/>
+            <line x1="156" y1="70" x2="166" y2="70"/>
+            <polygon points="166,70 163,68 163,72" fill="#00ccff" opacity="0.5"/>
+          </g>
+          <!-- Field line curves -->
+          <path d="M 82 70 Q 105 40 124 70" fill="none" stroke="#00ccff22" stroke-width="0.8"/>
+          <path d="M 82 70 Q 105 100 124 70" fill="none" stroke="#00ccff22" stroke-width="0.8"/>
+          <path d="M 82 70 Q 105 20 124 70" fill="none" stroke="#00ccff22" stroke-width="0.5"/>
+          <path d="M 82 70 Q 105 120 124 70" fill="none" stroke="#00ccff22" stroke-width="0.5"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electrostatics" data-i18n="tagElectrostatics">Electrostatics</div>
+        <div class="card-title" data-i18n="fieldTitle">Electric Field</div>
+        <p class="card-desc" data-i18n="fieldDesc">Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</main>
+
+<footer>
+  <p data-i18n="footer">Built for Waldorf physics education · Grades 10–12</p>
+</footer>
+
+<script>
+// ═══════════ TRANSLATIONS ═══════════
+const TRANSLATIONS = {
+  en: {
+    title: "Physics Simulations Lab",
+    heading: "Physics Lab",
+    subtitle: "Interactive simulations for exploring electrostatics & more",
+    sectionLabel: "Simulations",
+    tagElectrostatics: "Electrostatics",
+    tagQuantization: "Charge quantization",
+    hockeyTitle: "Electric Field Hockey",
+    hockeyDesc: "Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.",
+    millikanTitle: "Millikan Experiment",
+    millikanDesc: "Balance oil droplets in an electric field to discover that charge comes in discrete units — just as Millikan did in 1913.",
+    fieldTitle: "Electric Field",
+    fieldDesc: "Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.",
+    statusLive: "Live",
+    statusDev: "In development",
+    statusPlanned: "Planned",
+    badgeSoon: "Coming soon",
+    footer: "Built for Waldorf physics education · Grades 10–12"
+  },
+  lv: {
+    title: "Fizikas simulāciju laboratorija",
+    heading: "Fizikas laboratorija",
+    subtitle: "Interaktīvas simulācijas elektrostatikas un citu tēmu izpētei",
+    sectionLabel: "Simulācijas",
+    tagElectrostatics: "Elektrostatika",
+    tagQuantization: "Lādiņa kvantēšana",
+    hockeyTitle: "Elektriskā lauka hokejs",
+    hockeyDesc: "Novieto pozitīvus un negatīvus lādiņus, lai ar Kulona spēku vadītu lādētu ripu cauri šķēršļiem uz vārtiem.",
+    millikanTitle: "Milikena eksperiments",
+    millikanDesc: "Līdzsvaro eļļas pilienus elektriskajā laukā, lai atklātu, ka lādiņš pastāv diskrētos lielumos — tieši kā Milikens 1913. gadā.",
+    fieldTitle: "Elektriskais lauks",
+    fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
+    statusLive: "Aktīvs",
+    statusDev: "Izstrādē",
+    statusPlanned: "Plānots",
+    badgeSoon: "Drīzumā",
+    footer: "Veidots Valdorfa fizikas izglītībai · 10.–12. klase"
+  }
+};
+
+// ═══════════ LANGUAGE SWITCH ═══════════
+function getDefaultLang() {
+  const saved = localStorage.getItem('physics-sims-lang');
+  if (saved) return saved;
+  const browserLang = navigator.language.toLowerCase();
+  return browserLang.startsWith('lv') ? 'lv' : 'en';
+}
+
+let currentLang = getDefaultLang();
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('physics-sims-lang', lang);
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (TRANSLATIONS[lang][key]) {
+      el.textContent = TRANSLATIONS[lang][key];
+    }
+  });
+
+  if (TRANSLATIONS[lang].title) {
+    document.title = TRANSLATIONS[lang].title;
+  }
+
+  document.querySelectorAll('.lang-switch button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  document.documentElement.lang = lang;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+  setLanguage(currentLang);
+  document.querySelectorAll('.lang-switch button').forEach(btn => {
+    btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+  });
+});
+</script>
+</body>
+</html>

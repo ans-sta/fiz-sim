@@ -1,0 +1,1857 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Electric Field Visualizer</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Language switch */
+      .lang-switch {
+        font-family: "Orbitron", monospace;
+        font-size: 12px;
+        letter-spacing: 1px;
+        margin-left: 12px;
+        display: flex;
+        align-items: center;
+      }
+      .lang-switch button {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px 6px;
+        transition: color 0.2s;
+        font-family: inherit;
+        font-size: inherit;
+      }
+      .lang-switch button:hover {
+        color: var(--text-dim);
+      }
+      .lang-switch button.active {
+        color: var(--accent);
+      }
+      .lang-switch .lang-sep {
+        color: var(--text-muted);
+      }
+
+      :root {
+        --bg: #060a14;
+        --panel: #0c1220;
+        --panel-border: #1a2540;
+        --accent: #00ccff;
+        --accent-dim: #00ccff44;
+        --positive: #ff3355;
+        --positive-glow: #ff335566;
+        --negative: #3388ff;
+        --negative-glow: #3388ff66;
+        --test-charge: #00ff88;
+        --test-charge-glow: #00ff8866;
+        --text: #c8d6e8;
+        --text-dim: #5a6d88;
+        --text-muted: #354050;
+        --radius: 8px;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Exo 2", sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+        display: flex;
+        flex-direction: column;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 10px 20px;
+        background: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
+        border-bottom: 1px solid var(--panel-border);
+        flex-shrink: 0;
+        min-height: 48px;
+      }
+      header h1 {
+        font-family: "Orbitron", monospace;
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, var(--accent), #66eeff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        white-space: nowrap;
+      }
+      header .subtitle {
+        font-size: 13px;
+        color: var(--text-dim);
+        font-style: italic;
+      }
+      header .spacer {
+        margin-left: auto;
+      }
+
+      #main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        width: 220px;
+        min-width: 220px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow-y: auto;
+        border-right: 1px solid var(--panel-border);
+        background: var(--panel);
+      }
+
+      .panel {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--panel-border);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+      }
+      .panel h3 {
+        font-family: "Orbitron", monospace;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--accent);
+        margin-bottom: 8px;
+      }
+
+      .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+      .btn-group button {
+        flex: 1;
+        min-width: 45%;
+      }
+
+      button {
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border: 1px solid var(--panel-border);
+        border-radius: 6px;
+        padding: 7px 10px;
+        font-family: "Exo 2", sans-serif;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s;
+        white-space: nowrap;
+      }
+      button:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--accent);
+      }
+      button.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      button.active-pos {
+        background: var(--positive-glow);
+        border-color: var(--positive);
+        color: #fff;
+      }
+      button.active-neg {
+        background: var(--negative-glow);
+        border-color: var(--negative);
+        color: #fff;
+      }
+
+      button.primary {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+      button.primary:hover {
+        background: rgba(0, 204, 255, 0.3);
+      }
+
+      button.danger {
+        border-color: #ff4466;
+        color: #ff6688;
+      }
+      button.danger:hover {
+        background: rgba(255, 68, 102, 0.2);
+        border-color: #ff6688;
+      }
+
+      .charge-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .charge-control input[type="range"] {
+        flex: 1;
+        accent-color: var(--accent);
+        height: 4px;
+      }
+      .charge-control span {
+        font-family: "Orbitron", monospace;
+        font-size: 11px;
+        min-width: 24px;
+        text-align: right;
+        color: var(--accent);
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        padding: 4px 0;
+        cursor: pointer;
+        color: var(--text-dim);
+      }
+      label:hover {
+        color: var(--text);
+      }
+
+      input[type="checkbox"] {
+        accent-color: var(--accent);
+        width: 14px;
+        height: 14px;
+      }
+
+      .info-text {
+        font-size: 11px;
+        color: var(--text-dim);
+        line-height: 1.6;
+      }
+      .info-text kbd {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--panel-border);
+        border-radius: 3px;
+        padding: 1px 5px;
+        font-size: 10px;
+        font-family: "Exo 2", sans-serif;
+      }
+
+      #canvas-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      canvas {
+        display: block;
+        border-radius: 6px;
+        box-shadow:
+          0 0 40px rgba(0, 204, 255, 0.05),
+          0 0 1px rgba(0, 204, 255, 0.3);
+        cursor: crosshair;
+      }
+
+      @media (max-width: 760px) {
+        #main {
+          flex-direction: column;
+        }
+        #sidebar {
+          width: 100%;
+          min-width: unset;
+          flex-direction: row;
+          flex-wrap: wrap;
+          border-right: none;
+          border-bottom: 1px solid var(--panel-border);
+          padding: 8px;
+          gap: 6px;
+          overflow-y: unset;
+          overflow-x: auto;
+        }
+        .panel {
+          min-width: 140px;
+          flex: 1;
+          padding: 8px;
+        }
+        #canvas-wrap {
+          padding: 6px;
+        }
+        header {
+          padding: 6px 12px;
+        }
+        header h1 {
+          font-size: 14px;
+        }
+        header .subtitle {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 data-i18n="heading">⚡ ELECTRIC FIELD</h1>
+      <span class="subtitle" data-i18n="subtitle"
+        >Place charges and explore the electric field</span
+      >
+      <span class="spacer"></span>
+      <div class="lang-switch">
+        <button data-lang="lv">LV</button>
+        <span class="lang-sep">|</span>
+        <button data-lang="en">EN</button>
+      </div>
+    </header>
+
+    <div id="main">
+      <div id="sidebar">
+        <!-- Field Charges -->
+        <div class="panel">
+          <h3 data-i18n="fieldCharges">Field Charges</h3>
+          <div class="btn-group" id="chargeBtns">
+            <button class="active-pos" data-charge="+1" data-i18n="positive">
+              ⊕ Positive
+            </button>
+            <button data-charge="-1" data-i18n="negative">⊖ Negative</button>
+          </div>
+          <div style="margin-top: 6px; font-size: 11px; color: var(--text-dim)">
+            <span data-i18n="chargesPlaced">Charges placed:</span>
+            <span id="chargeCount" style="color: var(--accent)">0</span>
+          </div>
+        </div>
+
+        <!-- Test Charge -->
+        <div class="panel">
+          <h3 data-i18n="testCharge">Test Charge</h3>
+          <button class="primary" id="btnAddTest" data-i18n="addTestCharge" style="width: 100%; margin-bottom: 8px">
+            + Add Test Charge
+          </button>
+          <div id="testChargeControls" style="display: none">
+            <div class="charge-control">
+              <input type="range" id="chargeSlider" min="-10" max="10" value="1" />
+              <span id="chargeVal">+1</span>
+            </div>
+            <div style="margin-top: 8px; font-size: 11px; color: var(--text-dim)">
+              <span data-i18n="dragToMove">Drag to move around field</span>
+            </div>
+            <button class="danger" id="btnRemoveTest" data-i18n="removeTestCharge" style="width: 100%; margin-top: 8px; font-size: 11px; padding: 5px">
+              ✕ Remove
+            </button>
+          </div>
+        </div>
+
+        <!-- Display Options -->
+        <div class="panel">
+          <h3 data-i18n="display">Display</h3>
+          <label
+            ><input type="checkbox" id="chkField" checked />
+            <span data-i18n="fieldVectors">Field Vectors</span></label
+          >
+          <label
+            ><input type="checkbox" id="chkFieldLines" />
+            <span data-i18n="fieldLines">Field Lines</span></label
+          >
+          <label
+            ><input type="checkbox" id="chkEquipotential" />
+            <span data-i18n="equipotential">Equipotential</span></label
+          >
+          <label
+            ><input type="checkbox" id="chkForce" checked />
+            <span data-i18n="forceArrow">Force Arrow</span></label
+          >
+        </div>
+
+        <!-- Clear -->
+        <div class="panel">
+          <button class="danger" id="btnClear" style="width: 100%" data-i18n="clearAll">
+            ✕ Clear All
+          </button>
+        </div>
+
+        <!-- Help -->
+        <div class="panel">
+          <h3 data-i18n="howToUse">How to Use</h3>
+          <div class="info-text" id="helpText">
+            <span data-i18n="helpClick"
+              >Click on the field to place charges.</span
+            ><br />
+            <span data-i18n="helpDrag">Drag charges to move them.</span><br />
+            <span data-i18n="helpRemove"
+              >Right-click a charge to remove it.</span
+            ><br />
+            <span data-i18n="helpTest"
+              >Add a test charge to explore forces.</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div id="canvas-wrap">
+        <canvas id="fieldCanvas"></canvas>
+      </div>
+    </div>
+
+    <script>
+      // ═══════════════════════════════════════════
+      //  TRANSLATIONS
+      // ═══════════════════════════════════════════
+      const TRANSLATIONS = {
+        en: {
+          title: "Electric Field Visualizer",
+          heading: "⚡ ELECTRIC FIELD",
+          subtitle: "Place charges and explore the electric field",
+          fieldCharges: "Field Charges",
+          testCharge: "Test Charge",
+          addTestCharge: "+ Add Test Charge",
+          removeTestCharge: "✕ Remove",
+          display: "Display",
+          howToUse: "How to Use",
+          positive: "⊕ Positive",
+          negative: "⊖ Negative",
+          chargesPlaced: "Charges placed:",
+          dragToMove: "Drag to move around field",
+          fieldVectors: "Field Vectors",
+          fieldLines: "Field Lines",
+          equipotential: "Equipotential",
+          forceArrow: "Force Arrow",
+          clearAll: "✕ Clear All",
+          helpClick: "Click on the field to place charges.",
+          helpDrag: "Drag charges to move them.",
+          helpRemove: "Right-click a charge to remove it.",
+          helpTest: "Add a test charge to explore forces.",
+        },
+        lv: {
+          title: "Elektriskā lauka vizualizētājs",
+          heading: "⚡ ELEKTRISKAIS LAUKS",
+          subtitle: "Novieto lādiņus un izpēti elektrisko lauku",
+          fieldCharges: "Lauka lādiņi",
+          testCharge: "Testa lādiņš",
+          addTestCharge: "+ Pievienot testa lādiņu",
+          removeTestCharge: "✕ Noņemt",
+          display: "Rādīt",
+          howToUse: "Kā lietot",
+          positive: "⊕ Pozitīvs",
+          negative: "⊖ Negatīvs",
+          chargesPlaced: "Lādiņu skaits:",
+          dragToMove: "Velc, lai pārvietotu pa lauku",
+          fieldVectors: "Lauka vektori",
+          fieldLines: "Lauka līnijas",
+          equipotential: "Ekvipotenciāles",
+          forceArrow: "Spēka vektors",
+          clearAll: "✕ Notīrīt visu",
+          helpClick: "Noklikšķini uz lauka, lai novietotu lādiņus.",
+          helpDrag: "Velc lādiņus, lai tos pārvietotu.",
+          helpRemove: "Ar labo klikšķi noņem lādiņu.",
+          helpTest: "Pievieno testa lādiņu, lai izpētītu spēkus.",
+        },
+      };
+
+      // ═══════════════════════════════════════════
+      //  LANGUAGE SWITCH
+      // ═══════════════════════════════════════════
+      function getDefaultLang() {
+        const saved = localStorage.getItem("physics-sims-lang");
+        if (saved) return saved;
+        const browserLang = navigator.language.toLowerCase();
+        return browserLang.startsWith("lv") ? "lv" : "en";
+      }
+
+      let currentLang = getDefaultLang();
+
+      function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem("physics-sims-lang", lang);
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.dataset.i18n;
+          if (TRANSLATIONS[lang][key]) {
+            el.innerHTML = TRANSLATIONS[lang][key];
+          }
+        });
+
+        if (TRANSLATIONS[lang].title) {
+          document.title = TRANSLATIONS[lang].title;
+        }
+
+        document.querySelectorAll(".lang-switch button").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.lang === lang);
+        });
+
+        document.documentElement.lang = lang;
+      }
+
+      function initLanguage() {
+        setLanguage(currentLang);
+        document.querySelectorAll(".lang-switch button").forEach((btn) => {
+          btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+        });
+      }
+
+      // ═══════════════════════════════════════════
+      //  CONFIGURATION
+      // ═══════════════════════════════════════════
+      const FIELD_W = 880;
+      const FIELD_H = 560;
+      const TEST_CHARGE_R = 14;
+      const CHARGE_R = 16;
+
+      // Physics
+      const COULOMB_K = 1000000;
+      const MIN_DIST = 22;
+
+      // Colors
+      const COL = {
+        bg: "#080d18",
+        grid: "rgba(100,160,255,0.04)",
+        border: "#6878a0",
+        positive: "#ff3355",
+        posBright: "#ff6b8a",
+        posGlow: "rgba(255,51,85,0.35)",
+        posCore: "rgba(255,150,170,0.8)",
+        negative: "#3388ff",
+        negBright: "#6ba3ff",
+        negGlow: "rgba(51,136,255,0.35)",
+        negCore: "rgba(150,180,255,0.8)",
+        testCharge: "#00ff88",
+        testChargeGlow: "rgba(0,255,136,0.4)",
+        forceArrow: "#ffcc00",
+        fieldLine: "rgba(255,170,100,0.6)",
+        equipotential: "rgba(100,255,200,0.5)",
+      };
+
+      // ═══════════════════════════════════════════
+      //  STATE
+      // ═══════════════════════════════════════════
+      const canvas = document.getElementById("fieldCanvas");
+      const ctx = canvas.getContext("2d");
+
+      let scale = 1;
+      let offsetX = 0,
+        offsetY = 0;
+
+      // State
+      let selectedCharge = +1;
+      let showField = true;
+      let showFieldLines = false;
+      let showEquipotential = false;
+      let showForce = true;
+
+      // Objects
+      let testCharge = null;
+      let charges = [];
+      let fieldCache = null;
+      let fieldCacheDirty = true;
+
+      // Interaction
+      let dragTarget = null; // { type:'charge'|'test', index } or null
+      let mouseField = { x: -1, y: -1 };
+      let mouseOnField = false;
+
+      // ═══════════════════════════════════════════
+      //  INITIALIZATION
+      // ═══════════════════════════════════════════
+      function addTestCharge() {
+        testCharge = {
+          x: FIELD_W / 2,
+          y: FIELD_H / 2,
+          charge: parseInt(document.getElementById("chargeSlider").value),
+          radius: TEST_CHARGE_R,
+        };
+        updateTestChargeUI();
+      }
+
+      function removeTestCharge() {
+        testCharge = null;
+        updateTestChargeUI();
+      }
+
+      function updateTestChargeUI() {
+        const addBtn = document.getElementById("btnAddTest");
+        const controls = document.getElementById("testChargeControls");
+        if (testCharge) {
+          addBtn.style.display = "none";
+          controls.style.display = "block";
+        } else {
+          addBtn.style.display = "block";
+          controls.style.display = "none";
+        }
+      }
+
+      function resizeCanvas() {
+        const wrap = document.getElementById("canvas-wrap");
+        const maxW = wrap.clientWidth - 10;
+        const maxH = wrap.clientHeight - 10;
+        const aspect = FIELD_W / FIELD_H;
+
+        let w, h;
+        if (maxW / maxH > aspect) {
+          h = maxH;
+          w = h * aspect;
+        } else {
+          w = maxW;
+          h = w / aspect;
+        }
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+
+        scale = w / FIELD_W;
+        offsetX = 0;
+        offsetY = 0;
+
+        ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+      }
+
+      // ═══════════════════════════════════════════
+      //  PHYSICS
+      // ═══════════════════════════════════════════
+      function computeForceOn(px, py, pCharge, excludeIndex) {
+        let fx = 0,
+          fy = 0;
+        for (let i = 0; i < charges.length; i++) {
+          if (i === excludeIndex) continue;
+          const c = charges[i];
+          let dx = px - c.x;
+          let dy = py - c.y;
+          let distSq = dx * dx + dy * dy;
+          let dist = Math.sqrt(distSq);
+          if (dist < MIN_DIST) dist = MIN_DIST;
+          distSq = dist * dist;
+
+          const forceMag = (COULOMB_K * pCharge * c.charge) / distSq;
+          fx += (forceMag * dx) / dist;
+          fy += (forceMag * dy) / dist;
+        }
+        return { fx, fy };
+      }
+
+      // ═══════════════════════════════════════════
+      //  FIELD VISUALIZATION
+      // ═══════════════════════════════════════════
+      function computeFieldGrid() {
+        if (!fieldCacheDirty && fieldCache) return fieldCache;
+
+        const spacing = 40;
+        const cols = Math.floor(FIELD_W / spacing);
+        const rows = Math.floor(FIELD_H / spacing);
+        const grid = [];
+
+        for (let r = 0; r <= rows; r++) {
+          for (let c = 0; c <= cols; c++) {
+            const x = c * spacing + spacing / 2;
+            const y = r * spacing + spacing / 2;
+            if (x > FIELD_W || y > FIELD_H) continue;
+
+            let ex = 0,
+              ey = 0;
+            for (const ch of charges) {
+              const dx = x - ch.x;
+              const dy = y - ch.y;
+              let dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < MIN_DIST) dist = MIN_DIST;
+              const eMag = (COULOMB_K * ch.charge) / (dist * dist);
+              ex += (eMag * dx) / dist;
+              ey += (eMag * dy) / dist;
+            }
+
+            const mag = Math.sqrt(ex * ex + ey * ey);
+            grid.push({ x, y, ex, ey, mag });
+          }
+        }
+
+        fieldCache = grid;
+        fieldCacheDirty = false;
+        return grid;
+      }
+
+      // ═══════════════════════════════════════════
+      //  RENDERING
+      // ═══════════════════════════════════════════
+      function render() {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = COL.bg;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+
+        drawFieldBackground();
+        if (showEquipotential && charges.length > 0) drawEquipotentialLines();
+        if (showFieldLines && charges.length > 0) drawFieldLines();
+        if (showField && charges.length > 0) drawFieldVectors();
+        drawCharges();
+        drawTestCharge();
+        if (showForce && charges.length > 0) drawForceArrow();
+        if (mouseOnField && !dragTarget) drawGhostCharge();
+      }
+
+      function drawFieldBackground() {
+        // Field area
+        ctx.fillStyle = "#0a1020";
+        ctx.fillRect(0, 0, FIELD_W, FIELD_H);
+
+        // Subtle grid
+        ctx.strokeStyle = COL.grid;
+        ctx.lineWidth = 0.5;
+        const spacing = 40;
+        for (let x = spacing; x < FIELD_W; x += spacing) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, FIELD_H);
+          ctx.stroke();
+        }
+        for (let y = spacing; y < FIELD_H; y += spacing) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(FIELD_W, y);
+          ctx.stroke();
+        }
+
+        // Border
+        ctx.strokeStyle = COL.border;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, FIELD_W, FIELD_H);
+      }
+
+      function drawCharges() {
+        for (let i = 0; i < charges.length; i++) {
+          const c = charges[i];
+          const isPos = c.charge > 0;
+          const color = isPos ? COL.positive : COL.negative;
+          const bright = isPos ? COL.posBright : COL.negBright;
+          const glow = isPos ? COL.posGlow : COL.negGlow;
+          const core = isPos ? COL.posCore : COL.negCore;
+
+          // Animated pulse
+          const pulsePhase = ((Date.now() + i * 200) % 1500) / 1500;
+          const pulseScale = 1 + Math.sin(pulsePhase * Math.PI * 2) * 0.08;
+
+          ctx.save();
+
+          // Outer glow rings
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 25;
+
+          ctx.globalAlpha = 0.2;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R * 1.8 * pulseScale, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.3;
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R * 1.4 * pulseScale, 0, Math.PI * 2);
+          ctx.stroke();
+
+          // Main circle with gradient
+          ctx.globalAlpha = 1;
+          const chargeGradient = ctx.createRadialGradient(
+            c.x - CHARGE_R * 0.3,
+            c.y - CHARGE_R * 0.3,
+            0,
+            c.x,
+            c.y,
+            CHARGE_R * 1.2
+          );
+          chargeGradient.addColorStop(0, core);
+          chargeGradient.addColorStop(0.4, glow);
+          chargeGradient.addColorStop(1, "rgba(0,0,0,0)");
+
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R * 1.1, 0, Math.PI * 2);
+          ctx.fillStyle = chargeGradient;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R, 0, Math.PI * 2);
+          ctx.strokeStyle = bright;
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, CHARGE_R - 3, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 0.4;
+          ctx.stroke();
+
+          ctx.restore();
+
+          // Symbol with glow
+          ctx.save();
+          ctx.shadowColor = bright;
+          ctx.shadowBlur = 8;
+          ctx.strokeStyle = bright;
+          ctx.lineCap = "round";
+          ctx.lineWidth = 3;
+          const symLen = 7;
+
+          ctx.beginPath();
+          ctx.moveTo(c.x - symLen, c.y);
+          ctx.lineTo(c.x + symLen, c.y);
+          ctx.stroke();
+
+          if (isPos) {
+            ctx.beginPath();
+            ctx.moveTo(c.x, c.y - symLen);
+            ctx.lineTo(c.x, c.y + symLen);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+
+      function drawTestCharge() {
+        if (!testCharge) return;
+
+        const isPositive = testCharge.charge >= 0;
+        const tcColor = isPositive ? COL.testCharge : "#ff6688";
+        const tcFill = isPositive
+          ? "rgba(0,255,136,0.2)"
+          : "rgba(255,102,136,0.2)";
+
+        ctx.save();
+        ctx.shadowColor = tcColor;
+        ctx.shadowBlur = 20;
+
+        ctx.beginPath();
+        ctx.arc(testCharge.x, testCharge.y, TEST_CHARGE_R, 0, Math.PI * 2);
+        ctx.fillStyle = tcFill;
+        ctx.fill();
+        ctx.strokeStyle = tcColor;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        ctx.restore();
+
+        // Symbol
+        ctx.strokeStyle = tcColor;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 2.5;
+        const symLen = 6;
+        ctx.beginPath();
+        ctx.moveTo(testCharge.x - symLen, testCharge.y);
+        ctx.lineTo(testCharge.x + symLen, testCharge.y);
+        ctx.stroke();
+        if (isPositive) {
+          ctx.beginPath();
+          ctx.moveTo(testCharge.x, testCharge.y - symLen);
+          ctx.lineTo(testCharge.x, testCharge.y + symLen);
+          ctx.stroke();
+        }
+
+        // Label
+        ctx.save();
+        ctx.font = "bold 9px Orbitron, monospace";
+        ctx.fillStyle = tcColor;
+        ctx.textAlign = "center";
+        ctx.globalAlpha = 0.7;
+        ctx.fillText("TEST", testCharge.x, testCharge.y + TEST_CHARGE_R + 12);
+        ctx.restore();
+      }
+
+      // ═══════════════════════════════════════════
+      //  FIELD LINES - trace paths following field direction
+      // ═══════════════════════════════════════════
+      function drawFieldLines() {
+        const linesPerCharge = 16;
+        const stepSize = 2; // Smaller steps for smoother curves
+        const maxSteps = 2000;
+
+        ctx.save();
+        ctx.strokeStyle = COL.fieldLine;
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+
+        // Helper: calculate field at a point
+        function getField(x, y) {
+          let ex = 0, ey = 0;
+          for (const c of charges) {
+            const dx = x - c.x;
+            const dy = y - c.y;
+            let distSq = dx * dx + dy * dy;
+            let dist = Math.sqrt(distSq);
+            if (dist < 1) dist = 1;
+            // Use 1/r² for magnitude, direction is (dx,dy)/dist
+            const eMag = c.charge / distSq;
+            ex += eMag * dx / dist;
+            ey += eMag * dy / dist;
+          }
+          const mag = Math.sqrt(ex * ex + ey * ey);
+          return { ex, ey, mag };
+        }
+
+        // Helper: distance to nearest charge of given sign
+        function distToCharge(x, y, chargeSign) {
+          let minDist = Infinity;
+          for (const c of charges) {
+            if (chargeSign !== undefined && Math.sign(c.charge) !== chargeSign) continue;
+            const dx = x - c.x;
+            const dy = y - c.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < minDist) minDist = dist;
+          }
+          return minDist;
+        }
+
+        // Helper: check if out of bounds
+        function outOfBounds(x, y) {
+          return x < -10 || x > FIELD_W + 10 || y < -10 || y > FIELD_H + 10;
+        }
+
+        // Trace a single field line using RK4 for better accuracy
+        function traceLine(startX, startY, direction, sourceCharge) {
+          let x = startX, y = startY;
+          const points = [{ x, y }];
+
+          for (let step = 0; step < maxSteps; step++) {
+            // RK4 integration for smoother curves
+            const k1 = getField(x, y);
+            if (k1.mag < 1e-10) break;
+
+            const dx1 = direction * k1.ex / k1.mag;
+            const dy1 = direction * k1.ey / k1.mag;
+
+            const k2 = getField(x + dx1 * stepSize / 2, y + dy1 * stepSize / 2);
+            if (k2.mag < 1e-10) break;
+
+            const dx2 = direction * k2.ex / k2.mag;
+            const dy2 = direction * k2.ey / k2.mag;
+
+            const k3 = getField(x + dx2 * stepSize / 2, y + dy2 * stepSize / 2);
+            if (k3.mag < 1e-10) break;
+
+            const dx3 = direction * k3.ex / k3.mag;
+            const dy3 = direction * k3.ey / k3.mag;
+
+            const k4 = getField(x + dx3 * stepSize, y + dy3 * stepSize);
+            if (k4.mag < 1e-10) break;
+
+            const dx4 = direction * k4.ex / k4.mag;
+            const dy4 = direction * k4.ey / k4.mag;
+
+            // RK4 weighted average
+            x += stepSize * (dx1 + 2*dx2 + 2*dx3 + dx4) / 6;
+            y += stepSize * (dy1 + 2*dy2 + 2*dy3 + dy4) / 6;
+
+            // Check if reached a negative charge (for positive source)
+            if (direction > 0) {
+              const distNeg = distToCharge(x, y, -1);
+              if (distNeg < CHARGE_R) {
+                points.push({ x, y });
+                break;
+              }
+            }
+
+            // Check if reached a positive charge (for negative source / reverse trace)
+            if (direction < 0) {
+              const distPos = distToCharge(x, y, 1);
+              if (distPos < CHARGE_R) {
+                points.push({ x, y });
+                break;
+              }
+            }
+
+            // Check if getting too close to same-sign charge (other than source)
+            const distSame = distToCharge(x, y, direction > 0 ? 1 : -1);
+            if (distSame < CHARGE_R * 1.5) {
+              // Check if it's not our source charge
+              const distToSource = Math.sqrt((x - sourceCharge.x) ** 2 + (y - sourceCharge.y) ** 2);
+              if (distToSource > CHARGE_R * 2) {
+                // We're near another same-sign charge, stop
+                break;
+              }
+            }
+
+            points.push({ x, y });
+
+            // Stop if out of bounds
+            if (outOfBounds(x, y)) break;
+          }
+
+          return points;
+        }
+
+        // Helper: draw arrowhead at position with given direction
+        function drawArrow(x, y, dx, dy) {
+          const arrowSize = 8;
+          const angle = Math.atan2(dy, dx);
+          const angle1 = angle + Math.PI * 0.8;
+          const angle2 = angle - Math.PI * 0.8;
+
+          ctx.beginPath();
+          ctx.moveTo(x + Math.cos(angle1) * arrowSize, y + Math.sin(angle1) * arrowSize);
+          ctx.lineTo(x, y);
+          ctx.lineTo(x + Math.cos(angle2) * arrowSize, y + Math.sin(angle2) * arrowSize);
+          ctx.stroke();
+        }
+
+        // Helper: draw line with arrows at 1/3 and 2/3 positions
+        function drawLineWithArrows(points, direction) {
+          if (points.length < 2) return;
+
+          // Draw the line
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let j = 1; j < points.length; j++) {
+            ctx.lineTo(points[j].x, points[j].y);
+          }
+          ctx.stroke();
+
+          // Calculate cumulative distances
+          const distances = [0];
+          let totalLength = 0;
+          for (let j = 1; j < points.length; j++) {
+            const dx = points[j].x - points[j-1].x;
+            const dy = points[j].y - points[j-1].y;
+            totalLength += Math.sqrt(dx * dx + dy * dy);
+            distances.push(totalLength);
+          }
+
+          if (totalLength < 30) return; // Too short for arrows
+
+          // Find points at 1/3 and 2/3
+          const targetDistances = [totalLength / 3, totalLength * 2 / 3];
+
+          for (const targetDist of targetDistances) {
+            // Find segment containing this distance
+            for (let j = 1; j < distances.length; j++) {
+              if (distances[j] >= targetDist) {
+                // Interpolate position
+                const segmentStart = distances[j-1];
+                const segmentLength = distances[j] - segmentStart;
+                const t = (targetDist - segmentStart) / segmentLength;
+
+                const px = points[j-1].x + t * (points[j].x - points[j-1].x);
+                const py = points[j-1].y + t * (points[j].y - points[j-1].y);
+
+                // Direction along line (positive = away from positive charge)
+                const dx = points[j].x - points[j-1].x;
+                const dy = points[j].y - points[j-1].y;
+
+                drawArrow(px, py, dx * direction, dy * direction);
+                break;
+              }
+            }
+          }
+        }
+
+        // Count positive and negative charges
+        const posCharges = charges.filter(c => c.charge > 0);
+        const negCharges = charges.filter(c => c.charge < 0);
+
+        // Draw field lines from positive charges
+        for (const charge of posCharges) {
+          for (let i = 0; i < linesPerCharge; i++) {
+            const angle = (i / linesPerCharge) * Math.PI * 2;
+            const startX = charge.x + Math.cos(angle) * (CHARGE_R + 2);
+            const startY = charge.y + Math.sin(angle) * (CHARGE_R + 2);
+
+            const points = traceLine(startX, startY, 1, charge);
+            drawLineWithArrows(points, 1);
+          }
+        }
+
+        // Draw field lines TO negative charges from infinity
+        // For each negative charge, trace backward to find where lines come from
+        for (const charge of negCharges) {
+          for (let i = 0; i < linesPerCharge; i++) {
+            const angle = (i / linesPerCharge) * Math.PI * 2;
+            const startX = charge.x + Math.cos(angle) * (CHARGE_R + 2);
+            const startY = charge.y + Math.sin(angle) * (CHARGE_R + 2);
+
+            // Trace backward (against field direction)
+            const points = traceLine(startX, startY, -1, charge);
+
+            // Check if this line reached a positive charge
+            if (points.length > 2) {
+              const endPt = points[points.length - 1];
+              let reachedPositive = false;
+              for (const pc of posCharges) {
+                const dx = endPt.x - pc.x;
+                const dy = endPt.y - pc.y;
+                if (dx * dx + dy * dy < CHARGE_R * CHARGE_R * 4) {
+                  reachedPositive = true;
+                  break;
+                }
+              }
+
+              // Only draw if this line comes from infinity (not from a positive charge)
+              if (!reachedPositive && points.length > 10) {
+                const reversed = points.slice().reverse();
+                drawLineWithArrows(reversed, 1);
+              }
+            }
+          }
+        }
+
+        ctx.restore();
+      }
+
+      // ═══════════════════════════════════════════
+      //  EQUIPOTENTIAL LINES - Marching Squares Contours
+      // ═══════════════════════════════════════════
+      let potentialGridCache = null;
+      let potentialCacheDirty = true;
+      const POTENTIAL_GRID_SPACING = 6;
+
+      function invalidatePotentialCache() {
+        potentialCacheDirty = true;
+      }
+
+      function computePotentialGrid() {
+        if (!potentialCacheDirty && potentialGridCache) return potentialGridCache;
+        potentialCacheDirty = false;
+
+        const cols = Math.ceil(FIELD_W / POTENTIAL_GRID_SPACING) + 1;
+        const rows = Math.ceil(FIELD_H / POTENTIAL_GRID_SPACING) + 1;
+        const grid = [];
+
+        for (let r = 0; r < rows; r++) {
+          const row = [];
+          for (let c = 0; c < cols; c++) {
+            const x = c * POTENTIAL_GRID_SPACING;
+            const y = r * POTENTIAL_GRID_SPACING;
+
+            // Calculate potential at this point
+            let v = 0;
+            let nearCharge = false;
+            for (const ch of charges) {
+              const dx = x - ch.x;
+              const dy = y - ch.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              if (dist < CHARGE_R) {
+                nearCharge = true;
+                break;
+              }
+              v += COULOMB_K * ch.charge / dist;
+            }
+
+            row.push(nearCharge ? null : v);
+          }
+          grid.push(row);
+        }
+
+        potentialGridCache = { grid, cols, rows };
+        return potentialGridCache;
+      }
+
+      function selectContourLevels(grid) {
+        // Collect valid potential values
+        const values = [];
+        for (const row of grid.grid) {
+          for (const v of row) {
+            if (v !== null && isFinite(v)) values.push(v);
+          }
+        }
+        if (values.length === 0) return [];
+
+        values.sort((a, b) => a - b);
+
+        // Find range excluding extremes
+        const minV = values[Math.floor(values.length * 0.05)];
+        const maxV = values[Math.floor(values.length * 0.95)];
+
+        const levels = [];
+        const numLevels = 16;
+
+        // Generate levels with spacing that works well visually
+        if (maxV > 0) {
+          for (let i = 1; i <= numLevels / 2; i++) {
+            const t = i / (numLevels / 2 + 1);
+            levels.push(maxV * t * t); // Quadratic spacing for positive
+          }
+        }
+        if (minV < 0) {
+          for (let i = 1; i <= numLevels / 2; i++) {
+            const t = i / (numLevels / 2 + 1);
+            levels.push(minV * t * t); // Quadratic spacing for negative
+          }
+        }
+
+        return levels.sort((a, b) => a - b);
+      }
+
+      function traceContourSegments(gridData, level) {
+        const { grid, cols, rows } = gridData;
+        const segments = [];
+        const spacing = POTENTIAL_GRID_SPACING;
+
+        // Marching squares: for each cell, find contour crossings
+        for (let r = 0; r < rows - 1; r++) {
+          for (let c = 0; c < cols - 1; c++) {
+            const v00 = grid[r][c];
+            const v10 = grid[r][c + 1];
+            const v01 = grid[r + 1][c];
+            const v11 = grid[r + 1][c + 1];
+
+            // Skip cells with singularities
+            if (v00 === null || v10 === null || v01 === null || v11 === null) continue;
+
+            // Classify corners (1 = above level, 0 = below)
+            const b00 = v00 > level ? 1 : 0;
+            const b10 = v10 > level ? 1 : 0;
+            const b01 = v01 > level ? 1 : 0;
+            const b11 = v11 > level ? 1 : 0;
+
+            const caseIndex = b00 | (b10 << 1) | (b01 << 2) | (b11 << 3);
+
+            // Skip if all corners same side (no contour)
+            if (caseIndex === 0 || caseIndex === 15) continue;
+
+            const x0 = c * spacing;
+            const y0 = r * spacing;
+
+            // Interpolate edge crossings
+            const lerp = (va, vb, x1, y1, x2, y2) => {
+              const t = (level - va) / (vb - va);
+              return { x: x1 + t * (x2 - x1), y: y1 + t * (y2 - y1) };
+            };
+
+            // Edge midpoints (will interpolate)
+            let top = null, bottom = null, left = null, right = null;
+
+            if (b00 !== b10) top = lerp(v00, v10, x0, y0, x0 + spacing, y0);
+            if (b01 !== b11) bottom = lerp(v01, v11, x0, y0 + spacing, x0 + spacing, y0 + spacing);
+            if (b00 !== b01) left = lerp(v00, v01, x0, y0, x0, y0 + spacing);
+            if (b10 !== b11) right = lerp(v10, v11, x0 + spacing, y0, x0 + spacing, y0 + spacing);
+
+            // Connect crossings based on case
+            // Case index: b00 | (b10<<1) | (b01<<2) | (b11<<3)
+            // b00=top-left, b10=top-right, b01=bottom-left, b11=bottom-right
+            const addSeg = (p1, p2) => { if (p1 && p2) segments.push([p1, p2]); };
+
+            switch (caseIndex) {
+              case 1: case 14: addSeg(top, left); break;
+              case 2: case 13: addSeg(top, right); break;
+              case 3: case 12: addSeg(left, right); break;
+              case 4: case 11: addSeg(left, bottom); break;
+              case 5: case 10: addSeg(top, bottom); break;
+              case 7: case 8: addSeg(right, bottom); break;
+              case 6: case 9: // Saddle cases - diagonal corners above
+                const avg = (v00 + v10 + v01 + v11) / 4;
+                if (caseIndex === 6) {
+                  // top-right and bottom-left above
+                  if (avg > level) {
+                    addSeg(top, right); addSeg(left, bottom);
+                  } else {
+                    addSeg(top, left); addSeg(right, bottom);
+                  }
+                } else {
+                  // case 9: top-left and bottom-right above
+                  if (avg > level) {
+                    addSeg(top, left); addSeg(right, bottom);
+                  } else {
+                    addSeg(top, right); addSeg(left, bottom);
+                  }
+                }
+                break;
+            }
+          }
+        }
+
+        return segments;
+      }
+
+      function chainSegments(segments) {
+        if (segments.length === 0) return [];
+
+        const tolerance = 1.0;
+        const chains = [];
+        const used = new Set();
+
+        // Build spatial index for fast endpoint lookup
+        const endpointMap = new Map();
+        const keyFor = (p) => `${Math.round(p.x)},${Math.round(p.y)}`;
+
+        for (let i = 0; i < segments.length; i++) {
+          const [p1, p2] = segments[i];
+          const k1 = keyFor(p1);
+          const k2 = keyFor(p2);
+          if (!endpointMap.has(k1)) endpointMap.set(k1, []);
+          if (!endpointMap.has(k2)) endpointMap.set(k2, []);
+          endpointMap.get(k1).push({ idx: i, end: 0 });
+          endpointMap.get(k2).push({ idx: i, end: 1 });
+        }
+
+        for (let startIdx = 0; startIdx < segments.length; startIdx++) {
+          if (used.has(startIdx)) continue;
+
+          const chain = [segments[startIdx][0], segments[startIdx][1]];
+          used.add(startIdx);
+
+          // Extend chain forward
+          let extended = true;
+          while (extended) {
+            extended = false;
+            const lastPt = chain[chain.length - 1];
+            const key = keyFor(lastPt);
+            const candidates = endpointMap.get(key) || [];
+
+            for (const { idx, end } of candidates) {
+              if (used.has(idx)) continue;
+              const seg = segments[idx];
+              const matchPt = seg[end];
+              const otherPt = seg[1 - end];
+
+              if (Math.abs(matchPt.x - lastPt.x) < tolerance &&
+                  Math.abs(matchPt.y - lastPt.y) < tolerance) {
+                chain.push(otherPt);
+                used.add(idx);
+                extended = true;
+                break;
+              }
+            }
+          }
+
+          // Extend chain backward
+          extended = true;
+          while (extended) {
+            extended = false;
+            const firstPt = chain[0];
+            const key = keyFor(firstPt);
+            const candidates = endpointMap.get(key) || [];
+
+            for (const { idx, end } of candidates) {
+              if (used.has(idx)) continue;
+              const seg = segments[idx];
+              const matchPt = seg[end];
+              const otherPt = seg[1 - end];
+
+              if (Math.abs(matchPt.x - firstPt.x) < tolerance &&
+                  Math.abs(matchPt.y - firstPt.y) < tolerance) {
+                chain.unshift(otherPt);
+                used.add(idx);
+                extended = true;
+                break;
+              }
+            }
+          }
+
+          chains.push(chain);
+        }
+
+        return chains;
+      }
+
+      function drawEquipotentialLines() {
+        const gridData = computePotentialGrid();
+        const levels = selectContourLevels(gridData);
+
+        ctx.save();
+        ctx.lineWidth = 1.2;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        for (const level of levels) {
+          const segments = traceContourSegments(gridData, level);
+          const chains = chainSegments(segments);
+
+          // Color based on potential sign
+          if (level > 0) {
+            ctx.strokeStyle = "rgba(255,140,140,0.6)";
+          } else {
+            ctx.strokeStyle = "rgba(140,180,255,0.6)";
+          }
+
+          // Draw continuous chains
+          for (const chain of chains) {
+            if (chain.length < 2) continue;
+            ctx.beginPath();
+            ctx.moveTo(chain[0].x, chain[0].y);
+            for (let i = 1; i < chain.length; i++) {
+              ctx.lineTo(chain[i].x, chain[i].y);
+            }
+            ctx.stroke();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      function drawFieldVectors() {
+        const grid = computeFieldGrid();
+        if (!grid.length) return;
+
+        const maxMag = Math.max(...grid.map((g) => g.mag), 1);
+        const arrowLen = 42;
+
+        for (const pt of grid) {
+          if (pt.mag < 0.01) continue;
+
+          const strength = Math.min(pt.mag / maxMag, 1);
+          const len = arrowLen * Math.pow(strength, 0.35);
+          const angle = Math.atan2(pt.ey, pt.ex);
+
+          const endX = pt.x + Math.cos(angle) * len;
+          const endY = pt.y + Math.sin(angle) * len;
+
+          const hue = 180 + strength * 20;
+          const lightness = 50 + strength * 20;
+          const alpha = 0.25 + strength * 0.5;
+
+          ctx.save();
+
+          if (strength > 0.5) {
+            ctx.shadowColor = `hsla(${hue}, 100%, ${lightness}%, 0.4)`;
+            ctx.shadowBlur = 4;
+          }
+
+          const arrowGradient = ctx.createLinearGradient(pt.x, pt.y, endX, endY);
+          arrowGradient.addColorStop(
+            0,
+            `hsla(${hue}, 80%, ${lightness}%, ${alpha * 0.3})`
+          );
+          arrowGradient.addColorStop(
+            1,
+            `hsla(${hue}, 100%, ${lightness}%, ${alpha})`
+          );
+
+          ctx.strokeStyle = arrowGradient;
+          ctx.lineWidth = 0.8 + strength * 0.8;
+          ctx.lineCap = "round";
+
+          ctx.beginPath();
+          ctx.moveTo(pt.x, pt.y);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+
+          const headLen = 4 + strength * 3;
+          const headAngle = 0.5;
+          ctx.fillStyle = `hsla(${hue}, 100%, ${lightness}%, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(endX, endY);
+          ctx.lineTo(
+            endX - Math.cos(angle - headAngle) * headLen,
+            endY - Math.sin(angle - headAngle) * headLen
+          );
+          ctx.lineTo(
+            endX - Math.cos(angle + headAngle) * headLen,
+            endY - Math.sin(angle + headAngle) * headLen
+          );
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.restore();
+        }
+      }
+
+      function drawForceArrow() {
+        if (!testCharge) return;
+        const { fx, fy } = computeForceOn(
+          testCharge.x,
+          testCharge.y,
+          testCharge.charge,
+          -1
+        );
+        const mag = Math.sqrt(fx * fx + fy * fy);
+        if (mag < 0.1) return;
+
+        // Scale arrow length - 5x longer, max 400px
+        const maxArrowLen = 400;
+        const arrowLen = Math.min(mag * 0.1, maxArrowLen);
+        const angle = Math.atan2(fy, fx);
+
+        // Scale line width with arrow length (2 to 6 pixels)
+        const lineWidth = 2 + (arrowLen / maxArrowLen) * 4;
+
+        const endX = testCharge.x + Math.cos(angle) * arrowLen;
+        const endY = testCharge.y + Math.sin(angle) * arrowLen;
+
+        ctx.save();
+        ctx.strokeStyle = COL.forceArrow;
+        ctx.fillStyle = COL.forceArrow;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = "round";
+        ctx.shadowColor = COL.forceArrow;
+        ctx.shadowBlur = 6 + lineWidth;
+
+        ctx.beginPath();
+        ctx.moveTo(testCharge.x, testCharge.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Scale arrowhead with line width
+        const headLen = 8 + lineWidth * 2;
+        const headAngle = 0.4;
+        ctx.beginPath();
+        ctx.moveTo(endX, endY);
+        ctx.lineTo(
+          endX - Math.cos(angle - headAngle) * headLen,
+          endY - Math.sin(angle - headAngle) * headLen
+        );
+        ctx.lineTo(
+          endX - Math.cos(angle + headAngle) * headLen,
+          endY - Math.sin(angle + headAngle) * headLen
+        );
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawGhostCharge() {
+        if (mouseField.x < 0 || mouseField.y < 0) return;
+        if (mouseField.x > FIELD_W || mouseField.y > FIELD_H) return;
+
+        const isPos = selectedCharge > 0;
+        const color = isPos ? COL.positive : COL.negative;
+
+        ctx.save();
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(mouseField.x, mouseField.y, CHARGE_R, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.strokeStyle = color;
+        ctx.lineCap = "round";
+        ctx.lineWidth = 3;
+        const symLen = 8;
+        ctx.beginPath();
+        ctx.moveTo(mouseField.x - symLen, mouseField.y);
+        ctx.lineTo(mouseField.x + symLen, mouseField.y);
+        ctx.stroke();
+        if (isPos) {
+          ctx.beginPath();
+          ctx.moveTo(mouseField.x, mouseField.y - symLen);
+          ctx.lineTo(mouseField.x, mouseField.y + symLen);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // ═══════════════════════════════════════════
+      //  INPUT HANDLING
+      // ═══════════════════════════════════════════
+      function canvasToField(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (clientX - rect.left) / scale - offsetX;
+        const y = (clientY - rect.top) / scale - offsetY;
+        return { x, y };
+      }
+
+      function findChargeAt(fx, fy) {
+        for (let i = charges.length - 1; i >= 0; i--) {
+          const c = charges[i];
+          const dx = fx - c.x;
+          const dy = fy - c.y;
+          if (dx * dx + dy * dy < (CHARGE_R + 8) * (CHARGE_R + 8)) return i;
+        }
+        return -1;
+      }
+
+      function isOnTestCharge(fx, fy) {
+        if (!testCharge) return false;
+        const dx = fx - testCharge.x;
+        const dy = fy - testCharge.y;
+        return dx * dx + dy * dy < (TEST_CHARGE_R + 8) * (TEST_CHARGE_R + 8);
+      }
+
+      // Mouse events
+      canvas.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        const { x, y } = canvasToField(e.clientX, e.clientY);
+
+        if (e.button === 2) {
+          // Right-click: remove charge
+          const idx = findChargeAt(x, y);
+          if (idx >= 0) {
+            charges.splice(idx, 1);
+            fieldCacheDirty = true;
+            invalidatePotentialCache();
+            updateChargeCount();
+          }
+          return;
+        }
+
+        // Check test charge first
+        if (isOnTestCharge(x, y)) {
+          dragTarget = { type: "test", ox: testCharge.x - x, oy: testCharge.y - y };
+          return;
+        }
+
+        // Check existing charges
+        const idx = findChargeAt(x, y);
+        if (idx >= 0) {
+          dragTarget = {
+            type: "charge",
+            index: idx,
+            ox: charges[idx].x - x,
+            oy: charges[idx].y - y,
+          };
+        } else if (x > 0 && x < FIELD_W && y > 0 && y < FIELD_H) {
+          // Place new charge
+          charges.push({ x, y, charge: selectedCharge });
+          fieldCacheDirty = true;
+          invalidatePotentialCache();
+          updateChargeCount();
+          dragTarget = {
+            type: "charge",
+            index: charges.length - 1,
+            ox: 0,
+            oy: 0,
+          };
+        }
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        const { x, y } = canvasToField(e.clientX, e.clientY);
+        mouseField.x = x;
+        mouseField.y = y;
+        mouseOnField = x >= 0 && x <= FIELD_W && y >= 0 && y <= FIELD_H;
+
+        if (dragTarget) {
+          if (dragTarget.type === "test") {
+            testCharge.x = Math.max(
+              TEST_CHARGE_R,
+              Math.min(FIELD_W - TEST_CHARGE_R, x + dragTarget.ox)
+            );
+            testCharge.y = Math.max(
+              TEST_CHARGE_R,
+              Math.min(FIELD_H - TEST_CHARGE_R, y + dragTarget.oy)
+            );
+          } else if (dragTarget.type === "charge") {
+            const c = charges[dragTarget.index];
+            if (c) {
+              c.x = Math.max(CHARGE_R, Math.min(FIELD_W - CHARGE_R, x + dragTarget.ox));
+              c.y = Math.max(CHARGE_R, Math.min(FIELD_H - CHARGE_R, y + dragTarget.oy));
+              fieldCacheDirty = true;
+              invalidatePotentialCache();
+            }
+          }
+        }
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        dragTarget = null;
+      });
+
+      canvas.addEventListener("mouseleave", () => {
+        mouseOnField = false;
+        dragTarget = null;
+      });
+
+      canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      // Touch events
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const { x, y } = canvasToField(touch.clientX, touch.clientY);
+
+          if (isOnTestCharge(x, y)) {
+            dragTarget = { type: "test", ox: testCharge.x - x, oy: testCharge.y - y };
+            return;
+          }
+
+          const idx = findChargeAt(x, y);
+          if (idx >= 0) {
+            dragTarget = {
+              type: "charge",
+              index: idx,
+              ox: charges[idx].x - x,
+              oy: charges[idx].y - y,
+            };
+          } else if (x > 0 && x < FIELD_W && y > 0 && y < FIELD_H) {
+            charges.push({ x, y, charge: selectedCharge });
+            fieldCacheDirty = true;
+            invalidatePotentialCache();
+            updateChargeCount();
+            dragTarget = {
+              type: "charge",
+              index: charges.length - 1,
+              ox: 0,
+              oy: 0,
+            };
+          }
+        },
+        { passive: false }
+      );
+
+      canvas.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          const touch = e.touches[0];
+          const { x, y } = canvasToField(touch.clientX, touch.clientY);
+          mouseField.x = x;
+          mouseField.y = y;
+          mouseOnField = true;
+
+          if (dragTarget) {
+            if (dragTarget.type === "test") {
+              testCharge.x = Math.max(
+                TEST_CHARGE_R,
+                Math.min(FIELD_W - TEST_CHARGE_R, x + dragTarget.ox)
+              );
+              testCharge.y = Math.max(
+                TEST_CHARGE_R,
+                Math.min(FIELD_H - TEST_CHARGE_R, y + dragTarget.oy)
+              );
+            } else if (dragTarget.type === "charge") {
+              const c = charges[dragTarget.index];
+              if (c) {
+                c.x = Math.max(CHARGE_R, Math.min(FIELD_W - CHARGE_R, x + dragTarget.ox));
+                c.y = Math.max(CHARGE_R, Math.min(FIELD_H - CHARGE_R, y + dragTarget.oy));
+                fieldCacheDirty = true;
+                invalidatePotentialCache();
+              }
+            }
+          }
+        },
+        { passive: false }
+      );
+
+      canvas.addEventListener("touchend", () => {
+        dragTarget = null;
+        mouseOnField = false;
+      });
+
+      // Long press to remove (mobile)
+      let longPressTimer = null;
+      canvas.addEventListener(
+        "touchstart",
+        (e) => {
+          const touch = e.touches[0];
+          const { x, y } = canvasToField(touch.clientX, touch.clientY);
+          const idx = findChargeAt(x, y);
+          if (idx >= 0) {
+            longPressTimer = setTimeout(() => {
+              charges.splice(idx, 1);
+              fieldCacheDirty = true;
+              invalidatePotentialCache();
+              updateChargeCount();
+              dragTarget = null;
+            }, 500);
+          }
+        },
+        { passive: true }
+      );
+      canvas.addEventListener("touchend", () => {
+        clearTimeout(longPressTimer);
+      });
+      canvas.addEventListener(
+        "touchmove",
+        () => {
+          clearTimeout(longPressTimer);
+        },
+        { passive: true }
+      );
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (e) => {
+        if (e.code === "KeyF") {
+          showField = !showField;
+          document.getElementById("chkField").checked = showField;
+        } else if (e.code === "KeyC") {
+          doClear();
+        }
+      });
+
+      // ═══════════════════════════════════════════
+      //  UI CONTROLS
+      // ═══════════════════════════════════════════
+      function updateChargeCount() {
+        document.getElementById("chargeCount").textContent = charges.length;
+      }
+
+      function doClear() {
+        charges = [];
+        testCharge = null;
+        fieldCacheDirty = true;
+        invalidatePotentialCache();
+        updateChargeCount();
+        updateTestChargeUI();
+      }
+
+      // Charge type buttons
+      document.getElementById("chargeBtns").addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        document.querySelectorAll("#chargeBtns button").forEach((b) => {
+          b.classList.remove("active-pos", "active-neg");
+        });
+        const val = parseFloat(btn.dataset.charge);
+        selectedCharge = val;
+        btn.classList.add(val > 0 ? "active-pos" : "active-neg");
+      });
+
+      // Clear button
+      document.getElementById("btnClear").addEventListener("click", doClear);
+
+      // Add test charge button
+      document.getElementById("btnAddTest").addEventListener("click", addTestCharge);
+
+      // Remove test charge button
+      document.getElementById("btnRemoveTest").addEventListener("click", removeTestCharge);
+
+      // Test charge slider
+      document.getElementById("chargeSlider").addEventListener("input", (e) => {
+        const val = parseInt(e.target.value);
+        if (testCharge) {
+          testCharge.charge = val;
+        }
+        document.getElementById("chargeVal").textContent =
+          val > 0 ? "+" + val : val;
+      });
+
+      // Display checkboxes
+      document.getElementById("chkField").addEventListener("change", (e) => {
+        showField = e.target.checked;
+      });
+      document.getElementById("chkFieldLines").addEventListener("change", (e) => {
+        showFieldLines = e.target.checked;
+      });
+      document.getElementById("chkEquipotential").addEventListener("change", (e) => {
+        showEquipotential = e.target.checked;
+      });
+      document.getElementById("chkForce").addEventListener("change", (e) => {
+        showForce = e.target.checked;
+      });
+
+      // ═══════════════════════════════════════════
+      //  RENDER LOOP
+      // ═══════════════════════════════════════════
+      function loop() {
+        render();
+        requestAnimationFrame(loop);
+      }
+
+      // ═══════════════════════════════════════════
+      //  START
+      // ═══════════════════════════════════════════
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      initLanguage();
+      updateTestChargeUI();
+      loop();
+    </script>
+  </body>
+</html>

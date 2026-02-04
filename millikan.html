@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Millikan Oil Drop Experiment</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Language switch */
+    .lang-switch {
+      position: fixed;
+      top: 12px;
+      right: 16px;
+      z-index: 100;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+    .lang-switch button {
+      background: none;
+      border: none;
+      color: #555;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: color 0.2s;
+      font-family: inherit;
+      font-size: inherit;
+    }
+    .lang-switch button:hover { color: #888; }
+    .lang-switch button.active { color: #daa520; }
+    .lang-switch .lang-sep { color: #444; }
+
+    body {
+      background: #1a1a2e;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+      color: #ccc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      color: #daa520;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Microscope viewport */
+    .microscope-container {
+      position: relative;
+      width: min(90vw, 450px);
+      height: min(90vw, 450px);
+      margin-bottom: 20px;
+    }
+
+    .microscope-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #3a3a4a, #252535);
+      box-shadow:
+        0 0 0 8px #2a2a3a,
+        0 0 0 12px #3a3a4a,
+        inset 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    #microscope {
+      position: absolute;
+      inset: 15px;
+      border-radius: 50%;
+    }
+
+    /* Controls panel */
+    .controls {
+      width: min(90vw, 450px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Knobs row */
+    .knobs-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .knob-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .knob-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .knob-wrapper {
+      position: relative;
+    }
+
+    .knob {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.1s;
+    }
+
+    .knob:active {
+      transform: scale(0.98);
+    }
+
+    .knob::after {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 20px;
+      background: linear-gradient(to bottom, #daa520, #b8860b);
+      border-radius: 2px;
+    }
+
+    .knob-readout {
+      background: #0a0a0f;
+      border: 2px solid #3a3a4a;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      color: #daa520;
+      min-width: 90px;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Button row */
+    .button-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    /* Spray button */
+    .spray-btn {
+      background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
+      border: none;
+      border-radius: 8px;
+      padding: 15px 30px;
+      color: #daa520;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+      transition: all 0.1s;
+    }
+
+    .spray-btn:active {
+      transform: scale(0.96) translateY(2px);
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    }
+
+    /* Ionize button */
+    .ionize-btn {
+      background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
+      border: none;
+      border-radius: 8px;
+      width: 52px;
+      height: 52px;
+      color: #daa520;
+      cursor: pointer;
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+      transition: all 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ionize-btn:active {
+      transform: scale(0.96) translateY(2px);
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    }
+
+    .ionize-btn svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    /* Ionization flash effect */
+    .microscope-container.ionize-flash .microscope-frame {
+      box-shadow:
+        0 0 0 8px #2a2a3a,
+        0 0 0 12px #3a3a4a,
+        inset 0 0 30px rgba(0,0,0,0.5),
+        inset 0 0 60px rgba(100, 200, 255, 0.3);
+    }
+
+    /* Nixie tube display */
+    .nixie-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nixie-tubes {
+      display: flex;
+      gap: 4px;
+      background: #0a0a0f;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 2px solid #3a3a4a;
+    }
+
+    .nixie-tube {
+      width: 36px;
+      height: 54px;
+      background: radial-gradient(ellipse at center, #1a1008 0%, #0a0a0f 70%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    }
+
+    .nixie-tube::before {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 6px;
+      background: linear-gradient(to bottom,
+        rgba(255,140,0,0.05) 0%,
+        transparent 30%,
+        transparent 70%,
+        rgba(255,140,0,0.03) 100%);
+      pointer-events: none;
+    }
+
+    .nixie-digit {
+      font-family: 'Courier New', monospace;
+      font-size: 2rem;
+      font-weight: bold;
+      color: #ff8c00;
+      text-shadow:
+        0 0 10px #ff6600,
+        0 0 20px #ff4400,
+        0 0 30px #ff2200;
+      position: relative;
+    }
+
+    .nixie-unit {
+      font-size: 1.2rem;
+      color: #daa520;
+      margin-left: 8px;
+    }
+
+    /* Voltage slider */
+    .slider-container {
+      width: 100%;
+      padding: 0 10px;
+    }
+
+    .slider-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .voltage-slider {
+      width: 100%;
+      height: 30px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .voltage-slider::-webkit-slider-runnable-track {
+      height: 12px;
+      background: linear-gradient(to bottom, #1a1a2e, #2a2a3e, #1a1a2e);
+      border-radius: 6px;
+      border: 2px solid #3a3a4a;
+    }
+
+    .voltage-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(145deg, #5a5a6a, #3a3a4a);
+      border-radius: 50%;
+      margin-top: -10px;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 1px 2px rgba(255,255,255,0.2);
+      border: 2px solid #daa520;
+    }
+
+    .voltage-slider::-moz-range-track {
+      height: 12px;
+      background: linear-gradient(to bottom, #1a1a2e, #2a2a3e, #1a1a2e);
+      border-radius: 6px;
+      border: 2px solid #3a3a4a;
+    }
+
+    .voltage-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(145deg, #5a5a6a, #3a3a4a);
+      border-radius: 50%;
+      box-shadow:
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 1px 2px rgba(255,255,255,0.2);
+      border: 2px solid #daa520;
+    }
+
+    /* Responsive */
+    @media (min-width: 768px) {
+      body {
+        padding: 40px;
+      }
+
+      h1 {
+        font-size: 1.3rem;
+        margin-bottom: 30px;
+      }
+
+      .microscope-container {
+        width: 450px;
+        height: 450px;
+      }
+
+      .controls {
+        width: 450px;
+      }
+
+      .knobs-row {
+        gap: 60px;
+      }
+
+      .knob {
+        width: 80px;
+        height: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="lang-switch">
+    <button data-lang="lv">LV</button>
+    <span class="lang-sep">|</span>
+    <button data-lang="en">EN</button>
+  </div>
+
+  <h1 data-i18n="title">Millikan Oil Drop Experiment</h1>
+
+  <div class="microscope-container">
+    <div class="microscope-frame"></div>
+    <canvas id="microscope"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="knobs-row">
+      <div class="knob-container">
+        <span class="knob-label" data-i18n="plateGap">Plate Gap, mm</span>
+        <div class="knob-wrapper">
+          <div class="knob" id="knob-d"></div>
+        </div>
+        <div class="knob-readout" id="readout-d">6</div>
+      </div>
+
+      <div class="knob-container">
+        <span class="knob-label" data-i18n="oilMass">Oil Mass, ×10⁻¹⁵ kg</span>
+        <div class="knob-wrapper">
+          <div class="knob" id="knob-m"></div>
+        </div>
+        <div class="knob-readout" id="readout-m">5.0</div>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="spray-btn" id="spray-btn" data-i18n="sprayOil">Spray Oil</button>
+      <button class="ionize-btn" id="ionize-btn" data-i18n-title="ionize" title="Ionize (X-ray)">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M12 2 L14 5 L10 5 Z M12 22 L14 19 L10 19 Z M2 12 L5 10 L5 14 Z M22 12 L19 10 L19 14 Z" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="nixie-container">
+      <div class="nixie-tubes">
+        <div class="nixie-tube"><span class="nixie-digit" id="nixie-0">0</span></div>
+        <div class="nixie-tube"><span class="nixie-digit" id="nixie-1">0</span></div>
+        <div class="nixie-tube"><span class="nixie-digit" id="nixie-2">0</span></div>
+        <div class="nixie-tube"><span class="nixie-digit" id="nixie-3">0</span></div>
+      </div>
+      <span class="nixie-unit">V</span>
+    </div>
+
+    <div class="slider-container">
+      <div class="slider-label" data-i18n="voltage">Voltage</div>
+      <input type="range" class="voltage-slider" id="voltage-slider" min="0" max="6000" value="0">
+    </div>
+  </div>
+
+  <script>
+    // ========== TRANSLATIONS ==========
+    const TRANSLATIONS = {
+      en: {
+        title: "Millikan Oil Drop Experiment",
+        plateGap: "Plate Gap, mm",
+        oilMass: "Oil Mass, ×10⁻¹⁵ kg",
+        sprayOil: "Spray Oil",
+        ionize: "Ionize (X-ray)",
+        voltage: "Voltage"
+      },
+      lv: {
+        title: "Milikena eļļas pilienu eksperiments",
+        plateGap: "Plākšņu atstatums, mm",
+        oilMass: "Eļļas masa, ×10⁻¹⁵ kg",
+        sprayOil: "Izsmidzināt eļļu",
+        ionize: "Jonizēt (rentgens)",
+        voltage: "Spriegums"
+      }
+    };
+
+    // ========== LANGUAGE SWITCH ==========
+    function getDefaultLang() {
+      const saved = localStorage.getItem('physics-sims-lang');
+      if (saved) return saved;
+      const browserLang = navigator.language.toLowerCase();
+      return browserLang.startsWith('lv') ? 'lv' : 'en';
+    }
+
+    let currentLang = getDefaultLang();
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem('physics-sims-lang', lang);
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (TRANSLATIONS[lang][key]) {
+          el.textContent = TRANSLATIONS[lang][key];
+        }
+      });
+
+      document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.dataset.i18nTitle;
+        if (TRANSLATIONS[lang][key]) {
+          el.title = TRANSLATIONS[lang][key];
+        }
+      });
+
+      if (TRANSLATIONS[lang].title) {
+        document.title = TRANSLATIONS[lang].title;
+      }
+
+      document.querySelectorAll('.lang-switch button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+
+      document.documentElement.lang = lang;
+    }
+
+    // ========== CONFIG ==========
+    const CONFIG = {
+      e: 1.6e-19,              // Elementary charge (C)
+      g: 9.81,                 // Gravity (m/s²)
+      massValues: [3e-15, 5e-15, 7e-15, 9e-15, 11e-15],  // kg
+      dValues: [0.004, 0.006, 0.008, 0.010, 0.012],      // m (4-12 mm)
+      maxVoltage: 6000,        // V
+      dropletCount: [18, 24],  // min, max per spray
+      chargeRange: [0, 10],    // n values
+      driftConstant: 4e12,     // Tuned for visible motion (~5s fall time)
+      brownianStrength: 1.25,  // Pixel wobble (visible drift, 50% smaller)
+      balanceThreshold: 1e-15  // Force threshold for "balanced" (triggers Brownian)
+    };
+
+    // ========== STATE ==========
+    let state = {
+      mIndex: 1,   // Default: 5e-15 kg
+      dIndex: 1,   // Default: 6 mm
+      voltage: 0,
+      droplets: []
+    };
+
+    // ========== CANVAS SETUP ==========
+    const canvas = document.getElementById('microscope');
+    const ctx = canvas.getContext('2d');
+    let canvasSize = 0;
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      const rect = container.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height) - 30;
+      canvasSize = size;
+      canvas.width = size * window.devicePixelRatio;
+      canvas.height = size * window.devicePixelRatio;
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    // ========== PHYSICS ==========
+    function createDroplet() {
+      const n = Math.floor(Math.random() * (CONFIG.chargeRange[1] - CONFIG.chargeRange[0] + 1)) + CONFIG.chargeRange[0];
+      return {
+        id: Math.random(),
+        x: 0.2 + Math.random() * 0.6,  // 20-80% of width
+        y: 0.1 + Math.random() * 0.15, // Near top
+        n: n,
+        q: n * CONFIG.e,
+        brightness: 0.7 + Math.random() * 0.3,
+        alive: true,
+        // Brownian motion state - each droplet has its own drift tendency
+        vx: 0,
+        vy: 0
+      };
+    }
+
+    function sprayDroplets() {
+      const count = CONFIG.dropletCount[0] + Math.floor(Math.random() * (CONFIG.dropletCount[1] - CONFIG.dropletCount[0] + 1));
+      for (let i = 0; i < count; i++) {
+        state.droplets.push(createDroplet());
+      }
+    }
+
+    function ionizeDroplets() {
+      // Random charge changes: -3, -2, -1, +1, +2, +3 (no zero)
+      const deltas = [-3, -2, -1, 1, 2, 3];
+
+      state.droplets.forEach(droplet => {
+        if (!droplet.alive) return;
+
+        // Random charge change
+        const delta = deltas[Math.floor(Math.random() * deltas.length)];
+        droplet.n = droplet.n + delta;
+
+        // Clamp minimum to 1 (can't have zero or negative charge)
+        if (droplet.n < 1) droplet.n = 1;
+
+        // Recalculate charge
+        droplet.q = droplet.n * CONFIG.e;
+      });
+
+      // Flash effect
+      const container = document.querySelector('.microscope-container');
+      container.classList.add('ionize-flash');
+      setTimeout(() => container.classList.remove('ionize-flash'), 150);
+    }
+
+    function updatePhysics(dt) {
+      const m = CONFIG.massValues[state.mIndex];
+      const d = CONFIG.dValues[state.dIndex];
+      const V = state.voltage;
+      const E = V / d;
+
+      state.droplets.forEach(droplet => {
+        if (!droplet.alive) return;
+
+        const F_electric = droplet.q * E;  // Upward
+        const F_gravity = m * CONFIG.g;     // Downward
+        const F_net = F_electric - F_gravity;
+
+        // Velocity proportional to net force
+        const v = CONFIG.driftConstant * F_net;
+
+        // Update position (y in normalized coords, negative = up on screen)
+        droplet.y -= v * dt;
+
+        // Brownian motion - stronger when near balanced
+        const forceRatio = Math.abs(F_net) / F_gravity;
+        const brownianScale = forceRatio < 0.05 ? 1.0 : (forceRatio < 0.2 ? 0.6 : 0.15);
+
+        // Random walk with momentum (more natural wandering)
+        // Add random impulse to velocity
+        droplet.vx += (Math.random() - 0.5) * CONFIG.brownianStrength * brownianScale * dt * 0.5;
+        droplet.vy += (Math.random() - 0.5) * CONFIG.brownianStrength * brownianScale * dt * 0.5;
+
+        // Damping - velocities decay over time
+        droplet.vx *= 0.95;
+        droplet.vy *= 0.95;
+
+        // Apply Brownian velocity to position
+        const pixelScale = canvasSize / 400;
+        droplet.x += droplet.vx * dt / pixelScale;
+        droplet.y += droplet.vy * dt / pixelScale;
+
+        // Check bounds
+        if (droplet.y < -0.05 || droplet.y > 1.05) {
+          droplet.alive = false;
+        }
+        if (droplet.x < 0.05 || droplet.x > 0.95) {
+          droplet.x = Math.max(0.05, Math.min(0.95, droplet.x));
+        }
+      });
+
+      // Remove dead droplets
+      state.droplets = state.droplets.filter(d => d.alive);
+    }
+
+    // ========== RENDERING ==========
+    function drawMicroscope() {
+      const size = canvasSize;
+      const cx = size / 2;
+      const cy = size / 2;
+      const radius = size / 2 - 2;
+
+      // Clear and clip to circle
+      ctx.clearRect(0, 0, size, size);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Dark background
+      ctx.fillStyle = '#0a0a0f';
+      ctx.fillRect(0, 0, size, size);
+
+      // Plate indicators (top and bottom)
+      const plateHeight = size * 0.03;
+      const d = CONFIG.dValues[state.dIndex];
+      const plateOffset = (d - 0.004) / 0.008 * size * 0.05; // Slight visual adjustment based on d
+
+      ctx.fillStyle = '#1a1a25';
+      ctx.fillRect(0, plateOffset, size, plateHeight);
+      ctx.fillRect(0, size - plateHeight - plateOffset, size, plateHeight);
+
+      // Grid lines (reticle) - vertical axis markings
+      ctx.strokeStyle = 'rgba(140, 110, 70, 0.6)';
+      ctx.lineWidth = 1.5;
+      const gridSpacing = size / 10;
+      for (let i = 1; i < 10; i++) {
+        const y = i * gridSpacing;
+        ctx.beginPath();
+        // Longer ticks at major divisions (every 2nd line)
+        const tickLength = (i % 2 === 0) ? 30 : 15;
+        ctx.moveTo(cx - tickLength, y);
+        ctx.lineTo(cx + tickLength, y);
+        ctx.stroke();
+      }
+
+      // Small tick marks on the sides
+      ctx.strokeStyle = 'rgba(140, 110, 70, 0.4)';
+      ctx.lineWidth = 1;
+      for (let i = 1; i < 20; i++) {
+        const y = i * (size / 20);
+        ctx.beginPath();
+        ctx.moveTo(10, y);
+        ctx.lineTo(20, y);
+        ctx.moveTo(size - 20, y);
+        ctx.lineTo(size - 10, y);
+        ctx.stroke();
+      }
+
+      // Crosshairs
+      ctx.strokeStyle = 'rgba(170, 136, 51, 0.6)';
+      ctx.lineWidth = 1;
+      // Horizontal
+      ctx.beginPath();
+      ctx.moveTo(0, cy);
+      ctx.lineTo(size, cy);
+      ctx.stroke();
+      // Vertical
+      ctx.beginPath();
+      ctx.moveTo(cx, 0);
+      ctx.lineTo(cx, size);
+      ctx.stroke();
+
+      // Droplets
+      state.droplets.forEach(droplet => {
+        if (!droplet.alive) return;
+
+        const x = droplet.x * size;
+        const y = droplet.y * size;
+        const baseRadius = 6;
+
+        // Subtle glow - darker
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, baseRadius * 2.5);
+        gradient.addColorStop(0, `rgba(180, 140, 50, ${0.35 * droplet.brightness})`);
+        gradient.addColorStop(0.5, `rgba(150, 120, 40, ${0.12 * droplet.brightness})`);
+        gradient.addColorStop(1, 'rgba(120, 100, 30, 0)');
+
+        ctx.beginPath();
+        ctx.arc(x, y, baseRadius * 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Core - darker, more muted
+        ctx.beginPath();
+        ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(170, 135, 50, ${0.5 * droplet.brightness})`;
+        ctx.fill();
+      });
+
+      // Vignette
+      const vignetteGradient = ctx.createRadialGradient(cx, cy, radius * 0.5, cx, cy, radius);
+      vignetteGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+      vignetteGradient.addColorStop(0.7, 'rgba(0, 0, 0, 0)');
+      vignetteGradient.addColorStop(1, 'rgba(0, 0, 0, 0.7)');
+      ctx.fillStyle = vignetteGradient;
+      ctx.fillRect(0, 0, size, size);
+
+      ctx.restore();
+    }
+
+    // ========== UI UPDATES ==========
+    function updateKnobRotation(knobId, index, maxIndex) {
+      const knob = document.getElementById(knobId);
+      const angle = -60 + (index / (maxIndex - 1)) * 120; // -60° to +60°
+      knob.style.transform = `rotate(${angle}deg)`;
+    }
+
+    function updateReadouts() {
+      const d = CONFIG.dValues[state.dIndex] * 1000; // Convert to mm
+      const m = CONFIG.massValues[state.mIndex] * 1e15; // Convert to ×10⁻¹⁵ units
+
+      document.getElementById('readout-d').textContent = d.toFixed(0);
+      document.getElementById('readout-m').textContent = m.toFixed(1);
+
+      updateKnobRotation('knob-d', state.dIndex, CONFIG.dValues.length);
+      updateKnobRotation('knob-m', state.mIndex, CONFIG.massValues.length);
+    }
+
+    function updateNixieDisplay(voltage) {
+      const v = Math.round(voltage);
+      const digits = v.toString().padStart(4, '0').slice(-4);
+
+      for (let i = 0; i < 4; i++) {
+        document.getElementById(`nixie-${i}`).textContent = digits[i];
+      }
+    }
+
+    function clearDroplets() {
+      state.droplets = [];
+    }
+
+    // ========== EVENT HANDLERS ==========
+    document.getElementById('knob-d').addEventListener('click', () => {
+      state.dIndex = (state.dIndex + 1) % CONFIG.dValues.length;
+      updateReadouts();
+      clearDroplets();
+    });
+
+    document.getElementById('knob-m').addEventListener('click', () => {
+      state.mIndex = (state.mIndex + 1) % CONFIG.massValues.length;
+      updateReadouts();
+      clearDroplets();
+    });
+
+    document.getElementById('spray-btn').addEventListener('click', sprayDroplets);
+    document.getElementById('ionize-btn').addEventListener('click', ionizeDroplets);
+
+    const voltageSlider = document.getElementById('voltage-slider');
+    voltageSlider.addEventListener('input', (e) => {
+      state.voltage = parseFloat(e.target.value);
+      updateNixieDisplay(state.voltage);
+    });
+
+    // Touch/drag support for knobs
+    let dragStartAngle = 0;
+    let dragStartIndex = 0;
+    let activeKnob = null;
+
+    function getAngle(element, clientX, clientY) {
+      const rect = element.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      return Math.atan2(clientY - cy, clientX - cx) * 180 / Math.PI;
+    }
+
+    ['knob-d', 'knob-m'].forEach(knobId => {
+      const knob = document.getElementById(knobId);
+
+      const startDrag = (e) => {
+        e.preventDefault();
+        activeKnob = knobId;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        dragStartAngle = getAngle(knob, clientX, clientY);
+        dragStartIndex = knobId === 'knob-d' ? state.dIndex : state.mIndex;
+      };
+
+      knob.addEventListener('mousedown', startDrag);
+      knob.addEventListener('touchstart', startDrag, { passive: false });
+    });
+
+    const handleDragMove = (e) => {
+      if (!activeKnob) return;
+
+      const knob = document.getElementById(activeKnob);
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const currentAngle = getAngle(knob, clientX, clientY);
+      const deltaAngle = currentAngle - dragStartAngle;
+
+      const maxIndex = 4;
+      const indexDelta = Math.round(deltaAngle / 30); // 30° per step
+      let newIndex = dragStartIndex + indexDelta;
+      newIndex = Math.max(0, Math.min(maxIndex, newIndex));
+
+      if (activeKnob === 'knob-d' && newIndex !== state.dIndex) {
+        state.dIndex = newIndex;
+        updateReadouts();
+        clearDroplets();
+      } else if (activeKnob === 'knob-m' && newIndex !== state.mIndex) {
+        state.mIndex = newIndex;
+        updateReadouts();
+        clearDroplets();
+      }
+    };
+
+    const handleDragEnd = () => {
+      activeKnob = null;
+    };
+
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('touchmove', handleDragMove, { passive: false });
+    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('touchend', handleDragEnd);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        sprayDroplets();
+      } else if (e.code === 'KeyI') {
+        e.preventDefault();
+        ionizeDroplets();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        const step = e.shiftKey ? 100 : 10;
+        state.voltage = Math.max(0, state.voltage - step);
+        voltageSlider.value = state.voltage;
+        updateNixieDisplay(state.voltage);
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        const step = e.shiftKey ? 100 : 10;
+        state.voltage = Math.min(CONFIG.maxVoltage, state.voltage + step);
+        voltageSlider.value = state.voltage;
+        updateNixieDisplay(state.voltage);
+      }
+    });
+
+    // ========== MAIN LOOP ==========
+    let lastTime = 0;
+
+    function gameLoop(timestamp) {
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.05); // Cap dt at 50ms
+      lastTime = timestamp;
+
+      updatePhysics(dt);
+      drawMicroscope();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // ========== INIT ==========
+    function init() {
+      resizeCanvas();
+      updateReadouts();
+      updateNixieDisplay(0);
+      setLanguage(currentLang);
+      document.querySelectorAll('.lang-switch button').forEach(btn => {
+        btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+      });
+      requestAnimationFrame(gameLoop);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>
