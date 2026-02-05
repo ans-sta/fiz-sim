@@ -280,15 +280,13 @@
         box-shadow: 0 0 12px var(--accent-dim);
       }
 
-      /* Level buttons - dynamic width */
+      /* Level buttons - compact style */
       .mobile-control-bar .level-btn {
         font-family: "Orbitron", monospace;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: bold;
-        min-width: 24px;
+        width: 32px;
         height: 32px;
-        padding: 0 8px;
-        transition: all 0.15s ease;
       }
       .mobile-control-bar .level-btn.active {
         background: var(--accent-dim);
@@ -530,9 +528,9 @@
         font-weight: bold;
       }
 
-      /* Levels section - flexible to match dynamic level buttons */
+      /* Levels section - matches header: 4 level buttons (32px each) + gaps */
       .drawer-section.levels-section {
-        min-width: 120px;
+        width: 138px;
       }
 
       /* Mode section - matches header: 2 mode buttons (32px each) + gap */
@@ -752,10 +750,10 @@
       <span class="separator"></span>
       <!-- Level buttons -->
       <div class="header-group" id="headerLevels">
-        <button class="icon-btn level-btn active" data-level="practice" title="Practice" id="mLevelP">Treniņš</button>
-        <button class="icon-btn level-btn" data-level="1" title="Level 1" id="mLevel1">1.</button>
-        <button class="icon-btn level-btn" data-level="2" title="Level 2" id="mLevel2">2.</button>
-        <button class="icon-btn level-btn" data-level="3" title="Level 3" id="mLevel3">3.</button>
+        <button class="icon-btn level-btn active" data-level="practice" title="Practice" id="mLevelP">T</button>
+        <button class="icon-btn level-btn" data-level="1" title="Level 1" id="mLevel1">1</button>
+        <button class="icon-btn level-btn" data-level="2" title="Level 2" id="mLevel2">2</button>
+        <button class="icon-btn level-btn" data-level="3" title="Level 3" id="mLevel3">3</button>
       </div>
       <span class="separator"></span>
       <!-- Mode -->
@@ -1016,9 +1014,9 @@
 
         // Update dynamic UI elements
         updateUI();
-        // Update level button text for current selection
-        if (typeof updateLevelButtonText === "function") {
-          updateLevelButtonText(currentLevel);
+        // Update desktop level button text for current selection
+        if (typeof updateDesktopLevelText === "function") {
+          updateDesktopLevelText(currentLevel);
         }
       }
 
@@ -2382,27 +2380,35 @@
       });
 
       function selectLevel(level) {
-        // Update desktop buttons
+        // Update desktop buttons - toggle active class and text
         document.querySelectorAll("#levelBtns button").forEach((b) => b.classList.remove("active"));
         document.querySelector(`#levelBtns button[data-level="${level}"]`).classList.add("active");
-        // Update mobile buttons - toggle active class
+        updateDesktopLevelText(level);
+        // Update mobile buttons - toggle active class only
         document.getElementById("mLevelP").classList.toggle("active", level === "practice");
         document.getElementById("mLevel1").classList.toggle("active", level === "1");
         document.getElementById("mLevel2").classList.toggle("active", level === "2");
         document.getElementById("mLevel3").classList.toggle("active", level === "3");
-        // Update mobile button text - selected shows full name, others show short
-        updateLevelButtonText(level);
         charges = [];
         updateChargeCount();
         initLevel(level);
       }
 
-      function updateLevelButtonText(selectedLevel) {
+      function updateDesktopLevelText(selectedLevel) {
         const t = TRANSLATIONS[currentLang];
-        document.getElementById("mLevelP").textContent = selectedLevel === "practice" ? t.practice : t.practiceShort;
-        document.getElementById("mLevel1").textContent = selectedLevel === "1" ? t.level1 : t.level1Short;
-        document.getElementById("mLevel2").textContent = selectedLevel === "2" ? t.level2 : t.level2Short;
-        document.getElementById("mLevel3").textContent = selectedLevel === "3" ? t.level3 : t.level3Short;
+        const btns = document.querySelectorAll("#levelBtns button");
+        btns.forEach(btn => {
+          const lvl = btn.dataset.level;
+          if (lvl === "practice") {
+            btn.textContent = selectedLevel === "practice" ? t.practice : t.practiceShort;
+          } else if (lvl === "1") {
+            btn.textContent = selectedLevel === "1" ? t.level1 : t.level1Short;
+          } else if (lvl === "2") {
+            btn.textContent = selectedLevel === "2" ? t.level2 : t.level2Short;
+          } else if (lvl === "3") {
+            btn.textContent = selectedLevel === "3" ? t.level3 : t.level3Short;
+          }
+        });
       }
 
       // Mode buttons (desktop)
