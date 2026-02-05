@@ -20,35 +20,6 @@
         padding: 0;
       }
 
-      /* Language switch */
-      .lang-switch {
-        font-family: "Orbitron", monospace;
-        font-size: 12px;
-        letter-spacing: 1px;
-        margin-left: 12px;
-        display: flex;
-        align-items: center;
-      }
-      .lang-switch button {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        cursor: pointer;
-        padding: 4px 6px;
-        transition: color 0.2s;
-        font-family: inherit;
-        font-size: inherit;
-      }
-      .lang-switch button:hover {
-        color: var(--text-dim);
-      }
-      .lang-switch button.active {
-        color: var(--accent);
-      }
-      .lang-switch .lang-sep {
-        color: var(--text-muted);
-      }
-
       :root {
         --bg: #060a14;
         --panel: #0c1220;
@@ -80,19 +51,32 @@
         -webkit-user-select: none;
       }
 
+      /* ═══════════════════════════════════════════
+         HEADER - Navigation bar
+         ═══════════════════════════════════════════ */
       header {
         display: flex;
         align-items: center;
         gap: 16px;
-        padding: 10px 20px;
+        padding: 8px 16px;
         background: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
         border-bottom: 1px solid var(--panel-border);
         flex-shrink: 0;
-        min-height: 48px;
+        min-height: 44px;
       }
+      .back-btn {
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-size: 20px;
+        cursor: pointer;
+        padding: 4px 8px;
+        line-height: 1;
+      }
+      .back-btn:hover { color: var(--accent); }
       header h1 {
         font-family: "Orbitron", monospace;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 700;
         letter-spacing: 2px;
         background: linear-gradient(135deg, var(--accent), #66eeff);
@@ -100,66 +84,116 @@
         -webkit-text-fill-color: transparent;
         white-space: nowrap;
       }
-      header .subtitle {
-        font-size: 13px;
-        color: var(--text-dim);
-        font-style: italic;
-      }
-      header .spacer {
-        margin-left: auto;
-      }
-
-      #main {
+      .header-spacer { flex: 1; }
+      .lang-switch {
+        font-family: "Orbitron", monospace;
+        font-size: 11px;
+        letter-spacing: 1px;
         display: flex;
-        flex: 1;
-        overflow: hidden;
+        align-items: center;
       }
+      .lang-switch button {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px 6px;
+        transition: color 0.2s;
+        font-family: inherit;
+        font-size: inherit;
+      }
+      .lang-switch button:hover { color: var(--text-dim); }
+      .lang-switch button.active { color: var(--accent); }
+      .lang-switch .lang-sep { color: var(--text-muted); }
 
-      #sidebar {
-        width: 220px;
-        min-width: 220px;
-        padding: 12px;
+      /* ═══════════════════════════════════════════
+         CONTROL BAR - Horizontal controls (Desktop)
+         ═══════════════════════════════════════════ */
+      .control-bar {
         display: flex;
-        flex-direction: column;
-        gap: 10px;
-        overflow-y: auto;
-        border-right: 1px solid var(--panel-border);
+        justify-content: center;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 20px;
         background: var(--panel);
+        border-bottom: 1px solid var(--panel-border);
+        flex-shrink: 0;
+        overflow-x: auto;
       }
-
-      .panel {
+      .control-panel {
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid var(--panel-border);
         border-radius: var(--radius);
-        padding: 10px 12px;
-      }
-      .panel h3 {
-        font-family: "Orbitron", monospace;
-        font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        color: var(--accent);
-        margin-bottom: 8px;
-      }
-
-      .btn-group {
+        padding: 12px 16px;
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
+        flex-direction: column;
+        gap: 10px;
       }
-      .btn-group button {
-        flex: 1;
-        min-width: 45%;
+      .control-panel h3 {
+        font-family: "Orbitron", monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--accent);
+        margin: 0;
+        white-space: nowrap;
       }
+      .control-panel .btn-group {
+        display: flex;
+        gap: 6px;
+      }
+      .control-panel .btn-group button {
+        padding: 8px 14px;
+        font-size: 14px;
+      }
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .slider-row input[type="range"] {
+        width: 100px;
+        accent-color: var(--accent);
+        height: 6px;
+      }
+      .slider-row .slider-val {
+        font-family: "Orbitron", monospace;
+        font-size: 14px;
+        min-width: 28px;
+        text-align: right;
+        color: var(--accent);
+      }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: var(--text-dim);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .checkbox-row:hover { color: var(--text); }
+      .checkbox-row input[type="checkbox"] {
+        accent-color: var(--accent);
+        width: 16px;
+        height: 16px;
+      }
+      .charge-count {
+        font-size: 13px;
+        color: var(--text-dim);
+        white-space: nowrap;
+      }
+      .charge-count span { color: var(--accent); }
 
+      /* Buttons */
       button {
         background: rgba(255, 255, 255, 0.04);
         color: var(--text);
         border: 1px solid var(--panel-border);
         border-radius: 6px;
-        padding: 7px 10px;
+        padding: 8px 14px;
         font-family: "Exo 2", sans-serif;
-        font-size: 12px;
+        font-size: 14px;
         cursor: pointer;
         transition: all 0.15s;
         white-space: nowrap;
@@ -183,7 +217,6 @@
         border-color: var(--negative);
         color: #fff;
       }
-
       button.primary {
         background: var(--accent-dim);
         border-color: var(--accent);
@@ -193,7 +226,6 @@
       button.primary:hover {
         background: rgba(0, 204, 255, 0.3);
       }
-
       button.danger {
         border-color: #ff4466;
         color: #ff6688;
@@ -203,58 +235,388 @@
         border-color: #ff6688;
       }
 
-      .charge-control {
+      /* ═══════════════════════════════════════════
+         MOBILE HEADER - Compact icons
+         ═══════════════════════════════════════════ */
+      .mobile-control-bar {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--panel-border);
+        flex-shrink: 0;
+      }
+      .mobile-control-bar .icon-btn {
+        width: 38px;
+        height: 38px;
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-top: 4px;
+        justify-content: center;
+        font-size: 14px;
+        padding: 0;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--panel-border);
+        transition: all 0.2s;
       }
-      .charge-control input[type="range"] {
-        flex: 1;
-        accent-color: var(--accent);
-        height: 4px;
+      .mobile-control-bar .icon-btn.active {
+        background: var(--accent-dim);
+        border-color: var(--accent);
+        box-shadow: 0 0 12px var(--accent-dim);
       }
-      .charge-control span {
+
+      /* Charge buttons - glowing orb style */
+      .mobile-control-bar .charge-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        position: relative;
+        border: none;
+        background: transparent;
+      }
+      .mobile-control-bar .charge-icon::before {
+        content: '';
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        transition: all 0.2s;
+      }
+      .mobile-control-bar .charge-icon::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        opacity: 0.3;
+        transition: all 0.2s;
+      }
+      .mobile-control-bar .charge-icon .charge-symbol {
+        position: relative;
+        z-index: 1;
+        font-weight: bold;
+        font-size: 18px;
+        text-shadow: 0 0 6px currentColor;
+      }
+
+      /* Positive charge icon */
+      .mobile-control-bar .charge-icon.pos-icon {
+        color: var(--positive);
+      }
+      .mobile-control-bar .charge-icon.pos-icon::before {
+        background: radial-gradient(circle at 35% 35%, rgba(255,150,170,0.6) 0%, rgba(255,51,85,0.3) 50%, transparent 70%);
+        border: 2px solid var(--positive);
+        opacity: 0.5;
+      }
+      .mobile-control-bar .charge-icon.pos-icon::after {
+        box-shadow: 0 0 15px var(--positive), inset 0 0 10px rgba(255,51,85,0.2);
+        opacity: 0.3;
+      }
+      .mobile-control-bar .charge-icon.pos-icon.active-pos::before {
+        opacity: 1;
+        box-shadow: 0 0 8px var(--positive);
+      }
+      .mobile-control-bar .charge-icon.pos-icon.active-pos::after {
+        opacity: 0.6;
+        box-shadow: 0 0 20px var(--positive), 0 0 30px var(--positive-glow);
+      }
+
+      /* Negative charge icon */
+      .mobile-control-bar .charge-icon.neg-icon {
+        color: var(--negative);
+      }
+      .mobile-control-bar .charge-icon.neg-icon::before {
+        background: radial-gradient(circle at 35% 35%, rgba(150,180,255,0.6) 0%, rgba(51,136,255,0.3) 50%, transparent 70%);
+        border: 2px solid var(--negative);
+        opacity: 0.5;
+      }
+      .mobile-control-bar .charge-icon.neg-icon::after {
+        box-shadow: 0 0 15px var(--negative), inset 0 0 10px rgba(51,136,255,0.2);
+        opacity: 0.3;
+      }
+      .mobile-control-bar .charge-icon.neg-icon.active-neg::before {
+        opacity: 1;
+        box-shadow: 0 0 8px var(--negative);
+      }
+      .mobile-control-bar .charge-icon.neg-icon.active-neg::after {
+        opacity: 0.6;
+        box-shadow: 0 0 20px var(--negative), 0 0 30px var(--negative-glow);
+      }
+
+      /* Test charge icon - yellow, bigger */
+      .mobile-control-bar .test-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: transparent;
+        border: none;
+        color: var(--test-charge);
+        position: relative;
+      }
+      .mobile-control-bar .test-icon::before {
+        content: '';
+        position: absolute;
+        inset: 4px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, rgba(0,255,136,0.5) 0%, rgba(0,255,136,0.2) 50%, transparent 70%);
+        border: 2px solid var(--test-charge);
+        opacity: 0.4;
+        transition: all 0.2s;
+      }
+      .mobile-control-bar .test-icon::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        opacity: 0.2;
+        transition: all 0.2s;
+      }
+      .mobile-control-bar .test-icon .test-symbol {
+        position: relative;
+        z-index: 1;
         font-family: "Orbitron", monospace;
-        font-size: 11px;
-        min-width: 24px;
-        text-align: right;
+        font-weight: bold;
+        font-size: 16px;
+        text-shadow: 0 0 8px var(--test-charge);
+      }
+      .mobile-control-bar .test-icon.active-test::before {
+        opacity: 1;
+        box-shadow: 0 0 10px var(--test-charge);
+      }
+      .mobile-control-bar .test-icon.active-test::after {
+        opacity: 0.5;
+        box-shadow: 0 0 25px var(--test-charge), 0 0 35px var(--test-charge-glow);
+      }
+
+      .mobile-control-bar .separator {
+        width: 1px;
+        height: 28px;
+        background: var(--panel-border);
+        margin: 0 4px;
+        flex-shrink: 0;
+      }
+      .mobile-control-bar .back-icon {
+        font-size: 18px;
+        color: var(--text-dim);
+        width: 36px;
+      }
+      .mobile-control-bar .back-icon:hover {
         color: var(--accent);
       }
 
-      label {
+      /* Header groups - for alignment with drawer */
+      .mobile-control-bar .header-group {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        padding: 4px 0;
-        cursor: pointer;
-        color: var(--text-dim);
+        gap: 2px;
       }
-      label:hover {
+
+      /* Value displays - clickable numbers */
+      .mobile-control-bar .value-display {
+        font-family: "Orbitron", monospace;
+        font-size: 12px;
+        color: var(--accent);
+        padding: 4px 8px;
+        background: rgba(0, 204, 255, 0.1);
+        border: 1px solid var(--panel-border);
+        border-radius: 4px;
+        cursor: pointer;
+        min-width: 28px;
+        text-align: center;
+        transition: all 0.15s;
+      }
+      .mobile-control-bar .value-display:hover {
+        border-color: var(--accent);
+        background: rgba(0, 204, 255, 0.2);
+      }
+      .mobile-control-bar .value-display.test-value {
+        color: var(--test-charge);
+        background: rgba(0, 255, 136, 0.1);
+      }
+      .mobile-control-bar .value-display.test-value:hover {
+        border-color: var(--test-charge);
+        background: rgba(0, 255, 136, 0.2);
+      }
+
+      /* Mobile language switch */
+      .mobile-lang-switch {
+        display: flex;
+        align-items: center;
+        font-family: "Orbitron", monospace;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+      }
+      .mobile-lang-switch button {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px 4px;
+        font-family: inherit;
+        font-size: inherit;
+        transition: color 0.2s;
+      }
+      .mobile-lang-switch button:hover { color: var(--text-dim); }
+      .mobile-lang-switch button.active { color: var(--accent); }
+      .mobile-lang-switch .lang-sep { color: var(--text-muted); font-size: 9px; }
+      .drawer-toggle { margin-left: 4px; }
+
+      /* Custom SVG icons - improved */
+      .icon-field, .icon-lines, .icon-equip {
+        width: 22px;
+        height: 22px;
+      }
+
+      /* ═══════════════════════════════════════════
+         MOBILE DRAWER - Aligned with header groups
+         ═══════════════════════════════════════════ */
+      .mobile-drawer {
+        display: none;
+        justify-content: center;
+        align-items: stretch;
+        gap: 0;
+        padding: 8px 10px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--panel-border);
+        flex-shrink: 0;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+      }
+      .mobile-drawer.open {
+        max-height: 200px;
+        opacity: 1;
+      }
+
+      /* Drawer spacers - match header items with no drawer content */
+      .drawer-spacer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .drawer-spacer.back-spacer { width: 38px; }
+      .drawer-spacer.lang-spacer { width: 76px; }
+
+      /* Drawer sections - aligned below header groups */
+      .drawer-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 4px 6px;
+        min-height: 50px;
+        flex-shrink: 0;
+      }
+      .drawer-section .section-label {
+        font-family: "Orbitron", monospace;
+        font-size: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--accent);
+        white-space: nowrap;
+        opacity: 0.8;
+      }
+      .drawer-section .section-value {
+        font-family: "Orbitron", monospace;
+        font-size: 12px;
+        color: var(--text);
+        font-weight: bold;
+      }
+
+      /* Charges section - matches header: 2 orbs (42px each) + value (40px) + gaps */
+      .drawer-section.charges-section {
+        width: 128px;
+        cursor: pointer;
+      }
+      .drawer-section.charges-section:hover {
+        background: rgba(0, 204, 255, 0.05);
+      }
+
+      /* Test charge section - matches header: T icon (46px) + value (48px) + gap */
+      .drawer-section.test-section {
+        width: 100px;
+        gap: 4px;
+      }
+      .drawer-section.test-section .slider-compact {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+      .drawer-section.test-section input[type="range"] {
+        width: 70px;
+        accent-color: var(--test-charge);
+        height: 4px;
+      }
+
+      /* Display labels section - 2x2 grid, matches header: 4 icons (38px each) + gaps */
+      .drawer-section.display-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3px;
+        width: 160px;
+        min-height: auto;
+        padding: 6px;
+      }
+      .drawer-section.display-section .display-label {
+        font-size: 8px;
+        color: var(--text-dim);
+        padding: 4px 6px;
+        border-radius: 3px;
+        background: transparent;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s;
+        text-align: center;
+      }
+      .drawer-section.display-section .display-label:hover {
         color: var(--text);
       }
-
-      input[type="checkbox"] {
-        accent-color: var(--accent);
-        width: 14px;
-        height: 14px;
+      .drawer-section.display-section .display-label.active {
+        color: var(--accent);
+        background: var(--accent-dim);
       }
 
-      .info-text {
-        font-size: 11px;
-        color: var(--text-dim);
-        line-height: 1.6;
+      /* Clear section - matches header: clear button (38px) */
+      .drawer-section.clear-section {
+        width: 38px;
+        cursor: pointer;
       }
-      .info-text kbd {
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid var(--panel-border);
-        border-radius: 3px;
-        padding: 1px 5px;
-        font-size: 10px;
-        font-family: "Exo 2", sans-serif;
+      .drawer-section.clear-section .section-label {
+        color: #ff6688;
+        font-size: 7px;
+      }
+      .drawer-section.clear-section:hover {
+        background: rgba(255, 68, 102, 0.1);
       }
 
+      /* Separator in drawer - same spacing as header */
+      .drawer-separator {
+        width: 1px;
+        background: var(--panel-border);
+        align-self: stretch;
+        margin: 0 4px;
+        flex-shrink: 0;
+      }
+      /* Match header separator spacing */
+      .mobile-control-bar .separator {
+        margin: 0 4px;
+      }
+
+      /* ═══════════════════════════════════════════
+         CANVAS AREA
+         ═══════════════════════════════════════════ */
+      #main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
       #canvas-wrap {
         flex: 1;
         display: flex;
@@ -264,7 +626,6 @@
         position: relative;
         overflow: hidden;
       }
-
       canvas {
         display: block;
         border-radius: 6px;
@@ -274,49 +635,24 @@
         cursor: crosshair;
       }
 
-      @media (max-width: 760px) {
-        #main {
-          flex-direction: column;
-        }
-        #sidebar {
-          width: 100%;
-          min-width: unset;
-          flex-direction: row;
-          flex-wrap: wrap;
-          border-right: none;
-          border-bottom: 1px solid var(--panel-border);
-          padding: 8px;
-          gap: 6px;
-          overflow-y: unset;
-          overflow-x: auto;
-        }
-        .panel {
-          min-width: 140px;
-          flex: 1;
-          padding: 8px;
-        }
-        #canvas-wrap {
-          padding: 6px;
-        }
-        header {
-          padding: 6px 12px;
-        }
-        header h1 {
-          font-size: 14px;
-        }
-        header .subtitle {
-          display: none;
-        }
+      /* ═══════════════════════════════════════════
+         RESPONSIVE - Mobile
+         ═══════════════════════════════════════════ */
+      @media (max-width: 900px) {
+        header { display: none; }
+        .control-bar { display: none; }
+        .mobile-control-bar { display: flex; }
+        .mobile-drawer { display: flex; }
+        #canvas-wrap { padding: 6px; }
       }
     </style>
   </head>
   <body>
+    <!-- Header Navigation -->
     <header>
+      <button class="back-btn" onclick="location.href='index.html'" title="Back">←</button>
       <h1 data-i18n="heading">⚡ ELECTRIC FIELD</h1>
-      <span class="subtitle" data-i18n="subtitle"
-        >Place charges and explore the electric field</span
-      >
-      <span class="spacer"></span>
+      <span class="header-spacer"></span>
       <div class="lang-switch">
         <button data-lang="lv">LV</button>
         <span class="lang-sep">|</span>
@@ -324,88 +660,161 @@
       </div>
     </header>
 
-    <div id="main">
-      <div id="sidebar">
-        <!-- Field Charges -->
-        <div class="panel">
-          <h3 data-i18n="fieldCharges">Field Charges</h3>
-          <div class="btn-group" id="chargeBtns">
-            <button class="active-pos" data-charge="+1" data-i18n="positive">
-              ⊕ Positive
-            </button>
-            <button data-charge="-1" data-i18n="negative">⊖ Negative</button>
-          </div>
-          <div style="margin-top: 6px; font-size: 11px; color: var(--text-dim)">
-            <span data-i18n="chargesPlaced">Charges placed:</span>
-            <span id="chargeCount" style="color: var(--accent)">0</span>
-          </div>
+    <!-- Desktop Control Bar (horizontal, full controls) -->
+    <div class="control-bar">
+      <!-- Field Charges -->
+      <div class="control-panel">
+        <h3 data-i18n="fieldCharges">Field Charges</h3>
+        <div class="btn-group" id="chargeBtns">
+          <button class="active-pos" data-charge="+1" data-i18n="positive">⊕ Positive</button>
+          <button data-charge="-1" data-i18n="negative">⊖ Negative</button>
         </div>
-
-        <!-- Test Charge -->
-        <div class="panel">
-          <h3 data-i18n="testCharge">Test Charge</h3>
-          <button class="primary" id="btnAddTest" data-i18n="addTestCharge" style="width: 100%; margin-bottom: 8px">
-            + Add Test Charge
-          </button>
-          <div id="testChargeControls" style="display: none">
-            <div class="charge-control">
-              <input type="range" id="chargeSlider" min="-10" max="10" value="1" />
-              <span id="chargeVal">+1</span>
-            </div>
-            <div style="margin-top: 8px; font-size: 11px; color: var(--text-dim)">
-              <span data-i18n="dragToMove">Drag to move around field</span>
-            </div>
-            <button class="danger" id="btnRemoveTest" data-i18n="removeTestCharge" style="width: 100%; margin-top: 8px; font-size: 11px; padding: 5px">
-              ✕ Remove
-            </button>
-          </div>
-        </div>
-
-        <!-- Display Options -->
-        <div class="panel">
-          <h3 data-i18n="display">Display</h3>
-          <label
-            ><input type="checkbox" id="chkField" checked />
-            <span data-i18n="fieldVectors">Field Vectors</span></label
-          >
-          <label
-            ><input type="checkbox" id="chkFieldLines" />
-            <span data-i18n="fieldLines">Field Lines</span></label
-          >
-          <label
-            ><input type="checkbox" id="chkEquipotential" />
-            <span data-i18n="equipotential">Equipotential</span></label
-          >
-          <label
-            ><input type="checkbox" id="chkForce" checked />
-            <span data-i18n="forceArrow">Force Arrow</span></label
-          >
-        </div>
-
-        <!-- Clear -->
-        <div class="panel">
-          <button class="danger" id="btnClear" style="width: 100%" data-i18n="clearAll">
-            ✕ Clear All
-          </button>
-        </div>
-
-        <!-- Help -->
-        <div class="panel">
-          <h3 data-i18n="howToUse">How to Use</h3>
-          <div class="info-text" id="helpText">
-            <span data-i18n="helpClick"
-              >Click on the field to place charges.</span
-            ><br />
-            <span data-i18n="helpDrag">Drag charges to move them.</span><br />
-            <span data-i18n="helpRemove"
-              >Right-click a charge to remove it.</span
-            ><br />
-            <span data-i18n="helpTest"
-              >Add a test charge to explore forces.</span
-            >
-          </div>
+        <div class="charge-count">
+          <span data-i18n="chargesPlaced">Charges:</span>
+          <span id="chargeCount">0</span>
         </div>
       </div>
+
+      <!-- Test Charge -->
+      <div class="control-panel">
+        <h3 data-i18n="testCharge">Test Charge</h3>
+        <button class="primary" id="btnAddTest" data-i18n="addTestCharge">+ Add Test Charge</button>
+        <div id="testChargeControls" style="display: none">
+          <div class="slider-row">
+            <input type="range" id="chargeSlider" min="-10" max="10" value="1" />
+            <span class="slider-val" id="chargeVal">+1</span>
+          </div>
+          <button class="danger" id="btnRemoveTest" data-i18n="removeTestCharge" style="font-size: 10px; padding: 4px 8px; margin-top: 4px">✕ Remove</button>
+        </div>
+      </div>
+
+      <!-- Display Options -->
+      <div class="control-panel">
+        <h3 data-i18n="display">Display</h3>
+        <label class="checkbox-row"><input type="checkbox" id="chkField" checked /><span data-i18n="fieldVectors">Field Vectors</span></label>
+        <label class="checkbox-row"><input type="checkbox" id="chkFieldLines" /><span data-i18n="fieldLines">Field Lines</span></label>
+        <label class="checkbox-row"><input type="checkbox" id="chkEquipotential" /><span data-i18n="equipotential">Equipotential</span></label>
+        <label class="checkbox-row"><input type="checkbox" id="chkForce" checked /><span data-i18n="forceArrow">Force Arrow</span></label>
+      </div>
+
+      <!-- Clear -->
+      <div class="control-panel">
+        <h3 data-i18n="controls">Controls</h3>
+        <button class="danger" id="btnClear" data-i18n="clearAll">✕ Clear All</button>
+      </div>
+    </div>
+
+    <!-- Mobile Control Bar - Single header with all controls -->
+    <div class="mobile-control-bar" id="mobileControlBar">
+      <!-- Back button -->
+      <button class="icon-btn back-icon" onclick="location.href='index.html'" title="Back">←</button>
+      <span class="separator"></span>
+      <!-- Charge selection - glowing orb style -->
+      <div class="header-group" id="headerCharges">
+        <button class="charge-icon pos-icon active-pos" id="mChargePos" title="Positive">
+          <span class="charge-symbol">+</span>
+        </button>
+        <button class="charge-icon neg-icon" id="mChargeNeg" title="Negative">
+          <span class="charge-symbol">−</span>
+        </button>
+        <span class="value-display" id="mChargeCountBtn" title="Charges placed">0</span>
+      </div>
+      <span class="separator"></span>
+      <!-- Test charge - yellow, bigger -->
+      <div class="header-group" id="headerTest">
+        <button class="test-icon" id="mTestCharge" title="Test Charge">
+          <span class="test-symbol">T</span>
+        </button>
+        <span class="value-display test-value" id="mTestValueBtn" title="Test charge value">+1</span>
+      </div>
+      <span class="separator"></span>
+      <!-- Display toggles - improved icons -->
+      <div class="header-group" id="headerDisplay">
+        <button class="icon-btn active" id="mField" title="Field Vectors">
+          <svg class="icon-field" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 12h12" stroke-linecap="round"/>
+            <path d="M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 6h9" stroke-linecap="round" opacity="0.6"/>
+            <path d="M10 3l3 3-3 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+            <path d="M4 18h9" stroke-linecap="round" opacity="0.6"/>
+            <path d="M10 15l3 3-3 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="mLines" title="Field Lines">
+          <svg class="icon-lines" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M4 12 Q12 2, 20 12" stroke-linecap="round"/>
+            <path d="M4 12 Q12 22, 20 12" stroke-linecap="round"/>
+            <circle cx="4" cy="12" r="2" fill="#ff3355" stroke="#ff3355" stroke-width="0.5"/>
+            <circle cx="20" cy="12" r="2" fill="#3388ff" stroke="#3388ff" stroke-width="0.5"/>
+          </svg>
+        </button>
+        <button class="icon-btn" id="mEquip" title="Equipotential">
+          <svg class="icon-equip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <ellipse cx="12" cy="12" rx="4" ry="8" opacity="0.7"/>
+            <ellipse cx="12" cy="12" rx="8" ry="4" opacity="0.7"/>
+            <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.5"/>
+          </svg>
+        </button>
+        <button class="icon-btn active" id="mForce" title="Force">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffcc00" stroke-width="2.5">
+            <path d="M6 12h10" stroke-linecap="round"/>
+            <path d="M12 7l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <span class="separator"></span>
+      <!-- Clear -->
+      <div class="header-group" id="headerClear">
+        <button class="icon-btn" id="mClear" title="Clear">✕</button>
+      </div>
+      <span class="separator"></span>
+      <!-- Language switch -->
+      <div class="mobile-lang-switch">
+        <button data-lang="lv">LV</button>
+        <span class="lang-sep">|</span>
+        <button data-lang="en">EN</button>
+      </div>
+      <!-- Drawer toggle -->
+      <button class="icon-btn drawer-toggle" id="drawerToggle" title="Settings">▼</button>
+    </div>
+
+    <!-- Mobile Drawer - sections aligned exactly below header groups -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <!-- Spacer for back button -->
+      <div class="drawer-spacer back-spacer"></div>
+      <span class="drawer-separator"></span>
+      <!-- Charges section -->
+      <div class="drawer-section charges-section" id="drawerCharges">
+        <span class="section-label" data-i18n="fieldCharges">Lādiņi</span>
+        <span class="section-value" id="mChargeCount">0</span>
+      </div>
+      <span class="drawer-separator"></span>
+      <!-- Test charge slider section -->
+      <div class="drawer-section test-section" id="drawerTest">
+        <span class="section-label" data-i18n="testCharge">Testa lādiņš</span>
+        <div class="slider-compact">
+          <input type="range" id="mChargeSlider" min="-10" max="10" value="1" />
+        </div>
+      </div>
+      <span class="drawer-separator"></span>
+      <!-- Display labels section -->
+      <div class="drawer-section display-section" id="drawerDisplay">
+        <span class="display-label active" id="mLabelField">Vektori</span>
+        <span class="display-label" id="mLabelLines">Līnijas</span>
+        <span class="display-label" id="mLabelEquip">Ekvipot.</span>
+        <span class="display-label active" id="mLabelForce">Spēks</span>
+      </div>
+      <span class="drawer-separator"></span>
+      <!-- Clear section -->
+      <div class="drawer-section clear-section" id="drawerClear">
+        <span class="section-label" data-i18n="clearAll">Notīrīt</span>
+      </div>
+      <span class="drawer-separator"></span>
+      <!-- Spacer for lang/toggle -->
+      <div class="drawer-spacer lang-spacer"></div>
+    </div>
+
+    <div id="main">
 
       <div id="canvas-wrap">
         <canvas id="fieldCanvas"></canvas>
@@ -494,7 +903,7 @@
           document.title = TRANSLATIONS[lang].title;
         }
 
-        document.querySelectorAll(".lang-switch button").forEach((btn) => {
+        document.querySelectorAll(".lang-switch button, .mobile-lang-switch button").forEach((btn) => {
           btn.classList.toggle("active", btn.dataset.lang === lang);
         });
 
@@ -584,18 +993,6 @@
       function removeTestCharge() {
         testCharge = null;
         updateTestChargeUI();
-      }
-
-      function updateTestChargeUI() {
-        const addBtn = document.getElementById("btnAddTest");
-        const controls = document.getElementById("testChargeControls");
-        if (testCharge) {
-          addBtn.style.display = "none";
-          controls.style.display = "block";
-        } else {
-          addBtn.style.display = "block";
-          controls.style.display = "none";
-        }
       }
 
       function resizeCanvas() {
@@ -1780,6 +2177,8 @@
       // ═══════════════════════════════════════════
       function updateChargeCount() {
         document.getElementById("chargeCount").textContent = charges.length;
+        document.getElementById("mChargeCount").textContent = charges.length;
+        document.getElementById("mChargeCountBtn").textContent = charges.length;
       }
 
       function doClear() {
@@ -1791,49 +2190,175 @@
         updateTestChargeUI();
       }
 
-      // Charge type buttons
+      // Charge type buttons (desktop)
       document.getElementById("chargeBtns").addEventListener("click", (e) => {
         const btn = e.target.closest("button");
         if (!btn) return;
+        selectChargeType(parseFloat(btn.dataset.charge));
+      });
+
+      // Charge type buttons (mobile)
+      document.getElementById("mChargePos").addEventListener("click", () => selectChargeType(1));
+      document.getElementById("mChargeNeg").addEventListener("click", () => selectChargeType(-1));
+
+      function selectChargeType(val) {
+        selectedCharge = val;
+        // Desktop
         document.querySelectorAll("#chargeBtns button").forEach((b) => {
           b.classList.remove("active-pos", "active-neg");
         });
-        const val = parseFloat(btn.dataset.charge);
-        selectedCharge = val;
-        btn.classList.add(val > 0 ? "active-pos" : "active-neg");
+        document.querySelector(`#chargeBtns button[data-charge="${val > 0 ? '+1' : '-1'}"]`)
+          .classList.add(val > 0 ? "active-pos" : "active-neg");
+        // Mobile - glowing orb buttons
+        const posBtn = document.getElementById("mChargePos");
+        const negBtn = document.getElementById("mChargeNeg");
+        posBtn.classList.toggle("active-pos", val > 0);
+        negBtn.classList.toggle("active-neg", val < 0);
+      }
+
+      // Clear buttons
+      document.getElementById("btnClear").addEventListener("click", doClear);
+      document.getElementById("mClear").addEventListener("click", doClear);
+
+      // Test charge UI updates
+      function updateTestChargeUI() {
+        const addBtn = document.getElementById("btnAddTest");
+        const controls = document.getElementById("testChargeControls");
+        const mTestBtn = document.getElementById("mTestCharge");
+        const mTestValue = document.getElementById("mTestValueBtn");
+
+        if (testCharge) {
+          addBtn.style.display = "none";
+          controls.style.display = "block";
+          mTestBtn.classList.add("active-test");
+          mTestValue.style.opacity = "1";
+        } else {
+          addBtn.style.display = "block";
+          controls.style.display = "none";
+          mTestBtn.classList.remove("active-test");
+          mTestValue.style.opacity = "0.4";
+        }
+      }
+
+      // Add test charge buttons
+      document.getElementById("btnAddTest").addEventListener("click", addTestCharge);
+      document.getElementById("mTestCharge").addEventListener("click", () => {
+        if (testCharge) {
+          removeTestCharge();
+        } else {
+          addTestCharge();
+        }
       });
 
-      // Clear button
-      document.getElementById("btnClear").addEventListener("click", doClear);
-
-      // Add test charge button
-      document.getElementById("btnAddTest").addEventListener("click", addTestCharge);
-
-      // Remove test charge button
+      // Remove test charge button (desktop only)
       document.getElementById("btnRemoveTest").addEventListener("click", removeTestCharge);
 
-      // Test charge slider
-      document.getElementById("chargeSlider").addEventListener("input", (e) => {
-        const val = parseInt(e.target.value);
+      // Test charge slider sync
+      function syncTestChargeSlider(value) {
+        const val = parseInt(value);
         if (testCharge) {
           testCharge.charge = val;
         }
-        document.getElementById("chargeVal").textContent =
-          val > 0 ? "+" + val : val;
+        const displayVal = val > 0 ? "+" + val : String(val);
+        document.getElementById("chargeSlider").value = val;
+        document.getElementById("chargeVal").textContent = displayVal;
+        document.getElementById("mChargeSlider").value = val;
+        document.getElementById("mTestValueBtn").textContent = displayVal;
+      }
+
+      document.getElementById("chargeSlider").addEventListener("input", (e) => syncTestChargeSlider(e.target.value));
+      document.getElementById("mChargeSlider").addEventListener("input", (e) => syncTestChargeSlider(e.target.value));
+
+      // Display checkboxes/buttons sync (desktop checkbox + mobile button + mobile label)
+      function setupDisplayToggle(checkboxId, mobileBtn, mobileLabel, stateGetter, stateSetter) {
+        const checkbox = document.getElementById(checkboxId);
+        const btn = document.getElementById(mobileBtn);
+        const label = document.getElementById(mobileLabel);
+
+        function updateUI(checked) {
+          checkbox.checked = checked;
+          btn.classList.toggle("active", checked);
+          label.classList.toggle("active", checked);
+          stateSetter(checked);
+        }
+
+        checkbox.addEventListener("change", (e) => updateUI(e.target.checked));
+        btn.addEventListener("click", () => updateUI(!stateGetter()));
+      }
+
+      setupDisplayToggle("chkField", "mField", "mLabelField", () => showField, (v) => showField = v);
+      setupDisplayToggle("chkFieldLines", "mLines", "mLabelLines", () => showFieldLines, (v) => showFieldLines = v);
+      setupDisplayToggle("chkEquipotential", "mEquip", "mLabelEquip", () => showEquipotential, (v) => showEquipotential = v);
+      setupDisplayToggle("chkForce", "mForce", "mLabelForce", () => showForce, (v) => showForce = v);
+
+      // Mobile drawer toggle - multiple triggers
+      const mobileDrawer = document.getElementById("mobileDrawer");
+
+      function toggleDrawer() {
+        mobileDrawer.classList.toggle("open");
+        const toggle = document.getElementById("drawerToggle");
+        toggle.textContent = mobileDrawer.classList.contains("open") ? "▲" : "▼";
+      }
+
+      function openDrawer() {
+        mobileDrawer.classList.add("open");
+        document.getElementById("drawerToggle").textContent = "▲";
+      }
+
+      document.getElementById("drawerToggle").addEventListener("click", toggleDrawer);
+      document.getElementById("mChargeCountBtn").addEventListener("click", openDrawer);
+      document.getElementById("mTestValueBtn").addEventListener("click", openDrawer);
+      document.getElementById("drawerCharges").addEventListener("click", openDrawer);
+      document.getElementById("drawerTest").addEventListener("click", openDrawer);
+
+      // Close drawer when clicking on canvas
+      canvas.addEventListener("click", () => {
+        if (mobileDrawer.classList.contains("open")) {
+          mobileDrawer.classList.remove("open");
+          document.getElementById("drawerToggle").textContent = "▼";
+        }
+      }, true);
+
+      // Close drawer when clicking clear
+      document.getElementById("drawerClear").addEventListener("click", () => {
+        doClear();
+        mobileDrawer.classList.remove("open");
+        document.getElementById("drawerToggle").textContent = "▼";
       });
 
-      // Display checkboxes
-      document.getElementById("chkField").addEventListener("change", (e) => {
-        showField = e.target.checked;
+      // Mobile language switch
+      document.querySelectorAll(".mobile-lang-switch button").forEach((btn) => {
+        btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
       });
-      document.getElementById("chkFieldLines").addEventListener("change", (e) => {
-        showFieldLines = e.target.checked;
+
+      // Display labels in drawer - wire to same toggles
+      document.getElementById("mLabelField").addEventListener("click", () => {
+        const newVal = !showField;
+        document.getElementById("chkField").checked = newVal;
+        document.getElementById("mField").classList.toggle("active", newVal);
+        document.getElementById("mLabelField").classList.toggle("active", newVal);
+        showField = newVal;
       });
-      document.getElementById("chkEquipotential").addEventListener("change", (e) => {
-        showEquipotential = e.target.checked;
+      document.getElementById("mLabelLines").addEventListener("click", () => {
+        const newVal = !showFieldLines;
+        document.getElementById("chkFieldLines").checked = newVal;
+        document.getElementById("mLines").classList.toggle("active", newVal);
+        document.getElementById("mLabelLines").classList.toggle("active", newVal);
+        showFieldLines = newVal;
       });
-      document.getElementById("chkForce").addEventListener("change", (e) => {
-        showForce = e.target.checked;
+      document.getElementById("mLabelEquip").addEventListener("click", () => {
+        const newVal = !showEquipotential;
+        document.getElementById("chkEquipotential").checked = newVal;
+        document.getElementById("mEquip").classList.toggle("active", newVal);
+        document.getElementById("mLabelEquip").classList.toggle("active", newVal);
+        showEquipotential = newVal;
+      });
+      document.getElementById("mLabelForce").addEventListener("click", () => {
+        const newVal = !showForce;
+        document.getElementById("chkForce").checked = newVal;
+        document.getElementById("mForce").classList.toggle("active", newVal);
+        document.getElementById("mLabelForce").classList.toggle("active", newVal);
+        showForce = newVal;
       });
 
       // ═══════════════════════════════════════════

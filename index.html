@@ -419,87 +419,7 @@
 
   <div class="grid">
 
-    <!-- ══════ CARD 1: Electric Field Hockey ══════ -->
-    <a href="electric-field-hockey.html" class="card">
-      <div class="card-visual">
-        <svg width="200" height="140" viewBox="0 0 200 140">
-          <!-- Field boundary -->
-          <rect x="20" y="10" width="160" height="120" rx="4" fill="none" stroke="#1a2540" stroke-width="1.5"/>
-          <!-- Goal -->
-          <rect x="170" y="45" width="10" height="50" rx="2" fill="none" stroke="#ffd700" stroke-width="1.5" opacity="0.7"/>
-          <!-- Wall -->
-          <line x1="100" y1="10" x2="100" y2="50" stroke="#8899bb" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="100" y1="90" x2="100" y2="130" stroke="#8899bb" stroke-width="2.5" stroke-linecap="round"/>
-          <!-- Positive charge -->
-          <circle cx="65" cy="85" r="10" fill="#ff335522" stroke="#ff3355" stroke-width="1.2"/>
-          <line x1="60" y1="85" x2="70" y2="85" stroke="#ff3355" stroke-width="1.5"/>
-          <line x1="65" y1="80" x2="65" y2="90" stroke="#ff3355" stroke-width="1.5"/>
-          <!-- Negative charge -->
-          <circle cx="130" cy="45" r="10" fill="#3388ff22" stroke="#3388ff" stroke-width="1.2"/>
-          <line x1="125" y1="45" x2="135" y2="45" stroke="#3388ff" stroke-width="1.5"/>
-          <!-- Puck -->
-          <circle cx="35" cy="70" r="7" fill="#00ff8833" stroke="#00ff88" stroke-width="1.5"/>
-          <!-- Trajectory -->
-          <path d="M 42 70 Q 70 55 85 65 Q 105 80 140 60 Q 160 50 175 70" fill="none" stroke="#00ff8844" stroke-width="1" stroke-dasharray="4 3"/>
-          <!-- Force arrow -->
-          <line x1="35" y1="70" x2="52" y2="58" stroke="#ffaa00" stroke-width="1.2"/>
-          <polygon points="52,58 48,63 54,62" fill="#ffaa00"/>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-tag tag-electrostatics" data-i18n="tagElectrostatics">Electrostatics</div>
-        <div class="card-title" data-i18n="hockeyTitle">Electric Field Hockey</div>
-        <p class="card-desc" data-i18n="hockeyDesc">Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.</p>
-        <div class="card-status status-live">
-          <div class="status-dot"></div>
-          <span data-i18n="statusLive">Live</span>
-        </div>
-      </div>
-    </a>
-
-    <!-- ══════ CARD 2: Millikan Oil Drop ══════ -->
-    <a href="millikan.html" class="card">
-      <div class="card-visual">
-        <svg width="200" height="140" viewBox="0 0 200 140">
-          <!-- Top plate -->
-          <rect x="30" y="18" width="140" height="6" rx="2" fill="#5a6d88" opacity="0.5"/>
-          <text x="100" y="14" text-anchor="middle" font-size="8" fill="#ff3355" opacity="0.6">+  +  +  +  +</text>
-          <!-- Bottom plate -->
-          <rect x="30" y="116" width="140" height="6" rx="2" fill="#5a6d88" opacity="0.5"/>
-          <text x="100" y="134" text-anchor="middle" font-size="8" fill="#3388ff" opacity="0.6">−  −  −  −  −</text>
-          <!-- Microscope circle -->
-          <circle cx="100" cy="70" r="38" fill="none" stroke="#1a2540" stroke-width="1.5"/>
-          <circle cx="100" cy="70" r="38" fill="#06091166"/>
-          <!-- Crosshair -->
-          <line x1="62" y1="70" x2="138" y2="70" stroke="#1a254088" stroke-width="0.5"/>
-          <line x1="100" y1="32" x2="100" y2="108" stroke="#1a254088" stroke-width="0.5"/>
-          <!-- Oil drops at various positions -->
-          <circle cx="82" cy="55" r="3" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
-          <circle cx="108" cy="68" r="2.5" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
-          <circle cx="93" cy="82" r="3.5" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
-          <circle cx="118" cy="58" r="2" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
-          <circle cx="88" cy="72" r="2.8" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
-          <!-- Down arrows on some -->
-          <line x1="82" y1="59" x2="82" y2="66" stroke="#ffd70066" stroke-width="0.7"/>
-          <line x1="118" y1="61" x2="118" y2="67" stroke="#ffd70066" stroke-width="0.7"/>
-          <!-- Up arrows on some -->
-          <line x1="108" y1="64" x2="108" y2="57" stroke="#ffd70066" stroke-width="0.7"/>
-          <!-- Voltage label -->
-          <text x="100" y="108" text-anchor="middle" font-family="'Orbitron', monospace" font-size="7" fill="#00ccff" opacity="0.5">V = 1840 V</text>
-        </svg>
-      </div>
-      <div class="card-body">
-        <div class="card-tag tag-quantum" data-i18n="tagQuantization">Charge quantization</div>
-        <div class="card-title" data-i18n="millikanTitle">Millikan Experiment</div>
-        <p class="card-desc" data-i18n="millikanDesc">Balance oil droplets in an electric field to discover that charge comes in discrete units — just as Millikan did in 1913.</p>
-        <div class="card-status status-live">
-          <div class="status-dot"></div>
-          <span data-i18n="statusLive">Live</span>
-        </div>
-      </div>
-    </a>
-
-    <!-- ══════ CARD 3: Electric Field Visualizer ══════ -->
+    <!-- ══════ CARD 1: Electric Field Visualizer ══════ -->
     <a href="electric-field.html" class="card">
       <div class="card-visual">
         <svg width="200" height="140" viewBox="0 0 200 140">
@@ -553,6 +473,86 @@
         <div class="card-tag tag-electrostatics" data-i18n="tagElectrostatics">Electrostatics</div>
         <div class="card-title" data-i18n="fieldTitle">Electric Field</div>
         <p class="card-desc" data-i18n="fieldDesc">Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ══════ CARD 2: Electric Field Hockey ══════ -->
+    <a href="electric-field-hockey.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Field boundary -->
+          <rect x="20" y="10" width="160" height="120" rx="4" fill="none" stroke="#1a2540" stroke-width="1.5"/>
+          <!-- Goal -->
+          <rect x="170" y="45" width="10" height="50" rx="2" fill="none" stroke="#ffd700" stroke-width="1.5" opacity="0.7"/>
+          <!-- Wall -->
+          <line x1="100" y1="10" x2="100" y2="50" stroke="#8899bb" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="100" y1="90" x2="100" y2="130" stroke="#8899bb" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Positive charge -->
+          <circle cx="65" cy="85" r="10" fill="#ff335522" stroke="#ff3355" stroke-width="1.2"/>
+          <line x1="60" y1="85" x2="70" y2="85" stroke="#ff3355" stroke-width="1.5"/>
+          <line x1="65" y1="80" x2="65" y2="90" stroke="#ff3355" stroke-width="1.5"/>
+          <!-- Negative charge -->
+          <circle cx="130" cy="45" r="10" fill="#3388ff22" stroke="#3388ff" stroke-width="1.2"/>
+          <line x1="125" y1="45" x2="135" y2="45" stroke="#3388ff" stroke-width="1.5"/>
+          <!-- Puck -->
+          <circle cx="35" cy="70" r="7" fill="#00ff8833" stroke="#00ff88" stroke-width="1.5"/>
+          <!-- Trajectory -->
+          <path d="M 42 70 Q 70 55 85 65 Q 105 80 140 60 Q 160 50 175 70" fill="none" stroke="#00ff8844" stroke-width="1" stroke-dasharray="4 3"/>
+          <!-- Force arrow -->
+          <line x1="35" y1="70" x2="52" y2="58" stroke="#ffaa00" stroke-width="1.2"/>
+          <polygon points="52,58 48,63 54,62" fill="#ffaa00"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electrostatics" data-i18n="tagElectrostatics">Electrostatics</div>
+        <div class="card-title" data-i18n="hockeyTitle">Electric Field Hockey</div>
+        <p class="card-desc" data-i18n="hockeyDesc">Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ══════ CARD 3: Millikan Oil Drop ══════ -->
+    <a href="millikan.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Top plate -->
+          <rect x="30" y="18" width="140" height="6" rx="2" fill="#5a6d88" opacity="0.5"/>
+          <text x="100" y="14" text-anchor="middle" font-size="8" fill="#ff3355" opacity="0.6">+  +  +  +  +</text>
+          <!-- Bottom plate -->
+          <rect x="30" y="116" width="140" height="6" rx="2" fill="#5a6d88" opacity="0.5"/>
+          <text x="100" y="134" text-anchor="middle" font-size="8" fill="#3388ff" opacity="0.6">−  −  −  −  −</text>
+          <!-- Microscope circle -->
+          <circle cx="100" cy="70" r="38" fill="none" stroke="#1a2540" stroke-width="1.5"/>
+          <circle cx="100" cy="70" r="38" fill="#06091166"/>
+          <!-- Crosshair -->
+          <line x1="62" y1="70" x2="138" y2="70" stroke="#1a254088" stroke-width="0.5"/>
+          <line x1="100" y1="32" x2="100" y2="108" stroke="#1a254088" stroke-width="0.5"/>
+          <!-- Oil drops at various positions -->
+          <circle cx="82" cy="55" r="3" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="108" cy="68" r="2.5" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="93" cy="82" r="3.5" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="118" cy="58" r="2" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <circle cx="88" cy="72" r="2.8" fill="#ffd70066" stroke="#ffd700" stroke-width="0.8"/>
+          <!-- Down arrows on some -->
+          <line x1="82" y1="59" x2="82" y2="66" stroke="#ffd70066" stroke-width="0.7"/>
+          <line x1="118" y1="61" x2="118" y2="67" stroke="#ffd70066" stroke-width="0.7"/>
+          <!-- Up arrows on some -->
+          <line x1="108" y1="64" x2="108" y2="57" stroke="#ffd70066" stroke-width="0.7"/>
+          <!-- Voltage label -->
+          <text x="100" y="108" text-anchor="middle" font-family="'Orbitron', monospace" font-size="7" fill="#00ccff" opacity="0.5">V = 1840 V</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-quantum" data-i18n="tagQuantization">Charge quantization</div>
+        <div class="card-title" data-i18n="millikanTitle">Millikan Experiment</div>
+        <p class="card-desc" data-i18n="millikanDesc">Balance oil droplets in an electric field to discover that charge comes in discrete units — just as Millikan did in 1913.</p>
         <div class="card-status status-live">
           <div class="status-dot"></div>
           <span data-i18n="statusLive">Live</span>

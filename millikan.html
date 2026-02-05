@@ -12,15 +12,58 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Language switch */
+    body {
+      background: #1a1a2e;
+      height: 100vh;
+      height: 100dvh;
+      font-family: 'Courier New', monospace;
+      color: #ccc;
+      overflow: hidden;
+    }
+
+    /* ========== HAMBURGER BUTTON ========== */
+    .hamburger-btn {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 100;
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(145deg, #3a3a4a, #252535);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .hamburger-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #daa520;
+      border-radius: 1px;
+      transition: all 0.3s;
+    }
+
+    .hamburger-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ========== LANGUAGE SWITCH ========== */
     .lang-switch {
       position: fixed;
       top: 12px;
-      right: 16px;
+      right: 12px;
       z-index: 100;
       font-family: 'Courier New', monospace;
       font-size: 13px;
     }
+
     .lang-switch button {
       background: none;
       border: none;
@@ -31,71 +74,104 @@
       font-family: inherit;
       font-size: inherit;
     }
+
     .lang-switch button:hover { color: #888; }
     .lang-switch button.active { color: #daa520; }
     .lang-switch .lang-sep { color: #444; }
 
-    body {
-      background: #1a1a2e;
-      min-height: 100vh;
-      font-family: 'Courier New', monospace;
-      color: #ccc;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      overflow-x: hidden;
-    }
-
-    h1 {
-      font-size: 1.1rem;
-      color: #daa520;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    /* Microscope viewport */
-    .microscope-container {
-      position: relative;
-      width: min(90vw, 450px);
-      height: min(90vw, 450px);
-      margin-bottom: 20px;
-    }
-
-    .microscope-frame {
-      position: absolute;
+    /* ========== DRAWER OVERLAY ========== */
+    .drawer-overlay {
+      position: fixed;
       inset: 0;
-      border-radius: 50%;
-      background: linear-gradient(145deg, #3a3a4a, #252535);
-      box-shadow:
-        0 0 0 8px #2a2a3a,
-        0 0 0 12px #3a3a4a,
-        inset 0 0 30px rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 200;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
     }
 
-    #microscope {
-      position: absolute;
-      inset: 15px;
-      border-radius: 50%;
+    .drawer-overlay.active {
+      opacity: 1;
+      visibility: visible;
     }
 
-    /* Controls panel */
-    .controls {
-      width: min(90vw, 450px);
+    /* ========== SIDE DRAWER (centered modal) ========== */
+    .drawer {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      width: 75vw;
+      max-width: 500px;
+      max-height: 85vh;
+      background: #1a1a2e;
+      border: 2px solid #3a3a4a;
+      border-radius: 16px;
+      z-index: 300;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+      padding: 24px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    /* Knobs row */
-    .knobs-row {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
+    .drawer.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, -50%) scale(1);
     }
 
+    .drawer-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      background: none;
+      border: 1px solid #3a3a4a;
+      border-radius: 50%;
+      color: #888;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drawer-close:hover {
+      color: #daa520;
+      border-color: #daa520;
+    }
+
+    .drawer-title {
+      font-size: 1rem;
+      color: #daa520;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-top: 20px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .drawer-description {
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .drawer-knobs {
+      display: flex;
+      justify-content: space-around;
+      gap: 15px;
+      margin-top: 10px;
+    }
+
+    /* ========== KNOBS (in drawer) ========== */
     .knob-container {
       display: flex;
       flex-direction: column;
@@ -104,10 +180,11 @@
     }
 
     .knob-label {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: #888;
       text-transform: uppercase;
       letter-spacing: 1px;
+      text-align: center;
     }
 
     .knob-wrapper {
@@ -115,8 +192,8 @@
     }
 
     .knob {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
       box-shadow:
@@ -137,8 +214,8 @@
       top: 8px;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
-      height: 20px;
+      width: 3px;
+      height: 16px;
       background: linear-gradient(to bottom, #daa520, #b8860b);
       border-radius: 2px;
     }
@@ -147,121 +224,146 @@
       background: #0a0a0f;
       border: 2px solid #3a3a4a;
       border-radius: 4px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+      padding: 4px 10px;
+      font-size: 0.8rem;
       color: #daa520;
-      min-width: 90px;
+      min-width: 70px;
       text-align: center;
       font-family: 'Courier New', monospace;
     }
 
-    /* Button row */
-    .button-row {
+    /* ========== MAIN CONTENT ========== */
+    .main-content {
+      height: 100%;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 15px;
+      padding: 50px 10px 10px;
     }
 
-    /* Spray button */
-    .spray-btn {
-      background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
-      border: none;
-      border-radius: 8px;
-      padding: 15px 30px;
-      color: #daa520;
-      font-family: 'Courier New', monospace;
-      font-size: 1rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      cursor: pointer;
+    /* ========== MICROSCOPE ========== */
+    .microscope-container {
+      position: relative;
+      /* Size = min of (90vw, 450px, available height) */
+      --available-height: calc(100dvh - 200px);
+      width: min(90vw, 450px, var(--available-height));
+      height: min(90vw, 450px, var(--available-height));
+      flex-shrink: 0;
+    }
+
+    .microscope-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #3a3a4a, #252535);
       box-shadow:
-        0 4px 8px rgba(0,0,0,0.4),
-        inset 0 2px 4px rgba(255,255,255,0.1);
-      transition: all 0.1s;
+        0 0 0 6px #2a2a3a,
+        0 0 0 10px #3a3a4a,
+        inset 0 0 30px rgba(0,0,0,0.5);
     }
 
-    .spray-btn:active {
-      transform: scale(0.96) translateY(2px);
-      box-shadow:
-        0 2px 4px rgba(0,0,0,0.4),
-        inset 0 2px 4px rgba(255,255,255,0.1);
-    }
-
-    /* Ionize button */
-    .ionize-btn {
-      background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
-      border: none;
-      border-radius: 8px;
-      width: 52px;
-      height: 52px;
-      color: #daa520;
-      cursor: pointer;
-      box-shadow:
-        0 4px 8px rgba(0,0,0,0.4),
-        inset 0 2px 4px rgba(255,255,255,0.1);
-      transition: all 0.1s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .ionize-btn:active {
-      transform: scale(0.96) translateY(2px);
-      box-shadow:
-        0 2px 4px rgba(0,0,0,0.4),
-        inset 0 2px 4px rgba(255,255,255,0.1);
-    }
-
-    .ionize-btn svg {
-      width: 28px;
-      height: 28px;
+    #microscope {
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
     }
 
     /* Ionization flash effect */
     .microscope-container.ionize-flash .microscope-frame {
       box-shadow:
-        0 0 0 8px #2a2a3a,
-        0 0 0 12px #3a3a4a,
+        0 0 0 6px #2a2a3a,
+        0 0 0 10px #3a3a4a,
         inset 0 0 30px rgba(0,0,0,0.5),
         inset 0 0 60px rgba(100, 200, 255, 0.3);
     }
 
-    /* Nixie tube display */
-    .nixie-container {
+    /* ========== BOTTOM CONTROLS ========== */
+    .bottom-controls {
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+    }
+
+    .button-row {
       display: flex;
       justify-content: center;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    /* Spray & Ionize buttons - golden ratio (56px × 1.618) */
+    .spray-btn,
+    .ionize-btn {
+      background: linear-gradient(145deg, #4a4a5a, #2a2a3a);
+      border: none;
+      border-radius: 12px;
+      width: 90px;
+      height: 56px;
+      color: #daa520;
+      cursor: pointer;
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+      transition: all 0.1s;
+      display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+    }
+
+    .spray-btn:active,
+    .ionize-btn:active {
+      transform: scale(0.94) translateY(2px);
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(255,255,255,0.1);
+    }
+
+    .spray-btn svg,
+    .ionize-btn svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    /* ========== NIXIE DISPLAY ========== */
+    .nixie-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
     }
 
     .nixie-tubes {
       display: flex;
-      gap: 4px;
+      gap: 3px;
       background: #0a0a0f;
-      padding: 10px 15px;
-      border-radius: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
       border: 2px solid #3a3a4a;
     }
 
     .nixie-tube {
-      width: 36px;
-      height: 54px;
+      width: 28px;
+      height: 42px;
       background: radial-gradient(ellipse at center, #1a1008 0%, #0a0a0f 70%);
-      border-radius: 8px;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.8);
     }
 
     .nixie-tube::before {
       content: '';
       position: absolute;
       inset: 2px;
-      border-radius: 6px;
+      border-radius: 4px;
       background: linear-gradient(to bottom,
         rgba(255,140,0,0.05) 0%,
         transparent 30%,
@@ -272,132 +374,204 @@
 
     .nixie-digit {
       font-family: 'Courier New', monospace;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: bold;
       color: #ff8c00;
       text-shadow:
-        0 0 10px #ff6600,
-        0 0 20px #ff4400,
-        0 0 30px #ff2200;
+        0 0 8px #ff6600,
+        0 0 16px #ff4400,
+        0 0 24px #ff2200;
       position: relative;
     }
 
-    .nixie-unit {
-      font-size: 1.2rem;
-      color: #daa520;
-      margin-left: 8px;
-    }
-
-    /* Voltage slider */
-    .slider-container {
-      width: 100%;
-      padding: 0 10px;
-    }
-
-    .slider-label {
-      font-size: 0.75rem;
-      color: #888;
+    .nixie-label {
+      font-size: 0.85rem;
+      color: #bbb;
+      font-weight: bold;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      text-align: center;
-      margin-bottom: 8px;
+      letter-spacing: 2px;
     }
 
-    .voltage-slider {
+    /* ========== VOLTAGE SLIDERS ========== */
+    .voltage-sliders {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       width: 100%;
-      height: 30px;
+      align-items: center;
+    }
+
+    .slider-edge-label {
+      font-size: 0.85rem;
+      color: #bbb;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    /* Fine slider - subtle, spring-return */
+    .fine-slider-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .fine-slider-track {
+      flex: 1;
+      max-width: 280px;
+      height: 20px;
+      background: linear-gradient(to bottom, #1a1a2e, #2a2a3e, #1a1a2e);
+      border-radius: 10px;
+      border: 1px solid #3a3a4a;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .fine-slider-track::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 4px;
+      bottom: 4px;
+      width: 1px;
+      background: #4a4a5a;
+    }
+
+    .fine-slider-thumb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(145deg, #5a5a6a, #3a3a4a);
+      border-radius: 50%;
+      border: 2px solid #888;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      cursor: grab;
+      transition: left 0.15s ease-out;
+    }
+
+    .fine-slider-thumb:active {
+      cursor: grabbing;
+    }
+
+    .fine-slider-thumb.dragging {
+      transition: none;
+    }
+
+    /* Coarse slider - iPhone unlock style (CHUNKY) */
+    .coarse-slider-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .coarse-slider {
+      flex: 1;
+      max-width: 280px;
+      height: 50px;
       -webkit-appearance: none;
       appearance: none;
       background: transparent;
       cursor: pointer;
     }
 
-    .voltage-slider::-webkit-slider-runnable-track {
-      height: 12px;
-      background: linear-gradient(to bottom, #1a1a2e, #2a2a3e, #1a1a2e);
-      border-radius: 6px;
-      border: 2px solid #3a3a4a;
+    .coarse-slider::-webkit-slider-runnable-track {
+      height: 44px;
+      background: linear-gradient(to bottom, #0a0a15, #1a1a2e, #0a0a15);
+      border-radius: 22px;
+      border: 3px solid #3a3a4a;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
     }
 
-    .voltage-slider::-webkit-slider-thumb {
+    .coarse-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(145deg, #5a5a6a, #3a3a4a);
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(145deg, #6a6a7a, #4a4a5a);
       border-radius: 50%;
-      margin-top: -10px;
+      margin-top: -3px;
       box-shadow:
-        0 2px 6px rgba(0,0,0,0.4),
-        inset 0 1px 2px rgba(255,255,255,0.2);
-      border: 2px solid #daa520;
+        0 4px 12px rgba(0,0,0,0.5),
+        inset 0 2px 4px rgba(255,255,255,0.2);
+      border: 3px solid #daa520;
     }
 
-    .voltage-slider::-moz-range-track {
-      height: 12px;
-      background: linear-gradient(to bottom, #1a1a2e, #2a2a3e, #1a1a2e);
-      border-radius: 6px;
-      border: 2px solid #3a3a4a;
+    .coarse-slider::-moz-range-track {
+      height: 44px;
+      background: linear-gradient(to bottom, #0a0a15, #1a1a2e, #0a0a15);
+      border-radius: 22px;
+      border: 3px solid #3a3a4a;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
     }
 
-    .voltage-slider::-moz-range-thumb {
-      width: 24px;
-      height: 24px;
-      background: linear-gradient(145deg, #5a5a6a, #3a3a4a);
+    .coarse-slider::-moz-range-thumb {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(145deg, #6a6a7a, #4a4a5a);
       border-radius: 50%;
       box-shadow:
-        0 2px 6px rgba(0,0,0,0.4),
-        inset 0 1px 2px rgba(255,255,255,0.2);
-      border: 2px solid #daa520;
+        0 4px 12px rgba(0,0,0,0.5),
+        inset 0 2px 4px rgba(255,255,255,0.2);
+      border: 3px solid #daa520;
     }
 
-    /* Responsive */
-    @media (min-width: 768px) {
-      body {
-        padding: 40px;
-      }
-
-      h1 {
-        font-size: 1.3rem;
-        margin-bottom: 30px;
+    /* ========== RESPONSIVE ========== */
+    @media (min-height: 700px) {
+      .main-content {
+        padding-top: 70px;
       }
 
       .microscope-container {
-        width: 450px;
-        height: 450px;
+        --available-height: calc(100dvh - 240px);
+        width: min(90vw, 450px, var(--available-height));
+        height: min(90vw, 450px, var(--available-height));
       }
 
-      .controls {
-        width: 450px;
+      .bottom-controls {
+        gap: 12px;
       }
+    }
 
-      .knobs-row {
-        gap: 60px;
-      }
-
-      .knob {
-        width: 80px;
-        height: 80px;
+    @media (min-width: 500px) {
+      .bottom-controls {
+        max-width: 400px;
       }
     }
   </style>
 </head>
 <body>
+  <!-- Hamburger menu button -->
+  <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Language switch -->
   <div class="lang-switch">
     <button data-lang="lv">LV</button>
     <span class="lang-sep">|</span>
     <button data-lang="en">EN</button>
   </div>
 
-  <h1 data-i18n="title">Millikan Oil Drop Experiment</h1>
+  <!-- Drawer overlay -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
 
-  <div class="microscope-container">
-    <div class="microscope-frame"></div>
-    <canvas id="microscope"></canvas>
-  </div>
+  <!-- Side drawer -->
+  <div class="drawer" id="drawer">
+    <button class="drawer-close" id="drawer-close" aria-label="Close menu">✕</button>
+    <h1 class="drawer-title" data-i18n="title">Millikan Oil Drop Experiment</h1>
+    <p class="drawer-description" data-i18n="description">Measure the elementary electric charge by balancing oil droplets in an electric field.</p>
 
-  <div class="controls">
-    <div class="knobs-row">
+    <div class="drawer-knobs">
       <div class="knob-container">
         <span class="knob-label" data-i18n="plateGap">Plate Gap, mm</span>
         <div class="knob-wrapper">
@@ -414,52 +588,86 @@
         <div class="knob-readout" id="readout-m">5.0</div>
       </div>
     </div>
-
-    <div class="button-row">
-      <button class="spray-btn" id="spray-btn" data-i18n="sprayOil">Spray Oil</button>
-      <button class="ionize-btn" id="ionize-btn" data-i18n-title="ionize" title="Ionize (X-ray)">
-        <svg viewBox="0 0 24 24" width="24" height="24">
-          <circle cx="12" cy="12" r="3" fill="currentColor"/>
-          <path d="M12 2 L12 6 M12 18 L12 22 M2 12 L6 12 M18 12 L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <path d="M12 2 L14 5 L10 5 Z M12 22 L14 19 L10 19 Z M2 12 L5 10 L5 14 Z M22 12 L19 10 L19 14 Z" fill="currentColor"/>
-        </svg>
-      </button>
-    </div>
-
-    <div class="nixie-container">
-      <div class="nixie-tubes">
-        <div class="nixie-tube"><span class="nixie-digit" id="nixie-0">0</span></div>
-        <div class="nixie-tube"><span class="nixie-digit" id="nixie-1">0</span></div>
-        <div class="nixie-tube"><span class="nixie-digit" id="nixie-2">0</span></div>
-        <div class="nixie-tube"><span class="nixie-digit" id="nixie-3">0</span></div>
-      </div>
-      <span class="nixie-unit">V</span>
-    </div>
-
-    <div class="slider-container">
-      <div class="slider-label" data-i18n="voltage">Voltage</div>
-      <input type="range" class="voltage-slider" id="voltage-slider" min="0" max="6000" value="0">
-    </div>
   </div>
+
+  <!-- Main content -->
+  <main class="main-content">
+    <div class="microscope-container">
+      <div class="microscope-frame"></div>
+      <canvas id="microscope"></canvas>
+    </div>
+
+    <div class="bottom-controls">
+      <div class="button-row">
+        <button class="spray-btn" id="spray-btn" data-i18n-title="sprayOil" title="Spray Oil">
+          <!-- Cloud of dots icon -->
+          <svg viewBox="0 0 32 32" width="28" height="28">
+            <circle cx="8" cy="20" r="2" fill="currentColor" opacity="0.6"/>
+            <circle cx="14" cy="22" r="1.5" fill="currentColor" opacity="0.5"/>
+            <circle cx="20" cy="19" r="2.5" fill="currentColor" opacity="0.7"/>
+            <circle cx="26" cy="21" r="1.5" fill="currentColor" opacity="0.5"/>
+            <circle cx="11" cy="16" r="2" fill="currentColor" opacity="0.6"/>
+            <circle cx="17" cy="14" r="2.5" fill="currentColor" opacity="0.8"/>
+            <circle cx="23" cy="15" r="2" fill="currentColor" opacity="0.6"/>
+            <circle cx="14" cy="10" r="1.5" fill="currentColor" opacity="0.5"/>
+            <circle cx="20" cy="9" r="2" fill="currentColor" opacity="0.6"/>
+            <circle cx="16" cy="6" r="1.5" fill="currentColor" opacity="0.4"/>
+          </svg>
+        </button>
+
+        <div class="nixie-container">
+          <div class="nixie-tubes">
+            <div class="nixie-tube"><span class="nixie-digit" id="nixie-0">0</span></div>
+            <div class="nixie-tube"><span class="nixie-digit" id="nixie-1">0</span></div>
+            <div class="nixie-tube"><span class="nixie-digit" id="nixie-2">0</span></div>
+            <div class="nixie-tube"><span class="nixie-digit" id="nixie-3">0</span></div>
+          </div>
+          <span class="nixie-label" data-i18n="volts">Volts</span>
+        </div>
+
+        <button class="ionize-btn" id="ionize-btn" data-i18n-title="ionize" title="Ionize (X-ray)">
+          <img src="radiation-icon.svg" alt="Ionize" width="32" height="32" style="filter: invert(67%) sepia(54%) saturate(601%) hue-rotate(2deg) brightness(92%) contrast(86%);">
+        </button>
+      </div>
+
+      <div class="voltage-sliders">
+        <div class="fine-slider-container">
+          <span class="slider-edge-label">-20</span>
+          <div class="fine-slider-track">
+            <div class="fine-slider-thumb" id="fine-slider-thumb"></div>
+          </div>
+          <span class="slider-edge-label">+20</span>
+        </div>
+
+        <div class="coarse-slider-container">
+          <span class="slider-edge-label">0</span>
+          <input type="range" class="coarse-slider" id="coarse-slider" min="0" max="9999" value="0">
+          <span class="slider-edge-label">9999</span>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <script>
     // ========== TRANSLATIONS ==========
     const TRANSLATIONS = {
       en: {
         title: "Millikan Oil Drop Experiment",
+        description: "Millikan experiment simulation. This is a simplified model of Robert Millikan's experiment (1909–1913).\n\nOil droplets are sprayed between two charged plates. Each droplet carries a small electric charge (a few e). The device allows adjusting the plate separation (d) and droplet mass (m). By varying the voltage, you can balance the gravitational force with the electric field force and calculate the droplet's charge. Radiation can change the droplet's charge, allowing you to balance it again.\n\nMillikan received the Nobel Prize in Physics in 1923 for determining the elementary charge.",
         plateGap: "Plate Gap, mm",
         oilMass: "Oil Mass, ×10⁻¹⁵ kg",
         sprayOil: "Spray Oil",
         ionize: "Ionize (X-ray)",
-        voltage: "Voltage"
+        volts: "Volts"
       },
       lv: {
         title: "Milikena eļļas pilienu eksperiments",
+        description: "Milikena eksperimenta simulācija. Šis ir vienkāršots Roberts Milikena eksperimenta (1909–1913) modelis.\n\nStarp divām uzlādētām plāksnēm tiek izsmidzināti eļļas pilieni. Katram pilienam ir neliels elektriskais lādiņš (daži e). Ierīcē var mainīt attālumu starp plāksnēm (d) un pilienu masu (m). Mainot spriegumu, var līdzsvarot gravitācijas spēku ar elektriskā lauka spēku un aprēķināt piliena lādiņu. Ar starojumu var mainīt piliena lādiņu un līdzsvarot to no jauna.\n\nPar elementārlādiņa noteikšanu Milikens 1923. gadā saņēma Nobela prēmiju fizikā.",
         plateGap: "Plākšņu atstatums, mm",
         oilMass: "Eļļas masa, ×10⁻¹⁵ kg",
         sprayOil: "Izsmidzināt eļļu",
         ionize: "Jonizēt (rentgens)",
-        voltage: "Spriegums"
+        volts: "Volti"
       }
     };
 
@@ -508,7 +716,7 @@
       g: 9.81,                 // Gravity (m/s²)
       massValues: [3e-15, 5e-15, 7e-15, 9e-15, 11e-15],  // kg
       dValues: [0.004, 0.006, 0.008, 0.010, 0.012],      // m (4-12 mm)
-      maxVoltage: 6000,        // V
+      maxVoltage: 9999,        // V
       dropletCount: [18, 24],  // min, max per spray
       chargeRange: [0, 10],    // n values
       driftConstant: 4e12,     // Tuned for visible motion (~5s fall time)
@@ -801,11 +1009,109 @@
     document.getElementById('spray-btn').addEventListener('click', sprayDroplets);
     document.getElementById('ionize-btn').addEventListener('click', ionizeDroplets);
 
-    const voltageSlider = document.getElementById('voltage-slider');
-    voltageSlider.addEventListener('input', (e) => {
+    // ========== DRAWER CONTROLS ==========
+    const drawer = document.getElementById('drawer');
+    const drawerOverlay = document.getElementById('drawer-overlay');
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const drawerClose = document.getElementById('drawer-close');
+
+    function openDrawer() {
+      drawer.classList.add('open');
+      drawerOverlay.classList.add('active');
+    }
+
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      drawerOverlay.classList.remove('active');
+    }
+
+    hamburgerBtn.addEventListener('click', openDrawer);
+    drawerClose.addEventListener('click', closeDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+
+    // ========== COARSE VOLTAGE SLIDER ==========
+    const coarseSlider = document.getElementById('coarse-slider');
+    coarseSlider.addEventListener('input', (e) => {
       state.voltage = parseFloat(e.target.value);
       updateNixieDisplay(state.voltage);
     });
+
+    // ========== FINE VOLTAGE SLIDER (Spring-return jog) ==========
+    const fineTrack = document.querySelector('.fine-slider-track');
+    const fineThumb = document.getElementById('fine-slider-thumb');
+    let fineActive = false;
+    let finePosition = 0; // -1 to +1
+    let fineAnimationId = null;
+    let fineLastTime = 0;
+
+    function updateFineVoltage(timestamp) {
+      if (!fineActive) {
+        // Spring return to center
+        if (Math.abs(finePosition) > 0.01) {
+          finePosition *= 0.85; // Damping
+          fineThumb.style.left = `${50 + finePosition * 45}%`;
+          fineAnimationId = requestAnimationFrame(updateFineVoltage);
+        } else {
+          finePosition = 0;
+          fineThumb.style.left = '50%';
+          fineAnimationId = null;
+        }
+        return;
+      }
+
+      // Calculate dt
+      const dt = fineLastTime ? (timestamp - fineLastTime) / 1000 : 0;
+      fineLastTime = timestamp;
+
+      // Rate: ±1V/sec at center, ±20V/sec at edges
+      const rate = 1 + Math.abs(finePosition) * 19;
+      const delta = Math.sign(finePosition) * rate * dt;
+
+      state.voltage = Math.max(0, Math.min(CONFIG.maxVoltage, state.voltage + delta));
+      coarseSlider.value = state.voltage;
+      updateNixieDisplay(state.voltage);
+
+      fineAnimationId = requestAnimationFrame(updateFineVoltage);
+    }
+
+    function startFineDrag(e) {
+      e.preventDefault();
+      fineActive = true;
+      fineThumb.classList.add('dragging');
+      fineLastTime = 0;
+      updateFinePosition(e);
+      if (!fineAnimationId) {
+        fineAnimationId = requestAnimationFrame(updateFineVoltage);
+      }
+    }
+
+    function updateFinePosition(e) {
+      const rect = fineTrack.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const x = (clientX - rect.left) / rect.width;
+      finePosition = Math.max(-1, Math.min(1, (x - 0.5) * 2));
+      fineThumb.style.left = `${50 + finePosition * 45}%`;
+    }
+
+    function handleFineMove(e) {
+      if (!fineActive) return;
+      updateFinePosition(e);
+    }
+
+    function endFineDrag() {
+      if (!fineActive) return;
+      fineActive = false;
+      fineThumb.classList.remove('dragging');
+      fineLastTime = 0;
+      // Spring animation will continue in updateFineVoltage
+    }
+
+    fineTrack.addEventListener('mousedown', startFineDrag);
+    fineTrack.addEventListener('touchstart', startFineDrag, { passive: false });
+    document.addEventListener('mousemove', handleFineMove);
+    document.addEventListener('touchmove', handleFineMove, { passive: false });
+    document.addEventListener('mouseup', endFineDrag);
+    document.addEventListener('touchend', endFineDrag);
 
     // Touch/drag support for knobs
     let dragStartAngle = 0;
@@ -881,13 +1187,13 @@
         e.preventDefault();
         const step = e.shiftKey ? 100 : 10;
         state.voltage = Math.max(0, state.voltage - step);
-        voltageSlider.value = state.voltage;
+        coarseSlider.value = state.voltage;
         updateNixieDisplay(state.voltage);
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
         const step = e.shiftKey ? 100 : 10;
         state.voltage = Math.min(CONFIG.maxVoltage, state.voltage + step);
-        voltageSlider.value = state.voltage;
+        coarseSlider.value = state.voltage;
         updateNixieDisplay(state.voltage);
       }
     });
