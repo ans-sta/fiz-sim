@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Newton's Cannon</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #060a14;
+  --panel: #0c1220;
+  --panel-border: #1a2540;
+  --accent: #00ccff;
+  --accent-dim: #00ccff33;
+  --earth: #2a6e3f;
+  --earth-ocean: #1a3a5c;
+  --mountain: #c8d6e8;
+  --cannonball: #ffd700;
+  --cannonball-glow: #ffd70066;
+  --orbit: #00ccff55;
+  --text: #c8d6e8;
+  --text-dim: #5a6d88;
+  --success: #00ff88;
+  --escape: #ff6633;
+  --radius: 8px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  overflow: hidden;
+  height: 100dvh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--panel-border);
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+}
+.back-btn:hover { color: var(--accent); }
+header h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--accent), #66eeff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  transition: all 0.3s;
+}
+.attempt-counter {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-left: auto;
+}
+.attempt-counter span {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+#canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Bottom panel */
+.controls {
+  background: var(--panel);
+  border-top: 1px solid var(--panel-border);
+  padding: 12px 16px 16px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.speed-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  min-width: 52px;
+}
+.speed-unit {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+input[type=number]#speedInput {
+  width: 58px;
+  padding: 4px 6px;
+  background: var(--panel-border);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  color: var(--accent);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+  flex-shrink: 0;
+}
+input[type=number]#speedInput:focus {
+  border-color: var(--accent);
+  background: #0a1828;
+}
+input[type=number]#speedInput::-webkit-inner-spin-button,
+input[type=number]#speedInput::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  flex: 1;
+  height: 4px;
+  background: var(--panel-border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  cursor: pointer;
+  border: none;
+}
+
+.btn-row {
+  display: flex;
+  gap: 8px;
+}
+button {
+  flex: 1;
+  padding: 10px 4px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button.danger {
+  border-color: #ff4455;
+  color: #ff4455;
+}
+button.danger:hover { background: rgba(255,68,85,0.15); }
+button:active { transform: scale(0.96); }
+button.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+button.primary:hover { background: var(--accent-dim); }
+button.primary.running {
+  background: var(--accent-dim);
+  box-shadow: 0 0 12px var(--accent-dim);
+}
+
+.presets {
+  display: flex;
+  gap: 6px;
+}
+.preset-btn {
+  flex: 1;
+  padding: 6px 2px;
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  font-family: 'Exo 2', sans-serif;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.preset-btn:hover, .preset-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+input[type=range]:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+input[type=number]#speedInput:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.preset-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.info-row {
+  display: flex;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 0.5px;
+}
+.info-item { flex: 1; }
+.info-item span { color: var(--text); }
+
+/* Stars background rendered on canvas, but we add a subtle CSS star layer too */
+</style>
+</head>
+<body>
+
+<header>
+  <button class="back-btn" onclick="location.href='index.html'" title="Back">←</button>
+  <h1>NEWTON'S CANNON</h1>
+  <div class="attempt-counter" id="attemptCounter">SHOTS: <span id="attemptCount">0</span></div>
+
+</header>
+
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+</div>
+
+<div class="controls">
+
+  <div class="speed-row">
+    <div class="speed-label">SPEED</div>
+    <input type="range" id="speedSlider" min="0" max="1000" value="450" step="1">
+    <input type="number" id="speedInput" min="0.1" max="10.5" step="0.05" value="5.0">
+    <div class="speed-unit">km/s</div>
+  </div>
+
+  <div class="presets">
+    <button class="preset-btn" data-vel="2500">FALL</button>
+    <button class="preset-btn" data-vel="7200">ORBIT</button>
+    <button class="preset-btn" data-vel="9000">ELLIPSE</button>
+    <button class="preset-btn" data-vel="10400">ESCAPE</button>
+  </div>
+
+  <div class="btn-row">
+    <button class="primary" id="btnFire">▶ FIRE</button>
+    <button id="btnReset">↺ BALL RESET</button>
+    <button id="btnTrailToggle">TRAIL ON</button>
+  </div>
+
+  <div class="info-row">
+    <div class="info-item">ALT: <span id="infoAlt">—</span></div>
+    <div class="info-item">VEL: <span id="infoVel">—</span></div>
+    <div class="info-item">TIME: <span id="infoTime">—</span></div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONSTANTS & CONFIG
+// ═══════════════════════════════════════
+const G = 6.674e-11;
+const M_EARTH = 5.972e24;
+const R_EARTH = 6.371e6;   // meters
+const GM = G * M_EARTH;
+
+// Simulation scale: 1 pixel = SCALE meters
+// We display earth with a radius of ~earthPx pixels on screen
+// earthPx / R_EARTH = px per meter
+
+// Display params
+let W, H, cx, cy, earthPx, scale;
+
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+// Simulation state
+let running = false;
+let simTime = 0;
+let trailOn = true;
+
+// The cannonball
+let ball = { x: 0, y: 0, vx: 0, vy: 0 };
+let trail = [];
+const TRAIL_MAX = 12000;
+
+// Impact flags and attempt counter
+let impactFlags = []; // [{x, y, vel}] in world coords
+let attemptCount = 0;
+
+// ═══════════════════════════════════════
+// NONLINEAR SLIDER MAPPING
+// Slider 0–1000. Coarse at low/high speeds, fine around orbital zone (~7.1–7.9 km/s)
+// Knots: [sliderPos, velocity m/s]
+const VEL_KNOTS = [
+  [0,    100  ],
+  [300,  5000 ],
+  [450,  6500 ],
+  [600,  7800 ],
+  [750,  8800 ],
+  [1000, 10500],
+];
+
+function sliderToVel(s) {
+  s = Math.max(0, Math.min(1000, s));
+  for (let i = 0; i < VEL_KNOTS.length - 1; i++) {
+    const [s0, v0] = VEL_KNOTS[i];
+    const [s1, v1] = VEL_KNOTS[i + 1];
+    if (s <= s1) {
+      const t = (s - s0) / (s1 - s0);
+      const st = t * t * (3 - 2 * t); // smoothstep
+      return Math.round(v0 + (v1 - v0) * st);
+    }
+  }
+  return 10500;
+}
+
+function velToSlider(v) {
+  v = Math.max(100, Math.min(10500, v));
+  let lo = 0, hi = 1000;
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2;
+    if (sliderToVel(mid) < v) lo = mid; else hi = mid;
+  }
+  return Math.round((lo + hi) / 2);
+}
+
+let fireVel = 5000; // m/s
+
+// Mountain height — 1.5x taller than before
+const MOUNTAIN_H_FRACTION = 0.135; // peak at 13.5% above earth radius visually
+// Mountain position angle (from top, a bit to the left — 10 o'clock position)
+const MOUNTAIN_ANGLE = -Math.PI / 2 - 0.4; // ~from top
+
+// Stars
+const STARS = Array.from({length: 200}, () => ({
+  x: Math.random(),
+  y: Math.random(),
+  r: Math.random() * 1.2 + 0.3,
+  a: Math.random() * 0.7 + 0.3
+}));
+
+// ═══════════════════════════════════════
+// RESIZE + ZOOM
+// ═══════════════════════════════════════
+let earthPxBase = 1; // fixed by window — Earth radius at zoom=1
+let zoomCurrent = 1; // actual zoom multiplier (1 = default, <1 = zoomed out)
+let zoomTarget  = 1;
+let escapeMessageTimer = 0; // countdown after escape detected
+
+function resize() {
+  const wrap = document.getElementById('canvas-wrap');
+  W = wrap.clientWidth;
+  H = wrap.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+  cx = W / 2;
+  cy = H / 2;
+  earthPxBase = Math.min(W, H) * 0.38;
+  earthPx = earthPxBase * zoomCurrent;
+  scale = earthPx / R_EARTH;
+  if (!running) {
+    resetBall();
+    render();
+  }
+}
+
+// ═══════════════════════════════════════
+// ORBITAL CAMERA — computed once at launch
+// ═══════════════════════════════════════
+let camX = 0;       // camera center in world coords (default: Earth center = 0,0)
+let camY = 0;
+let camXTarget = 0;
+let camYTarget = 0;
+let orbitType = 'sub'; // 'sub' | 'circular' | 'elliptic' | 'escape'
+
+function computeOrbitalCamera() {
+  // Compute orbital energy and angular momentum
+  const r = ballR();
+  const v2 = ball.vx * ball.vx + ball.vy * ball.vy;
+  const energy = 0.5 * v2 - GM / r;       // specific orbital energy
+  const Lz = ball.x * ball.vy - ball.y * ball.vx; // specific angular momentum
+
+  if (energy >= 0) {
+    // Escape trajectory
+    orbitType = 'escape';
+    zoomTarget = 1;
+    camXTarget = 0; camYTarget = 0;
+    return;
+  }
+
+  // Semi-major axis
+  const sma = -GM / (2 * energy);
+  // Eccentricity magnitude: e = sqrt(1 + 2*energy*L²/GM²)
+  const eSq = 1 + (2 * energy * Lz * Lz) / (GM * GM);
+  const ecc = Math.sqrt(Math.max(0, eSq));
+
+  const apoapsis = sma * (1 + ecc);   // farthest point from Earth center
+  const periapsis = sma * (1 - ecc);  // closest point
+
+  // Is periapsis inside Earth? → suborbital
+  if (periapsis < R_EARTH) {
+    orbitType = 'sub';
+    zoomTarget = 1;
+    camXTarget = 0; camYTarget = 0;
+    return;
+  }
+
+  // It's a real orbit
+  if (ecc < 0.08) {
+    orbitType = 'circular';
+  } else {
+    orbitType = 'elliptic';
+  }
+
+  // Ellipse center offset from Earth:
+  // The focus (Earth) is at distance sma*ecc from ellipse center.
+  // Direction from periapsis to apoapsis = direction of eccentricity vector.
+  // Eccentricity vector points from focus toward periapsis:
+  // e_vec = (v × L)/GM - r_hat
+  const rx = ball.x / r, ry = ball.y / r;
+  // e_vec components (Laplace-Runge-Lenz)
+  const ex = (ball.vy * Lz) / GM - rx;
+  const ey = (-ball.vx * Lz) / GM - ry;
+  const eMag = Math.sqrt(ex * ex + ey * ey) || 1e-10;
+  // Unit vector from periapsis to apoapsis = -e_hat
+  const apo_dx = -ex / eMag;
+  const apo_dy = -ey / eMag;
+  // Ellipse center = Earth + sma*ecc in apoapsis direction... 
+  // Actually: ellipse center = focus + c * (-e_hat), where c = sma*ecc
+  const c = sma * ecc;
+  const ellCx = c * apo_dx;   // in world meters
+  const ellCy = c * apo_dy;
+
+  // Zoom: fit full ellipse — apoapsis is farthest point FROM EARTH,
+  // but we need to fit it from the CAMERA (ellipse center).
+  // From ellipse center, the farthest point is sma (semi-major axis).
+  // But Earth itself is at distance c = sma*ecc from ellipse center.
+  // So we need to fit: max(sma, c + R_EARTH_visual) from ellipse center.
+  // Simplest: fit apoapsis from Earth, then the zoom naturally shows everything.
+  const margin = Math.min(W, H) * 0.08;
+  const halfScreen = Math.min(W, H) * 0.5 - margin;
+
+  // Ideal: center camera on ellipse center, zoom so sma fits half-screen
+  const neededZoom = Math.max(0.08, Math.min(1.0,
+    (halfScreen * R_EARTH) / (earthPxBase * sma)
+  ));
+  zoomTarget = neededZoom;
+
+  if (orbitType === 'circular') {
+    camXTarget = 0; camYTarget = 0;
+  } else {
+    // At this zoom, Earth (world 0,0) would appear at screen offset = -ellCx * scaleT from center
+    const scaleT = earthPxBase * neededZoom / R_EARTH;
+    // Earth screen distance from center if camera is at ellipse center:
+    const earthScreenDist = Math.sqrt(ellCx * ellCx + ellCy * ellCy) * scaleT;
+    // Maximum allowed: keep Earth within (halfScreen - earthPx_visual) of center
+    const earthVisualPx = earthPxBase * neededZoom; // Earth radius in px at this zoom
+    const maxEarthDist = halfScreen - earthVisualPx * 0.3; // Earth edge stays in frame
+
+    if (earthScreenDist <= maxEarthDist) {
+      // Earth stays on screen — use full ellipse center
+      camXTarget = ellCx;
+      camYTarget = ellCy;
+    } else {
+      // Scale back camera shift so Earth just touches the margin
+      const ratio = maxEarthDist / earthScreenDist;
+      camXTarget = ellCx * ratio;
+      camYTarget = ellCy * ratio;
+    }
+  }
+}
+
+function updateCameraLerp() {
+  lerpCamera();
+}
+
+// Returns true if camera is still moving
+let zoomBackId = null;
+function lerpCamera() {
+  const dz = zoomTarget - zoomCurrent;
+  const dx = camXTarget - camX;
+  const dy = camYTarget - camY;
+  zoomCurrent += dz * 0.025;
+  camX += dx * 0.025;
+  camY += dy * 0.025;
+  earthPx = earthPxBase * zoomCurrent;
+  scale = earthPx / R_EARTH;
+  return Math.abs(dz) > 0.001 || Math.abs(dx) > 1000 || Math.abs(dy) > 1000;
+}
+
+function startZoomBack() {
+  // Targets already set by caller — just start the animation loop
+  if (zoomBackId) cancelAnimationFrame(zoomBackId);
+  function tick() {
+    if (running) return;
+    const changed = lerpCamera();
+    if (escapeMessageTimer > 0) escapeMessageTimer--;
+    render();
+    if (changed || escapeMessageTimer > 0) {
+      zoomBackId = requestAnimationFrame(tick);
+    }
+  }
+  zoomBackId = requestAnimationFrame(tick);
+}
+
+// ═══════════════════════════════════════
+// SIMULATION
+// ═══════════════════════════════════════
+function resetBall() {
+  simTime = 0;
+  trail = [];
+  // Set targets — camera lerps back gently, no instant jump
+  zoomTarget = 1;
+  camXTarget = 0; camYTarget = 0;
+  escapeMessageTimer = 0;
+  // Don't reset zoomCurrent/camX/camY here — let lerp handle it
+  startZoomBack();
+  const mountainR = R_EARTH * (1 + MOUNTAIN_H_FRACTION);
+  ball.x = Math.cos(MOUNTAIN_ANGLE) * mountainR;
+  ball.y = Math.sin(MOUNTAIN_ANGLE) * mountainR;
+  const tangAngle = MOUNTAIN_ANGLE + Math.PI / 2;
+  ball.vx = Math.cos(tangAngle) * fireVel;
+  ball.vy = Math.sin(tangAngle) * fireVel;
+  updateInfoDisplay();
+}
+
+// Physics step using Velocity Verlet with ADAPTIVE dt
+// Near surface: small dt for accuracy; far out: larger dt ok
+function accel(x, y) {
+  const r2 = x * x + y * y;
+  const r = Math.sqrt(r2);
+  const a = -GM / r2;
+  return { ax: a * x / r, ay: a * y / r };
+}
+function adaptiveDt(r) {
+  // dt scales with altitude — smaller near surface, larger far away
+  const h = (r - R_EARTH) / R_EARTH; // normalized altitude (0 = surface)
+  const dtMin = 3;   // seconds — near surface
+  const dtMax = 25;  // seconds — far out
+  return dtMin + (dtMax - dtMin) * Math.min(h / 0.5, 1.0);
+}
+
+// Steps per frame scales with launch velocity for visual speed feel:
+// slow ball → few steps/frame (moves lazily), fast ball → more steps/frame
+function stepsPerFrame() {
+  const vMin = 500;    // m/s
+  const vMax = 10500;  // m/s
+  const sMin = 2;      // very slow on screen
+  const sMax = 14;     // fast on screen
+  const t = Math.max(0, Math.min(1, (fireVel - vMin) / (vMax - vMin)));
+  return Math.round(sMin + (sMax - sMin) * t);
+}
+
+function physicsStep() {
+  const steps = stepsPerFrame();
+  for (let i = 0; i < steps; i++) {
+    const r = Math.sqrt(ball.x * ball.x + ball.y * ball.y);
+    const dt = adaptiveDt(r);
+    const a1 = accel(ball.x, ball.y);
+    const nx = ball.x + ball.vx * dt + 0.5 * a1.ax * dt * dt;
+    const ny = ball.y + ball.vy * dt + 0.5 * a1.ay * dt * dt;
+    const a2 = accel(nx, ny);
+    ball.x = nx;
+    ball.y = ny;
+    ball.vx += 0.5 * (a1.ax + a2.ax) * dt;
+    ball.vy += 0.5 * (a1.ay + a2.ay) * dt;
+    simTime += dt;
+    if (trailOn) {
+      trail.push({ x: ball.x, y: ball.y });
+      if (trail.length > TRAIL_MAX) trail.shift();
+    }
+  }
+}
+
+function ballR() {
+  return Math.sqrt(ball.x * ball.x + ball.y * ball.y);
+}
+
+function ballSpeed() {
+  return Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+}
+
+function escapeVelocity(r) {
+  return Math.sqrt(2 * GM / r);
+}
+
+function circularVelocity(r) {
+  return Math.sqrt(GM / r);
+}
+
+// ═══════════════════════════════════════
+// COORDINATE HELPERS
+// ═══════════════════════════════════════
+function toScreen(wx, wy) {
+  // Camera center (camX, camY) maps to screen center (cx, cy)
+  return {
+    sx: cx + (wx - camX) * scale,
+    sy: cy + (wy - camY) * scale
+  };
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function render() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#060a14';
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  STARS.forEach(s => {
+    ctx.beginPath();
+    ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,220,255,${s.a})`;
+    ctx.fill();
+  });
+
+  // Earth screen position (moves with camera)
+  const { sx: ecx, sy: ecy } = toScreen(0, 0);
+
+  // Faint orbital reference circle
+  const vcirc = circularVelocity(R_EARTH + 10000);
+  const circOrbitR = (GM / (vcirc * vcirc));
+  ctx.beginPath();
+  ctx.arc(ecx, ecy, circOrbitR * scale, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0, 200, 255, 0.07)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Trail — fading from transparent (old) to bright (recent)
+  if (trail.length > 1) {
+    const stride = trail.length > 4000 ? 3 : trail.length > 2000 ? 2 : 1;
+    for (let i = 0; i < trail.length - stride; i += stride) {
+      const t0 = toScreen(trail[i].x, trail[i].y);
+      const t1 = toScreen(trail[i + stride].x, trail[i + stride].y);
+      const progress = i / (trail.length - 1);
+      const alpha = Math.pow(progress, 1.8) * 0.8;
+      ctx.beginPath();
+      ctx.moveTo(t0.sx, t0.sy);
+      ctx.lineTo(t1.sx, t1.sy);
+      ctx.strokeStyle = `rgba(0, 204, 255, ${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // Earth
+  const grad = ctx.createRadialGradient(ecx - earthPx * 0.15, ecy - earthPx * 0.2, earthPx * 0.05, ecx, ecy, earthPx);
+  grad.addColorStop(0, '#1a2a3a');
+  grad.addColorStop(0.5, '#0f1c2b');
+  grad.addColorStop(0.85, '#091422');
+  grad.addColorStop(1, '#060d18');
+  ctx.beginPath();
+  ctx.arc(ecx, ecy, earthPx, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(ecx, ecy, earthPx, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(40, 80, 130, 0.3)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Atmosphere halo
+  const atmoGrad = ctx.createRadialGradient(ecx, ecy, earthPx * 0.96, ecx, ecy, earthPx * 1.07);
+  atmoGrad.addColorStop(0, 'rgba(60, 130, 220, 0.18)');
+  atmoGrad.addColorStop(0.5, 'rgba(60, 130, 220, 0.08)');
+  atmoGrad.addColorStop(1, 'rgba(60, 130, 220, 0)');
+  ctx.beginPath();
+  ctx.arc(ecx, ecy, earthPx * 1.07, 0, Math.PI * 2);
+  ctx.fillStyle = atmoGrad;
+  ctx.fill();
+
+  // Mountain / Cannon
+  const mAngle = MOUNTAIN_ANGLE;
+  const mx = ecx + Math.cos(mAngle) * earthPx;
+  const my = ecy + Math.sin(mAngle) * earthPx;
+  // Mountain peak height matches MOUNTAIN_H_FRACTION * earthPx
+  const mPeakH = earthPx * MOUNTAIN_H_FRACTION;
+  const mBaseHalf = mPeakH * 0.7;
+  const tangent = { x: -Math.sin(mAngle), y: Math.cos(mAngle) };
+  const normal = { x: Math.cos(mAngle), y: Math.sin(mAngle) };
+  // Peak position
+  const peakX = mx + normal.x * mPeakH;
+  const peakY = my + normal.y * mPeakH;
+  ctx.beginPath();
+  ctx.moveTo(peakX, peakY);
+  ctx.lineTo(mx + tangent.x * mBaseHalf, my + tangent.y * mBaseHalf);
+  ctx.lineTo(mx - tangent.x * mBaseHalf, my - tangent.y * mBaseHalf);
+  ctx.closePath();
+  ctx.fillStyle = '#8899bb';
+  ctx.fill();
+  // Snow cap
+  const snowH = mPeakH * 0.35;
+  const snowBase = mPeakH * 0.65;
+  const snowBaseX = mx + normal.x * snowBase;
+  const snowBaseY = my + normal.y * snowBase;
+  const snowHalf = mBaseHalf * (1 - snowBase / mPeakH) * 1.1;
+  ctx.beginPath();
+  ctx.moveTo(peakX, peakY);
+  ctx.lineTo(snowBaseX + tangent.x * snowHalf, snowBaseY + tangent.y * snowHalf);
+  ctx.lineTo(snowBaseX - tangent.x * snowHalf, snowBaseY - tangent.y * snowHalf);
+  ctx.closePath();
+  ctx.fillStyle = '#ddeeff';
+  ctx.fill();
+  // Cannon barrel at peak (pointing tangentially)
+  const tangAngle = mAngle + Math.PI / 2;
+  const cannonLen = mPeakH * 0.7;
+  ctx.beginPath();
+  ctx.moveTo(peakX, peakY);
+  ctx.lineTo(peakX + Math.cos(tangAngle) * cannonLen, peakY + Math.sin(tangAngle) * cannonLen);
+  ctx.strokeStyle = '#ffd700';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  // Impact flags — small red flags at impact points on Earth surface
+  impactFlags.forEach(f => {
+    const { sx: fx, sy: fy } = toScreen(f.x, f.y);
+    const fAngle = Math.atan2(f.y, f.x); // radial angle
+    const fnx = Math.cos(fAngle); // normal (outward)
+    const fny = Math.sin(fAngle);
+    const flagH = earthPx * 0.055;
+    // Flagpole
+    ctx.beginPath();
+    ctx.moveTo(fx, fy);
+    ctx.lineTo(fx + fnx * flagH, fy + fny * flagH);
+    ctx.strokeStyle = '#ff4455';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Flag triangle
+    const ftx = -fny, fty = fnx; // tangent
+    const flagW = flagH * 0.55;
+    ctx.beginPath();
+    ctx.moveTo(fx + fnx * flagH, fy + fny * flagH);
+    ctx.lineTo(fx + fnx * flagH * 0.45 + ftx * flagW, fy + fny * flagH * 0.45 + fty * flagW);
+    ctx.lineTo(fx + fnx * flagH * 0.7, fy + fny * flagH * 0.7);
+    ctx.closePath();
+    ctx.fillStyle = '#ff4455';
+    ctx.fill();
+  });
+
+  // Cannonball
+  const { sx, sy } = toScreen(ball.x, ball.y);
+  // Glow
+  const ballGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 8);
+  ballGrad.addColorStop(0, 'rgba(255, 215, 0, 0.9)');
+  ballGrad.addColorStop(0.5, 'rgba(255, 215, 0, 0.4)');
+  ballGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
+  ctx.beginPath();
+  ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+  ctx.fillStyle = ballGrad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffd700';
+  ctx.fill();
+
+  // Velocity vector (small arrow)
+  if (running) {
+    const vScale = earthPx * 0.00003;
+    const vLen = Math.min(ballSpeed() * vScale, earthPx * 0.18);
+    const vAngle = Math.atan2(ball.vy, ball.vx);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + Math.cos(vAngle) * vLen, sy + Math.sin(vAngle) * vLen);
+    ctx.strokeStyle = 'rgba(0, 255, 136, 0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+  // Escape message overlay
+  if (escapeMessageTimer > 0) {
+    const alpha = Math.min(1, escapeMessageTimer / 40) * Math.min(1, (escapeMessageTimer - 20) / 20 + 1);
+    const fadeAlpha = escapeMessageTimer < 40 ? escapeMessageTimer / 40 : 1;
+    ctx.save();
+    ctx.globalAlpha = fadeAlpha;
+    ctx.font = 'bold 18px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ff6633';
+    ctx.shadowColor = '#ff6633';
+    ctx.shadowBlur = 20;
+    ctx.fillText('ESCAPED EARTH\'S GRAVITY', cx, cy - earthPx * 0.5);
+    ctx.font = '12px "Exo 2", sans-serif';
+    ctx.fillStyle = '#c8d6e8';
+    ctx.shadowBlur = 0;
+    ctx.fillText('Ball will never return', cx, cy - earthPx * 0.5 + 24);
+    ctx.restore();
+  }
+}
+
+
+
+function updateInfoDisplay() {
+  const r = ballR();
+  const alt = (r - R_EARTH) / 1000; // km
+  const v = ballSpeed() / 1000; // km/s
+  const t = simTime / 60; // minutes
+  document.getElementById('infoAlt').textContent = alt > 0 ? alt.toFixed(0) + ' km' : '—';
+  document.getElementById('infoVel').textContent = v.toFixed(2) + ' km/s';
+  document.getElementById('infoTime').textContent = t < 60 ? t.toFixed(1) + ' min' : (t / 60).toFixed(2) + ' hr';
+}
+
+// ═══════════════════════════════════════
+// ANIMATION LOOP
+// ═══════════════════════════════════════
+let animId = null;
+
+function setControlsLocked(locked) {
+  slider.disabled = locked;
+  speedInput.disabled = locked;
+  document.querySelectorAll('.preset-btn').forEach(b => b.disabled = locked);
+}
+
+function loop() {
+  const r = ballR();
+  // Check crash — record impact flag
+  if (r < R_EARTH) {
+    running = false;
+    setControlsLocked(false);
+    const angle = Math.atan2(ball.y, ball.x);
+    impactFlags.push({ x: Math.cos(angle) * R_EARTH, y: Math.sin(angle) * R_EARTH });
+    document.getElementById('btnFire').textContent = '▶ FIRE';
+    document.getElementById('btnFire').classList.remove('running');
+
+
+    // Zoom back in smoothly after impact
+    zoomTarget = 1;
+    render();
+    updateInfoDisplay();
+    ballAtCannon = false; // ball crashed, not at cannon
+    updateResetBtn();
+    startZoomBack();
+    return;
+  }
+  // Check escape
+  if (r > R_EARTH * 50) {
+    running = false;
+    setControlsLocked(false);
+    document.getElementById('btnFire').textContent = '▶ FIRE';
+    document.getElementById('btnFire').classList.remove('running');
+    escapeMessageTimer = 180;
+    render();
+    updateInfoDisplay();
+    zoomTarget = 1;
+    ballAtCannon = false;
+    updateResetBtn();
+    startZoomBack();
+    return;
+  }
+  physicsStep();
+  updateCameraLerp();
+  render();
+  updateInfoDisplay();
+  if (running) animId = requestAnimationFrame(loop);
+}
+
+// ═══════════════════════════════════════
+// CONTROLS
+// ═══════════════════════════════════════
+const slider = document.getElementById('speedSlider');
+const speedInput = document.getElementById('speedInput');
+
+function setVelocity(v, source) {
+  fireVel = Math.max(100, Math.min(10500, Math.round(v)));
+  // Update slider
+  if (source !== 'slider') slider.value = velToSlider(fireVel);
+  // Update number input
+  if (source !== 'input') speedInput.value = (fireVel / 1000).toFixed(2);
+  // Highlight preset if close match
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    const bv = parseInt(btn.dataset.vel);
+    btn.classList.toggle('active', Math.abs(bv - fireVel) < 50);
+  });
+  if (!running) resetBall();
+  render();
+}
+
+slider.addEventListener('input', () => {
+  setVelocity(sliderToVel(parseInt(slider.value)), 'slider');
+});
+
+speedInput.addEventListener('change', () => {
+  const v = parseFloat(speedInput.value) * 1000;
+  if (!isNaN(v)) setVelocity(v, 'input');
+});
+speedInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') speedInput.blur();
+  if (e.key === 'ArrowUp') { e.preventDefault(); setVelocity(fireVel + 10, 'input'); }
+  if (e.key === 'ArrowDown') { e.preventDefault(); setVelocity(fireVel - 10, 'input'); }
+});
+
+document.getElementById('btnFire').addEventListener('click', () => {
+  if (running) {
+    running = false;
+    cancelAnimationFrame(animId);
+    setControlsLocked(false);
+    document.getElementById('btnFire').textContent = '▶ FIRE';
+    document.getElementById('btnFire').classList.remove('running');
+  } else {
+    attemptCount++;
+    document.getElementById('attemptCount').textContent = attemptCount;
+    resetBall();
+    ballAtCannon = false;
+    running = true;
+    setControlsLocked(true);
+    computeOrbitalCamera(); // set zoom/camera target based on orbital energy
+    document.getElementById('btnFire').textContent = '⏸ PAUSE';
+    document.getElementById('btnFire').classList.add('running');
+    loop();
+  }
+});
+
+// Reset button: two states
+// State 1 "BALL RESET" — resets ball, keeps flags. If ball is already at cannon → switches to full reset mode
+// State 2 "FULL RESET" — clears flags and counter (only shown when ball is at cannon position)
+let ballAtCannon = true; // true when ball hasn't been fired yet / just reset
+
+function updateResetBtn() {
+  const btn = document.getElementById('btnReset');
+  if (ballAtCannon && impactFlags.length > 0) {
+    btn.textContent = '✕ FULL RESET';
+    btn.classList.add('danger');
+  } else {
+    btn.textContent = '↺ BALL RESET';
+    btn.classList.remove('danger');
+  }
+}
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (running) {
+    // During flight: pause and ball reset
+    running = false;
+    cancelAnimationFrame(animId);
+    if (zoomBackId) cancelAnimationFrame(zoomBackId);
+    setControlsLocked(false);
+    document.getElementById('btnFire').textContent = '▶ FIRE';
+    document.getElementById('btnFire').classList.remove('running');
+  }
+  if (ballAtCannon && impactFlags.length > 0) {
+    // Full reset
+    impactFlags = [];
+    attemptCount = 0;
+    document.getElementById('attemptCount').textContent = '0';
+  }
+
+
+  resetBall();
+  ballAtCannon = true;
+  updateResetBtn();
+  render();
+});
+
+document.getElementById('btnTrailToggle').addEventListener('click', () => {
+  trailOn = !trailOn;
+  document.getElementById('btnTrailToggle').textContent = trailOn ? 'TRAIL ON' : 'TRAIL OFF';
+  if (!trailOn) trail = [];
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    setVelocity(parseInt(btn.dataset.vel), 'preset');
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (document.activeElement === speedInput) return;
+  if (e.code === 'Space') { e.preventDefault(); document.getElementById('btnFire').click(); }
+  if (e.code === 'KeyR') document.getElementById('btnReset').click();
+  if (e.code === 'KeyT') { document.getElementById('btnTrailToggle').click(); }
+});
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+window.addEventListener('resize', () => { resize(); });
+resize();
+setVelocity(5000, 'init');
+updateResetBtn();
+render();
+</script>
+</body>
+</html>

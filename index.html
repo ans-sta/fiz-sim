@@ -560,6 +560,40 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 4: Newton's Cannon ══════ -->
+    <a href="newtons-cannon.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Earth circle -->
+          <circle cx="50" cy="100" r="35" fill="#2a6e3f" stroke="#4a9e5f" stroke-width="1.2"/>
+          <!-- Ocean on earth -->
+          <circle cx="50" cy="100" r="28" fill="#1a3a5c" opacity="0.6"/>
+          <!-- Mountain -->
+          <path d="M 28 90 L 42 65 L 56 90 Z" fill="#c8d6e8" opacity="0.8"/>
+          <!-- Cannon base -->
+          <rect x="42" y="72" width="16" height="8" rx="2" fill="#5a6d88"/>
+          <!-- Cannon barrel -->
+          <line x1="50" y1="72" x2="80" y2="48" stroke="#5a6d88" stroke-width="3" stroke-linecap="round"/>
+          <!-- Cannonball at launch -->
+          <circle cx="95" cy="35" r="5" fill="#ffd700" stroke="#ffed4e" stroke-width="1.2"/>
+          <!-- Trajectory arcs -->
+          <path d="M 85 50 Q 110 25 130 60" fill="none" stroke="#00ccff44" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <path d="M 85 50 Q 120 10 150 45" fill="none" stroke="#00ff8844" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <!-- Orbit circle -->
+          <circle cx="50" cy="100" r="60" fill="none" stroke="#00ccff55" stroke-width="0.8" stroke-dasharray="3 2"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-mechanics" style="color: #ff6633; background: #ff663322; border: 1px solid #ff663333;" data-i18n="tagMechanics">Mechanics</div>
+        <div class="card-title" data-i18n="cannonTitle">Newton's Cannon</div>
+        <p class="card-desc" data-i18n="cannonDesc">Explore orbital mechanics by adjusting cannon velocity. Discover how gravity shapes the trajectory from ballistic arc to stable orbit.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -577,12 +611,15 @@ const TRANSLATIONS = {
     sectionLabel: "Simulations",
     tagElectrostatics: "Electrostatics",
     tagQuantization: "Charge quantization",
+    tagMechanics: "Mechanics",
     hockeyTitle: "Electric Field Hockey",
     hockeyDesc: "Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.",
     millikanTitle: "Millikan Experiment",
     millikanDesc: "Balance oil droplets in an electric field to discover that charge comes in discrete units — just as Millikan did in 1913.",
     fieldTitle: "Electric Field",
     fieldDesc: "Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.",
+    cannonTitle: "Newton's Cannon",
+    cannonDesc: "Explore orbital mechanics by adjusting cannon velocity. Discover how gravity shapes the trajectory from ballistic arc to stable orbit.",
     statusLive: "Live",
     statusDev: "In development",
     statusPlanned: "Planned",
@@ -596,12 +633,15 @@ const TRANSLATIONS = {
     sectionLabel: "Simulācijas",
     tagElectrostatics: "Elektrostatika",
     tagQuantization: "Lādiņa kvantēšana",
+    tagMechanics: "Mehānika",
     hockeyTitle: "Elektriskā lauka hokejs",
     hockeyDesc: "Novieto pozitīvus un negatīvus lādiņus, lai ar Kulona spēku vadītu lādētu ripu cauri šķēršļiem uz vārtiem.",
     millikanTitle: "Milikena eksperiments",
     millikanDesc: "Līdzsvaro eļļas pilienus elektriskajā laukā, lai atklātu, ka lādiņš pastāv diskrētos lielumos — tieši kā Milikens 1913. gadā.",
     fieldTitle: "Elektriskais lauks",
     fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
+    cannonTitle: "Ņūtona lielgabals",
+    cannonDesc: "Izpēti orbitālo mehāniku, mainot lielgabala ātrumu. Atklāj, kā gravitācija veidojas trajektorijas no ballistiskas taikas līdz stabila orbita.",
     statusLive: "Aktīvs",
     statusDev: "Izstrādē",
     statusPlanned: "Plānots",

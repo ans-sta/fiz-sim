@@ -239,6 +239,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      margin-top: 54px;
       gap: 15px;
       padding: 50px 10px 10px;
     }
@@ -548,8 +549,16 @@
   </style>
 </head>
 <body>
+  <!-- Header Navigation -->
+  <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 101; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: linear-gradient(180deg, #0d1525 0%, #060a14 100%); border-bottom: 1px solid #1a2540; min-height: 44px;">
+    <button class="back-btn" onclick="location.href='index.html'" title="Back" style="background: none; border: none; color: #5a6d88; font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#00ccff'" onmouseout="this.style.color='#5a6d88'">←</button>
+    <h1 style="font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; letter-spacing: 2px; background: linear-gradient(135deg, #00ccff, #66eeff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">MILLIKAN EXPERIMENT</h1>
+    <div style="flex: 1;"></div>
+    <button style="background: none; border: 1px solid #00ccff33; color: #5a6d88; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='#00ccff'; this.style.color='#00ccff'" onmouseout="this.style.borderColor='#00ccff33'; this.style.color='#5a6d88'" title="Try Newton's Cannon simulation">→ CANNON</button>
+  </header>
+
   <!-- Hamburger menu button -->
-  <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu">
+  <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu" style="top: 54px;">
     <span></span>
     <span></span>
     <span></span>
