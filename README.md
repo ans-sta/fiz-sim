@@ -5,14 +5,16 @@ Fizikas simulācijas / Physics Simulations
 Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 
 🌐 **Live site:** [https://ans-sta.github.io/fiz-sim/](https://ans-sta.github.io/fiz-sim/)
+🌐 **Redirect:** ej.uz/fiz-sim
 
 ## Simulations
 
-| Simulation | Topic | Status |
-|---|---|---|
+| Simulation               | Topic                          | Status  |
+| ------------------------ | ------------------------------ | ------- |
 | ⚡ Electric Field Hockey | Electrostatics / Coulomb force | ✅ Live |
-| 🔬 Millikan Experiment | Charge quantization | ✅ Live |
-| 🧲 Electric Field | Field visualization | ✅ Live |
+| 🔬 Millikan Experiment   | Charge quantization            | ✅ Live |
+| 🧲 Electric Field        | Field visualization            | ✅ Live |
+| 🚀 Newton's Cannon       | Orbital mechanics / gravity    | ✅ Live |
 
 ## Structure
 
@@ -22,6 +24,7 @@ fiz-sim/
 ├── electric-field-hockey.html      ← Coulomb force game
 ├── electric-field.html             ← Field visualizer
 ├── millikan.html                   ← Oil drop experiment
+├── newtons-cannon.html             ← Orbital mechanics
 ├── docs/plans/                     ← Development plans
 └── README.md
 ```

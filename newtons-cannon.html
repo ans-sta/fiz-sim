@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Newton's Cannon</title>
+<title>Newton’s Cannon</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,15 +70,6 @@ header h1 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-  font-family: 'Orbitron', monospace;
-  font-size: 11px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-  padding: 4px 10px;
-  border: 1px solid var(--panel-border);
-  border-radius: 20px;
-  transition: all 0.3s;
-}
 .attempt-counter {
   font-family: 'Orbitron', monospace;
   font-size: 11px;
@@ -86,10 +77,31 @@ header h1 {
   letter-spacing: 1px;
   margin-left: auto;
 }
-.attempt-counter span {
+.attempt-counter #attemptCount {
   color: var(--accent);
   font-weight: 700;
 }
+.lang-switch {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+.lang-switch button {
+  flex: none;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 6px;
+  transition: color 0.2s;
+  font-family: inherit;
+  font-size: inherit;
+}
+.lang-switch button:hover { color: var(--text); }
+.lang-switch button.active { color: var(--accent); }
+.lang-switch .lang-sep { color: var(--text-dim); }
 
 #canvas-wrap {
   flex: 1;
@@ -259,7 +271,7 @@ input[type=number]#speedInput:disabled {
   letter-spacing: 0.5px;
 }
 .info-item { flex: 1; }
-.info-item span { color: var(--text); }
+.info-item span:last-child { color: var(--text); }
 
 /* Stars background rendered on canvas, but we add a subtle CSS star layer too */
 </style>
@@ -268,9 +280,13 @@ input[type=number]#speedInput:disabled {
 
 <header>
   <button class="back-btn" onclick="location.href='index.html'" title="Back">←</button>
-  <h1>NEWTON'S CANNON</h1>
-  <div class="attempt-counter" id="attemptCounter">SHOTS: <span id="attemptCount">0</span></div>
-
+  <h1 data-i18n="heading">NEWTON’S CANNON</h1>
+  <div class="attempt-counter" id="attemptCounter"><span data-i18n="shots">SHOTS:</span> <span id="attemptCount">0</span></div>
+  <div class="lang-switch">
+    <button data-lang="lv">LV</button>
+    <span class="lang-sep">|</span>
+    <button data-lang="en">EN</button>
+  </div>
 </header>
 
 <div id="canvas-wrap">
@@ -280,17 +296,17 @@ input[type=number]#speedInput:disabled {
 <div class="controls">
 
   <div class="speed-row">
-    <div class="speed-label">SPEED</div>
+    <div class="speed-label" data-i18n="speed">SPEED</div>
     <input type="range" id="speedSlider" min="0" max="1000" value="450" step="1">
-    <input type="number" id="speedInput" min="0.1" max="10.5" step="0.05" value="5.0">
+    <input type="number" id="speedInput" min="0.1" max="11.5" step="0.05" value="5.0">
     <div class="speed-unit">km/s</div>
   </div>
 
   <div class="presets">
-    <button class="preset-btn" data-vel="2500">FALL</button>
-    <button class="preset-btn" data-vel="7200">ORBIT</button>
-    <button class="preset-btn" data-vel="9000">ELLIPSE</button>
-    <button class="preset-btn" data-vel="10400">ESCAPE</button>
+    <button class="preset-btn" data-vel="2500" data-i18n="presetFall">FALL</button>
+    <button class="preset-btn" data-vel="7200" data-i18n="presetOrbit">ORBIT</button>
+    <button class="preset-btn" data-vel="9000" data-i18n="presetEllipse">ELLIPSE</button>
+    <button class="preset-btn" data-vel="11000" data-i18n="presetEscape">ESCAPE</button>
   </div>
 
   <div class="btn-row">
@@ -300,14 +316,118 @@ input[type=number]#speedInput:disabled {
   </div>
 
   <div class="info-row">
-    <div class="info-item">ALT: <span id="infoAlt">—</span></div>
-    <div class="info-item">VEL: <span id="infoVel">—</span></div>
-    <div class="info-item">TIME: <span id="infoTime">—</span></div>
+    <div class="info-item"><span data-i18n="alt">ALT:</span> <span id="infoAlt">—</span></div>
+    <div class="info-item"><span data-i18n="vel">VEL:</span> <span id="infoVel">—</span></div>
+    <div class="info-item"><span data-i18n="time">TIME:</span> <span id="infoTime">—</span></div>
   </div>
 
 </div>
 
 <script>
+// ═══════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════
+const TRANSLATIONS = {
+  en: {
+    title: 'Newton’s Cannon',
+    heading: 'NEWTON’S CANNON',
+    shots: 'SHOTS:',
+    speed: 'SPEED',
+    presetFall: 'FALL',
+    presetOrbit: 'ORBIT',
+    presetEllipse: 'ELLIPSE',
+    presetEscape: 'ESCAPE',
+    fire: '▶ FIRE',
+    pause: '⏸ PAUSE',
+    resume: '▶ RESUME',
+    ballReset: '↺ BALL RESET',
+    fullReset: '✕ FULL RESET',
+    trailOn: 'TRAIL ON',
+    trailOff: 'TRAIL OFF',
+    alt: 'ALT:',
+    vel: 'VEL:',
+    time: 'TIME:',
+    escapedTitle: 'ESCAPED EARTH’S GRAVITY',
+    escapedSub: 'The ball will never return',
+    farEllipseTitle: 'FAR ELLIPTICAL ORBIT',
+    farEllipseSub: 'The ball will return',
+    unitHr: 'hr',
+  },
+  lv: {
+    title: 'Ņūtona lielgabals',
+    heading: 'ŅŪTONA LIELGABALS',
+    shots: 'ŠĀVIENI:',
+    speed: 'ĀTRUMS',
+    presetFall: 'KRITIENS',
+    presetOrbit: 'ORBĪTA',
+    presetEllipse: 'ELIPSE',
+    presetEscape: 'IZBĒGŠANA',
+    fire: '▶ ŠAUT',
+    pause: '⏸ PAUZE',
+    resume: '▶ TURPINĀT',
+    ballReset: '↺ ATIESTATĪT BUMBU',
+    fullReset: '✕ PILNĀ ATIESTATE',
+    trailOn: 'TRASE IESL.',
+    trailOff: 'TRASE IZSL.',
+    alt: 'AUGST.:',
+    vel: 'ĀTR.:',
+    time: 'LAIKS:',
+    escapedTitle: 'IZBĒGA NO ZEMES GRAVITĀCIJAS',
+    escapedSub: 'Bumba nekad neatgriezīsies',
+    farEllipseTitle: 'TĀLA ELIPSE',
+    farEllipseSub: 'Bumba atgriezīsies',
+    unitHr: 'h',
+  },
+};
+
+// ═══════════════════════════════════════
+// LANGUAGE SWITCH
+// ═══════════════════════════════════════
+function getDefaultLang() {
+  const saved = localStorage.getItem('physics-sims-lang');
+  if (saved) return saved;
+  const browserLang = navigator.language.toLowerCase();
+  return browserLang.startsWith('lv') ? 'lv' : 'en';
+}
+
+let currentLang = getDefaultLang();
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('physics-sims-lang', lang);
+
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const key = el.dataset.i18n;
+    if (TRANSLATIONS[lang][key]) {
+      el.innerHTML = TRANSLATIONS[lang][key];
+    }
+  });
+
+  if (TRANSLATIONS[lang].title) {
+    document.title = TRANSLATIONS[lang].title;
+  }
+
+  document.querySelectorAll('.lang-switch button').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  document.documentElement.lang = lang;
+
+  // State-dependent labels and canvas text
+  updateFireBtn();
+  updateResetBtn();
+  updateTrailBtn();
+  updateInfoDisplay();
+  render();
+}
+
+function initLanguage() {
+  setLanguage(currentLang);
+  document.querySelectorAll('.lang-switch button').forEach((btn) => {
+    btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+  });
+}
+
 // ═══════════════════════════════════════
 // CONSTANTS & CONFIG
 // ═══════════════════════════════════════
@@ -328,6 +448,7 @@ const ctx = canvas.getContext('2d');
 
 // Simulation state
 let running = false;
+let paused = false; // true when a flight is paused mid-air (FIRE resumes it)
 let simTime = 0;
 let trailOn = true;
 
@@ -350,7 +471,7 @@ const VEL_KNOTS = [
   [450,  6500 ],
   [600,  7800 ],
   [750,  8800 ],
-  [1000, 10500],
+  [1000, 11500],
 ];
 
 function sliderToVel(s) {
@@ -364,11 +485,11 @@ function sliderToVel(s) {
       return Math.round(v0 + (v1 - v0) * st);
     }
   }
-  return 10500;
+  return 11500;
 }
 
 function velToSlider(v) {
-  v = Math.max(100, Math.min(10500, v));
+  v = Math.max(100, Math.min(11500, v));
   let lo = 0, hi = 1000;
   for (let i = 0; i < 30; i++) {
     const mid = (lo + hi) / 2;
@@ -399,22 +520,24 @@ let earthPxBase = 1; // fixed by window — Earth radius at zoom=1
 let zoomCurrent = 1; // actual zoom multiplier (1 = default, <1 = zoomed out)
 let zoomTarget  = 1;
 let escapeMessageTimer = 0; // countdown after escape detected
+let endMessageKey = 'escaped'; // 'escaped' | 'farEllipse' — which end-of-flight message to show
 
 function resize() {
   const wrap = document.getElementById('canvas-wrap');
   W = wrap.clientWidth;
   H = wrap.clientHeight;
-  canvas.width = W;
-  canvas.height = H;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx = W / 2;
   cy = H / 2;
   earthPxBase = Math.min(W, H) * 0.38;
   earthPx = earthPxBase * zoomCurrent;
   scale = earthPx / R_EARTH;
-  if (!running) {
-    resetBall();
-    render();
-  }
+  render();
 }
 
 // ═══════════════════════════════════════
@@ -590,11 +713,11 @@ function adaptiveDt(r) {
   const h = (r - R_EARTH) / R_EARTH; // normalized altitude (0 = surface)
   const dtMin = 3;   // seconds — near surface
   const dtMax = 25;  // seconds — far out
-  return dtMin + (dtMax - dtMin) * Math.min(h / 0.5, 1.0);
+  return Math.max(0.5, dtMin + (dtMax - dtMin) * Math.min(h / 0.5, 1.0));
 }
 
-// Steps per frame scales with launch velocity for visual speed feel:
-// slow ball → few steps/frame (moves lazily), fast ball → more steps/frame
+// Sim-time rate scales with launch velocity for visual speed feel:
+// slow ball → few steps' worth per frame (moves lazily), fast ball → more
 function stepsPerFrame() {
   const vMin = 500;    // m/s
   const vMax = 10500;  // m/s
@@ -604,9 +727,10 @@ function stepsPerFrame() {
   return Math.round(sMin + (sMax - sMin) * t);
 }
 
-function physicsStep() {
-  const steps = stepsPerFrame();
-  for (let i = 0; i < steps; i++) {
+// Advance physics by up to `budget` seconds of sim time in adaptiveDt substeps.
+// Returns true if the ball hit the surface (integration stops at that substep).
+function physicsStep(budget) {
+  while (budget > 0) {
     const r = Math.sqrt(ball.x * ball.x + ball.y * ball.y);
     const dt = adaptiveDt(r);
     const a1 = accel(ball.x, ball.y);
@@ -618,11 +742,16 @@ function physicsStep() {
     ball.vx += 0.5 * (a1.ax + a2.ax) * dt;
     ball.vy += 0.5 * (a1.ay + a2.ay) * dt;
     simTime += dt;
+    budget -= dt;
     if (trailOn) {
       trail.push({ x: ball.x, y: ball.y });
       if (trail.length > TRAIL_MAX) trail.shift();
     }
+    if (ball.x * ball.x + ball.y * ball.y < R_EARTH * R_EARTH) {
+      return true; // crashed — stop integrating at this substep
+    }
   }
+  return false;
 }
 
 function ballR() {
@@ -673,9 +802,8 @@ function render() {
   // Earth screen position (moves with camera)
   const { sx: ecx, sy: ecy } = toScreen(0, 0);
 
-  // Faint orbital reference circle
-  const vcirc = circularVelocity(R_EARTH + 10000);
-  const circOrbitR = (GM / (vcirc * vcirc));
+  // Faint orbital reference circle — circular orbit through the cannon (launch radius)
+  const circOrbitR = R_EARTH * (1 + MOUNTAIN_H_FRACTION);
   ctx.beginPath();
   ctx.arc(ecx, ecy, circOrbitR * scale, 0, Math.PI * 2);
   ctx.strokeStyle = 'rgba(0, 200, 255, 0.07)';
@@ -821,22 +949,24 @@ function render() {
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }
-  // Escape message overlay
+  // End-of-flight message overlay (escape / far ellipse)
   if (escapeMessageTimer > 0) {
-    const alpha = Math.min(1, escapeMessageTimer / 40) * Math.min(1, (escapeMessageTimer - 20) / 20 + 1);
     const fadeAlpha = escapeMessageTimer < 40 ? escapeMessageTimer / 40 : 1;
+    const msgColor = endMessageKey === 'escaped' ? '#ff6633' : '#00ccff';
+    const msgTitle = endMessageKey === 'escaped' ? TRANSLATIONS[currentLang].escapedTitle : TRANSLATIONS[currentLang].farEllipseTitle;
+    const msgSub = endMessageKey === 'escaped' ? TRANSLATIONS[currentLang].escapedSub : TRANSLATIONS[currentLang].farEllipseSub;
     ctx.save();
     ctx.globalAlpha = fadeAlpha;
     ctx.font = 'bold 18px Orbitron, monospace';
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#ff6633';
-    ctx.shadowColor = '#ff6633';
+    ctx.fillStyle = msgColor;
+    ctx.shadowColor = msgColor;
     ctx.shadowBlur = 20;
-    ctx.fillText('ESCAPED EARTH\'S GRAVITY', cx, cy - earthPx * 0.5);
+    ctx.fillText(msgTitle, cx, cy - earthPx * 0.5);
     ctx.font = '12px "Exo 2", sans-serif';
     ctx.fillStyle = '#c8d6e8';
     ctx.shadowBlur = 0;
-    ctx.fillText('Ball will never return', cx, cy - earthPx * 0.5 + 24);
+    ctx.fillText(msgSub, cx, cy - earthPx * 0.5 + 24);
     ctx.restore();
   }
 }
@@ -850,7 +980,7 @@ function updateInfoDisplay() {
   const t = simTime / 60; // minutes
   document.getElementById('infoAlt').textContent = alt > 0 ? alt.toFixed(0) + ' km' : '—';
   document.getElementById('infoVel').textContent = v.toFixed(2) + ' km/s';
-  document.getElementById('infoTime').textContent = t < 60 ? t.toFixed(1) + ' min' : (t / 60).toFixed(2) + ' hr';
+  document.getElementById('infoTime').textContent = t < 60 ? t.toFixed(1) + ' min' : (t / 60).toFixed(2) + ' ' + TRANSLATIONS[currentLang].unitHr;
 }
 
 // ═══════════════════════════════════════
@@ -864,17 +994,33 @@ function setControlsLocked(locked) {
   document.querySelectorAll('.preset-btn').forEach(b => b.disabled = locked);
 }
 
-function loop() {
-  const r = ballR();
+// FIRE button label follows state: running → PAUSE, paused → RESUME, else FIRE
+function updateFireBtn() {
+  const btn = document.getElementById('btnFire');
+  const t = TRANSLATIONS[currentLang];
+  btn.textContent = running ? t.pause : (paused ? t.resume : t.fire);
+  btn.classList.toggle('running', running);
+}
+
+let lastFrameTime = null; // rAF timestamp of previous frame (ms)
+
+function loop(now) {
+  if (!running) return;
+  // Frame-rate independent sim-time budget:
+  // at 60 fps this advances exactly stepsPerFrame() substeps of adaptiveDt
+  if (lastFrameTime === null) lastFrameTime = now;
+  let elapsedReal = (now - lastFrameTime) / 1000; // seconds
+  lastFrameTime = now;
+  if (elapsedReal > 0.05) elapsedReal = 0.05; // cap (tab switch, hiccups)
+  const budget = elapsedReal * 60 * stepsPerFrame() * adaptiveDt(ballR());
+  const crashed = physicsStep(budget);
   // Check crash — record impact flag
-  if (r < R_EARTH) {
+  if (crashed) {
     running = false;
     setControlsLocked(false);
     const angle = Math.atan2(ball.y, ball.x);
     impactFlags.push({ x: Math.cos(angle) * R_EARTH, y: Math.sin(angle) * R_EARTH });
-    document.getElementById('btnFire').textContent = '▶ FIRE';
-    document.getElementById('btnFire').classList.remove('running');
-
+    updateFireBtn();
 
     // Zoom back in smoothly after impact
     zoomTarget = 1;
@@ -885,12 +1031,16 @@ function loop() {
     startZoomBack();
     return;
   }
-  // Check escape
-  if (r > R_EARTH * 50) {
+  // Check escape / far bound ellipse — specific orbital energy decides
+  const r = ballR();
+  const energy = 0.5 * (ball.vx * ball.vx + ball.vy * ball.vy) - GM / r;
+  const escaped = energy >= 0 && r > R_EARTH * 2;
+  const farEllipse = energy < 0 && r > R_EARTH * 50;
+  if (escaped || farEllipse) {
     running = false;
     setControlsLocked(false);
-    document.getElementById('btnFire').textContent = '▶ FIRE';
-    document.getElementById('btnFire').classList.remove('running');
+    updateFireBtn();
+    endMessageKey = escaped ? 'escaped' : 'farEllipse';
     escapeMessageTimer = 180;
     render();
     updateInfoDisplay();
@@ -900,7 +1050,6 @@ function loop() {
     startZoomBack();
     return;
   }
-  physicsStep();
   updateCameraLerp();
   render();
   updateInfoDisplay();
@@ -914,7 +1063,7 @@ const slider = document.getElementById('speedSlider');
 const speedInput = document.getElementById('speedInput');
 
 function setVelocity(v, source) {
-  fireVel = Math.max(100, Math.min(10500, Math.round(v)));
+  fireVel = Math.max(100, Math.min(11500, Math.round(v)));
   // Update slider
   if (source !== 'slider') slider.value = velToSlider(fireVel);
   // Update number input
@@ -924,7 +1073,7 @@ function setVelocity(v, source) {
     const bv = parseInt(btn.dataset.vel);
     btn.classList.toggle('active', Math.abs(bv - fireVel) < 50);
   });
-  if (!running) resetBall();
+  if (!running && !paused) resetBall();
   render();
 }
 
@@ -944,12 +1093,20 @@ speedInput.addEventListener('keydown', e => {
 
 document.getElementById('btnFire').addEventListener('click', () => {
   if (running) {
+    // Pause mid-flight — controls stay locked, state preserved
     running = false;
+    paused = true;
     cancelAnimationFrame(animId);
-    setControlsLocked(false);
-    document.getElementById('btnFire').textContent = '▶ FIRE';
-    document.getElementById('btnFire').classList.remove('running');
+    updateFireBtn();
+  } else if (paused) {
+    // Resume the paused flight — no attempt increment, no reset
+    paused = false;
+    running = true;
+    lastFrameTime = null; // don't count the paused wall-clock time
+    updateFireBtn();
+    animId = requestAnimationFrame(loop);
   } else {
+    // New shot (ball at cannon, crashed or escaped)
     attemptCount++;
     document.getElementById('attemptCount').textContent = attemptCount;
     resetBall();
@@ -957,9 +1114,9 @@ document.getElementById('btnFire').addEventListener('click', () => {
     running = true;
     setControlsLocked(true);
     computeOrbitalCamera(); // set zoom/camera target based on orbital energy
-    document.getElementById('btnFire').textContent = '⏸ PAUSE';
-    document.getElementById('btnFire').classList.add('running');
-    loop();
+    lastFrameTime = null;
+    updateFireBtn();
+    animId = requestAnimationFrame(loop);
   }
 });
 
@@ -971,23 +1128,23 @@ let ballAtCannon = true; // true when ball hasn't been fired yet / just reset
 function updateResetBtn() {
   const btn = document.getElementById('btnReset');
   if (ballAtCannon && impactFlags.length > 0) {
-    btn.textContent = '✕ FULL RESET';
+    btn.textContent = TRANSLATIONS[currentLang].fullReset;
     btn.classList.add('danger');
   } else {
-    btn.textContent = '↺ BALL RESET';
+    btn.textContent = TRANSLATIONS[currentLang].ballReset;
     btn.classList.remove('danger');
   }
 }
 
 document.getElementById('btnReset').addEventListener('click', () => {
-  if (running) {
-    // During flight: pause and ball reset
+  if (running || paused) {
+    // During flight (running or paused): stop and ball reset
     running = false;
+    paused = false;
     cancelAnimationFrame(animId);
     if (zoomBackId) cancelAnimationFrame(zoomBackId);
     setControlsLocked(false);
-    document.getElementById('btnFire').textContent = '▶ FIRE';
-    document.getElementById('btnFire').classList.remove('running');
+    updateFireBtn();
   }
   if (ballAtCannon && impactFlags.length > 0) {
     // Full reset
@@ -1003,9 +1160,13 @@ document.getElementById('btnReset').addEventListener('click', () => {
   render();
 });
 
+function updateTrailBtn() {
+  document.getElementById('btnTrailToggle').textContent = trailOn ? TRANSLATIONS[currentLang].trailOn : TRANSLATIONS[currentLang].trailOff;
+}
+
 document.getElementById('btnTrailToggle').addEventListener('click', () => {
   trailOn = !trailOn;
-  document.getElementById('btnTrailToggle').textContent = trailOn ? 'TRAIL ON' : 'TRAIL OFF';
+  updateTrailBtn();
   if (!trailOn) trail = [];
 });
 
@@ -1028,6 +1189,7 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════
 window.addEventListener('resize', () => { resize(); });
 resize();
+initLanguage();
 setVelocity(5000, 'init');
 updateResetBtn();
 render();

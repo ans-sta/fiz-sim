@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Millikan Oil Drop Experiment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -56,10 +57,9 @@
 
     /* ========== LANGUAGE SWITCH ========== */
     .lang-switch {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 100;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
       font-family: 'Courier New', monospace;
       font-size: 13px;
     }
@@ -162,6 +162,7 @@
       color: #888;
       line-height: 1.5;
       text-align: center;
+      white-space: pre-line;
     }
 
     .drawer-knobs {
@@ -202,10 +203,11 @@
       cursor: pointer;
       position: relative;
       transition: transform 0.1s;
+      transform: rotate(var(--knob-angle, 0deg));
     }
 
     .knob:active {
-      transform: scale(0.98);
+      transform: rotate(var(--knob-angle, 0deg)) scale(0.98);
     }
 
     .knob::after {
@@ -234,7 +236,7 @@
 
     /* ========== MAIN CONTENT ========== */
     .main-content {
-      height: 100%;
+      height: calc(100% - 54px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -551,32 +553,31 @@
 <body>
   <!-- Header Navigation -->
   <header style="position: fixed; top: 0; left: 0; right: 0; z-index: 101; display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: linear-gradient(180deg, #0d1525 0%, #060a14 100%); border-bottom: 1px solid #1a2540; min-height: 44px;">
-    <button class="back-btn" onclick="location.href='index.html'" title="Back" style="background: none; border: none; color: #5a6d88; font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#00ccff'" onmouseout="this.style.color='#5a6d88'">←</button>
-    <h1 style="font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; letter-spacing: 2px; background: linear-gradient(135deg, #00ccff, #66eeff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">MILLIKAN EXPERIMENT</h1>
+    <button class="back-btn" onclick="location.href='index.html'" data-i18n-title="back" title="Back" style="background: none; border: none; color: #5a6d88; font-size: 20px; cursor: pointer; padding: 4px 8px; line-height: 1; transition: color 0.2s;" onmouseover="this.style.color='#00ccff'" onmouseout="this.style.color='#5a6d88'">←</button>
+    <h1 data-i18n="headerTitle" style="font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 700; letter-spacing: 2px; background: linear-gradient(135deg, #00ccff, #66eeff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">MILLIKAN EXPERIMENT</h1>
     <div style="flex: 1;"></div>
-    <button style="background: none; border: 1px solid #00ccff33; color: #5a6d88; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='#00ccff'; this.style.color='#00ccff'" onmouseout="this.style.borderColor='#00ccff33'; this.style.color='#5a6d88'" title="Try Newton's Cannon simulation">→ CANNON</button>
+    <button data-i18n="cannonLink" style="background: none; border: 1px solid #00ccff33; color: #5a6d88; padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px; flex-shrink: 0;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='#00ccff'; this.style.color='#00ccff'" onmouseout="this.style.borderColor='#00ccff33'; this.style.color='#5a6d88'" data-i18n-title="cannonTitle" title="Try Newton's Cannon simulation">→ CANNON</button>
+    <!-- Language switch -->
+    <div class="lang-switch">
+      <button data-lang="lv">LV</button>
+      <span class="lang-sep">|</span>
+      <button data-lang="en">EN</button>
+    </div>
   </header>
 
   <!-- Hamburger menu button -->
-  <button class="hamburger-btn" id="hamburger-btn" aria-label="Open menu" style="top: 54px;">
+  <button class="hamburger-btn" id="hamburger-btn" data-i18n-aria="openMenu" aria-label="Open menu" style="top: 54px;">
     <span></span>
     <span></span>
     <span></span>
   </button>
-
-  <!-- Language switch -->
-  <div class="lang-switch">
-    <button data-lang="lv">LV</button>
-    <span class="lang-sep">|</span>
-    <button data-lang="en">EN</button>
-  </div>
 
   <!-- Drawer overlay -->
   <div class="drawer-overlay" id="drawer-overlay"></div>
 
   <!-- Side drawer -->
   <div class="drawer" id="drawer">
-    <button class="drawer-close" id="drawer-close" aria-label="Close menu">✕</button>
+    <button class="drawer-close" id="drawer-close" data-i18n-aria="closeMenu" aria-label="Close menu">✕</button>
     <h1 class="drawer-title" data-i18n="title">Millikan Oil Drop Experiment</h1>
     <p class="drawer-description" data-i18n="description">Measure the elementary electric charge by balancing oil droplets in an electric field.</p>
 
@@ -667,16 +668,28 @@
         oilMass: "Oil Mass, ×10⁻¹⁵ kg",
         sprayOil: "Spray Oil",
         ionize: "Ionize (X-ray)",
-        volts: "Volts"
+        volts: "Volts",
+        headerTitle: "MILLIKAN EXPERIMENT",
+        back: "Back",
+        cannonLink: "→ CANNON",
+        cannonTitle: "Try Newton’s Cannon simulation",
+        openMenu: "Open menu",
+        closeMenu: "Close menu"
       },
       lv: {
         title: "Milikena eļļas pilienu eksperiments",
-        description: "Milikena eksperimenta simulācija. Šis ir vienkāršots Roberts Milikena eksperimenta (1909–1913) modelis.\n\nStarp divām uzlādētām plāksnēm tiek izsmidzināti eļļas pilieni. Katram pilienam ir neliels elektriskais lādiņš (daži e). Ierīcē var mainīt attālumu starp plāksnēm (d) un pilienu masu (m). Mainot spriegumu, var līdzsvarot gravitācijas spēku ar elektriskā lauka spēku un aprēķināt piliena lādiņu. Ar starojumu var mainīt piliena lādiņu un līdzsvarot to no jauna.\n\nPar elementārlādiņa noteikšanu Milikens 1923. gadā saņēma Nobela prēmiju fizikā.",
+        description: "Milikena eksperimenta simulācija. Šis ir vienkāršots Roberta Milikena eksperimenta (1909–1913) modelis.\n\nStarp divām uzlādētām plāksnēm tiek izsmidzināti eļļas pilieni. Katram pilienam ir neliels elektriskais lādiņš (daži e). Ierīcē var mainīt attālumu starp plāksnēm (d) un pilienu masu (m). Mainot spriegumu, var līdzsvarot gravitācijas spēku ar elektriskā lauka spēku un aprēķināt piliena lādiņu. Ar starojumu var mainīt piliena lādiņu un līdzsvarot to no jauna.\n\nPar elementārlādiņa noteikšanu Milikens 1923. gadā saņēma Nobela prēmiju fizikā.",
         plateGap: "Plākšņu atstatums, mm",
         oilMass: "Eļļas masa, ×10⁻¹⁵ kg",
         sprayOil: "Izsmidzināt eļļu",
         ionize: "Jonizēt (rentgens)",
-        volts: "Volti"
+        volts: "Volti",
+        headerTitle: "MILIKENA EKSPERIMENTS",
+        back: "Atpakaļ",
+        cannonLink: "→ LIELGABALS",
+        cannonTitle: "Izmēģini Ņūtona lielgabala simulāciju",
+        openMenu: "Atvērt izvēlni",
+        closeMenu: "Aizvērt izvēlni"
       }
     };
 
@@ -708,6 +721,13 @@
         }
       });
 
+      document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+        const key = el.dataset.i18nAria;
+        if (TRANSLATIONS[lang][key]) {
+          el.setAttribute('aria-label', TRANSLATIONS[lang][key]);
+        }
+      });
+
       if (TRANSLATIONS[lang].title) {
         document.title = TRANSLATIONS[lang].title;
       }
@@ -727,7 +747,7 @@
       dValues: [0.004, 0.006, 0.008, 0.010, 0.012],      // m (4-12 mm)
       maxVoltage: 9999,        // V
       dropletCount: [18, 24],  // min, max per spray
-      chargeRange: [0, 10],    // n values
+      chargeRange: [1, 10],    // n values
       driftConstant: 4e12,     // Tuned for visible motion (~5s fall time)
       brownianStrength: 1.25,  // Pixel wobble (visible drift, 50% smaller)
       balanceThreshold: 1e-15  // Force threshold for "balanced" (triggers Brownian)
@@ -735,7 +755,7 @@
 
     // Gaussian random using Box-Muller transform
     function gaussianRandom(mean, stdDev) {
-      const u1 = Math.random();
+      const u1 = 1 - Math.random(); // u1 in (0, 1] so Math.log(u1) is finite
       const u2 = Math.random();
       const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
       return mean + z * stdDev;
@@ -757,7 +777,8 @@
     function resizeCanvas() {
       const container = canvas.parentElement;
       const rect = container.getBoundingClientRect();
-      const size = Math.min(rect.width, rect.height) - 30;
+      if (rect.width <= 0 || rect.height <= 0) return; // Container not laid out yet
+      const size = Math.max(50, Math.min(rect.width, rect.height) - 24); // 24 = 2 × 12px inset
       canvasSize = size;
       canvas.width = size * window.devicePixelRatio;
       canvas.height = size * window.devicePixelRatio;
@@ -770,7 +791,9 @@
     function createDroplet() {
       const n = Math.floor(Math.random() * (CONFIG.chargeRange[1] - CONFIG.chargeRange[0] + 1)) + CONFIG.chargeRange[0];
       const meanMass = CONFIG.massValues[state.mIndex];
-      const mass = gaussianRandom(meanMass, meanMass * 0.05); // ±5% std dev
+      const massStdDev = meanMass * 0.015; // ±1.5% std dev
+      // Clamp to ±3σ so charge quantization stays readable
+      const mass = Math.max(meanMass - 3 * massStdDev, Math.min(meanMass + 3 * massStdDev, gaussianRandom(meanMass, massStdDev)));
       return {
         id: Math.random(),
         x: 0.2 + Math.random() * 0.6,  // 20-80% of width
@@ -844,9 +867,10 @@
         droplet.vx += (Math.random() - 0.5) * CONFIG.brownianStrength * brownianScale * dt * 0.5;
         droplet.vy += (Math.random() - 0.5) * CONFIG.brownianStrength * brownianScale * dt * 0.5;
 
-        // Damping - velocities decay over time
-        droplet.vx *= 0.95;
-        droplet.vy *= 0.95;
+        // Damping - velocities decay over time (frame-rate independent)
+        const damping = Math.pow(0.95, dt / (1 / 60));
+        droplet.vx *= damping;
+        droplet.vy *= damping;
 
         // Apply Brownian velocity to position
         const pixelScale = canvasSize / 400;
@@ -975,7 +999,7 @@
     function updateKnobRotation(knobId, index, maxIndex) {
       const knob = document.getElementById(knobId);
       const angle = -60 + (index / (maxIndex - 1)) * 120; // -60° to +60°
-      knob.style.transform = `rotate(${angle}deg)`;
+      knob.style.setProperty('--knob-angle', angle + 'deg');
     }
 
     function updateReadouts() {
@@ -1003,16 +1027,24 @@
     }
 
     // ========== EVENT HANDLERS ==========
-    document.getElementById('knob-d').addEventListener('click', () => {
-      state.dIndex = (state.dIndex + 1) % CONFIG.dValues.length;
+    function cycleKnob(knobId) {
+      if (knobId === 'knob-d') {
+        state.dIndex = (state.dIndex + 1) % CONFIG.dValues.length;
+      } else {
+        state.mIndex = (state.mIndex + 1) % CONFIG.massValues.length;
+      }
       updateReadouts();
       clearDroplets();
+    }
+
+    document.getElementById('knob-d').addEventListener('click', () => {
+      if (suppressKnobClick) { suppressKnobClick = false; return; }
+      cycleKnob('knob-d');
     });
 
     document.getElementById('knob-m').addEventListener('click', () => {
-      state.mIndex = (state.mIndex + 1) % CONFIG.massValues.length;
-      updateReadouts();
-      clearDroplets();
+      if (suppressKnobClick) { suppressKnobClick = false; return; }
+      cycleKnob('knob-m');
     });
 
     document.getElementById('spray-btn').addEventListener('click', sprayDroplets);
@@ -1052,6 +1084,7 @@
     let finePosition = 0; // -1 to +1
     let fineAnimationId = null;
     let fineLastTime = 0;
+    let fineTouchId = null; // Identifier of the touch controlling the slider
 
     function updateFineVoltage(timestamp) {
       if (!fineActive) {
@@ -1085,6 +1118,10 @@
 
     function startFineDrag(e) {
       e.preventDefault();
+      if (e.changedTouches) {
+        if (fineActive) return; // Already tracking another touch
+        fineTouchId = e.changedTouches[0].identifier;
+      }
       fineActive = true;
       fineThumb.classList.add('dragging');
       fineLastTime = 0;
@@ -1096,7 +1133,14 @@
 
     function updateFinePosition(e) {
       const rect = fineTrack.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      let clientX;
+      if (e.touches) {
+        const touch = Array.from(e.touches).find(t => t.identifier === fineTouchId);
+        if (!touch) return;
+        clientX = touch.clientX;
+      } else {
+        clientX = e.clientX;
+      }
       const x = (clientX - rect.left) / rect.width;
       finePosition = Math.max(-1, Math.min(1, (x - 0.5) * 2));
       fineThumb.style.left = `${50 + finePosition * 45}%`;
@@ -1107,8 +1151,13 @@
       updateFinePosition(e);
     }
 
-    function endFineDrag() {
+    function endFineDrag(e) {
       if (!fineActive) return;
+      if (e && e.changedTouches) {
+        const ended = Array.from(e.changedTouches).some(t => t.identifier === fineTouchId);
+        if (!ended) return; // Some other touch ended
+        fineTouchId = null;
+      }
       fineActive = false;
       fineThumb.classList.remove('dragging');
       fineLastTime = 0;
@@ -1121,11 +1170,15 @@
     document.addEventListener('touchmove', handleFineMove, { passive: false });
     document.addEventListener('mouseup', endFineDrag);
     document.addEventListener('touchend', endFineDrag);
+    document.addEventListener('touchcancel', endFineDrag);
 
     // Touch/drag support for knobs
     let dragStartAngle = 0;
     let dragStartIndex = 0;
     let activeKnob = null;
+    let knobDragMoved = false;      // True once the drag actually rotated
+    let knobTouchDrag = false;      // Current drag started from touch
+    let suppressKnobClick = false;  // Swallow the click that follows a mouse drag
 
     function getAngle(element, clientX, clientY) {
       const rect = element.getBoundingClientRect();
@@ -1140,6 +1193,9 @@
       const startDrag = (e) => {
         e.preventDefault();
         activeKnob = knobId;
+        knobDragMoved = false;
+        knobTouchDrag = !!e.touches;
+        suppressKnobClick = false;
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         dragStartAngle = getAngle(knob, clientX, clientY);
@@ -1158,6 +1214,7 @@
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const currentAngle = getAngle(knob, clientX, clientY);
       const deltaAngle = currentAngle - dragStartAngle;
+      if (Math.abs(deltaAngle) > 10) knobDragMoved = true; // More than tap jitter
 
       const maxIndex = 4;
       const indexDelta = Math.round(deltaAngle / 30); // 30° per step
@@ -1176,6 +1233,18 @@
     };
 
     const handleDragEnd = () => {
+      if (!activeKnob) return;
+      if (knobTouchDrag && !knobDragMoved) {
+        // Tap on touch: preventDefault suppressed the synthetic click, cycle here
+        cycleKnob(activeKnob);
+      } else if (!knobTouchDrag && knobDragMoved) {
+        // Mouse drag that rotated: swallow the native click that follows
+        suppressKnobClick = true;
+      }
+      activeKnob = null;
+    };
+
+    const handleDragCancel = () => {
       activeKnob = null;
     };
 
@@ -1183,6 +1252,7 @@
     document.addEventListener('touchmove', handleDragMove, { passive: false });
     document.addEventListener('mouseup', handleDragEnd);
     document.addEventListener('touchend', handleDragEnd);
+    document.addEventListener('touchcancel', handleDragCancel);
 
     // Keyboard navigation
     document.addEventListener('keydown', (e) => {

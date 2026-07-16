@@ -259,6 +259,12 @@
     border: 1px solid #ffd70033;
   }
 
+  .tag-mechanics {
+    color: #ff6633;
+    background: #ff663322;
+    border: 1px solid #ff663333;
+  }
+
   .card-title {
     font-family: 'Orbitron', monospace;
     font-size: 16px;
@@ -369,17 +375,16 @@
 
   /* ═══════════ ENTRANCE ANIMATIONS ═══════════ */
   .card {
-    opacity: 0;
-    transform: translateY(24px);
-    animation: card-enter 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: card-enter 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
   }
 
   .card:nth-child(1) { animation-delay: 0.1s; }
   .card:nth-child(2) { animation-delay: 0.25s; }
   .card:nth-child(3) { animation-delay: 0.4s; }
+  .card:nth-child(4) { animation-delay: 0.55s; }
 
   @keyframes card-enter {
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(24px); }
   }
 
   .card.coming-soon {
@@ -387,7 +392,7 @@
   }
 
   @keyframes card-enter-dim {
-    to { opacity: 0.55; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(24px); }
   }
 </style>
 </head>
@@ -584,7 +589,7 @@
         </svg>
       </div>
       <div class="card-body">
-        <div class="card-tag tag-mechanics" style="color: #ff6633; background: #ff663322; border: 1px solid #ff663333;" data-i18n="tagMechanics">Mechanics</div>
+        <div class="card-tag tag-mechanics" data-i18n="tagMechanics">Mechanics</div>
         <div class="card-title" data-i18n="cannonTitle">Newton's Cannon</div>
         <p class="card-desc" data-i18n="cannonDesc">Explore orbital mechanics by adjusting cannon velocity. Discover how gravity shapes the trajectory from ballistic arc to stable orbit.</p>
         <div class="card-status status-live">
@@ -641,7 +646,7 @@ const TRANSLATIONS = {
     fieldTitle: "Elektriskais lauks",
     fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
     cannonTitle: "Ņūtona lielgabals",
-    cannonDesc: "Izpēti orbitālo mehāniku, mainot lielgabala ātrumu. Atklāj, kā gravitācija veidojas trajektorijas no ballistiskas taikas līdz stabila orbita.",
+    cannonDesc: "Izpēti orbitālo mehāniku, mainot lielgabala ātrumu. Atklāj, kā gravitācija veido trajektoriju no ballistiska loka līdz stabilai orbītai.",
     statusLive: "Aktīvs",
     statusDev: "Izstrādē",
     statusPlanned: "Plānots",

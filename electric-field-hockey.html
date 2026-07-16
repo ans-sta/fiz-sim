@@ -46,7 +46,8 @@
         color: var(--text);
         font-family: "Exo 2", sans-serif;
         overflow: hidden;
-        height: 100vh;
+        height: 100vh; /* fallback for old browsers */
+        height: 100dvh;
         width: 100vw;
         display: flex;
         flex-direction: column;
@@ -668,11 +669,11 @@
   <body>
     <!-- Header Navigation -->
     <header>
-      <button class="back-btn" onclick="location.href='index.html'" title="Back">←</button>
+      <button class="back-btn" onclick="location.href='index.html'" title="Back" data-i18n-title="titleBack">←</button>
       <h1 data-i18n="heading">⚡ ELECTRIC FIELD HOCKEY</h1>
       <span class="status" id="statusBadge" data-i18n="setup">SETUP</span>
       <span class="header-spacer"></span>
-      <button style="background: none; border: 1px solid var(--accent-dim); color: var(--text-dim); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--accent-dim)'; this.style.color='var(--text-dim)'" title="Try Newton's Cannon simulation">→ CANNON</button>
+      <button style="background: none; border: 1px solid var(--accent-dim); color: var(--text-dim); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--accent-dim)'; this.style.color='var(--text-dim)'" title="Try Newton's Cannon simulation" data-i18n-title="titleCannon">→ CANNON</button>
       <div class="lang-switch">
         <button data-lang="lv">LV</button>
         <span class="lang-sep">|</span>
@@ -715,12 +716,12 @@
       <div class="control-panel">
         <h3 data-i18n="puckMass">Puck Mass</h3>
         <div class="slider-row">
-          <input type="range" id="massSlider" min="1" max="100" value="25" />
+          <input type="range" id="massSlider" min="1" max="100" value="25" aria-label="Puck mass" />
           <span class="slider-val" id="massVal">25</span>
         </div>
         <h3 data-i18n="puckCharge" style="margin-top: 6px">Puck Charge</h3>
         <div class="slider-row">
-          <input type="range" id="chargeSlider" min="-10" max="10" value="5" />
+          <input type="range" id="chargeSlider" min="-10" max="10" value="5" aria-label="Puck charge" />
           <span class="slider-val" id="chargeVal">+5</span>
         </div>
       </div>
@@ -747,42 +748,42 @@
     <!-- Mobile Control Bar - Single header with all controls -->
     <div class="mobile-control-bar" id="mobileControlBar">
       <!-- Back button -->
-      <button class="icon-btn back-icon" onclick="location.href='index.html'" title="Back">←</button>
+      <button class="icon-btn back-icon" onclick="location.href='index.html'" title="Back" data-i18n-title="titleBack">←</button>
       <span class="separator"></span>
       <!-- Level buttons -->
       <div class="header-group" id="headerLevels">
-        <button class="icon-btn level-btn active" data-level="practice" title="Practice" id="mLevelP">T</button>
-        <button class="icon-btn level-btn" data-level="1" title="Level 1" id="mLevel1">1</button>
-        <button class="icon-btn level-btn" data-level="2" title="Level 2" id="mLevel2">2</button>
-        <button class="icon-btn level-btn" data-level="3" title="Level 3" id="mLevel3">3</button>
+        <button class="icon-btn level-btn active" data-level="practice" title="Practice" data-i18n-title="practice" data-i18n="practiceLetter" id="mLevelP">T</button>
+        <button class="icon-btn level-btn" data-level="1" title="Level 1" data-i18n-title="level1" id="mLevel1">1</button>
+        <button class="icon-btn level-btn" data-level="2" title="Level 2" data-i18n-title="level2" id="mLevel2">2</button>
+        <button class="icon-btn level-btn" data-level="3" title="Level 3" data-i18n-title="level3" id="mLevel3">3</button>
       </div>
       <span class="separator"></span>
       <!-- Mode -->
       <div class="header-group" id="headerMode">
-        <button class="icon-btn mode-btn active" id="mModeEasy" title="Easy">E</button>
-        <button class="icon-btn mode-btn" id="mModeHard" title="Hard">H</button>
+        <button class="icon-btn mode-btn active" id="mModeEasy" title="Easy" data-i18n-title="easyMode">E</button>
+        <button class="icon-btn mode-btn" id="mModeHard" title="Hard" data-i18n-title="hardMode">H</button>
       </div>
       <span class="separator"></span>
       <!-- Charge selection - glowing orbs -->
       <div class="header-group" id="headerCharges">
-        <button class="charge-icon pos-icon active-pos" id="mChargePos" title="Positive">
+        <button class="charge-icon pos-icon active-pos" id="mChargePos" title="Positive" data-i18n-title="titlePositive">
           <span class="charge-symbol">+</span>
         </button>
-        <button class="charge-icon neg-icon" id="mChargeNeg" title="Negative">
+        <button class="charge-icon neg-icon" id="mChargeNeg" title="Negative" data-i18n-title="titleNegative">
           <span class="charge-symbol">−</span>
         </button>
-        <span class="value-display" id="mChargeCountBtn" title="Charges placed">0</span>
+        <span class="value-display" id="mChargeCountBtn" title="Charges placed" data-i18n-title="titleChargesPlaced">0</span>
       </div>
       <span class="separator"></span>
       <!-- Puck values with icon -->
       <div class="header-group" id="headerPuck">
         <span class="puck-icon">●</span>
-        <span class="value-display puck-value" id="mPuckValueBtn" title="Puck m/q">25/+5</span>
+        <span class="value-display puck-value" id="mPuckValueBtn" title="Puck m/q" data-i18n-title="titlePuckValues">25/+5</span>
       </div>
       <span class="separator"></span>
       <!-- Display toggles -->
       <div class="header-group" id="headerDisplay">
-        <button class="icon-btn" id="mField" title="Electric Field">
+        <button class="icon-btn" id="mField" title="Electric Field" data-i18n-title="electricField">
           <svg class="icon-field" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M4 12h12" stroke-linecap="round"/>
             <path d="M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -792,14 +793,14 @@
             <path d="M10 15l3 3-3 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
           </svg>
         </button>
-        <button class="icon-btn active" id="mTrace" title="Trajectory">
+        <button class="icon-btn active" id="mTrace" title="Trajectory" data-i18n-title="puckTrace">
           <svg class="icon-trajectory" viewBox="0 0 24 24" fill="none" stroke="var(--puck)" stroke-width="2">
             <path d="M4 18 Q10 4, 20 12" stroke-linecap="round"/>
             <circle cx="4" cy="18" r="3" fill="var(--puck)" stroke="none"/>
             <path d="M16 10l4 2-2 4" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
           </svg>
         </button>
-        <button class="icon-btn active" id="mForce" title="Force">
+        <button class="icon-btn active" id="mForce" title="Force" data-i18n-title="forceArrow">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffcc00" stroke-width="2.5">
             <path d="M6 12h10" stroke-linecap="round"/>
             <path d="M12 7l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -809,9 +810,9 @@
       <span class="separator"></span>
       <!-- Controls -->
       <div class="header-group" id="headerControls">
-        <button class="icon-btn primary" id="mStart" title="Start">▶</button>
-        <button class="icon-btn" id="mReset" title="Reset">↺</button>
-        <button class="icon-btn" id="mClear" title="Clear">✕</button>
+        <button class="icon-btn primary" id="mStart" title="Start" data-i18n-title="titleStart">▶</button>
+        <button class="icon-btn" id="mReset" title="Reset" data-i18n-title="titleReset">↺</button>
+        <button class="icon-btn" id="mClear" title="Clear" data-i18n-title="titleClear">✕</button>
       </div>
       <span class="separator"></span>
       <!-- Language switch -->
@@ -821,7 +822,7 @@
         <button data-lang="en">EN</button>
       </div>
       <!-- Drawer toggle -->
-      <button class="icon-btn drawer-toggle" id="drawerToggle" title="Settings">▼</button>
+      <button class="icon-btn drawer-toggle" id="drawerToggle" title="Settings" data-i18n-title="titleSettings">▼</button>
     </div>
 
     <!-- Mobile Drawer - sections aligned exactly below header groups -->
@@ -849,21 +850,21 @@
       <div class="drawer-section puck-section" id="drawerPuck">
         <div class="slider-compact">
           <span class="slider-label">m</span>
-          <input type="range" id="mMassSlider" min="1" max="100" value="25" />
+          <input type="range" id="mMassSlider" min="1" max="100" value="25" aria-label="Puck mass" />
           <span class="slider-val" id="mMassVal">25</span>
         </div>
         <div class="slider-compact">
           <span class="slider-label">q</span>
-          <input type="range" id="mChargeSlider" min="-10" max="10" value="5" />
+          <input type="range" id="mChargeSlider" min="-10" max="10" value="5" aria-label="Puck charge" />
           <span class="slider-val" id="mChargeVal">+5</span>
         </div>
       </div>
       <span class="drawer-separator"></span>
       <!-- Display labels -->
       <div class="drawer-section display-section" id="drawerDisplay">
-        <span class="display-label" id="mLabelField">Vektori</span>
-        <span class="display-label active" id="mLabelTrace">Trajekt.</span>
-        <span class="display-label active" id="mLabelForce">Spēks</span>
+        <span class="display-label" id="mLabelField" data-i18n="displayVectors">Vektori</span>
+        <span class="display-label active" id="mLabelTrace" data-i18n="displayTrace">Trajekt.</span>
+        <span class="display-label active" id="mLabelForce" data-i18n="displayForce">Spēks</span>
       </div>
       <span class="drawer-separator"></span>
       <!-- Controls label -->
@@ -877,7 +878,7 @@
 
     <div id="main">
       <div id="canvas-wrap">
-        <canvas id="gameCanvas"></canvas>
+        <canvas id="gameCanvas" aria-label="Electric field hockey game field"></canvas>
       </div>
     </div>
 
@@ -931,6 +932,20 @@
           goalText: "GOAL!",
           outOfBounds: "PUCK OVERBOARD!",
           playAgain: "[ Space ]",
+          practiceLetter: "P",
+          displayVectors: "Vectors",
+          displayTrace: "Trace",
+          displayForce: "Force",
+          titleBack: "Back",
+          titleCannon: "Try Newton's Cannon simulation",
+          titlePositive: "Positive",
+          titleNegative: "Negative",
+          titleChargesPlaced: "Charges placed",
+          titlePuckValues: "Puck m/q",
+          titleStart: "Start",
+          titleReset: "Reset",
+          titleClear: "Clear",
+          titleSettings: "Settings",
         },
         lv: {
           title: "Elektriskā lauka hokejs",
@@ -977,6 +992,20 @@
           goalText: "VĀRTI!",
           outOfBounds: "RIPA PĀRI BORTAM!",
           playAgain: "[ Space ]",
+          practiceLetter: "T",
+          displayVectors: "Vektori",
+          displayTrace: "Trajekt.",
+          displayForce: "Spēks",
+          titleBack: "Atpakaļ",
+          titleCannon: "Izmēģini Ņūtona lielgabala simulāciju",
+          titlePositive: "Pozitīvs",
+          titleNegative: "Negatīvs",
+          titleChargesPlaced: "Novietotie lādiņi",
+          titlePuckValues: "Ripas m/q",
+          titleStart: "Sākt",
+          titleReset: "No jauna",
+          titleClear: "Notīrīt",
+          titleSettings: "Iestatījumi",
         },
       };
 
@@ -1002,6 +1031,19 @@
             el.innerHTML = TRANSLATIONS[lang][key];
           }
         });
+
+        document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+          const key = el.dataset.i18nTitle;
+          if (TRANSLATIONS[lang][key]) {
+            el.title = TRANSLATIONS[lang][key];
+          }
+        });
+
+        // Drawer mode label follows the current language
+        const modeLabelEl = document.getElementById("mModeLabel");
+        if (modeLabelEl) {
+          modeLabelEl.textContent = TRANSLATIONS[lang][hardMode ? "hardMode" : "easyMode"];
+        }
 
         if (TRANSLATIONS[lang].title) {
           document.title = TRANSLATIONS[lang].title;
@@ -1056,6 +1098,10 @@
 
       // Charge placement area extends beyond visible field by 1.2x charge diameter
       const CHARGE_MARGIN = CHARGE_R * 2 * 1.2; // ~38 pixels
+
+      // Left clamp: the canvas shows only WALL_T px beyond the field's left edge,
+      // so keep the charge disc fully visible there (top/bottom use VISUAL_MARGIN)
+      const CHARGE_MIN_X = CHARGE_R - WALL_T;
 
       // Visual margin to show charges placed outside field (top/bottom)
       const VISUAL_MARGIN = 40;
@@ -1286,8 +1332,8 @@
             resolveCircleRect(puck, wall);
           }
 
-          // Boundary collisions
-          handleBoundary();
+          // Boundary collisions (true = puck went out of bounds and was reset)
+          if (handleBoundary()) return;
 
           // Goal check
           if (checkGoal()) {
@@ -1371,7 +1417,7 @@
           oobFlashTimer = 90; // ~1.5 seconds of flash
           resetPuck();
           updateUI();
-          return;
+          return true;
         }
 
         // NO bouncing off visible field borders - puck passes through freely
@@ -1382,16 +1428,8 @@
           const inGoalY = puck.y > gt + r + 2 && puck.y < gb - r - 2;
 
           if (inGoalY) {
-            // Inside goal corridor — constrain to goal walls (top/bottom posts)
-            if (puck.y < gt + r) {
-              puck.y = gt + r;
-              puck.vy = Math.abs(puck.vy) * BOUNCE_COEFF;
-            }
-            if (puck.y > gb - r) {
-              puck.y = gb - r;
-              puck.vy = -Math.abs(puck.vy) * BOUNCE_COEFF;
-            }
-            // Back wall of goal (net)
+            // Back wall of goal (net); post collisions are handled by
+            // the resolveCircleRect calls below
             if (puck.x > FIELD_W + GOAL_DEPTH - r) {
               puck.x = FIELD_W + GOAL_DEPTH - r;
               puck.vx = -Math.abs(puck.vx) * BOUNCE_COEFF;
@@ -1412,13 +1450,18 @@
           w: GOAL_DEPTH + WALL_T / 2,
           h: WALL_T,
         });
+
+        return false;
       }
 
       function checkGoal() {
         const gt = goalTop();
         const gb = goalBot();
         return (
-          puck.x > FIELD_W + GOAL_DEPTH * 0.4 && puck.y > gt && puck.y < gb
+          puck.x > FIELD_W + GOAL_DEPTH * 0.4 &&
+          puck.x < FIELD_W + GOAL_DEPTH &&
+          puck.y > gt &&
+          puck.y < gb
         );
       }
 
@@ -1968,6 +2011,16 @@
           FIELD_H / 2 - 30,
         );
 
+        // Play-again hint
+        ctx.shadowBlur = 10;
+        ctx.font = "600 22px 'Exo 2', sans-serif";
+        ctx.fillStyle = "rgba(255, 235, 160, 0.85)";
+        ctx.fillText(
+          TRANSLATIONS[currentLang].playAgain,
+          FIELD_W / 2,
+          FIELD_H / 2 + 50,
+        );
+
         ctx.restore();
       }
 
@@ -2064,6 +2117,11 @@
             charges.splice(idx, 1);
             fieldCacheDirty = true;
             updateChargeCount();
+            // Keep an active drag consistent with the modified array
+            if (dragTarget) {
+              if (dragTarget.index === idx) dragTarget = null;
+              else if (dragTarget.index > idx) dragTarget.index--;
+            }
           }
           return;
         }
@@ -2082,7 +2140,7 @@
                    y > -CHARGE_MARGIN && y < FIELD_H + CHARGE_MARGIN) {
           // Place new charge if not on a wall or puck (extended area around field)
           if (!isInsideWall(x, y) && !isNearPuck(x, y)) {
-            charges.push({ x, y, charge: selectedCharge });
+            charges.push({ x: Math.max(CHARGE_MIN_X, x), y, charge: selectedCharge });
             fieldCacheDirty = true;
             updateChargeCount();
             // Start dragging the new charge immediately
@@ -2105,12 +2163,16 @@
                        y >= -CHARGE_MARGIN && y <= FIELD_H + CHARGE_MARGIN;
 
         if (dragTarget) {
+          if (!canManipulateCharges()) {
+            dragTarget = null;
+            return;
+          }
           const c = charges[dragTarget.index];
           if (c) {
             c.x = x + dragTarget.ox;
             c.y = y + dragTarget.oy;
-            // Clamp to extended charge placement area
-            c.x = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_W + CHARGE_MARGIN - CHARGE_R, c.x));
+            // Clamp to extended charge placement area (left: keep disc visible)
+            c.x = Math.max(CHARGE_MIN_X, Math.min(FIELD_W + CHARGE_MARGIN - CHARGE_R, c.x));
             c.y = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_H + CHARGE_MARGIN - CHARGE_R, c.y));
             fieldCacheDirty = true;
           }
@@ -2128,27 +2190,44 @@
 
       canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
-      // Touch events
+      // Touch events (place / drag / long-press delete)
+      let longPressTimer = null;
+      let touchStartClient = null; // touchstart position for long-press move threshold
+
       canvas.addEventListener(
         "touchstart",
         (e) => {
           e.preventDefault();
+          // Tapping the canvas closes the drawer (preventDefault suppresses
+          // the synthetic click, so this cannot rely on the click listener)
+          if (mobileDrawer.classList.contains("open")) closeDrawer();
           if (!canManipulateCharges()) return;
           const touch = e.touches[0];
           const { x, y } = canvasToField(touch.clientX, touch.clientY);
 
           const idx = findChargeAt(x, y);
           if (idx >= 0) {
+            // Existing charge: start drag AND arm long-press delete
             dragTarget = {
               type: "charge",
               index: idx,
               ox: charges[idx].x - x,
               oy: charges[idx].y - y,
             };
+            touchStartClient = { x: touch.clientX, y: touch.clientY };
+            longPressTimer = setTimeout(() => {
+              longPressTimer = null;
+              if (!canManipulateCharges()) return;
+              charges.splice(idx, 1);
+              fieldCacheDirty = true;
+              updateChargeCount();
+              dragTarget = null;
+            }, 500);
           } else if (x > -CHARGE_MARGIN && x < FIELD_W + CHARGE_MARGIN &&
                      y > -CHARGE_MARGIN && y < FIELD_H + CHARGE_MARGIN) {
+            // Empty field: place a new charge, do NOT arm the delete timer
             if (!isInsideWall(x, y) && !isNearPuck(x, y)) {
-              charges.push({ x, y, charge: selectedCharge });
+              charges.push({ x: Math.max(CHARGE_MIN_X, x), y, charge: selectedCharge });
               fieldCacheDirty = true;
               updateChargeCount();
               dragTarget = {
@@ -2173,13 +2252,27 @@
           mouseField.y = y;
           mouseOnField = true;
 
+          // Cancel long-press delete once the finger moves beyond a small threshold
+          if (longPressTimer !== null && touchStartClient) {
+            const mdx = touch.clientX - touchStartClient.x;
+            const mdy = touch.clientY - touchStartClient.y;
+            if (mdx * mdx + mdy * mdy > 64) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+          }
+
           if (dragTarget) {
+            if (!canManipulateCharges()) {
+              dragTarget = null;
+              return;
+            }
             const c = charges[dragTarget.index];
             if (c) {
               c.x = x + dragTarget.ox;
               c.y = y + dragTarget.oy;
-              // Clamp to extended charge placement area
-              c.x = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_W + CHARGE_MARGIN - CHARGE_R, c.x));
+              // Clamp to extended charge placement area (left: keep disc visible)
+              c.x = Math.max(CHARGE_MIN_X, Math.min(FIELD_W + CHARGE_MARGIN - CHARGE_R, c.x));
               c.y = Math.max(-CHARGE_MARGIN + CHARGE_R, Math.min(FIELD_H + CHARGE_MARGIN - CHARGE_R, c.y));
               fieldCacheDirty = true;
             }
@@ -2191,39 +2284,16 @@
       canvas.addEventListener("touchend", () => {
         dragTarget = null;
         mouseOnField = false;
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
       });
 
-      // Long press to remove (mobile)
-      let longPressTimer = null;
-      canvas.addEventListener(
-        "touchstart",
-        (e) => {
-          if (!canManipulateCharges()) return;
-          const touch = e.touches[0];
-          const { x, y } = canvasToField(touch.clientX, touch.clientY);
-          const idx = findChargeAt(x, y);
-          if (idx >= 0) {
-            longPressTimer = setTimeout(() => {
-              if (!canManipulateCharges()) return;
-              charges.splice(idx, 1);
-              fieldCacheDirty = true;
-              updateChargeCount();
-              dragTarget = null;
-            }, 500);
-          }
-        },
-        { passive: true },
-      );
-      canvas.addEventListener("touchend", () => {
+      canvas.addEventListener("touchcancel", () => {
+        dragTarget = null;
+        mouseOnField = false;
         clearTimeout(longPressTimer);
+        longPressTimer = null;
       });
-      canvas.addEventListener(
-        "touchmove",
-        () => {
-          clearTimeout(longPressTimer);
-        },
-        { passive: true },
-      );
 
       // Keyboard shortcuts
       document.addEventListener("keydown", (e) => {
@@ -2235,12 +2305,9 @@
         } else if (e.code === "KeyC") {
           doClear();
         } else if (e.code === "KeyF") {
-          showField = !showField;
-          document.getElementById("chkField").checked = showField;
-          fieldCacheDirty = true;
+          toggleFieldDisplay(!showField);
         } else if (e.code === "KeyT") {
-          showTrace = !showTrace;
-          document.getElementById("chkTrace").checked = showTrace;
+          toggleTraceDisplay(!showTrace);
         }
       });
 
@@ -2363,6 +2430,8 @@
         if (label) {
           label.addEventListener("click", () => updateUI(!stateGetter()));
         }
+
+        return updateUI;
       }
 
       // Level buttons (desktop)
@@ -2433,7 +2502,7 @@
         document.getElementById("mModeHard").classList.toggle("active", mode === "hard");
         // Drawer label
         const modeLabel = document.getElementById("mModeLabel");
-        modeLabel.textContent = mode === "easy" ? "Viegls" : "Grūts";
+        modeLabel.textContent = TRANSLATIONS[currentLang][mode === "easy" ? "easyMode" : "hardMode"];
       }
 
       // Charge type buttons (desktop)
@@ -2487,12 +2556,12 @@
         return val > 0 ? "+" + val : val;
       });
 
-      // Display checkboxes sync
-      setupDisplayToggle("chkField", "mField", "mLabelField", () => showField, (v) => {
+      // Display checkboxes sync (keyboard shortcuts reuse the same update functions)
+      const toggleFieldDisplay = setupDisplayToggle("chkField", "mField", "mLabelField", () => showField, (v) => {
         showField = v;
         fieldCacheDirty = true;
       });
-      setupDisplayToggle("chkTrace", "mTrace", "mLabelTrace", () => showTrace, (v) => {
+      const toggleTraceDisplay = setupDisplayToggle("chkTrace", "mTrace", "mLabelTrace", () => showTrace, (v) => {
         showTrace = v;
         if (!showTrace) trail = [];
       });
@@ -2507,12 +2576,29 @@
         mobileDrawer.classList.toggle("open");
         const toggle = document.getElementById("drawerToggle");
         toggle.textContent = mobileDrawer.classList.contains("open") ? "▲" : "▼";
+        resizeCanvas();
       }
 
       function openDrawer() {
         mobileDrawer.classList.add("open");
         document.getElementById("drawerToggle").textContent = "▲";
+        resizeCanvas();
       }
+
+      function closeDrawer() {
+        mobileDrawer.classList.remove("open");
+        document.getElementById("drawerToggle").textContent = "▼";
+        resizeCanvas();
+      }
+
+      // The drawer resizes #canvas-wrap - fit the canvas again once the
+      // open/close transition finishes (immediate calls above cover the
+      // no-transition case)
+      mobileDrawer.addEventListener("transitionend", (e) => {
+        if (e.target === mobileDrawer && e.propertyName === "max-height") {
+          resizeCanvas();
+        }
+      });
 
       document.getElementById("drawerToggle").addEventListener("click", toggleDrawer);
       document.getElementById("mChargeCountBtn").addEventListener("click", openDrawer);
@@ -2522,10 +2608,7 @@
 
       // Close drawer when clicking on canvas
       canvas.addEventListener("click", () => {
-        if (mobileDrawer.classList.contains("open")) {
-          mobileDrawer.classList.remove("open");
-          document.getElementById("drawerToggle").textContent = "▼";
-        }
+        if (mobileDrawer.classList.contains("open")) closeDrawer();
       }, true);
 
       // Mobile language switch
@@ -2536,10 +2619,26 @@
       // ═══════════════════════════════════════════
       //  GAME LOOP
       // ═══════════════════════════════════════════
-      function gameLoop() {
-        stepPhysics();
+      // Fixed-timestep accumulator: the simulation advances DT per physics
+      // step regardless of the display refresh rate (60/120/144 Hz)
+      let lastFrameTime = null;
+      let physicsAccumulator = 0;
+
+      function gameLoop(timestamp) {
+        if (lastFrameTime !== null) {
+          let elapsed = (timestamp - lastFrameTime) / 1000;
+          if (elapsed > 0.1) elapsed = 0.1; // tab-switch protection
+          physicsAccumulator += elapsed;
+        }
+        lastFrameTime = timestamp;
+
+        while (physicsAccumulator >= DT) {
+          stepPhysics();
+          if (oobFlashTimer > 0) oobFlashTimer--;
+          physicsAccumulator -= DT;
+        }
+
         updateParticles();
-        if (oobFlashTimer > 0) oobFlashTimer--;
         render();
         requestAnimationFrame(gameLoop);
       }
@@ -2551,7 +2650,7 @@
       resizeCanvas();
       initLanguage();
       initLevel("practice");
-      gameLoop();
+      requestAnimationFrame(gameLoop);
     </script>
   </body>
 </html>

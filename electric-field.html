@@ -120,6 +120,10 @@
         flex-shrink: 0;
         overflow-x: auto;
       }
+      /* Auto margins center the content but collapse to 0 on overflow,
+         keeping the left edge reachable when scrolling */
+      .control-bar > :first-child { margin-left: auto; }
+      .control-bar > :last-child { margin-right: auto; }
       .control-panel {
         background: rgba(255, 255, 255, 0.02);
         border: 1px solid var(--panel-border);
@@ -581,9 +585,10 @@
         background: var(--accent-dim);
       }
 
-      /* Clear section - matches header: clear button (38px) */
+      /* Clear section - sizes to its label, at least as wide as the header clear button (38px) */
       .drawer-section.clear-section {
-        width: 38px;
+        width: auto;
+        min-width: 38px;
         cursor: pointer;
       }
       .drawer-section.clear-section .section-label {
@@ -650,10 +655,10 @@
   <body>
     <!-- Header Navigation -->
     <header>
-      <button class="back-btn" onclick="location.href='index.html'" title="Back">←</button>
+      <button class="back-btn" onclick="location.href='index.html'" data-i18n-title="back" title="Back">←</button>
       <h1 data-i18n="heading">⚡ ELECTRIC FIELD</h1>
       <span class="header-spacer"></span>
-      <button style="background: none; border: 1px solid var(--accent-dim); color: var(--text-dim); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--accent-dim)'; this.style.color='var(--text-dim)'" title="Try Newton's Cannon simulation">→ CANNON</button>
+      <button style="background: none; border: 1px solid var(--accent-dim); color: var(--text-dim); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--accent-dim)'; this.style.color='var(--text-dim)'" data-i18n-title="tryCannon" title="Try Newton’s Cannon simulation">→ CANNON</button>
       <div class="lang-switch">
         <button data-lang="lv">LV</button>
         <span class="lang-sep">|</span>
@@ -708,30 +713,32 @@
     <!-- Mobile Control Bar - Single header with all controls -->
     <div class="mobile-control-bar" id="mobileControlBar">
       <!-- Back button -->
-      <button class="icon-btn back-icon" onclick="location.href='index.html'" title="Back">←</button>
+      <button class="icon-btn back-icon" onclick="location.href='index.html'" data-i18n-title="back" title="Back">←</button>
+      <!-- Newton's Cannon link -->
+      <button class="icon-btn back-icon" style="color: var(--accent);" onclick="location.href='newtons-cannon.html'" data-i18n-title="tryCannon" title="Try Newton’s Cannon simulation">→</button>
       <span class="separator"></span>
       <!-- Charge selection - glowing orb style -->
       <div class="header-group" id="headerCharges">
-        <button class="charge-icon pos-icon active-pos" id="mChargePos" title="Positive">
+        <button class="charge-icon pos-icon active-pos" id="mChargePos" data-i18n-title="positiveTitle" title="Positive">
           <span class="charge-symbol">+</span>
         </button>
-        <button class="charge-icon neg-icon" id="mChargeNeg" title="Negative">
+        <button class="charge-icon neg-icon" id="mChargeNeg" data-i18n-title="negativeTitle" title="Negative">
           <span class="charge-symbol">−</span>
         </button>
-        <span class="value-display" id="mChargeCountBtn" title="Charges placed">0</span>
+        <span class="value-display" id="mChargeCountBtn" data-i18n-title="chargesPlacedTitle" title="Charges placed">0</span>
       </div>
       <span class="separator"></span>
       <!-- Test charge - yellow, bigger -->
       <div class="header-group" id="headerTest">
-        <button class="test-icon" id="mTestCharge" title="Test Charge">
+        <button class="test-icon" id="mTestCharge" data-i18n-title="testCharge" title="Test Charge">
           <span class="test-symbol">T</span>
         </button>
-        <span class="value-display test-value" id="mTestValueBtn" title="Test charge value">+1</span>
+        <span class="value-display test-value" id="mTestValueBtn" data-i18n-title="testValueTitle" title="Test charge value">+1</span>
       </div>
       <span class="separator"></span>
       <!-- Display toggles - improved icons -->
       <div class="header-group" id="headerDisplay">
-        <button class="icon-btn active" id="mField" title="Field Vectors">
+        <button class="icon-btn active" id="mField" data-i18n-title="fieldVectors" title="Field Vectors">
           <svg class="icon-field" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M4 12h12" stroke-linecap="round"/>
             <path d="M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -741,7 +748,7 @@
             <path d="M10 15l3 3-3 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
           </svg>
         </button>
-        <button class="icon-btn" id="mLines" title="Field Lines">
+        <button class="icon-btn" id="mLines" data-i18n-title="fieldLines" title="Field Lines">
           <svg class="icon-lines" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M4 12 Q12 2, 20 12" stroke-linecap="round"/>
             <path d="M4 12 Q12 22, 20 12" stroke-linecap="round"/>
@@ -749,14 +756,14 @@
             <circle cx="20" cy="12" r="2" fill="#3388ff" stroke="#3388ff" stroke-width="0.5"/>
           </svg>
         </button>
-        <button class="icon-btn" id="mEquip" title="Equipotential">
+        <button class="icon-btn" id="mEquip" data-i18n-title="equipotential" title="Equipotential">
           <svg class="icon-equip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <ellipse cx="12" cy="12" rx="4" ry="8" opacity="0.7"/>
             <ellipse cx="12" cy="12" rx="8" ry="4" opacity="0.7"/>
             <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.5"/>
           </svg>
         </button>
-        <button class="icon-btn active" id="mForce" title="Force">
+        <button class="icon-btn active" id="mForce" data-i18n-title="forceTitle" title="Force">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffcc00" stroke-width="2.5">
             <path d="M6 12h10" stroke-linecap="round"/>
             <path d="M12 7l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -766,7 +773,7 @@
       <span class="separator"></span>
       <!-- Clear -->
       <div class="header-group" id="headerClear">
-        <button class="icon-btn" id="mClear" title="Clear">✕</button>
+        <button class="icon-btn" id="mClear" data-i18n-title="clearTitle" title="Clear">✕</button>
       </div>
       <span class="separator"></span>
       <!-- Language switch -->
@@ -776,7 +783,7 @@
         <button data-lang="en">EN</button>
       </div>
       <!-- Drawer toggle -->
-      <button class="icon-btn drawer-toggle" id="drawerToggle" title="Settings">▼</button>
+      <button class="icon-btn drawer-toggle" id="drawerToggle" data-i18n-title="settingsTitle" title="Settings">▼</button>
     </div>
 
     <!-- Mobile Drawer - sections aligned exactly below header groups -->
@@ -800,10 +807,10 @@
       <span class="drawer-separator"></span>
       <!-- Display labels section -->
       <div class="drawer-section display-section" id="drawerDisplay">
-        <span class="display-label active" id="mLabelField">Vektori</span>
-        <span class="display-label" id="mLabelLines">Līnijas</span>
-        <span class="display-label" id="mLabelEquip">Ekvipot.</span>
-        <span class="display-label active" id="mLabelForce">Spēks</span>
+        <span class="display-label active" id="mLabelField" data-i18n="vectorsShort">Vektori</span>
+        <span class="display-label" id="mLabelLines" data-i18n="linesShort">Līnijas</span>
+        <span class="display-label" id="mLabelEquip" data-i18n="equipShort">Ekvipot.</span>
+        <span class="display-label active" id="mLabelForce" data-i18n="forceShort">Spēks</span>
       </div>
       <span class="drawer-separator"></span>
       <!-- Clear section -->
@@ -846,6 +853,20 @@
           equipotential: "Equipotential",
           forceArrow: "Force Arrow",
           clearAll: "✕ Clear All",
+          controls: "Controls",
+          vectorsShort: "Vectors",
+          linesShort: "Lines",
+          equipShort: "Equipot.",
+          forceShort: "Force",
+          back: "Back",
+          tryCannon: "Try Newton’s Cannon simulation",
+          positiveTitle: "Positive",
+          negativeTitle: "Negative",
+          chargesPlacedTitle: "Charges placed",
+          testValueTitle: "Test charge value",
+          forceTitle: "Force",
+          clearTitle: "Clear",
+          settingsTitle: "Settings",
           helpClick: "Click on the field to place charges.",
           helpDrag: "Drag charges to move them.",
           helpRemove: "Right-click a charge to remove it.",
@@ -870,6 +891,20 @@
           equipotential: "Ekvipotenciāles",
           forceArrow: "Spēka vektors",
           clearAll: "✕ Notīrīt visu",
+          controls: "Vadība",
+          vectorsShort: "Vektori",
+          linesShort: "Līnijas",
+          equipShort: "Ekvipot.",
+          forceShort: "Spēks",
+          back: "Atpakaļ",
+          tryCannon: "Izmēģini Ņūtona lielgabala simulāciju",
+          positiveTitle: "Pozitīvs",
+          negativeTitle: "Negatīvs",
+          chargesPlacedTitle: "Lādiņu skaits",
+          testValueTitle: "Testa lādiņa vērtība",
+          forceTitle: "Spēks",
+          clearTitle: "Notīrīt",
+          settingsTitle: "Iestatījumi",
           helpClick: "Noklikšķini uz lauka, lai novietotu lādiņus.",
           helpDrag: "Velc lādiņus, lai tos pārvietotu.",
           helpRemove: "Ar labo klikšķi noņem lādiņu.",
@@ -897,6 +932,13 @@
           const key = el.dataset.i18n;
           if (TRANSLATIONS[lang][key]) {
             el.innerHTML = TRANSLATIONS[lang][key];
+          }
+        });
+
+        document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+          const key = el.dataset.i18nTitle;
+          if (TRANSLATIONS[lang][key]) {
+            el.title = TRANSLATIONS[lang][key];
           }
         });
 
@@ -972,6 +1014,7 @@
       let charges = [];
       let fieldCache = null;
       let fieldCacheDirty = true;
+      let fieldMaxMag = 1;
 
       // Interaction
       let dragTarget = null; // { type:'charge'|'test', index } or null
@@ -998,8 +1041,12 @@
 
       function resizeCanvas() {
         const wrap = document.getElementById("canvas-wrap");
-        const maxW = wrap.clientWidth - 10;
-        const maxH = wrap.clientHeight - 10;
+        // clientWidth/Height include padding - subtract the actual computed padding
+        const wrapStyle = getComputedStyle(wrap);
+        const padX = parseFloat(wrapStyle.paddingLeft) + parseFloat(wrapStyle.paddingRight);
+        const padY = parseFloat(wrapStyle.paddingTop) + parseFloat(wrapStyle.paddingBottom);
+        const maxW = wrap.clientWidth - padX;
+        const maxH = wrap.clientHeight - padY;
         const aspect = FIELD_W / FIELD_H;
 
         let w, h;
@@ -1022,6 +1069,8 @@
         offsetY = 0;
 
         ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+
+        fieldLinesCacheDirty = true;
       }
 
       // ═══════════════════════════════════════════
@@ -1080,6 +1129,12 @@
             grid.push({ x, y, ex, ey, mag });
           }
         }
+
+        let maxMag = 1;
+        for (const g of grid) {
+          if (g.mag > maxMag) maxMag = g.mag;
+        }
+        fieldMaxMag = maxMag;
 
         fieldCache = grid;
         fieldCacheDirty = false;
@@ -1274,15 +1329,13 @@
       // ═══════════════════════════════════════════
       //  FIELD LINES - trace paths following field direction
       // ═══════════════════════════════════════════
+      let fieldLinesCache = null;
+      let fieldLinesCacheDirty = true;
+
       function drawFieldLines() {
         const linesPerCharge = 16;
         const stepSize = 2; // Smaller steps for smoother curves
         const maxSteps = 2000;
-
-        ctx.save();
-        ctx.strokeStyle = COL.fieldLine;
-        ctx.lineWidth = 1;
-        ctx.lineCap = "round";
 
         // Helper: calculate field at a point
         function getField(x, y) {
@@ -1290,11 +1343,10 @@
           for (const c of charges) {
             const dx = x - c.x;
             const dy = y - c.y;
-            let distSq = dx * dx + dy * dy;
-            let dist = Math.sqrt(distSq);
+            let dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < 1) dist = 1;
             // Use 1/r² for magnitude, direction is (dx,dy)/dist
-            const eMag = c.charge / distSq;
+            const eMag = c.charge / (dist * dist);
             ex += eMag * dx / dist;
             ey += eMag * dy / dist;
           }
@@ -1457,53 +1509,69 @@
           }
         }
 
-        // Count positive and negative charges
-        const posCharges = charges.filter(c => c.charge > 0);
-        const negCharges = charges.filter(c => c.charge < 0);
+        // Re-trace lines only when charges changed (cache holds field-space polylines)
+        if (fieldLinesCacheDirty || !fieldLinesCache) {
+          fieldLinesCache = [];
 
-        // Draw field lines from positive charges
-        for (const charge of posCharges) {
-          for (let i = 0; i < linesPerCharge; i++) {
-            const angle = (i / linesPerCharge) * Math.PI * 2;
-            const startX = charge.x + Math.cos(angle) * (CHARGE_R + 2);
-            const startY = charge.y + Math.sin(angle) * (CHARGE_R + 2);
+          // Count positive and negative charges
+          const posCharges = charges.filter(c => c.charge > 0);
+          const negCharges = charges.filter(c => c.charge < 0);
 
-            const points = traceLine(startX, startY, 1, charge);
-            drawLineWithArrows(points, 1);
+          // Trace field lines from positive charges
+          for (const charge of posCharges) {
+            for (let i = 0; i < linesPerCharge; i++) {
+              const angle = (i / linesPerCharge) * Math.PI * 2;
+              const startX = charge.x + Math.cos(angle) * (CHARGE_R + 2);
+              const startY = charge.y + Math.sin(angle) * (CHARGE_R + 2);
+
+              const points = traceLine(startX, startY, 1, charge);
+              fieldLinesCache.push(points);
+            }
           }
-        }
 
-        // Draw field lines TO negative charges from infinity
-        // For each negative charge, trace backward to find where lines come from
-        for (const charge of negCharges) {
-          for (let i = 0; i < linesPerCharge; i++) {
-            const angle = (i / linesPerCharge) * Math.PI * 2;
-            const startX = charge.x + Math.cos(angle) * (CHARGE_R + 2);
-            const startY = charge.y + Math.sin(angle) * (CHARGE_R + 2);
+          // Trace field lines TO negative charges from infinity
+          // For each negative charge, trace backward to find where lines come from
+          for (const charge of negCharges) {
+            for (let i = 0; i < linesPerCharge; i++) {
+              const angle = (i / linesPerCharge) * Math.PI * 2;
+              const startX = charge.x + Math.cos(angle) * (CHARGE_R + 2);
+              const startY = charge.y + Math.sin(angle) * (CHARGE_R + 2);
 
-            // Trace backward (against field direction)
-            const points = traceLine(startX, startY, -1, charge);
+              // Trace backward (against field direction)
+              const points = traceLine(startX, startY, -1, charge);
 
-            // Check if this line reached a positive charge
-            if (points.length > 2) {
-              const endPt = points[points.length - 1];
-              let reachedPositive = false;
-              for (const pc of posCharges) {
-                const dx = endPt.x - pc.x;
-                const dy = endPt.y - pc.y;
-                if (dx * dx + dy * dy < CHARGE_R * CHARGE_R * 4) {
-                  reachedPositive = true;
-                  break;
+              // Check if this line reached a positive charge
+              if (points.length > 2) {
+                const endPt = points[points.length - 1];
+                let reachedPositive = false;
+                for (const pc of posCharges) {
+                  const dx = endPt.x - pc.x;
+                  const dy = endPt.y - pc.y;
+                  if (dx * dx + dy * dy < CHARGE_R * CHARGE_R * 4) {
+                    reachedPositive = true;
+                    break;
+                  }
                 }
-              }
 
-              // Only draw if this line comes from infinity (not from a positive charge)
-              if (!reachedPositive && points.length > 10) {
-                const reversed = points.slice().reverse();
-                drawLineWithArrows(reversed, 1);
+                // Only keep if this line comes from infinity (not from a positive charge)
+                if (!reachedPositive && points.length > 10) {
+                  fieldLinesCache.push(points.slice().reverse());
+                }
               }
             }
           }
+
+          fieldLinesCacheDirty = false;
+        }
+
+        ctx.save();
+        ctx.strokeStyle = COL.fieldLine;
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+
+        // Draw cached polylines (all oriented away from positive / toward negative)
+        for (const points of fieldLinesCache) {
+          drawLineWithArrows(points, 1);
         }
 
         ctx.restore();
@@ -1514,15 +1582,19 @@
       // ═══════════════════════════════════════════
       let potentialGridCache = null;
       let potentialCacheDirty = true;
+      let potentialGridGeneration = 0;
       const POTENTIAL_GRID_SPACING = 6;
 
+      // Every charge mutation goes through here - also invalidates traced field lines
       function invalidatePotentialCache() {
         potentialCacheDirty = true;
+        fieldLinesCacheDirty = true;
       }
 
       function computePotentialGrid() {
         if (!potentialCacheDirty && potentialGridCache) return potentialGridCache;
         potentialCacheDirty = false;
+        potentialGridGeneration++;
 
         const cols = Math.ceil(FIELD_W / POTENTIAL_GRID_SPACING) + 1;
         const rows = Math.ceil(FIELD_H / POTENTIAL_GRID_SPACING) + 1;
@@ -1570,24 +1642,19 @@
         values.sort((a, b) => a - b);
 
         // Find range excluding extremes
-        const minV = values[Math.floor(values.length * 0.05)];
-        const maxV = values[Math.floor(values.length * 0.95)];
+        const p5 = values[Math.floor(values.length * 0.05)];
+        const p95 = values[Math.floor(values.length * 0.95)];
+
+        // Symmetric levels with the same potential step on both signs.
+        // Levels absent from the grid simply produce no contour segments.
+        const A = Math.max(Math.abs(p5), Math.abs(p95));
+        if (A <= 0) return [];
 
         const levels = [];
-        const numLevels = 16;
-
-        // Generate levels with spacing that works well visually
-        if (maxV > 0) {
-          for (let i = 1; i <= numLevels / 2; i++) {
-            const t = i / (numLevels / 2 + 1);
-            levels.push(maxV * t * t); // Quadratic spacing for positive
-          }
-        }
-        if (minV < 0) {
-          for (let i = 1; i <= numLevels / 2; i++) {
-            const t = i / (numLevels / 2 + 1);
-            levels.push(minV * t * t); // Quadratic spacing for negative
-          }
+        const step = A / 8;
+        for (let i = 1; i <= 8; i++) {
+          levels.push(i * step);
+          levels.push(-i * step);
         }
 
         return levels.sort((a, b) => a - b);
@@ -1755,18 +1822,28 @@
         return chains;
       }
 
+      let contourCache = null;
+
       function drawEquipotentialLines() {
         const gridData = computePotentialGrid();
-        const levels = selectContourLevels(gridData);
+
+        // Rebuild contours only when the potential grid was recomputed
+        if (!contourCache || contourCache.generation !== potentialGridGeneration) {
+          const levels = selectContourLevels(gridData);
+          const chainsByLevel = levels.map((level) =>
+            chainSegments(traceContourSegments(gridData, level))
+          );
+          contourCache = { generation: potentialGridGeneration, levels, chainsByLevel };
+        }
 
         ctx.save();
         ctx.lineWidth = 1.2;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
-        for (const level of levels) {
-          const segments = traceContourSegments(gridData, level);
-          const chains = chainSegments(segments);
+        for (let li = 0; li < contourCache.levels.length; li++) {
+          const level = contourCache.levels[li];
+          const chains = contourCache.chainsByLevel[li];
 
           // Color based on potential sign
           if (level > 0) {
@@ -1794,7 +1871,7 @@
         const grid = computeFieldGrid();
         if (!grid.length) return;
 
-        const maxMag = Math.max(...grid.map((g) => g.mag), 1);
+        const maxMag = fieldMaxMag;
         const arrowLen = 42;
 
         for (const pt of grid) {
@@ -1983,6 +2060,14 @@
             fieldCacheDirty = true;
             invalidatePotentialCache();
             updateChargeCount();
+            // Keep an active drag pointing at the correct charge
+            if (dragTarget && dragTarget.type === "charge") {
+              if (dragTarget.index === idx) {
+                dragTarget = null;
+              } else if (dragTarget.index > idx) {
+                dragTarget.index--;
+              }
+            }
           }
           return;
         }
@@ -2056,14 +2141,40 @@
 
       canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
-      // Touch events
+      // Touch events - single tracked touch, long-press on existing charge removes it
+      let longPressTimer = null;
+      let longPressStart = null;
+      let trackedTouchId = null;
+      const LONG_PRESS_MOVE_CANCEL = 10; // field units before long-press is cancelled
+
+      function endTrackedTouch(e) {
+        if (trackedTouchId === null) return;
+        let ended = false;
+        for (const t of e.changedTouches) {
+          if (t.identifier === trackedTouchId) {
+            ended = true;
+            break;
+          }
+        }
+        if (!ended) return;
+        trackedTouchId = null;
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+        longPressStart = null;
+        dragTarget = null;
+        mouseOnField = false;
+      }
+
       canvas.addEventListener(
         "touchstart",
         (e) => {
           e.preventDefault();
-          const touch = e.touches[0];
+          if (trackedTouchId !== null) return; // Ignore extra fingers
+          const touch = e.changedTouches[0];
+          trackedTouchId = touch.identifier;
           const { x, y } = canvasToField(touch.clientX, touch.clientY);
 
+          // Test charge drag - never arms the delete timer
           if (isOnTestCharge(x, y)) {
             dragTarget = { type: "test", ox: testCharge.x - x, oy: testCharge.y - y };
             return;
@@ -2071,13 +2182,25 @@
 
           const idx = findChargeAt(x, y);
           if (idx >= 0) {
+            // Existing charge: start drag and arm long-press delete
             dragTarget = {
               type: "charge",
               index: idx,
               ox: charges[idx].x - x,
               oy: charges[idx].y - y,
             };
+            longPressStart = { x, y };
+            longPressTimer = setTimeout(() => {
+              charges.splice(idx, 1);
+              fieldCacheDirty = true;
+              invalidatePotentialCache();
+              updateChargeCount();
+              dragTarget = null;
+              longPressTimer = null;
+              longPressStart = null;
+            }, 500);
           } else if (x > 0 && x < FIELD_W && y > 0 && y < FIELD_H) {
+            // Empty field: place new charge, no delete timer
             charges.push({ x, y, charge: selectedCharge });
             fieldCacheDirty = true;
             invalidatePotentialCache();
@@ -2097,11 +2220,30 @@
         "touchmove",
         (e) => {
           e.preventDefault();
-          const touch = e.touches[0];
+          if (trackedTouchId === null) return;
+          let touch = null;
+          for (const t of e.touches) {
+            if (t.identifier === trackedTouchId) {
+              touch = t;
+              break;
+            }
+          }
+          if (!touch) return;
           const { x, y } = canvasToField(touch.clientX, touch.clientY);
           mouseField.x = x;
           mouseField.y = y;
           mouseOnField = true;
+
+          // Cancel long-press delete once the finger moves past a small threshold
+          if (longPressTimer !== null && longPressStart) {
+            const mdx = x - longPressStart.x;
+            const mdy = y - longPressStart.y;
+            if (mdx * mdx + mdy * mdy > LONG_PRESS_MOVE_CANCEL * LONG_PRESS_MOVE_CANCEL) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+              longPressStart = null;
+            }
+          }
 
           if (dragTarget) {
             if (dragTarget.type === "test") {
@@ -2127,47 +2269,14 @@
         { passive: false }
       );
 
-      canvas.addEventListener("touchend", () => {
-        dragTarget = null;
-        mouseOnField = false;
-      });
-
-      // Long press to remove (mobile)
-      let longPressTimer = null;
-      canvas.addEventListener(
-        "touchstart",
-        (e) => {
-          const touch = e.touches[0];
-          const { x, y } = canvasToField(touch.clientX, touch.clientY);
-          const idx = findChargeAt(x, y);
-          if (idx >= 0) {
-            longPressTimer = setTimeout(() => {
-              charges.splice(idx, 1);
-              fieldCacheDirty = true;
-              invalidatePotentialCache();
-              updateChargeCount();
-              dragTarget = null;
-            }, 500);
-          }
-        },
-        { passive: true }
-      );
-      canvas.addEventListener("touchend", () => {
-        clearTimeout(longPressTimer);
-      });
-      canvas.addEventListener(
-        "touchmove",
-        () => {
-          clearTimeout(longPressTimer);
-        },
-        { passive: true }
-      );
+      canvas.addEventListener("touchend", endTrackedTouch);
+      canvas.addEventListener("touchcancel", endTrackedTouch);
 
       // Keyboard shortcuts
       document.addEventListener("keydown", (e) => {
         if (e.code === "KeyF") {
-          showField = !showField;
-          document.getElementById("chkField").checked = showField;
+          // Same update path as the pointer toggles - keeps mobile UI in sync
+          setFieldVectorsShown(!showField);
         } else if (e.code === "KeyC") {
           doClear();
         }
@@ -2285,9 +2394,11 @@
 
         checkbox.addEventListener("change", (e) => updateUI(e.target.checked));
         btn.addEventListener("click", () => updateUI(!stateGetter()));
+
+        return updateUI;
       }
 
-      setupDisplayToggle("chkField", "mField", "mLabelField", () => showField, (v) => showField = v);
+      const setFieldVectorsShown = setupDisplayToggle("chkField", "mField", "mLabelField", () => showField, (v) => showField = v);
       setupDisplayToggle("chkFieldLines", "mLines", "mLabelLines", () => showFieldLines, (v) => showFieldLines = v);
       setupDisplayToggle("chkEquipotential", "mEquip", "mLabelEquip", () => showEquipotential, (v) => showEquipotential = v);
       setupDisplayToggle("chkForce", "mForce", "mLabelForce", () => showForce, (v) => showForce = v);
@@ -2295,15 +2406,22 @@
       // Mobile drawer toggle - multiple triggers
       const mobileDrawer = document.getElementById("mobileDrawer");
 
+      // Drawer height changes the canvas area - resize once the transition settles
+      mobileDrawer.addEventListener("transitionend", (e) => {
+        if (e.target === mobileDrawer && e.propertyName === "max-height") resizeCanvas();
+      });
+
       function toggleDrawer() {
         mobileDrawer.classList.toggle("open");
         const toggle = document.getElementById("drawerToggle");
         toggle.textContent = mobileDrawer.classList.contains("open") ? "▲" : "▼";
+        resizeCanvas();
       }
 
       function openDrawer() {
         mobileDrawer.classList.add("open");
         document.getElementById("drawerToggle").textContent = "▲";
+        resizeCanvas();
       }
 
       document.getElementById("drawerToggle").addEventListener("click", toggleDrawer);
@@ -2317,6 +2435,7 @@
         if (mobileDrawer.classList.contains("open")) {
           mobileDrawer.classList.remove("open");
           document.getElementById("drawerToggle").textContent = "▼";
+          resizeCanvas();
         }
       }, true);
 
@@ -2325,6 +2444,7 @@
         doClear();
         mobileDrawer.classList.remove("open");
         document.getElementById("drawerToggle").textContent = "▼";
+        resizeCanvas();
       });
 
       // Mobile language switch
