@@ -4,10 +4,23 @@ export function createHandles(layer, { onChange, onDragStart, onDragEnd, onSelec
   const els = new Map(); // id → { handle, label, txt, item }
   let selectedId = null;
 
+  const FACTOR = { center: 0.5, left: 0, right: 1 };
+  // Etiķete (kopā ar − un +) nedrīkst iziet ārpus zīmējuma
+  function place(e) {
+    const it = e.item;
+    if (e.label.style.display === 'none') return;
+    const w = e.label.offsetWidth;
+    const left = it.labelX - FACTOR[it.labelAnchor] * w;
+    const max = layer.clientWidth - 4 - w;
+    const shift = Math.max(4, Math.min(left, max)) - left;
+    e.label.style.transform = `translate(${it.labelX + shift}px, ${it.labelY}px) translate(${ANCHOR[it.labelAnchor]})`;
+  }
+
   function paintSelected() {
     for (const [id, e] of els) {
       const on = id === selectedId && !e.item.labelClass;
       e.label.classList.toggle('selected', on);
+      place(e);
     }
   }
 

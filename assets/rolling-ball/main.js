@@ -84,7 +84,7 @@ function handleItems(lay, s, d, lang) {
     if (lockedQ) {
       base.kind = 'none';
       base.labelClass = 'locked';
-      base.labelText = `${o.labelText} ${fixed}`;
+      base.labelText = o.labelText ? `${o.labelText} ${fixed}` : '';
     }
     items.push(base);
   };
@@ -115,11 +115,14 @@ function handleItems(lay, s, d, lang) {
     ariaLabel: t('dims.x0'), min: 0, max: x0Max(s.L), step: STEP.x, value: s.x0, valueText: `${num(s.x0, 1)} cm`,
   });
   if (s.level === 2) {
-    const tight = a.gates.some((g, i) => i > 0 && Math.hypot(g.x - a.gates[i - 1].x, g.y - a.gates[i - 1].y) < 90);
+    const gatesLocked = isLocked('gate');
+    const minGap = gatesLocked ? 150 : 90; // nofiksētai etiķetei klāt nāk FIKS.
+    const tight = a.gates.some((g, i) => i > 0 && Math.hypot(g.x - a.gates[i - 1].x, g.y - a.gates[i - 1].y) < minGap);
     s.gates.forEach((x, i) => {
       add('gate', {
         id: `gate${i}`, kind: 'diamond', x: a.gates[i].x, y: a.gates[i].y,
-        labelText: tight && state.selected !== `gate${i}` ? '' : `x = ${num(x, 1)} cm`, labelX: a.gates[i].x, labelY: a.gates[i].y + 18,
+        labelText: tight && !gatesLocked && state.selected !== `gate${i}` ? '' : `x = ${num(x, 1)} cm`,
+        labelX: a.gates[i].x, labelY: a.gates[i].y + 18 + (tight && gatesLocked ? i * 18 : 0), // nofiksētiem vārtiem vērtība vienmēr redzama; tuvos — katrs savā rindā
         ariaLabel: t(s.timer === 'gate' ? 'dims.gate' : 'dims.gateHand', { i: i + 1 }),
         min: 0, max: s.L, step: STEP.x, value: x, valueText: `${num(x, 1)} cm`,
       });
