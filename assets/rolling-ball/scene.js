@@ -1,4 +1,4 @@
-export const MARGIN = { left: 70, right: 40, top: 96, bottom: 70 };
+export const MARGIN = { left: 120, right: 40, top: 96, bottom: 70 };
 export const GROOVE_PX = 14; // renītes biezums zīmējumā
 export const DIM_GAP = 26; // px starp objektu un izmēru līniju
 export const ARC_R = 110; // px — α loka rādiuss

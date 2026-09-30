@@ -26,6 +26,7 @@ const state = {
   traps: url.traps,
   seed: url.seed,
   running: false,
+  selected: null,
   drag: null, // { id, fit: { L, alphaRad } } — mērogs velkot nemainās
   ball: { x: null, angle: 0 }, // null → lodīte stāv kustības sākumpunktā
 };
@@ -41,6 +42,11 @@ const handles = createHandles(document.getElementById('handles'), {
   onDragStart(id) {
     const d = derive(state.settings);
     state.drag = { id, fit: { L: state.settings.L, alphaRad: d.alphaRad } };
+  },
+  onSelect(id) {
+    if (state.selected === id) return;
+    state.selected = id;
+    render();
   },
   onDragEnd() {
     state.drag = null;
@@ -91,8 +97,8 @@ function handleItems(lay, s, d, lang) {
   const hMode = s.angleMode === 'h';
   add('h', {
     id: 'h', kind: hMode ? 'diamond' : 'none', x: a.h.x, y: a.h.y,
-    labelText: `h = ${num(d.h, 1)} cm`, labelX: 4, labelY: lay.tableY + 34, // kreisā mala ir pārāk šaura etiķetei blakus līnijai
-    labelAnchor: 'left', labelClass: hMode ? '' : 'derived',
+    labelText: `h = ${num(d.h, 1)} cm`, labelX: Math.max(a.h.x - 8, 90), labelY: lay.low.y - lay.high.y >= 24 ? (lay.high.y + lay.low.y) / 2 : lay.high.y + 16, // kā x₀ etiķete augšā, tāpēc īsai līnijai — zem galotnes
+    labelAnchor: 'right', labelClass: hMode ? '' : 'derived',
     ariaLabel: t('dims.h'), min: 0, max: hMax(s.L), step: STEP.h, value: d.h, valueText: `${num(d.h, 1)} cm`,
   });
   add('alpha', {
@@ -109,11 +115,11 @@ function handleItems(lay, s, d, lang) {
     ariaLabel: t('dims.x0'), min: 0, max: x0Max(s.L), step: STEP.x, value: s.x0, valueText: `${num(s.x0, 1)} cm`,
   });
   if (s.level === 2) {
-    const tight = s.gates.some((x, i) => i > 0 && (x - s.gates[i - 1]) * lay.s < 90);
+    const tight = a.gates.some((g, i) => i > 0 && Math.hypot(g.x - a.gates[i - 1].x, g.y - a.gates[i - 1].y) < 90);
     s.gates.forEach((x, i) => {
       add('gate', {
         id: `gate${i}`, kind: 'diamond', x: a.gates[i].x, y: a.gates[i].y,
-        labelText: `x = ${num(x, 1)} cm`, labelX: a.gates[i].x, labelY: a.gates[i].y + 18 + (tight && i % 2 ? 20 : 0), // tuvos vārtos etiķetes uz divām rindām
+        labelText: tight && state.selected !== `gate${i}` ? '' : `x = ${num(x, 1)} cm`, labelX: a.gates[i].x, labelY: a.gates[i].y + 18,
         ariaLabel: t(s.timer === 'gate' ? 'dims.gate' : 'dims.gateHand', { i: i + 1 }),
         min: 0, max: s.L, step: STEP.x, value: x, valueText: `${num(x, 1)} cm`,
       });

@@ -1,6 +1,6 @@
 const ANCHOR = { center: '-50%, -50%', left: '0, -50%', right: '-100%, -50%' };
 
-export function createHandles(layer, { onChange, onDragStart, onDragEnd, labels }) {
+export function createHandles(layer, { onChange, onDragStart, onDragEnd, onSelect, labels }) {
   const els = new Map(); // id → { handle, label, txt, item }
   let selectedId = null;
 
@@ -14,6 +14,7 @@ export function createHandles(layer, { onChange, onDragStart, onDragEnd, labels 
   function setSelected(id) {
     selectedId = id;
     paintSelected();
+    onSelect?.(id);
   }
 
   function pointerOf(ev) {
@@ -114,6 +115,7 @@ export function createHandles(layer, { onChange, onDragStart, onDragEnd, labels 
       e.label.className = `handle-label${it.labelClass ? ` ${it.labelClass}` : ''}`;
       e.label.style.transform = `translate(${it.labelX}px, ${it.labelY}px) translate(${ANCHOR[it.labelAnchor]})`;
       e.txt.textContent = it.labelText;
+      e.label.style.display = it.labelText ? '' : 'none';
       e.minus.setAttribute('aria-label', labels.decrease());
       e.plus.setAttribute('aria-label', labels.increase());
       const minis = !it.labelClass;
