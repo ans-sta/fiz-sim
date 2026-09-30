@@ -599,6 +599,37 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 5: Ball in a groove ══════ -->
+    <a href="rolling-ball.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Table -->
+          <line x1="20" y1="112" x2="185" y2="112" stroke="#5a6d88" stroke-width="1.2"/>
+          <!-- Support -->
+          <rect x="26" y="70" width="10" height="42" fill="none" stroke="#5a6d88" stroke-width="1"/>
+          <!-- Groove -->
+          <line x1="28" y1="68" x2="178" y2="108" stroke="#c8d6e8" stroke-width="2"/>
+          <!-- Strobe positions -->
+          <circle cx="36" cy="63" r="4.5" fill="none" stroke="#ffd70088" stroke-width="1"/>
+          <circle cx="44" cy="65" r="4.5" fill="none" stroke="#ffd70099" stroke-width="1"/>
+          <circle cx="62" cy="70" r="4.5" fill="none" stroke="#ffd700aa" stroke-width="1"/>
+          <circle cx="92" cy="78" r="4.5" fill="none" stroke="#ffd700cc" stroke-width="1"/>
+          <circle cx="134" cy="89" r="4.5" fill="#ffd70066" stroke="#ffd700" stroke-width="1.2"/>
+          <!-- Tape ticks -->
+          <path d="M 40 76 l 1 -3 M 60 81 l 1 -3 M 80 87 l 1 -3 M 100 92 l 1 -3 M 120 97 l 1 -3 M 140 103 l 1 -3" stroke="#5a6d88" stroke-width="0.8"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-mechanics" data-i18n="tagMechanics">Mechanics</div>
+        <div class="card-title" data-i18n="rollingTitle">Ball in a Groove</div>
+        <p class="card-desc" data-i18n="rollingDesc">Roll a ball down an inclined groove and collect realistic measurement data: time, gates or strobe positions.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -625,6 +656,8 @@ const TRANSLATIONS = {
     fieldDesc: "Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.",
     cannonTitle: "Newton's Cannon",
     cannonDesc: "Explore orbital mechanics by adjusting cannon velocity. Discover how gravity shapes the trajectory from ballistic arc to stable orbit.",
+    rollingTitle: "Ball in a Groove",
+    rollingDesc: "Roll a ball down an inclined groove and collect realistic measurement data: time, gates or strobe positions.",
     statusLive: "Live",
     statusDev: "In development",
     statusPlanned: "Planned",
@@ -647,6 +680,8 @@ const TRANSLATIONS = {
     fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
     cannonTitle: "Ņūtona lielgabals",
     cannonDesc: "Izpēti orbitālo mehāniku, mainot lielgabala ātrumu. Atklāj, kā gravitācija veido trajektoriju no ballistiska loka līdz stabilai orbītai.",
+    rollingTitle: "Lodīte renītē",
+    rollingDesc: "Palaid lodīti pa slīpu renīti un iegūsti ticamus mērījumu datus: laiku, vārtu laikus vai stroboskopa attēlu.",
     statusLive: "Aktīvs",
     statusDev: "Izstrādē",
     statusPlanned: "Plānots",
