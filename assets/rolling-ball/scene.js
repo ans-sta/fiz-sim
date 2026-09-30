@@ -307,8 +307,16 @@ function drawLevel1(ctx, lay, m, c) {
 function drawLevel2(ctx, lay, m, c) {
   const { settings: s, derived: d } = m;
   const { up } = lay;
+  // Ja vārtu laiki uz rasējuma saplūstu, zīmē tikai pēdējo izietā vārtu laiku; pilns saraksts ir tabulā.
+  ctx.font = FONT_VALUE;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  const need = ctx.measureText(s.timer === 'gate' ? '88,888 s' : '88,88 s').width + 8;
+  const pts = s.gates.map((x) => lay.at(x));
+  const crowded = pts.some((p, i) => i > 0 && Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y) < need);
+  let lastPassed = -1;
+  (m.gateTexts ?? []).forEach((g, i) => { if (typeof g === 'string') lastPassed = i; });
   s.gates.forEach((x, i) => {
-    const p = lay.at(x);
+    const p = pts[i];
     const gate = s.timer === 'gate';
     const top = gate ? (2 * d.r + 0.8) * lay.s : 16;
     stroke(ctx, c.ink);
@@ -329,7 +337,7 @@ function drawLevel2(ctx, lay, m, c) {
     const ny = ty + up.y * 12;
     text(ctx, String(i + 1), nx, ny + 3, { color: c.inkDim, align: 'center' });
     const gt = m.gateTexts?.[i];
-    if (typeof gt === 'string') {
+    if (typeof gt === 'string' && (!crowded || i === lastPassed)) {
       text(ctx, gt, tx + up.x * 28, ty + up.y * 28 + 4, { font: FONT_VALUE, color: c.ink, align: 'center' });
     }
   });
