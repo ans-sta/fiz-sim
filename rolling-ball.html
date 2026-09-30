@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="lv" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lodīte renītē — FIZ-SIM</title>
+<script>
+  // Tēma pirms pirmā zīmējuma, lai nemirgo; tā pati loģika kā sim-core.js createTheme().
+  try {
+    var saved = localStorage.getItem('fiz-sim-theme');
+    document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/sim-common.css">
+<script type="module" src="assets/rolling-ball/main.js"></script>
+</head>
+<body>
+<div class="frame">
+  <header>
+    <a class="back" href="index.html" data-i18n="page.back">← SARAKSTS</a>
+    <h1><span data-i18n="page.heading">LODĪTE RENĪTĒ</span> <span class="sheet-no">K-01</span></h1>
+  </header>
+  <div class="work">
+    <div class="drawing" id="drawing">
+      <canvas id="scene" role="img" data-i18n-aria="scene.aria"></canvas>
+      <div class="handles" id="handles"></div>
+      <div class="notices" id="notices" role="status" aria-live="polite"></div>
+    </div>
+    <aside class="controls" id="controls">
+      <section class="block" id="blockLevel"></section>
+      <section class="block" id="blockBall"></section>
+      <section class="block" id="blockDims"></section>
+      <section class="block" id="blockRun"></section>
+      <section class="block" id="blockResults"></section>
+      <div class="titleblock" id="titleblock"></div>
+    </aside>
+  </div>
+</div>
+</body>
+</html>
