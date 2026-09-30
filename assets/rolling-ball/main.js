@@ -379,6 +379,7 @@ function resultsVM(lang) {
     shownKey,
     shownIsOther: !!shown && shownKey !== cur,
     otherText: shown ? t('results.other', { n: shown.index }) : '',
+    showCompact: state.views.table, // view=strobe&lock=1: x vērtībām jābūt lasāmām tikai attēlā
     compactModel: shown ? compactModelFor(shown, lang) : null,
     canTable: state.views.table && !!shown,
     canStrobe: state.views.strobe && !!shown && shown.level === 3,
