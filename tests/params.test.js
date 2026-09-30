@@ -134,5 +134,20 @@ test('warningText gives precise LV and EN messages', () => {
   const g = one(url('?L=60&gates=10,20,70'));
   assert.ok(warningText(g, { t: tl, lang: 'lv' }).endsWith('Vārti izvietoti vienmērīgi: 16,5; 33,5; 50.'));
   const b = one(url('?ball=steel12'));
-  assert.ok(warningText(b, { t: tl, lang: 'lv' }).includes('Atļautās vērtības: steel10, steel16'));
+  assert.ok(warningText(b, { t: tl, lang: 'lv' }).includes('Atļautās vērtības: steel10; steel16')); // was ', ' — now '; ' so decimals do not collide
+  assert.ok(warningText(b, { t: te, lang: 'en' }).includes('Allowed values: steel10, steel16'));
+  const d = one(url('?dt=0.3'));
+  assert.ok(warningText(d, { t: tl, lang: 'lv' }).includes('Atļautās vērtības: 0,1; 0,2; 0,5'));
+  assert.ok(warningText(d, { t: te, lang: 'en' }).includes('Allowed values: 0.1, 0.2, 0.5'));
+});
+
+test('warningText: empty list renders as nav / none; ball_no_fit tells what to do', () => {
+  const tl = makeT(STRINGS, () => 'lv');
+  const te = makeT(STRINGS, () => 'en');
+  const w = { param: 'gates', raw: 'x', reason: 'bad_list', used: [] };
+  assert.ok(warningText(w, { t: tl, lang: 'lv' }).endsWith('Izmantots gates = nav.'));
+  assert.ok(warningText(w, { t: te, lang: 'en' }).endsWith('Using gates = none.'));
+  const b = one(url('?ball=steel10'));
+  assert.equal(warningText(b, { t: tl, lang: 'lv' }), 'Saitē lodīte steel10 renītē neiederas. Izmantota steel16. Šai lodītei saitē jāpievieno profile=flat.');
+  assert.equal(warningText(b, { t: te, lang: 'en' }), 'In the link, the ball steel10 does not fit the groove. Using steel16. For this ball add profile=flat to the link.');
 });

@@ -42,7 +42,8 @@ export function openDataTable(model, { lang, labels, onClose }) {
         label: labels.csv,
         primary: true,
         onClick() {
-          downloadText(`${model.filename}.csv`, toCSV(model, lang), 'text/csv;charset=utf-8', { bom: true });
+          // CSV vienmēr latviskā formātā (;, decimālkomats, BOM): spec. 5.1, latviešu Excel un stabils Fv3 imports
+          downloadText(`${model.filename}.csv`, toCSV(model, 'lv'), 'text/csv;charset=utf-8', { bom: true });
         },
       },
     ],

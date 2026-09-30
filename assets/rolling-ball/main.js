@@ -16,6 +16,7 @@ import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
 import { openStrobe } from './strobe.js';
 
+document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
 mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet: 'K-01', topicKey: 'tb.topicValue' });
@@ -61,7 +62,10 @@ const handles = createHandles(document.getElementById('handles'), {
     state.drag = null;
     render();
   },
-  labels: { decrease: () => i18n.t('dims.decrease'), increase: () => i18n.t('dims.increase') },
+  labels: {
+    decrease: (name) => i18n.t('dims.decrease', { name }),
+    increase: (name) => i18n.t('dims.increase', { name }),
+  },
 });
 
 const canvas = document.getElementById('scene');

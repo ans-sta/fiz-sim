@@ -111,6 +111,16 @@ h1 .sheet-no { color: var(--ink-dim); font-weight: 400; margin-left: auto; paddi
   background: var(--field);
   overflow: hidden;
 }
+/* Rezerves teksts, ja moduļi neielādējas (piem. lapa atvērta kā file://); main.js to noņem */
+.boot-msg {
+  margin: 0;
+  padding: 24px 20px;
+  text-align: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
 canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
 /* ── Vadības aile ─────────────────────────────────────── */

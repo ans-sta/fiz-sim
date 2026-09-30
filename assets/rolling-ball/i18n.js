@@ -52,8 +52,8 @@ export const STRINGS = {
     'dims.gateHand': '{i}. atzīme',
     'dims.fixed': 'FIKS.',
     'dims.fixedTitle': 'Šo lielumu skolotājs ir nofiksējis saitē.',
-    'dims.decrease': 'Samazināt',
-    'dims.increase': 'Palielināt',
+    'dims.decrease': 'Samazināt: {name}',
+    'dims.increase': 'Palielināt: {name}',
     'tape': 'RĀDĪT MĒRLENTI',
 
     'run.start': '▶ PALAIST',
@@ -99,7 +99,7 @@ export const STRINGS = {
     'data.csv': 'LEJUPIELĀDĒT CSV',
     'data.close': 'AIZVĒRT ✕',
     'data.copied': 'Nokopēts. Ielīmē Excel vai Google Sheets.',
-    'data.copyFailed': 'Pārlūks neļāva piekļūt starpliktuvei. Iezīmē tabulu ar peli un kopē ar Ctrl+C (Mac: ⌘+C).',
+    'data.copyFailed': 'Pārlūks neļāva piekļūt starpliktuvei. Datorā iezīmē tabulu ar peli un kopē ar Ctrl+C (Mac: ⌘+C); telefonā izmanto LEJUPIELĀDĒT CSV.',
 
     'strobe.title': 'STROBOSKOPS',
     'strobe.caption': 'Stroboskops · Δt = {dt} s · {n}. tabula, {r}. mērījums',
@@ -129,7 +129,8 @@ export const STRINGS = {
     'url.h_clamped': 'Saitē h = {raw} cm ir par lielu renītei L = {L} cm (α ≤ 15°). Izmantots h = {used} cm.',
     'url.x0_clamped': 'Saitē x0 = {raw} cm ir par tuvu finišam. Izmantots x₀ = {used} cm.',
     'url.gates_clamped': 'Saitē vārtu koordinātas {raw} neder šai renītei (jābūt starp x₀ + 1 cm un L, vismaz 1 cm vienai no otras). Vārti izvietoti vienmērīgi: {used}.',
-    'url.ball_no_fit': 'Saitē lodīte {raw} renītē neiederas. Izmantota {used}.',
+    'url.ball_no_fit': 'Saitē lodīte {raw} renītē neiederas. Izmantota {used}. Šai lodītei saitē jāpievieno profile=flat.',
+    'url.none': 'nav',
     'url.listHint': 'skaitļi, atdalīti ar komatu, 2–6 vērtības',
   },
   en: {
@@ -185,8 +186,8 @@ export const STRINGS = {
     'dims.gateHand': 'Mark {i}',
     'dims.fixed': 'FIXED',
     'dims.fixedTitle': 'The teacher has fixed this value in the link.',
-    'dims.decrease': 'Decrease',
-    'dims.increase': 'Increase',
+    'dims.decrease': 'Decrease: {name}',
+    'dims.increase': 'Increase: {name}',
     'tape': 'SHOW TAPE',
 
     'run.start': '▶ RUN',
@@ -232,7 +233,7 @@ export const STRINGS = {
     'data.csv': 'DOWNLOAD CSV',
     'data.close': 'CLOSE ✕',
     'data.copied': 'Copied. Paste into Excel or Google Sheets.',
-    'data.copyFailed': 'The browser blocked clipboard access. Select the table with the mouse and copy with Ctrl+C (Mac: ⌘+C).',
+    'data.copyFailed': 'The browser blocked clipboard access. On a computer, select the table with the mouse and copy with Ctrl+C (Mac: ⌘+C); on a phone, use DOWNLOAD CSV.',
 
     'strobe.title': 'STROBE',
     'strobe.caption': 'Strobe · Δt = {dt} s · table {n}, run {r}',
@@ -262,7 +263,8 @@ export const STRINGS = {
     'url.h_clamped': 'In the link, h = {raw} cm is too large for the groove L = {L} cm (α ≤ 15°). Using h = {used} cm.',
     'url.x0_clamped': 'In the link, x0 = {raw} cm is too close to the finish. Using x₀ = {used} cm.',
     'url.gates_clamped': 'In the link, the gate positions {raw} do not fit this groove (they must lie between x₀ + 1 cm and L, at least 1 cm apart). Gates spread evenly: {used}.',
-    'url.ball_no_fit': 'In the link, the ball {raw} does not fit the groove. Using {used}.',
+    'url.ball_no_fit': 'In the link, the ball {raw} does not fit the groove. Using {used}. For this ball add profile=flat to the link.',
+    'url.none': 'none',
     'url.listHint': 'numbers separated by commas, 2–6 values',
   },
 };

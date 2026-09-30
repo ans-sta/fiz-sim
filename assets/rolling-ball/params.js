@@ -86,8 +86,8 @@ export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
   return { settings: s, locked, views, noise, traps, seed, seedGiven: 'seed' in v, warnings: [...warnings.values()] };
 }
 
-function fmt(value, lang) {
-  if (Array.isArray(value)) return value.map((x) => fmt(x, lang)).join(lang === 'lv' ? '; ' : ', ');
+function fmt(value, lang, t) {
+  if (Array.isArray(value)) return value.length ? value.map((x) => fmt(x, lang, t)).join(lang === 'lv' ? '; ' : ', ') : t('url.none');
   if (typeof value !== 'number') return String(value);
   const oneDecimal = Math.abs(value * 10 - Math.round(value * 10)) < 1e-9;
   const dec = Number.isInteger(value) ? 0 : oneDecimal ? 1 : 2;
@@ -98,11 +98,11 @@ export function warningText(w, { t, lang }) {
   return t(`url.${w.reason}`, {
     param: w.param,
     raw: w.raw,
-    used: fmt(w.used, lang),
-    min: w.min === undefined ? '' : fmt(w.min, lang),
-    max: w.max === undefined ? '' : fmt(w.max, lang),
-    allowed: (w.allowed ?? []).map((x) => fmt(x, lang)).join(', '),
-    L: w.L === undefined ? '' : fmt(w.L, lang),
+    used: fmt(w.used, lang, t),
+    min: w.min === undefined ? '' : fmt(w.min, lang, t),
+    max: w.max === undefined ? '' : fmt(w.max, lang, t),
+    allowed: (w.allowed ?? []).map((x) => fmt(x, lang, t)).join(lang === 'lv' ? '; ' : ', '),
+    L: w.L === undefined ? '' : fmt(w.L, lang, t),
     hint: t('url.listHint'),
   });
 }

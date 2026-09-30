@@ -132,8 +132,8 @@ export function createHandles(layer, { onChange, onDragStart, onDragEnd, onSelec
       e.label.style.transform = `translate(${it.labelX}px, ${it.labelY}px) translate(${ANCHOR[it.labelAnchor]})`;
       e.txt.textContent = it.labelText;
       e.label.style.display = it.labelText ? '' : 'none';
-      e.minus.setAttribute('aria-label', labels.decrease());
-      e.plus.setAttribute('aria-label', labels.increase());
+      e.minus.setAttribute('aria-label', labels.decrease(it.ariaLabel));
+      e.plus.setAttribute('aria-label', labels.increase(it.ariaLabel));
       const minis = !it.labelClass;
       e.minus.hidden = !minis;
       e.plus.hidden = !minis;
