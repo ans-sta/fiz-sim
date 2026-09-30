@@ -242,7 +242,7 @@ function openTable(key) {
 
 function onAction(type, value) {
   if (type === 'selectTable') {
-    state.shownKey = value;
+    state.shownKey = value || null;
     render();
     return;
   }

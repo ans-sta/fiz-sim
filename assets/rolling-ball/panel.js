@@ -113,12 +113,13 @@ export function createPanel(root, { t, onAction }) {
   function resultsBlock(vm) {
     const r = vm.results;
     let h = `<div class="block-title">${esc(t('blk.results'))}</div>`;
-    if (!r.compactModel) return `${h}<div class="hint" style="margin-top:0">${esc(t('results.none'))}</div>`;
-    if (r.tables.length > 1) {
-      h += '<select class="select" data-fid="resultsSelect" data-a="selectTable">';
-      for (const o of r.tables) h += `<option value="${esc(o.key)}"${o.key === r.shownKey ? ' selected' : ''}>${esc(o.label)}</option>`;
-      h += '</select>';
-    }
+    if (!r.tables.length) return `${h}<div class="hint" style="margin-top:0">${esc(t('results.none'))}</div>`;
+    if (!r.compactModel) h += `<div class="hint" style="margin-top:0">${esc(t('results.none'))}</div>`;
+    h += '<select class="select" data-fid="resultsSelect" data-a="selectTable">';
+    if (!r.compactModel) h += '<option value="" selected>—</option>';
+    for (const o of r.tables) h += `<option value="${esc(o.key)}"${r.compactModel && o.key === r.shownKey ? ' selected' : ''}>${esc(o.label)}</option>`;
+    h += '</select>';
+    if (!r.compactModel) return h;
     if (r.shownIsOther) h += `<div class="hint">${esc(r.otherText)}</div>`;
     h += `<div class="compact-wrap">${renderTable(r.compactModel, vm.lang, { compact: true }).outerHTML}</div>`;
     h += '<div class="btn-row" style="margin-top:8px">';
