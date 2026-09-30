@@ -1,6 +1,7 @@
 import { BALLS, ballFits, ballById, ballMass, GROOVE_W } from './balls.js';
 import { DT_OPTIONS, GATE_MIN, GATE_MAX } from './model.js';
 import { formatNumber } from '../measure/format.js';
+import { renderTable } from '../measure/data-table-view.js';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -22,8 +23,8 @@ export function createPanel(root, { t, onAction }) {
 
   const fixTag = (locked, key) => (locked.has(key) ? `<span class="fix" title="${esc(t('dims.fixedTitle'))}">${esc(t('dims.fixed'))}</span>` : '');
 
-  const btn = (fid, label, { action, value, pressed, disabled }) =>
-    `<button type="button" class="btn" data-fid="${fid}" data-a="${action}" data-v="${esc(value)}" aria-pressed="${pressed}"${disabled ? ' disabled' : ''}>${esc(label)}</button>`;
+  const btn = (fid, label, { action, value, pressed, disabled, title }) =>
+    `<button type="button" class="btn" data-fid="${fid}" data-a="${action}" data-v="${esc(value)}" aria-pressed="${pressed}"${disabled ? ' disabled' : ''}${title ? ` title="${esc(title)}"` : ''}>${esc(label)}</button>`;
 
   function levelBlock(vm) {
     const { settings: s, locked, running, lang } = vm;
@@ -61,7 +62,7 @@ export function createPanel(root, { t, onAction }) {
   }
 
   function ballBlock(vm) {
-    const { settings: s, locked, running, lang } = vm;
+    const { settings: s, derived: d, locked, running, lang } = vm;
     let h = `<div class="block-title">${esc(t('blk.ball'))}${fixTag(locked, 'ball')}</div>`;
     h += `<table class="spec"><thead><tr><th>${esc(t('spec.pos'))}</th><th>${esc(t('spec.name'))}</th><th class="num">${esc(t('spec.d'))}</th><th class="num">${esc(t('spec.m'))}</th></tr></thead>`;
     h += '<tbody role="radiogroup">';
@@ -76,7 +77,8 @@ export function createPanel(root, { t, onAction }) {
     h += '</tbody></table>';
     const curFitsGroove = ballFits(ballById(s.ball), 'groove');
     h += `<div class="row"><div class="seg" style="flex:1">`;
-    h += btn('profile-groove', t('profile.groove'), { action: 'profile', value: 'groove', pressed: s.profile === 'groove', disabled: running || !curFitsGroove || (locked.has('profile') && s.profile !== 'groove') });
+    const noFitTitle = curFitsGroove ? '' : t('ball.noFit', { d: formatNumber(d.ball.d * 10, 0, lang), w: formatNumber(GROOVE_W * 10, 1, lang) });
+    h += btn('profile-groove', t('profile.groove'), { action: 'profile', value: 'groove', pressed: s.profile === 'groove', title: noFitTitle, disabled: running || !curFitsGroove || (locked.has('profile') && s.profile !== 'groove') });
     h += btn('profile-flat', t('profile.flat'), { action: 'profile', value: 'flat', pressed: s.profile === 'flat', disabled: running || (locked.has('profile') && s.profile !== 'flat') });
     h += `</div>${fixTag(locked, 'profile')}</div>`;
     return h;
@@ -108,17 +110,36 @@ export function createPanel(root, { t, onAction }) {
     return `<button type="button" class="btn primary" style="width:100%" data-fid="run" data-a="run"${vm.running ? ' disabled' : ''}>${esc(label)}</button>`;
   }
 
-  function resultsBlock() {
-    return `<div class="block-title">${esc(t('blk.results'))}</div><div class="hint" style="margin-top:0">${esc(t('results.none'))}</div>`;
+  function resultsBlock(vm) {
+    const r = vm.results;
+    let h = `<div class="block-title">${esc(t('blk.results'))}</div>`;
+    if (!r.compactModel) return `${h}<div class="hint" style="margin-top:0">${esc(t('results.none'))}</div>`;
+    if (r.tables.length > 1) {
+      h += '<select class="select" data-fid="resultsSelect" data-a="selectTable">';
+      for (const o of r.tables) h += `<option value="${esc(o.key)}"${o.key === r.shownKey ? ' selected' : ''}>${esc(o.label)}</option>`;
+      h += '</select>';
+    }
+    if (r.shownIsOther) h += `<div class="hint">${esc(r.otherText)}</div>`;
+    h += `<div class="compact-wrap">${renderTable(r.compactModel, vm.lang, { compact: true }).outerHTML}</div>`;
+    h += '<div class="btn-row" style="margin-top:8px">';
+    if (r.canTable) h += `<button type="button" class="btn" data-fid="openTable" data-a="openTable">${esc(t('results.table'))}</button>`;
+    if (r.canStrobe) h += `<button type="button" class="btn" data-fid="openStrobe" data-a="openStrobe">${esc(t('results.strobe'))}</button>`;
+    h += '</div>';
+    return h;
   }
 
   root.addEventListener('click', (ev) => {
     const el = ev.target.closest('[data-a]');
     if (!el || !root.contains(el) || el.disabled || el.dataset.blocked) return;
-    if (el.tagName === 'INPUT') return; // checkbox: change-notikums
+    if (el.tagName === 'INPUT' || el.tagName === 'SELECT') return; // change-notikums
     dispatch(el);
   });
   root.addEventListener('change', (ev) => {
+    const sel = ev.target.closest('select[data-a]');
+    if (sel) {
+      onAction(sel.dataset.a, sel.value);
+      return;
+    }
     const el = ev.target.closest('input[data-a]');
     if (el) onAction(el.dataset.a, el.checked);
   });
@@ -143,7 +164,7 @@ export function createPanel(root, { t, onAction }) {
       setBlock('ball', ballBlock(vm));
       setBlock('dims', dimsBlock(vm));
       setBlock('run', runBlock(vm));
-      setBlock('results', resultsBlock());
+      setBlock('results', resultsBlock(vm));
       if (fid && document.activeElement?.dataset?.fid !== fid) {
         const again = [...root.querySelectorAll('[data-fid]')].find((e) => e.dataset.fid === fid);
         again?.focus();

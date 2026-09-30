@@ -40,9 +40,12 @@ export function createHandles(layer, { onChange, onDragStart, onDragEnd, onSelec
     b.type = 'button';
     b.setAttribute('role', 'slider');
     b.addEventListener('pointerdown', (ev) => {
+      if (onDragStart?.(id) === false) {
+        ev.preventDefault();
+        return;
+      }
       b.setPointerCapture(ev.pointerId);
       b.classList.add('dragging');
-      onDragStart?.(id);
       setSelected(id);
       ev.preventDefault();
     });

@@ -1,7 +1,7 @@
-import { createI18n, createTheme, mountTitleBlock, setupCanvas } from '../sim-core.js';
+import { createI18n, createTheme, mountTitleBlock, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  derive, withL, withH, withAlpha, withX0, withGate, withGateCount, withLevel, withTimer, withDt, withSlow,
+  derive, settingsKey, withL, withH, withAlpha, withX0, withGate, withGateCount, withLevel, withTimer, withDt, withSlow,
   withAngleMode, withTape, withProfile, withBall, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
 } from './model.js';
 import { ballById, ballFits, GROOVE_W } from './balls.js';
@@ -11,6 +11,9 @@ import { createPanel } from './panel.js';
 import { createHandles } from './handles.js';
 import { createNotices } from '../measure/notices.js';
 import { formatNumber } from '../measure/format.js';
+import { simulateRun } from './experiment.js';
+import { createResults, tableModel } from './results.js';
+import { openDataTable } from '../measure/data-table-view.js';
 
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
@@ -25,7 +28,11 @@ const state = {
   noise: url.noise,
   traps: url.traps,
   seed: url.seed,
-  running: false,
+  running: null, // { run, simT }
+  results: createResults(),
+  lastRun: null,
+  shownKey: null,
+  overlay: null, // { kind, key, close }
   selected: null,
   drag: null, // { id, fit: { L, alphaRad } } — mērogs velkot nemainās
   ball: { x: null, angle: 0 }, // null → lodīte stāv kustības sākumpunktā
@@ -40,6 +47,7 @@ const panel = createPanel(document.getElementById('controls'), { t: i18n.t, onAc
 const handles = createHandles(document.getElementById('handles'), {
   onChange: onHandleChange,
   onDragStart(id) {
+    if (state.running) return false;
     const d = derive(state.settings);
     state.drag = { id, fit: { L: state.settings.L, alphaRad: d.alphaRad } };
   },
@@ -158,12 +166,97 @@ function onHandleChange(id, change) {
   }[kind]();
   if (JSON.stringify(next) === JSON.stringify(s)) return;
   state.settings = next;
-  state.ball = { x: null, angle: 0 };
+  resetAfterChange();
   render();
 }
 
-function onAction(type, value) {
+function resetAfterChange() {
+  state.ball = { x: null, angle: 0 };
+  state.lastRun = null;
+  state.shownKey = null;
+}
+
+function currentKey() {
+  return settingsKey(state.settings, { noise: state.noise, traps: state.traps });
+}
+
+let stopLoop = () => {};
+
+function startRun() {
   if (state.running) return;
+  const key = currentKey();
+  const run = simulateRun(state.settings, { seed: state.seed, repeat: state.results.nextRepeat(key), noise: state.noise, traps: state.traps });
+  if (!run.rolls) {
+    notices.show('noRoll', () => i18n.t('notice.noRoll', { h: formatNumber(run.hMin, 1, i18n.lang()) }));
+    return;
+  }
+  notices.clear('noRoll');
+  state.running = { run, simT: 0 };
+  state.lastRun = null;
+  state.shownKey = null;
+  state.ball = { x: run.x0, angle: 0 };
+  stopLoop = startLoop(step);
+  render();
+}
+
+function step(dt) {
+  const r = state.running;
+  if (!r) return;
+  const slow = state.settings.slow && state.settings.level === 3 ? 0.25 : 1;
+  r.simT = Math.min(r.run.tEnd, r.simT + dt * slow);
+  const x = r.run.xAt(r.simT);
+  state.ball = { x, angle: (x - r.run.x0) / derive(state.settings).r };
+  if (r.simT >= r.run.tEnd) finishRun();
+  render();
+}
+
+function finishRun() {
+  stopLoop();
+  state.results.add(state.settings, state.running.run, { seed: state.seed, noise: state.noise, traps: state.traps });
+  state.lastRun = state.running.run;
+  state.running = null;
+}
+
+function shownTable() {
+  return state.results.byKey(state.shownKey ?? currentKey());
+}
+
+function openTable(key) {
+  const table = state.results.byKey(key);
+  if (!table) return;
+  state.overlay?.close();
+  const t = i18n.t;
+  const lang = i18n.lang();
+  const handle = openDataTable(tableModel(table, { t, lang }), {
+    lang,
+    labels: {
+      heading: t('results.table'), copy: t('data.copy'), csv: t('data.csv'), close: t('data.close'),
+      copied: t('data.copied'), copyFailed: t('data.copyFailed'),
+    },
+    onClose() {
+      if (state.overlay && state.overlay.close === handle.close) state.overlay = null;
+    },
+  });
+  state.overlay = { kind: 'table', key, close: handle.close };
+}
+
+function onAction(type, value) {
+  if (type === 'selectTable') {
+    state.shownKey = value;
+    render();
+    return;
+  }
+  if (type === 'openTable') {
+    const tb = shownTable();
+    if (tb && state.views.table) openTable(tb.key);
+    return;
+  }
+  if (type === 'openStrobe') return; // Task 13
+  if (state.running) return;
+  if (type === 'run') {
+    startRun();
+    return;
+  }
   const s = state.settings;
   const lk = (k) => state.locked.has(k);
   switch (type) {
@@ -173,7 +266,12 @@ function onAction(type, value) {
     case 'dt': if (!lk('dt')) state.settings = withDt(s, value); break;
     case 'slow': state.settings = withSlow(s, value); break;
     case 'tape': if (!lk('tape')) state.settings = withTape(s, value); break;
-    case 'profile': if (!lk('profile')) state.settings = withProfile(s, value); break;
+    case 'profile':
+      if (!lk('profile')) {
+        state.settings = withProfile(s, value);
+        notices.clear('ballNoFit');
+      }
+      break;
     case 'angleMode': if (!lk('h') && !lk('alpha')) state.settings = withAngleMode(s, value); break;
     case 'ball': {
       if (lk('ball')) return;
@@ -189,16 +287,49 @@ function onAction(type, value) {
       state.settings = withBall(s, value);
       break;
     }
-    case 'run': return; // Task 12
     default: return;
   }
-  state.ball = { x: null, angle: 0 };
+  resetAfterChange();
   render();
+}
+
+function stopwatchValue() {
+  if (state.settings.level !== 1) return 0;
+  const r = state.running;
+  if (r) return r.simT < r.run.timeTo(r.run.xf) ? r.simT : r.run.level1.t;
+  return state.lastRun?.level1 ? state.lastRun.level1.t : 0;
+}
+
+function gateText(i, lang) {
+  const s = state.settings;
+  const r = state.running;
+  const run = r ? (r.simT >= r.run.timeTo(s.gates[i]) ? r.run : null) : state.lastRun;
+  const g = run?.level2?.gates[i];
+  if (!g) return null;
+  return `${formatNumber(g.t, s.timer === 'gate' ? 3 : 2, lang)} s`;
+}
+
+function resultsVM(lang) {
+  const t = i18n.t;
+  const tables = state.results.tables();
+  const cur = currentKey();
+  const shown = shownTable();
+  const shownKey = state.shownKey ?? cur;
+  return {
+    tables: tables.map((tb) => ({ key: tb.key, label: t('results.option', { n: tb.index, m: tb.runs.length }) })),
+    shownKey,
+    shownIsOther: !!shown && shownKey !== cur,
+    otherText: shown ? t('results.other', { n: shown.index }) : '',
+    compactModel: shown ? tableModel(shown, { t, lang }) : null,
+    canTable: state.views.table && !!shown,
+    canStrobe: state.views.strobe && !!shown && shown.level === 3,
+  };
 }
 
 function render() {
   if (!view) return;
-  document.getElementById('drawing').classList.toggle('running', state.running);
+  document.getElementById('drawing').classList.toggle('running', !!state.running);
+  if (!view) return;
   const s = state.settings;
   const d = derive(s);
   const lang = i18n.lang();
@@ -210,18 +341,28 @@ function render() {
     lang,
     ballX: state.ball.x ?? s.x0,
     ballAngle: state.ball.angle,
-    stopwatchText: `${formatNumber(0, 2, lang)} s`,
-    gateTexts: s.gates.map(() => null),
+    stopwatchText: `${formatNumber(stopwatchValue(), 2, lang)} s`,
+    gateTexts: s.gates.map((_, i) => (s.level === 2 ? gateText(i, lang) : null)),
     showTape: s.tape,
   });
-  panel.render({ settings: s, derived: d, locked: state.locked, running: state.running, lang, hasTableForSettings: false });
-  handles.update(handleItems(layout(), s, d, lang));
+  panel.render({
+    settings: s, derived: d, locked: state.locked, running: state.running, lang,
+    hasTableForSettings: !!state.results.byKey(currentKey()),
+    results: resultsVM(lang),
+  });
+  const items = handleItems(layout(), s, d, lang);
+  handles.update(items);
+  if (state.selected && !items.some((it) => it.id === state.selected)) {
+    state.selected = null;
+    handles.setSelected(null);
+  }
 }
 
 theme.onChange(render);
 i18n.onChange(() => {
   notices.refresh();
   render();
+  if (state.overlay) openTable(state.overlay.key);
 });
 document.fonts.ready.then(render);
 
@@ -232,6 +373,7 @@ window.__rb = {
   },
   setSettings(next) {
     state.settings = next;
+    resetAfterChange();
     render();
   },
 };
