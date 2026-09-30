@@ -14,6 +14,7 @@ export function createPanel(root, { t, onAction }) {
     results: root.querySelector('#blockResults'),
   };
   const last = {};
+  const compactHtml = new WeakMap(); // modelis → gatavs HTML (netiek būvēts katrā kadrā)
 
   function setBlock(name, html) {
     if (last[name] === html) return;
@@ -121,7 +122,8 @@ export function createPanel(root, { t, onAction }) {
     h += '</select>';
     if (!r.compactModel) return h;
     if (r.shownIsOther) h += `<div class="hint">${esc(r.otherText)}</div>`;
-    h += `<div class="compact-wrap">${renderTable(r.compactModel, vm.lang, { compact: true }).outerHTML}</div>`;
+    if (!compactHtml.has(r.compactModel)) compactHtml.set(r.compactModel, renderTable(r.compactModel, vm.lang, { compact: true }).outerHTML);
+    h += `<div class="compact-wrap">${compactHtml.get(r.compactModel)}</div>`;
     h += '<div class="btn-row" style="margin-top:8px">';
     if (r.canTable) h += `<button type="button" class="btn" data-fid="openTable" data-a="openTable">${esc(t('results.table'))}</button>`;
     if (r.canStrobe) h += `<button type="button" class="btn" data-fid="openStrobe" data-a="openStrobe">${esc(t('results.strobe'))}</button>`;

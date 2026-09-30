@@ -174,6 +174,7 @@ function resetAfterChange() {
   state.ball = { x: null, angle: 0 };
   state.lastRun = null;
   state.shownKey = null;
+  notices.clear('noRoll');
 }
 
 function currentKey() {
@@ -309,6 +310,13 @@ function gateText(i, lang) {
   return `${formatNumber(g.t, s.timer === 'gate' ? 3 : 2, lang)} s`;
 }
 
+let compactCache = { id: null, model: null };
+function compactModelFor(shown, lang) {
+  const id = `${shown.key}|${shown.runs.length}|${lang}`;
+  if (compactCache.id !== id) compactCache = { id, model: tableModel(shown, { t: i18n.t, lang }) };
+  return compactCache.model;
+}
+
 function resultsVM(lang) {
   const t = i18n.t;
   const tables = state.results.tables();
@@ -320,7 +328,7 @@ function resultsVM(lang) {
     shownKey,
     shownIsOther: !!shown && shownKey !== cur,
     otherText: shown ? t('results.other', { n: shown.index }) : '',
-    compactModel: shown ? tableModel(shown, { t, lang }) : null,
+    compactModel: shown ? compactModelFor(shown, lang) : null,
     canTable: state.views.table && !!shown,
     canStrobe: state.views.strobe && !!shown && shown.level === 3,
   };
@@ -329,7 +337,6 @@ function resultsVM(lang) {
 function render() {
   if (!view) return;
   document.getElementById('drawing').classList.toggle('running', !!state.running);
-  if (!view) return;
   const s = state.settings;
   const d = derive(s);
   const lang = i18n.lang();
