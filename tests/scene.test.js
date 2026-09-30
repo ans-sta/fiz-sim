@@ -11,7 +11,7 @@ test('layout fits the groove into the width and anchors the low end on the right
   const lay = sceneLayout(800, 400, { L: s.L, alphaRad: d.alphaRad });
   close(lay.high.x, MARGIN.left, 1e-9);
   close(lay.low.x, 800 - MARGIN.right, 1e-6);
-  close(lay.low.y, 400 - MARGIN.bottom, 1e-9);
+  close(lay.low.y, Math.min(400 - MARGIN.bottom, MARGIN.top + (400 - MARGIN.top - MARGIN.bottom + s.L * Math.sin(d.alphaRad) * lay.s) / 2), 1e-9);
   close(lay.low.y - lay.high.y, s.L * Math.sin(d.alphaRad) * lay.s, 1e-9);
 });
 
@@ -30,6 +30,7 @@ test('the scale is frozen by `fit` while dragging', () => {
   const lay80 = sceneLayout(800, 400, { L: 80, alphaRad: 0.04 });
   const drag = sceneLayout(800, 400, { L: 120, alphaRad: 0.04 }, { L: 80, alphaRad: 0.04 });
   assert.equal(drag.s, lay80.s);
+  assert.equal(drag.low.y, lay80.low.y);
 });
 
 test('scale is capped at 60 px/cm', () => {

@@ -1,5 +1,5 @@
 export const MARGIN = { left: 70, right: 40, top: 96, bottom: 70 };
-export const GROOVE_PX = 6; // renītes biezums zīmējumā
+export const GROOVE_PX = 14; // renītes biezums zīmējumā
 export const DIM_GAP = 26; // px starp objektu un izmēru līniju
 export const ARC_R = 110; // px — α loka rādiuss
 
@@ -9,7 +9,8 @@ export function sceneLayout(width, height, geo, fit = geo) {
   const s = Math.min(60, availW / (fit.L * Math.cos(fit.alphaRad)), availH / Math.max(fit.L * Math.sin(fit.alphaRad), 1));
   const cos = Math.cos(geo.alphaRad);
   const sin = Math.sin(geo.alphaRad);
-  const low = { x: MARGIN.left + geo.L * cos * s, y: height - MARGIN.bottom };
+  const lowY = Math.min(height - MARGIN.bottom, MARGIN.top + (availH + fit.L * Math.sin(fit.alphaRad) * s) / 2);
+  const low = { x: MARGIN.left + geo.L * cos * s, y: lowY };
   const high = { x: MARGIN.left, y: low.y - geo.L * sin * s };
   const dir = { x: cos, y: sin };
   const up = { x: sin, y: -cos };
@@ -26,9 +27,9 @@ export function ballCenter(lay, x, rEff) {
   return { x: p.x + lay.up.x * rEff * lay.s, y: p.y + lay.up.y * rEff * lay.s };
 }
 
-// Izmēru līnija L ir paralēla renītei, virs lielākās lodītes (Ø 4 cm) augstuma.
+// Izmēru līnija L ir paralēla renītei, virs augstākās vārtu galotnes (≤ 4,8 cm).
 function dimOffsetL(lay) {
-  return 4 * lay.s + DIM_GAP;
+  return 5 * lay.s + DIM_GAP;
 }
 
 export function handleAnchors(lay, settings, derived) {
@@ -63,6 +64,8 @@ export function valueFromPointer(kind, lay, p) {
 const MONO = 'ui-monospace, monospace';
 const FONT_VALUE = `500 12px "IBM Plex Mono", ${MONO}`;
 const FONT_LABEL = `400 10px "IBM Plex Mono", ${MONO}`;
+const FONT_TAPE = `400 9px "IBM Plex Mono", ${MONO}`;
+const TAPE_TEXT_Y = 13; // numuru pamatlīnija zem renītes augšējās malas
 const FONT_BIG = `500 26px "IBM Plex Mono", ${MONO}`;
 
 function line(ctx, x1, y1, x2, y2) {
@@ -215,15 +218,23 @@ function drawTape(ctx, lay, m, c) {
     for (let i = 0; i <= L * 10; i++) if (i % 10) tickAt(i / 10, 1.5);
   }
   for (let cm = 0; cm <= L; cm++) {
-    tickAt(cm, cm % 10 === 0 ? GROOVE_PX : cm % 5 === 0 ? 5 : 3);
+    tickAt(cm, cm % 10 === 0 ? 7 : cm % 5 === 0 ? 5 : 3);
   }
   ctx.stroke();
   const spacing = [5, 10, 20, 50].find((sp) => sp * s >= 32) ?? 50;
+  const opts = { font: FONT_TAPE, color: c.inkDim, align: 'center' };
   for (let x = spacing; x <= L; x += spacing) {
-    labelAt(ctx, lay, x, 12, String(x), { color: c.inkDim, align: 'center' });
+    labelAt(ctx, lay, x, TAPE_TEXT_Y - GROOVE_PX, String(x), opts);
   }
-  labelAt(ctx, lay, 20 / s, 24, m.t('scene.origin'), { color: c.inkDim, align: 'left' }, c.field);
-  ctx.globalAlpha = 1;
+  labelAt(ctx, lay, 2 / s, TAPE_TEXT_Y - GROOVE_PX, '0', { ...opts, align: 'left' });
+  // "x = 0" zem galda līnijas, zemes svītrojuma laukā
+  const ox = Math.round(lay.high.x);
+  const oy = Math.round(lay.tableY) + 16;
+  ctx.font = FONT_LABEL;
+  const w = ctx.measureText(m.t('scene.origin')).width;
+  ctx.fillStyle = c.field;
+  ctx.fillRect(ox - 2, oy - 10, w + 4, 13);
+  text(ctx, m.t('scene.origin'), ox, oy, { color: c.inkDim });
 }
 
 function drawDimL(ctx, lay, m, c) {
@@ -269,14 +280,22 @@ function drawAngle(ctx, lay, m, c) {
 
 function drawLevel1(ctx, lay, m, c) {
   const { settings: s, derived: d } = m;
-  stroke(ctx, c.ink);
-  for (const x of [s.x0, d.xf]) {
+  const flagH = Math.min(2 * d.r * lay.s + 36, dimOffsetL(lay) - 14);
+  [[s.x0, 'scene.start'], [d.xf, 'scene.finish']].forEach(([x, key]) => {
     const p = lay.at(x);
-    line(ctx, p.x, p.y, p.x + lay.up.x * 22, p.y + lay.up.y * 22);
-  }
-  const opts = { color: c.inkDim, align: 'center', spacing: '1px' };
-  labelAt(ctx, lay, s.x0, 40, m.t('scene.start'), opts, c.field);
-  labelAt(ctx, lay, d.xf, 40, m.t('scene.finish'), opts, c.field);
+    const tx = p.x + lay.up.x * flagH;
+    const ty = p.y + lay.up.y * flagH;
+    stroke(ctx, c.ink);
+    line(ctx, p.x, p.y, tx, ty);
+    const str = m.t(key);
+    ctx.font = FONT_LABEL;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
+    const w = ctx.measureText(str).width;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    ctx.fillStyle = c.field;
+    ctx.fillRect(tx + 3, ty - 2, w + 4, 13);
+    text(ctx, str, tx + 5, ty + 8, { color: c.inkDim, spacing: '1px' });
+  });
 
   const bx = lay.width - 170;
   stroke(ctx, c.ink);
