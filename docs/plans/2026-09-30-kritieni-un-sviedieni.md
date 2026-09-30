@@ -1,0 +1,87 @@
+# Kritieni un sviedieni — simulācija (biznesa prasības)
+
+> Statuss: ideja, apspriešanai. Koderim vēl nav nodots.
+> Atjaunināts: 2026-09-30T11:40:16+03:00
+> Konteksts: blakus simulācija „Lodīte renītē” (`docs/plans/2026-09-30-lodite-renite.md`) ar to pašu fizikas dzinēju (Ansis, 30.09). Vizuālā sistēma ir aprakstīta `docs/plans/2026-07-15-rasejuma-dizains.md`.
+
+## 1. Mērķis
+
+Simulācija dod ticamus mērījumu datus par ķermeņa kustību tikai smaguma spēka ietekmē: kritienu, vertikālo, horizontālo un slīpo sviedienu. Pēc tam klasiskā spēlē „Trāpi mērkaķim” šī kustība jāizmanto. Tāpat kā pie lodītes, skolēns datus apstrādā pats.
+
+Galvenā doma: horizontālā un vertikālā kustība ir neatkarīgas. Pa horizontāli ķermenis kustas vienmērīgi, bet pa vertikāli tas krīt tāpat kā brīvi krītošs ķermenis.
+
+## 2. Kopīgs ar „Lodīte renītē”
+
+Tas pats dzinējs un tās pašas daļas. Tās šeit neatkārto, bet atsaucas uz lodītes specifikāciju:
+
+- Princips „simulācija tikai atvieglo nolasīšanu”. Tabulā un eksportā ir tikai tieši nolasāmie lielumi: šeit tie ir **t, x un y**. Δ, ātrumu, paātrinājumu, vidējo vērtību un grafiku nav (lodīte 2).
+- Palaišana, ATKĀRTOT, rezultātu skati DATU TABULA (pa visu ekrānu, lieli cipari, KOPĒT, CSV) un STROBOSKOPS (tuvināšana, eksports augstā izšķirtspējā, bez zīmēšanas) (lodīte 3.4, 5).
+- Troksnis un sēkla, intensitāte, slazdi, pieraksts ar vienādu decimālzīmju skaitu (lodīte 6).
+- URL parametri ar `lock`, skolotāja skats, datu ģenerators grupām, projektors (lodīte 8).
+- Rasējuma stils, LV/EN, trīs režīmi (lodīte 11).
+
+## 3. Ko skolēns redz
+
+- **Sānskata rasējums:** zeme, izmešanas vieta (tornis, galds vai klints — sk. 7) un ķermenis (bumbiņa).
+- **Mērrežģis** (horizontālā un vertikālā mērlente vai režģis). To var paslēpt un parādīt ar izvēles rūtiņu, tāpat kā lodītes mērlenti.
+- **Divi sākumpunkti, vienmēr nosaukti:**
+  - koordinātu sākumpunkts (x = 0, y = 0) — punkts uz zemes zem izmešanas vietas;
+  - kustības sākumpunkts — izmešanas vieta (0; h).
+- y ass ir vērsta uz augšu.
+- **Izmēru līnijas:** augstumu h, sākuma ātrumu v₀ (bulta, kuras garums ir v₀) un leņķi α maina, velkot tieši rasējumā.
+
+## 4. Četri režīmi
+
+| Režīms | Ko iestata | Ko dod simulācija | Ko rēķina skolēns |
+|---|---|---|---|
+| **1. Kritiens un vertikālais sviediens** | h; v₀ un virziens (uz augšu / uz leju; v₀ = 0 ir brīvā krišana) | t, y | g no y(t); augstākais punkts; lidojuma laiks; Δy vienādos laika sprīžos |
+| **2. Horizontālais sviediens** | v₀, h | t, x, y | x(t) ir vienmērīga kustība, y(t) ir kā brīvajā krišanā; lidojuma laiks nav atkarīgs no v₀ |
+| **3. Slīpais sviediens** | v₀, α, h | t, x, y | lidojuma tālums un augstākais punkts; tālums atkarībā no α |
+| **4. Trāpi mērkaķim (spēle)** | tēmēšanas leņķis, lodes ātrums v₀; attālumu līdz kokam D un mērkaķa augstumu H nosaka līmenis vai saite | trāpīja vai netrāpīja; pēc tam t, x, y abiem ķermeņiem | kāpēc jātēmē tieši uz mērkaķi; mazākais v₀, ar kuru vēl trāpa |
+
+- Laika intervāls Δt stroboskopam un tabulai: 0,1 / 0,2 / 0,5 s (URL parametrs, tāpat kā pie lodītes).
+
+### 4.1 Trāpi mērkaķim
+
+- Mērkaķis karājas kokā augstumā H, attālumā D. **Tajā brīdī, kad skolēns izšauj, mērkaķis palaiž zaru un krīt.**
+- Skolēns tēmē, velkot stobru, un izvēlas lodes ātrumu v₀. Tēmēšanas līnija ir redzama kā rasējuma pārtraukta līnija.
+- Spēles gaita pa līmeņiem (kā hokejā). Priekšlikums:
+  1. mērkaķis nekrīt — tēmē augstāk;
+  2. mērkaķis krīt — tēmē tieši uz viņu;
+  3. mazs v₀ — lode nokrīt zemē pirms koka, tāpēc jāatrod pietiekams v₀;
+  4. dažādi D un H.
+- **Pēc trāpījuma stroboskops rāda abus ķermeņus un tēmēšanas līniju.** Katrā zibsnī gan lode, gan mērkaķis ir tikpat daudz zem savas „bez gravitācijas” vietas. Šis attēls ir galvenais „aha!”.
+- Spēlē tēmēšanas leņķim troksni nepieliek, citādi princips „tēmē tieši” vairs nedarbotos. Troksnis v₀ trāpījumu neietekmē.
+
+## 5. Fizikas modelis (kam jānotiek)
+
+- x = v₀ · cos α · t; y = h + v₀ · sin α · t − g t²/2; g = 9,81 m/s². Vertikālajam sviedienam α = ±90°, horizontālajam α = 0°.
+- Gaisa pretestību v1 neņem vērā (sk. 7).
+- Kustība beidzas, kad y = 0 (zeme). Mērkaķa režīmā tā beidzas arī tad, ja lode trāpa mērkaķim.
+- Trāpījums ir tad, ja lodes un mērkaķa attālums kādā brīdī ir mazāks par pusi no to izmēru summas.
+
+## 6. Pieņemšanas kritēriji
+
+1. Troksnis 0: y(t) = h + v₀ t − g t²/2 precīzi, un x(t) ir lineārs.
+2. Režīms 1:
+   - brīvajā krišanā Δy vienādos laika sprīžos attiecas kā 1 : 3 : 5 : 7;
+   - sviedienā uz augšu kāpšanas laiks līdz augstākajam punktam ir v₀/g.
+3. Režīms 2: lidojuma laiks ir √(2h/g) un nav atkarīgs no v₀.
+4. Režīms 3, h = 0: tālums ir lielākais pie 45°, un pie 30° un 60° tālumi ir vienādi.
+5. Režīms 4:
+   - ja mērkaķis krīt un stobrs tēmēts tieši uz viņu, lode trāpa pie jebkura v₀ ≥ v_min (kad lode sasniedz koku, pirms mērkaķis nokritis zemē);
+   - ja stobrs tēmēts augstāk vai zemāk, lode netrāpa;
+   - ja mērkaķis nekrīt, tēmējot tieši, lode netrāpa.
+6. Tabulā un eksportā ir tikai t, x un y (un iestatījumi).
+7. URL parametri un `lock` darbojas tāpat kā pie lodītes, arī režīma un līmeņa izvēle.
+
+## 7. Atvērtie jautājumi (izlemj Ansis)
+
+1. **Viena lapa ar četriem režīmiem vai vairākas lapas** (LAPA numuri)?
+2. **Vertikālā sviediena stroboskops.** Pozīcijas ceļā uz augšu un uz leju pārklājas. Vai tās nobīdīt pa horizontāli (kā laika asi), vai rādīt pārklātas kā īstā fotogrāfijā?
+3. **Horizontālajā sviedienā otra bumbiņa.** Vai rādīt otru bumbiņu, kas tajā pašā brīdī vienkārši krīt (klasiskais demonstrējums: abas zemi sasniedz vienlaikus)?
+4. **Mērogs.** Metros (tornis, klints; h līdz ~50 m) vai galda mērogā (bumbiņa no galda, cm), kā reāls eksperiments klasē? Vai abi?
+5. **Gaisa pretestība.** Vēlāk kā slēdzis (galda tenisa bumbiņa pret tērauda lodīti)?
+6. **Mērkaķa sižets.** Lode un mērkaķis, kā klasiskajā uzdevumā, vai banāns, ko met krītošam mērkaķim?
+7. **Spēles līmeņi.** Cik līmeņu, kādi, un vai skaitīt punktus?
+8. **Izmešanas vieta rasējumā:** tornis, galds vai klints?
