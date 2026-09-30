@@ -14,6 +14,7 @@ import { formatNumber } from '../measure/format.js';
 import { simulateRun } from './experiment.js';
 import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
+import { openStrobe } from './strobe.js';
 
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
@@ -241,6 +242,39 @@ function openTable(key) {
   state.overlay = { kind: 'table', key, close: handle.close };
 }
 
+function openStrobeView(key, runIndex) {
+  const table = state.results.byKey(key);
+  if (!table || table.level !== 3) return;
+  state.overlay?.close();
+  const handle = openStrobe({
+    table,
+    runIndex: runIndex ?? table.runs.length - 1,
+    t: i18n.t,
+    lang: i18n.lang(),
+    colors: theme.colors(),
+    tape: state.settings.tape,
+    tapeLocked: state.locked.has('tape'),
+    onTapeChange(on) {
+      state.settings = withTape(state.settings, on);
+      render();
+    },
+    onExportFailed({ w, h }) {
+      notices.show('export', () => i18n.t('strobe.exportFailed', { w, h }));
+    },
+    onClose() {
+      if (state.overlay && state.overlay.close === handle.close) state.overlay = null;
+    },
+  });
+  state.overlay = { kind: 'strobe', key, close: handle.close, runIndex: handle.runIndex };
+}
+
+function reopenOverlay() {
+  const ov = state.overlay;
+  if (!ov) return;
+  if (ov.kind === 'strobe') openStrobeView(ov.key, ov.runIndex());
+  else openTable(ov.key);
+}
+
 function onAction(type, value) {
   if (type === 'selectTable') {
     state.shownKey = value || null;
@@ -252,7 +286,11 @@ function onAction(type, value) {
     if (tb && state.views.table) openTable(tb.key);
     return;
   }
-  if (type === 'openStrobe') return; // Task 13
+  if (type === 'openStrobe') {
+    const tb = shownTable();
+    if (tb && state.views.strobe && tb.level === 3) openStrobeView(tb.key);
+    return;
+  }
   if (state.running) return;
   if (type === 'run') {
     startRun();
@@ -365,11 +403,14 @@ function render() {
   }
 }
 
-theme.onChange(render);
+theme.onChange(() => {
+  render();
+  if (state.overlay?.kind === 'strobe') reopenOverlay();
+});
 i18n.onChange(() => {
   notices.refresh();
   render();
-  if (state.overlay) openTable(state.overlay.key);
+  reopenOverlay();
 });
 document.fonts.ready.then(render);
 
