@@ -2,7 +2,7 @@ import { createI18n, createTheme, mountTitleBlock, setupCanvas, startLoop } from
 import { STRINGS } from './i18n.js';
 import {
   derive, settingsKey, withL, withH, withAlpha, withX0, withGate, withGateCount, withLevel, withTimer, withDt, withSlow,
-  withAngleMode, withTape, withProfile, withBall, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
+  withAngleMode, withTape, withProfile, withBall, changedLocked, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
 } from './model.js';
 import { ballById, ballFits, GROOVE_W } from './balls.js';
 import { settingsFromURL, warningText } from './params.js';
@@ -166,9 +166,26 @@ function onHandleChange(id, change) {
     gate: () => withGate(s, i, v),
   }[kind]();
   if (JSON.stringify(next) === JSON.stringify(s)) return;
+  applySettings(next);
+}
+
+const LOCK_SYMBOLS = { L: 'L', h: 'h', alpha: 'α', x0: 'x₀', dt: 'Δt' };
+function lockName(k) {
+  return LOCK_SYMBOLS[k] ?? i18n.t(`lock.${k}`);
+}
+
+// Iestatījumu maiņa, kas izmainītu saitē nofiksētu lielumu, tiek noraidīta.
+function applySettings(next) {
+  const bad = changedLocked(state.settings, next, state.locked);
+  if (bad.length) {
+    notices.show('lockConflict', () => i18n.t('lockConflict', { names: bad.map(lockName).join(', ') }));
+    return false;
+  }
+  notices.clear('lockConflict');
   state.settings = next;
   resetAfterChange();
   render();
+  return true;
 }
 
 function resetAfterChange() {
@@ -311,20 +328,21 @@ function onAction(type, value) {
   }
   const s = state.settings;
   const lk = (k) => state.locked.has(k);
+  let next = s;
   switch (type) {
-    case 'level': if (!lk('level')) state.settings = withLevel(s, value); break;
-    case 'timer': if (!lk('timer')) state.settings = withTimer(s, value); break;
-    case 'gateCount': if (!lk('gates')) state.settings = withGateCount(s, s.gates.length + value); break;
-    case 'dt': if (!lk('dt')) state.settings = withDt(s, value); break;
-    case 'slow': state.settings = withSlow(s, value); break;
-    case 'tape': if (!lk('tape')) state.settings = withTape(s, value); break;
+    case 'level': if (!lk('level')) next = withLevel(s, value); break;
+    case 'timer': if (!lk('timer')) next = withTimer(s, value); break;
+    case 'gateCount': if (!lk('gates')) next = withGateCount(s, s.gates.length + value); break;
+    case 'dt': if (!lk('dt')) next = withDt(s, value); break;
+    case 'slow': next = withSlow(s, value); break;
+    case 'tape': if (!lk('tape')) next = withTape(s, value); break;
     case 'profile':
       if (!lk('profile')) {
-        state.settings = withProfile(s, value);
+        next = withProfile(s, value);
         notices.clear('ballNoFit');
       }
       break;
-    case 'angleMode': if (!lk('h') && !lk('alpha')) state.settings = withAngleMode(s, value); break;
+    case 'angleMode': if (!lk('h') && !lk('alpha')) next = withAngleMode(s, value); break;
     case 'ball': {
       if (lk('ball')) return;
       const ball = ballById(value);
@@ -336,13 +354,12 @@ function onAction(type, value) {
         return;
       }
       notices.clear('ballNoFit');
-      state.settings = withBall(s, value);
+      next = withBall(s, value);
       break;
     }
     default: return;
   }
-  resetAfterChange();
-  render();
+  applySettings(next);
 }
 
 function stopwatchValue() {
