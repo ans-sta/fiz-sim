@@ -77,7 +77,7 @@ function drawTape(ctx, o, fs) {
     const x = mm / 10;
     if (x < 0 || x > s.L) continue;
     let len = 0.25;
-    if (mm % 500 === 0) len = 0.9;
+    if (mm % 50 === 0) len = 0.9;
     else if (mm % 10 === 0) len = 0.6;
     else if (mm % 5 === 0) len = 0.4;
     const px = Math.round(tr.tx + x * sc) + 0.5 * fs;
@@ -340,6 +340,7 @@ export function openStrobe(o) {
     if (first) tr = fitTransform(box, w, h);
     draw();
   });
+  draw();
 
   return { close: overlay.close, runIndex: () => runIndex };
 }

@@ -225,7 +225,11 @@ function shownTable() {
 
 function openTable(key) {
   const table = state.results.byKey(key);
-  if (!table) return;
+  if (!table) {
+    state.overlay?.close();
+    state.overlay = null;
+    return;
+  }
   state.overlay?.close();
   const t = i18n.t;
   const lang = i18n.lang();
@@ -244,7 +248,11 @@ function openTable(key) {
 
 function openStrobeView(key, runIndex) {
   const table = state.results.byKey(key);
-  if (!table || table.level !== 3) return;
+  if (!table || table.level !== 3) {
+    state.overlay?.close();
+    state.overlay = null;
+    return;
+  }
   state.overlay?.close();
   const handle = openStrobe({
     table,
