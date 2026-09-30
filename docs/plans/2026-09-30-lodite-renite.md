@@ -1,6 +1,6 @@
 # Lodīte renītē — simulācija (biznesa prasības)
 
-> Statuss: apstiprināts (Ansis, 30.09 vakarā). 1. kārta nodota izpildei, sk. 13. un 15. sadaļu.
+> Statuss: 1. kārta uzbūvēta zarā `rolling-ball`, gaida Ansa pārbaudi un publicēšanu (sk. 14. sadaļu).
 > Atjaunināts: 2026-09-30T23:55:00+03:00
 > Konteksts: F10 laboratorijas darbs 02-08 „Lodīte slīpajā renītē” (30.09). Reālajā eksperimentā viena datu sērija aizņem visu stundu, bet simulācija datus dod minūtēs. Vizuālā sistēma ir aprakstīta `docs/plans/2026-07-15-rasejuma-dizains.md`. Izmaiņas — 14. sadaļā.
 
@@ -249,6 +249,14 @@ Darbojas pēc dizaina plāna: desktopa izkārtojums lielā ekrānā, lieli tabul
   - izlemti iepriekšējie atvērtie jautājumi par datu izvadi un „3b variantu” (tagad tas ir stroboskopa skats).
 - 2026-09-30T11:40:16+03:00 — Blakus simulācija „Kritieni un sviedieni” ar to pašu fizikas dzinēju (Ansis). Atsauces 10. un 11. sadaļā.
 - 2026-09-30T23:55:00+03:00 — Ansis apstiprināja dizainu un izlēma atvērtos jautājumus (13. sadaļa). Darbs divās kārtās (15. sadaļa).
+- 2026-10-01T02:45:00+03:00 — 1. kārta uzbūvēta zarā `rolling-ball` (lapa `rolling-ball.html`, plāns `docs/plans/2026-10-01-lodite-renite-plan.md`), vēl nav publicēta. Izpildes laikā Claude pieņēma šādus lēmumus, kas skar lietotāju (Ansis var mainīt):
+  - lodīte „ripo” tikai tad, ja no kustības sākumpunkta līdz renītes galam noripo 60 s laikā; tāpēc „mūsu renītē” mazākais slīpums ir h = 0,3 cm (nevis 0,2 cm), un paziņojums to nosauc;
+  - saitē nofiksētu lielumu nevar izmainīt arī netieši (piem., pavelkot lodīti, kas pārbīdītu vārtus) — parādās paziņojums;
+  - ar `view=strobe&lock=1` panelī x vērtības nerāda, jo skolēns tās nolasa no attēla;
+  - CSV vienmēr latviešu formātā (semikols, decimālkomats), arī angļu valodā; KOPĒT seko valodai;
+  - noklusējumā 3. līmenis un Δt = 0,2 s; finišs ir 10 cm pirms renītes gala; spec. „±” vērtības nozīmē ≈ 2σ;
+  - slazds nostrādā vienā no katras tabulas pirmajiem trim atkārtojumiem;
+  - panelī secība: datu līmenis, palaišana, rezultāti, izmēri, lodīte (lai PALAIST redz bez ritināšanas).
 
 ## 15. Kārtas
 
