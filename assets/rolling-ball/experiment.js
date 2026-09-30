@@ -1,6 +1,7 @@
 // Viena palaišana: patiesā kustība + mērījuma troksnis (spec. 6).
 // Spec. „±” vērtības šeit ir ≈ 2σ. Nolasīšanas kļūdu 3. līmenī nogriež pie ±0,25 cm × intensitāte,
-// lai tabula un stroboskops vienmēr sakristu ±0,5 cm robežās (spec. 12.13).
+// lai tabula un stroboskops sakristu ±0,5 cm robežās pie trokšņa intensitātes 1 (spec. 12.13);
+// pie intensitātes 2 starpība var sasniegt 0,75 cm.
 // Slazds nostrādā tieši vienā no pirmajiem trim katras tabulas atkārtojumiem (kurā — nosaka sēkla).
 import { derive, settingsKey } from './model.js';
 import { rngFor, gaussian, hash32 } from '../measure/rng.js';
@@ -29,7 +30,7 @@ export function trapRepeat(seed, key, name) {
 export function simulateRun(settings, { seed, repeat, noise, traps }) {
   const d = derive(settings);
   const key = settingsKey(settings, { noise, traps });
-  if (!d.rolls) return { rolls: false, key, repeat, hMin: d.hMin };
+  if (!d.rolls) return { rolls: false, key, repeat, hMin: d.hMin, alphaMinDeg: d.alphaMinDeg };
 
   const k = noise;
   const rand = rngFor(seed, key, repeat);

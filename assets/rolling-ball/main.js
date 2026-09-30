@@ -189,7 +189,12 @@ function startRun() {
   const key = currentKey();
   const run = simulateRun(state.settings, { seed: state.seed, repeat: state.results.nextRepeat(key), noise: state.noise, traps: state.traps });
   if (!run.rolls) {
-    notices.show('noRoll', () => i18n.t('notice.noRoll', { h: formatNumber(run.hMin, 1, i18n.lang()) }));
+    notices.show('noRoll', () => (run.hMin === null
+      ? i18n.t('notice.noRollMax')
+      : i18n.t('notice.noRoll', {
+        h: formatNumber(run.hMin, 1, i18n.lang()),
+        a: formatNumber(run.alphaMinDeg, 1, i18n.lang()),
+      })));
     return;
   }
   notices.clear('noRoll');

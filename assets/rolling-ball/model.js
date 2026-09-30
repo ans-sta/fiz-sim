@@ -37,9 +37,29 @@ export function spreadGates(x0, xf, n) {
   return out;
 }
 
-// Mazākais h (0,1 cm solī), pie kura lodīte ripo: tan α > μ.
-export function minRollingH(L, mu) {
-  return Math.ceil(L * Math.sin(Math.atan(mu)) * 10 + 1e-9) / 10;
+export const MAX_RUN_TIME = 60; // s — ilgāks brauciens nav lietojams laboratorijas mēģinājums, un fiziski statiskā berze tik tuvu slieksnim lodīti notur
+
+// Lodīte „ripo", ja no x₀ ar v₀ = 0 līdz renītes galam tiek 60 s laikā.
+function rollsWithin(a, L, x0) {
+  return a > 0 && Math.sqrt((2 * (L - x0)) / a) <= MAX_RUN_TIME;
+}
+
+function accelerationAt(s, alphaRad) {
+  const ball = ballById(s.ball);
+  return rollingAcceleration({
+    g: G_CM, alphaRad, mu: ballMu(ball), beta: ballBeta(ball), r: ball.d / 2, w: GROOVE_W, profile: s.profile,
+  });
+}
+
+// Mazākais h (0,1 cm solī), pie kura lodīte ripo; null, ja nepietiek pat ar hMax.
+function findHMin(s) {
+  const top = hMax(s.L);
+  for (let i = 0; i * 0.1 <= top + 1e-9; i++) {
+    const h = roundTo(i * 0.1, STEP.h);
+    if (h > top) break;
+    if (rollsWithin(accelerationAt(s, Math.asin(h / s.L)), s.L, s.x0)) return h;
+  }
+  return null;
 }
 
 export function defaultSettings() {
@@ -156,7 +176,8 @@ export function derive(s) {
   const mu = ballMu(ball);
   const beta = ballBeta(ball);
   const a = rollingAcceleration({ g: G_CM, alphaRad, mu, beta, r, w: GROOVE_W, profile: s.profile });
-  return {
+  const rolls = rollsWithin(a, s.L, s.x0);
+  const out = {
     ball,
     r,
     rEff: effectiveRadius(r, GROOVE_W, s.profile),
@@ -167,10 +188,35 @@ export function derive(s) {
     alphaDeg: toDeg(alphaRad),
     h: s.L * Math.sin(alphaRad),
     a,
-    rolls: a > 0,
+    rolls,
     xf: finishX(s.L),
-    hMin: minRollingH(s.L, mu),
   };
+  if (!rolls) {
+    out.hMin = findHMin(s);
+    out.alphaMinDeg = out.hMin === null ? null : Math.ceil(toDeg(Math.asin(out.hMin / s.L)) * 10 - 1e-9) / 10;
+  }
+  return out;
+}
+
+const SAME = (a, b) => Math.abs(a - b) < 1e-9;
+const sameList = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+const FIELD_SAME = {
+  L: (p, n) => p.L === n.L,
+  h: (p, n) => SAME(p.h, n.h),
+  alpha: (p, n) => SAME(p.alphaDeg, n.alphaDeg),
+  ball: (p, n) => p.ball === n.ball,
+  profile: (p, n) => p.profile === n.profile,
+  x0: (p, n) => p.x0 === n.x0,
+  level: (p, n) => p.level === n.level,
+  timer: (p, n) => p.timer === n.timer,
+  gates: (p, n) => sameList(p.gates, n.gates),
+  dt: (p, n) => p.dt === n.dt,
+  tape: (p, n) => p.tape === n.tape,
+};
+
+// Nofiksētie lielumi (saitē), kurus `next` atšķir no `prev`. `view` iestatījumi nemaina.
+export function changedLocked(prev, next, locked) {
+  return Object.keys(FIELD_SAME).filter((k) => locked.has(k) && !FIELD_SAME[k](prev, next));
 }
 
 // Viss, kas ietekmē datus. Mērlente un palēninājums datus nemaina.

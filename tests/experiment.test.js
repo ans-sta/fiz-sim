@@ -110,7 +110,8 @@ test('without traps v0 = 0; noise 0 → tau = 0', () => {
 test('a ball that does not roll gives no data but the minimum h', () => {
   const run = simulateRun(withH(base, 0.1), opts());
   assert.equal(run.rolls, false);
-  assert.equal(run.hMin, 0.2);
+  assert.equal(run.hMin, 0.3); // was 0.2 (exact threshold); now "rolls within MAX_RUN_TIME"
+  assert.ok(run.alphaMinDeg > 0);
 });
 
 test('xAt and timeTo are consistent and analytic', () => {

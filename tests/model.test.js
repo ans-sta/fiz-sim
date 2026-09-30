@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 import {
   defaultSettings, derive, withL, withH, withAlpha, withAngleMode, withX0, withGate, withGateCount,
   withBall, withProfile, withLevel, withTimer, withDt, withTape, withSlow,
-  hMax, x0Max, finishX, spreadGates, minRollingH, settingsKey,
+  hMax, x0Max, finishX, spreadGates, settingsKey, MAX_RUN_TIME,
+  changedLocked,
 } from '../assets/rolling-ball/model.js';
+import { BALLS, ballFits } from '../assets/rolling-ball/balls.js';
+import { simulateRun } from '../assets/rolling-ball/experiment.js';
 
 const close = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg ?? ''} ${a} vs ${b}`);
 const cfg = { noise: 1, traps: [] };
@@ -35,7 +38,6 @@ test('limits', () => {
   assert.equal(x0Max(80), 65);
   assert.deepEqual(spreadGates(0, 70, 5), [14, 28, 42, 56, 70]);
   assert.deepEqual(spreadGates(0, 50, 3), [16.5, 33.5, 50]);
-  assert.equal(minRollingH(80, 0.0025), 0.2);
 });
 
 test('changing L keeps what the student sets: h in h-mode, α in α-mode (spec 12.9)', () => {
@@ -124,7 +126,59 @@ test('level, timer, dt, tape, slow accept only valid values', () => {
 test('below the rolling-friction threshold the ball does not roll', () => {
   assert.equal(derive(withH(defaultSettings(), 0.1)).rolls, false);
   assert.equal(derive(withH(defaultSettings(), 0)).rolls, false);
-  assert.equal(derive(withH(defaultSettings(), 0.1)).hMin, 0.2);
+  assert.equal(derive(withH(defaultSettings(), 0.1)).hMin, 0.3); // was 0.2 (exact threshold); now "rolls within MAX_RUN_TIME"
+  assert.equal(derive(withH(defaultSettings(), 0.2)).rolls, false);
+  assert.equal(derive(withH(defaultSettings(), 0.3)).rolls, true);
+});
+
+test('hMin is reported only for a ball that does not roll; it rolls within MAX_RUN_TIME (C1)', () => {
+  assert.equal(derive(defaultSettings()).hMin, undefined);
+  const d = derive(withH(defaultSettings(), 0.1));
+  assert.ok(d.alphaMinDeg >= (Math.asin(d.hMin / 80) * 180) / Math.PI);
+  assert.ok(d.alphaMinDeg - (Math.asin(d.hMin / 80) * 180) / Math.PI < 0.1);
+});
+
+test('at hMin every ball rolls within 60 s, one step lower it does not; α-mode at alphaMinDeg rolls (C1)', () => {
+  assert.equal(MAX_RUN_TIME, 60);
+  let checked = 0;
+  for (const b of BALLS) {
+    for (const profile of ['groove', 'flat']) {
+      if (!ballFits(b, profile)) continue;
+      for (let L = 40; L <= 200; L += 20) {
+        let s = withL({ ...defaultSettings(), ball: b.id, profile }, L);
+        const low = derive(withH(s, 0));
+        assert.equal(low.rolls, false);
+        assert.ok(low.hMin !== null, `${b.id} ${profile} L${L} has a hMin`);
+        const atMin = derive(withH(s, low.hMin));
+        assert.equal(atMin.rolls, true, `${b.id} ${profile} L${L} h${low.hMin}`);
+        const run = simulateRun(withH(s, low.hMin), { seed: 1, repeat: 1, noise: 0, traps: [] });
+        assert.ok(run.tEnd <= MAX_RUN_TIME, `${b.id} ${profile} L${L} tEnd ${run.tEnd}`);
+        const below = Math.round((low.hMin - 0.1) * 10) / 10;
+        if (below >= 0) assert.equal(derive(withH(s, below)).rolls, false, `${b.id} ${profile} L${L} h${below}`);
+        assert.equal(derive(withAlpha(s, low.alphaMinDeg)).rolls, true, `${b.id} ${profile} L${L} alpha ${low.alphaMinDeg}`);
+        checked++;
+      }
+    }
+  }
+  assert.ok(checked > 60);
+});
+
+test('changedLocked lists the locked fields that differ (I2)', () => {
+  const s = withLevel(defaultSettings(), 2);
+  const none = new Set();
+  assert.deepEqual(changedLocked(s, withL(s, 40), none), []);
+  const lockedGates = new Set(['gates']);
+  const locked5 = { ...s, gates: [10, 20, 30, 40, 50] };
+  assert.deepEqual(changedLocked(locked5, withX0(locked5, 12), lockedGates), ['gates']);
+  assert.deepEqual(changedLocked(locked5, withX0(locked5, 12), new Set(['x0'])), ['x0']);
+  const x30 = withX0(s, 30);
+  assert.deepEqual(changedLocked(x30, withL(x30, 40), new Set(['x0'])), ['x0']);
+  const h = withH(s, 20);
+  assert.deepEqual(changedLocked(h, withL(h, 60), new Set(['h'])), ['h']);
+  assert.deepEqual(changedLocked(s, withL(s, 40), new Set(['x0', 'gates', 'ball'])), ['gates']);
+  assert.deepEqual(changedLocked(s, withTape(s, false), new Set(['L', 'view'])), []);
+  assert.deepEqual(changedLocked(s, withAlpha(s, 5), new Set(['alpha'])), ['alpha']);
+  assert.deepEqual(changedLocked(s, withH(s, 3 + 1e-12), new Set(['h'])), []);
 });
 
 test('settingsKey: same data-relevant settings → same key', () => {

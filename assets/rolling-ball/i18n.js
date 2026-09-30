@@ -112,7 +112,8 @@ export const STRINGS = {
     'strobe.exportFailed': 'Attēlu neizdevās izveidot: šī ierīce neļauj tik lielu attēlu ({w} × {h} px). Mēģini datorā vai ar īsāku renīti L.',
 
     'notice.close': 'Aizvērt paziņojumu',
-    'notice.noRoll': 'Lodīte neripo: slīpums ir par mazu, un ripošanas berze to notur. Palielini pacēlumu līdz h ≥ {h} cm.',
+    'notice.noRoll': 'Lodīte neripo: slīpums ir par mazu, un ripošanas berze to notur. Palielini slīpumu līdz h ≥ {h} cm (α ≥ {a}°).',
+    'notice.noRollMax': 'Lodīte neripo pat pie lielākā slīpuma: šai lodītei ripošanas berze ir par lielu. Izvēlies citu lodīti vai plakanu virsmu.',
     'url.not_number': 'Saites parametrs {param}={raw} nav skaitlis. Izmantots {param} = {used}.',
     'url.out_of_range': 'Saites parametrs {param}={raw} ir ārpus robežām ({min}–{max}). Izmantots {param} = {used}.',
     'url.not_allowed': 'Saites parametra {param} vērtība “{raw}” nav atļauta. Atļautās vērtības: {allowed}. Izmantots {param} = {used}.',
@@ -237,7 +238,8 @@ export const STRINGS = {
     'strobe.exportFailed': 'Could not create the image: this device does not allow an image this large ({w} × {h} px). Try on a computer or with a shorter groove L.',
 
     'notice.close': 'Close notice',
-    'notice.noRoll': 'The ball does not roll: the slope is too small and rolling friction holds it. Raise the height to h ≥ {h} cm.',
+    'notice.noRoll': 'The ball does not roll: the slope is too small and rolling friction holds it. Raise the slope to h ≥ {h} cm (α ≥ {a}°).',
+    'notice.noRollMax': 'The ball does not roll even at the steepest slope: rolling friction is too large for this ball. Choose another ball or the flat surface.',
     'url.not_number': 'Link parameter {param}={raw} is not a number. Using {param} = {used}.',
     'url.out_of_range': 'Link parameter {param}={raw} is out of range ({min}–{max}). Using {param} = {used}.',
     'url.not_allowed': 'Link parameter {param} does not allow the value “{raw}”. Allowed values: {allowed}. Using {param} = {used}.',
