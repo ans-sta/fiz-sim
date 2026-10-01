@@ -64,8 +64,12 @@ Unit tests for the pure modules (physics, noise, URL parameters, tables): `npm t
 
 Parameters of `rolling-ball.html`, given in the URL. Without `lock=1` they are only starting values: the student can change everything. Unknown parameters (such as `fbclid`) are ignored.
 
+Without parameters a page opens its study cards.
+
 | Parameter | Meaning |
 | --------- | ------- |
+| `study=<id>` | Opens one study (K-02: `free`, `vertical`, `horizontal`, `oblique`; K-01: `a`, `t`, `x`, `strobe`). Other parameters apply on top of the study; with `lock=1` they are fixed. |
+| `full=1` | Opens the full page with every control. Any other setting parameter also opens the full page. |
 | `L=<number>` | Groove length, cm (40–200) |
 | `h=<number>` | Height of the raised end, cm: 0 up to L·sin 15° (about 0.26·L, e.g. 20.7 cm when L = 80); larger values are clamped with a notice. If both `h` and `alpha` are given, `h` wins |
 | `alpha=<number>` | Slope angle, degrees (0–15) |
@@ -93,6 +97,8 @@ Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they 
 
 | Parameter | Meaning |
 | --------- | ------- |
+| `study=<id>` | Opens one study (K-02: `free`, `vertical`, `horizontal`, `oblique`; K-01: `a`, `t`, `x`, `strobe`). Other parameters apply on top of the study; with `lock=1` they are fixed. |
+| `full=1` | Opens the full page with every control. Any other setting parameter also opens the full page. |
 | `mode=1\|2\|3` | 1 — fall and vertical throw, 2 — horizontal throw, 3 — oblique throw. Without `v0`, mode 1 starts as a free fall (v₀ = 0) |
 | `scale=table\|tower` | Classroom table (cm, h 0–150, v₀ up to 400 cm/s) or tower (m, h 0–50, v₀ up to 30 m/s) |
 | `h=<number>` | Launch height (ball centre above the ground). Values outside the scale’s range are clamped and values between steps (1 cm on the table, 0.5 m on the tower) are rounded, each with a notice |
