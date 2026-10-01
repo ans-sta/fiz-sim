@@ -1,7 +1,7 @@
 # Kritieni un sviedieni — simulācija (biznesa prasības)
 
-> Statuss: atvērtie jautājumi izlemti (8. sadaļa), 1. kārta tiek būvēta zarā `projectile-motion`.
-> Atjaunināts: 2026-10-01T14:00:00+03:00
+> Statuss: 1. kārta uzbūvēta zarā `projectile-motion` (lapa `projectile-motion.html`), gaida Anša apskati un publicēšanu (sk. 10. sadaļu).
+> Atjaunināts: 2026-10-01T15:00:00+03:00
 > Konteksts: blakus simulācija „Lodīte renītē” (`docs/plans/2026-09-30-lodite-renite.md`) ar to pašu fizikas dzinēju (Ansis, 30.09). Vizuālā sistēma ir aprakstīta `docs/plans/2026-07-15-rasejuma-dizains.md`.
 
 ## 1. Mērķis
@@ -90,12 +90,12 @@ Tas pats dzinējs un tās pašas daļas. Tās šeit neatkārto, bet atsaucas uz 
 
 Ansis pieņēma visus Claude ieteikumus, izņemot vienu (6. punkts).
 
-1. **Lapas.** Režīmi 1–3 ir vienā lapā K-02 „Kritieni un sviedieni” (režīmu pārslēgs kā lodītes datu līmenim). „Trāpi mērkaķim” ir atsevišķa lapa K-03, jo spēlei ir cita gaita.
+1. **Lapas.** Režīmi 1–3 ir vienā lapā K-02 “Kritieni un sviedieni” (režīmu pārslēgs kā lodītes datu līmenim). “Trāpi mērkaķim” ir atsevišķa lapa K-03, jo spēlei ir cita gaita.
 2. **Vertikālā sviediena stroboskops.** Pozīcijas nobīda pa horizontāli kā laika asi, citādi ceļš uz augšu un uz leju pārklājas un attēlu nevar nolasīt. Parakstā to pasaka.
 3. **Otra bumbiņa** horizontālajā sviedienā (tajā pašā brīdī vienkārši krīt no tā paša augstuma) ir izvēles rūtiņa.
 4. **Mērogs: abi**, ar pārslēgu: galds klasē (centimetros) un tornis (metros). Izmešanas vieta izriet no mēroga: galds vai tornis (līdz ar to izlemts arī 8. jautājums).
 5. **Gaisa pretestība** — vēlāk, ne v1.
-6. **Mērkaķim met apelsīnu** (Ansis: „Banāna vietā ābols vai apelsīns. Apaļāks, labāk lido.”). Claude izvēlējās apelsīnu, jo tā krāsa sakrīt ar rasējuma akcenta krāsu; Ansis var nomainīt uz ābolu.
+6. **Mērkaķim met apelsīnu** (Ansis: “Banāna vietā ābols vai apelsīns. Apaļāks, labāk lido.”). Claude izvēlējās apelsīnu, jo tā krāsa sakrīt ar rasējuma akcenta krāsu; Ansis var nomainīt uz ābolu.
 7. **Spēles līmeņi:** četri, kā 4.1. punktā; punktus neskaita.
 8. **Izmešanas vieta:** sk. 4. punktu.
 
@@ -103,7 +103,7 @@ Ansis pieņēma visus Claude ieteikumus, izņemot vienu (6. punkts).
 
 **1. kārta — K-02, viss, kas vajadzīgs skolēnam režīmos 1–3:** rasējums ar velkamām izmēru līnijām (h, v₀, α); mērogs galds/tornis; otra bumbiņa; PALAIST / ATKĀRTOT; rezultātu tabula, kas krāj atkārtojumus; datu tabula pa visu ekrānu ar KOPĒT un CSV; stroboskops ar mērrežģi, numurētām pozīcijām, tuvināšanu un PNG eksportu; troksnis, intensitāte, slazds un sēkla; URL parametri ar `lock`; LV/EN, abas tēmas, trīs režīmi. Kartīte `index.html` un saišu parametri README.
 
-**2. kārta — K-03 „Trāpi mērkaķim”** (4.1, 6. kritērijs Nr. 5).
+**2. kārta — K-03 “Trāpi mērkaķim”** (4.1, 6. kritērijs Nr. 5).
 
 **Vēlāk, kopā ar lodītes 2. kārtu:** skolotāja skats, datu ģenerators grupām, saišu ģenerators ar rūtiņām (Ansis 01.10: skolotājs atzīmē, ko skolēns drīkst mainīt un ko redz; Ansis nāks ar savu ideju).
 
@@ -111,3 +111,18 @@ Ansis pieņēma visus Claude ieteikumus, izņemot vienu (6. punkts).
 
 - 2026-09-30T11:40:16+03:00 — Pirmā versija (ideja).
 - 2026-10-01T14:00:00+03:00 — Ansis izlēma atvērtos jautājumus (8. sadaļa); kārtas (9. sadaļa).
+- 2026-10-01T15:00:00+03:00 — 1. kārta uzbūvēta zarā `projectile-motion` (plāns `docs/plans/2026-10-01-kritieni-un-sviedieni-plan.md`), vēl nav publicēta. Izpildes laikā Claude pieņēma šādus lēmumus, kas skar lietotāju (Ansis var mainīt):
+  - **Δt galda mērogā ir 0,02 / 0,05 / 0,1 s** (nevis 0,1 / 0,2 / 0,5 s kā 4. sadaļā), jo kritiens no galda ilgst tikai ~0,4 s; tornim paliek 0,1 / 0,2 / 0,5 s;
+  - galds: tērauda lodīte Ø 10 mm, h 0–150 cm (solis 1 cm), v₀ līdz 400 cm/s (solis 5 cm/s); tornis: bumba Ø 22 cm, h 0–50 m (solis 0,5 m), v₀ līdz 30 m/s (solis 0,5 m/s); α 0–90° (solis 1°);
+  - x un y ir bumbiņas centra koordinātas; h ir centra augstums kustības sākumpunktā;
+  - noklusējumā horizontālais sviediens no galda: h = 80 cm, v₀ = 150 cm/s, Δt = 0,05 s, palēninājums ×0,25 ieslēgts (galda lidojums citādi ir acumirklīgs); tornim palēninājums izslēgts;
+  - mainot mērogu, h, v₀ un Δt kļūst par šī mēroga noklusējumiem (cm un m nav salīdzināmi); mainot režīmu, v₀ vērtība paliek;
+  - režīmu pogas ir “1 · ↕”, “2 · →”, “3 · ↗”, pilnais nosaukums ir zem tām un pogas aprakstā;
+  - slīpajā sviedienā, velkot bultas galu, mainās gan v₀, gan α; α var mainīt arī ar rokturi uz loka;
+  - lidojums, kas stroboskopā dotu mazāk nekā 3 pozīcijas (arī sliktākajā trokšņa gadījumā), netiek ierakstīts; paziņojums katram režīmam iesaka savu risinājumu un nenosauc lidojuma laiku;
+  - otrā bumbiņa redzama animācijā un stroboskopā (tukšie apļi), tabulā tās nav;
+  - troksnis: v₀ izkliede ±2 % starp palaišanām, α ±0,6° (slīpajā sviedienā), sākuma kadrs ±1 kadrs (galds 1/60 s, tornis 1/30 s), nolasīšana ±0,5 cm vai ±0,1 m; slazds ir tikai `late` (pulkstenis sāk 2–3 kadrus par vēlu); “±” ≈ 2σ;
+  - rasējuma izmērs nav atkarīgs no α un ir noapaļots uz augšu (1; 1,5; 2; 3; 4; 5; 6; 8 × 10ⁿ), lai rasējuma mala neatklātu tālumu vai augstāko punktu;
+  - koordinātu sākumpunkts ir nosaukts “KOORDINĀTU SĀKUMPUNKTS (0; 0)”, kustības sākumpunkts — “KUSTĪBAS SĀKUMPUNKTS”; ja h = 0, abi ir viens punkts ar vienu uzrakstu;
+  - saites vērtība starp iestatāmajiem soļiem tiek noapaļota ar paziņojumu (piem., galdam h=2,5 → 3 cm);
+  - CSV vienmēr latviešu formātā, tāpat kā lodītei.
