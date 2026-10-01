@@ -1,6 +1,6 @@
 # Kritieni un sviedieni — simulācija (biznesa prasības)
 
-> Statuss: 1. kārta uzbūvēta zarā `projectile-motion` (lapa `projectile-motion.html`), gaida Anša apskati un publicēšanu (sk. 10. sadaļu).
+> Statuss: 1. kārta publicēta 2026-10-01 (lapa `projectile-motion.html`, ar pētījumu kartītēm — `docs/plans/2026-10-01-petijumi.md`); sk. 10. sadaļu.
 > Atjaunināts: 2026-10-01T15:00:00+03:00
 > Konteksts: blakus simulācija „Lodīte renītē” (`docs/plans/2026-09-30-lodite-renite.md`) ar to pašu fizikas dzinēju (Ansis, 30.09). Vizuālā sistēma ir aprakstīta `docs/plans/2026-07-15-rasejuma-dizains.md`.
 
