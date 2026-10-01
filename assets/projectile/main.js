@@ -3,9 +3,9 @@ import { STRINGS } from './i18n.js';
 import { SCALES, ALPHA } from './scales.js';
 import {
   derive, settingsKey, withMode, withScale, withH, withV0, withAlpha, withDt, withSecond, withGrid, withSlow,
-  changedLocked, v0Range, SLOW_FACTOR,
+  changedLocked, v0Range, SLOW_FACTOR, defaultSettings,
 } from './model.js';
-import { settingsFromURL, warningText } from './params.js';
+import { settingsFromURL, warningText, LOCKABLE } from './params.js';
 import { sceneBox, sceneLayout, drawScene, handleAnchors, valueFromPointer, launchPoint, arrowGeometry, arcRadius } from './scene.js';
 import { createPanel } from './panel.js';
 import { createHandles } from '../measure/handles.js';
@@ -15,18 +15,45 @@ import { simulateRun } from './experiment.js';
 import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
 import { openProjectileStrobe } from './strobe.js';
+import { resolveRoute, studyFixed } from '../measure/studies.js';
+import { STUDIES, SETTING_PARAMS, fixedSummary } from './studies.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
-mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet: 'K-02', topicKey: 'tb.topicValue' });
+
+const route = resolveRoute(location.search, { studies: STUDIES, settingParams: SETTING_PARAMS });
+const study = route.kind === 'study' ? route.study : null;
+const url = settingsFromURL(location.search, study ? { base: study.preset(defaultSettings()) } : {});
+// Pētījumā nofiksētie lielumi: tiek atteikti tāpat kā `lock`, bet netiek rādīti kā vadība un bez FIKS.
+const hidden = study ? studyFixed(study, LOCKABLE) : new Set();
+const sheet = study ? `K-02 · ${study.no}` : 'K-02';
+mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, topicKey: 'tb.topicValue' });
+
+// Galvene: atpakaļ uz kartītēm; pētījuma nosaukums un numurs (spec. pētījumi 3)
+{
+  const back = document.querySelector('header .back');
+  back.href = location.pathname.split('/').pop() || 'projectile-motion.html';
+  back.dataset.i18n = 'page.backStudies';
+  const h1 = document.querySelector('header h1');
+  h1.querySelector('.sheet-no').textContent = sheet;
+  if (study) {
+    const name = document.createElement('span');
+    name.className = 'study-name';
+    name.dataset.i18n = `study.${study.id}.title`;
+    const sep = document.createElement('span');
+    sep.className = 'study-sep';
+    sep.textContent = ' · ';
+    h1.querySelector('[data-i18n="page.heading"]').after(sep, name);
+  }
+}
 i18n.apply();
 
-const url = settingsFromURL(location.search);
 const state = {
   settings: url.settings,
-  locked: url.locked,
-  views: url.views,
+  locked: new Set([...url.locked, ...hidden]),
+  hidden,
+  views: url.locked.has('view') || !study ? url.views : study.views,
   noise: url.noise,
   traps: url.traps,
   seed: url.seed,
@@ -92,7 +119,7 @@ function handleItems(lay, s, lang) {
     if (state.locked.has(key)) {
       base.kind = 'none';
       base.labelClass = 'locked';
-      base.labelText = `${o.labelText} ${t('dims.fixed')}`;
+      base.labelText = state.hidden.has(key) ? o.labelText : `${o.labelText} ${t('dims.fixed')}`; // pētījumā bez FIKS.
     }
     items.push(base);
   };
@@ -360,7 +387,8 @@ function render() {
     settings: s, derived: derive(s), colors: theme.colors(), t: i18n.t, lang, ball: pos.ball, ball2: pos.ball2, showGrid: s.grid,
   });
   panel.render({
-    settings: s, locked: state.locked, running: state.running, lang,
+    settings: s, locked: state.locked, hidden: state.hidden, running: state.running, lang,
+    fixedText: study ? fixedSummary(s, state.hidden, { t: i18n.t, lang }) : '',
     hasTableForSettings: !!state.results.byKey(currentKey()),
     results: resultsVM(lang),
   });
@@ -387,6 +415,9 @@ document.fonts.ready.then(render);
 window.__pm = {
   get state() {
     return state;
+  },
+  get study() {
+    return study;
   },
   setSettings(next) {
     state.settings = next;

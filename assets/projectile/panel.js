@@ -10,17 +10,20 @@ export function createPanel(root, { t, onAction }) {
     run: root.querySelector('#blockRun'),
     results: root.querySelector('#blockResults'),
     dims: root.querySelector('#blockDims'),
+    fixed: root.querySelector('#blockFixed'),
   };
   const last = {};
+  let hidden = new Set(); // pētījumā nofiksētie lielumi; render(vm) sākumā atjauno
   const compactHtml = new WeakMap(); // modelis → gatavs HTML (netiek būvēts katrā kadrā)
 
   function setBlock(name, html) {
     if (last[name] === html) return;
     last[name] = html;
     blocks[name].innerHTML = html;
+    blocks[name].hidden = html === '';
   }
 
-  const fixTag = (locked, key) => (locked.has(key) ? `<span class="fix" title="${esc(t('dims.fixedTitle'))}">${esc(t('dims.fixed'))}</span>` : '');
+  const fixTag = (locked, key) => (locked.has(key) && !hidden.has(key) ? `<span class="fix" title="${esc(t('dims.fixedTitle'))}">${esc(t('dims.fixed'))}</span>` : '');
 
   const btn = (fid, label, { action, value, pressed, disabled, title }) =>
     `<button type="button" class="btn" data-fid="${fid}" data-a="${action}" data-v="${esc(value)}" aria-pressed="${pressed}"${disabled ? ' disabled' : ''}${title ? ` title="${esc(title)}" aria-label="${esc(title)}"` : ''}>${esc(label)}</button>`;
@@ -30,45 +33,55 @@ export function createPanel(root, { t, onAction }) {
 
   function modeBlock(vm) {
     const { settings: s, locked, running, lang } = vm;
-    let h = `<div class="block-title">${esc(t('blk.mode'))}${fixTag(locked, 'mode')}</div><div class="seg">`;
-    for (const m of MODES) {
-      const disabled = running || (locked.has('mode') && s.mode !== m);
-      h += btn(`mode-${m}`, t(`mode.${m}`), { action: 'mode', value: m, pressed: s.mode === m, disabled, title: t(`mode.${m}.name`) });
+    let h = '';
+    if (!hidden.has('mode')) {
+      h += `<div class="block-title">${esc(t('blk.mode'))}${fixTag(locked, 'mode')}</div><div class="seg">`;
+      for (const m of MODES) {
+        const disabled = running || (locked.has('mode') && s.mode !== m);
+        h += btn(`mode-${m}`, t(`mode.${m}`), { action: 'mode', value: m, pressed: s.mode === m, disabled, title: t(`mode.${m}.name`) });
+      }
+      h += '</div>';
+      h += `<div class="hint">${esc(t(`mode.${s.mode}.hint`))}</div>`;
     }
-    h += '</div>';
-    h += `<div class="hint">${esc(t(`mode.${s.mode}.hint`))}</div>`;
-    h += `<div class="row"><span class="row-label">${esc(t('dt.label'))}${fixTag(locked, 'dt')}</span><div class="seg" style="flex:1;max-width:200px">`;
-    for (const v of SCALES[s.scale].dtOptions) {
-      h += btn(`dt${v}`, `${formatNumber(v, decimalsOf(v), lang)} s`, { action: 'dt', value: v, pressed: s.dt === v, disabled: running || (locked.has('dt') && s.dt !== v) });
+    if (!hidden.has('dt')) {
+      h += `<div class="row"><span class="row-label">${esc(t('dt.label'))}${fixTag(locked, 'dt')}</span><div class="seg" style="flex:1;max-width:200px">`;
+      for (const v of SCALES[s.scale].dtOptions) {
+        h += btn(`dt${v}`, `${formatNumber(v, decimalsOf(v), lang)} s`, { action: 'dt', value: v, pressed: s.dt === v, disabled: running || (locked.has('dt') && s.dt !== v) });
+      }
+      h += '</div></div>';
+      h += check('slow', 'slow', s.slow, running, t('slow'));
     }
-    h += '</div></div>';
-    h += check('slow', 'slow', s.slow, running, t('slow'));
-    if (s.mode === 'horizontal') h += check('second', 'second', s.second, running || locked.has('second'), t('second'), fixTag(locked, 'second'));
+    if (s.mode === 'horizontal' && !hidden.has('second')) h += check('second', 'second', s.second, running || locked.has('second'), t('second'), fixTag(locked, 'second'));
     return h;
   }
 
   function dimsBlock(vm) {
     const { settings: s, locked, running, lang } = vm;
     const sc = SCALES[s.scale];
-    let h = `<div class="block-title">${esc(t('blk.dims'))}</div>`;
-    h += `<div class="row" style="margin-top:0"><span class="row-label">${esc(t('scale.label'))}${fixTag(locked, 'scale')}</span></div><div class="seg">`;
-    for (const k of Object.keys(SCALES)) {
-      h += btn(`scale-${k}`, t(`scale.${k}`), { action: 'scale', value: k, pressed: s.scale === k, disabled: running || (locked.has('scale') && s.scale !== k) });
-    }
-    h += '</div>';
     const num = (v, dec) => formatNumber(v, dec, lang);
     const unit = (u) => ` <span class="unit">${esc(u)}</span>`;
-    const ro = (key, k, html) => `<div class="readout"><span class="k">${k}${fixTag(locked, key)}</span><span class="v">${html}</span></div>`;
-    h += '<div style="margin-top:8px">';
-    h += ro('h', 'h', num(s.h, sc.h.decimals) + unit(sc.unit));
+    const ro = (key, k, html) => (hidden.has(key) ? '' : `<div class="readout"><span class="k">${k}${fixTag(locked, key)}</span><span class="v">${html}</span></div>`);
+    let reads = ro('h', 'h', num(s.h, sc.h.decimals) + unit(sc.unit));
     let v0 = num(Math.abs(s.v0), sc.v0.decimals) + unit(`${sc.unit}/s`);
     if (s.mode === 'vertical' && s.v0 !== 0) v0 += unit(t(s.v0 > 0 ? 'dir.up' : 'dir.down'));
-    h += ro('v0', 'v₀', v0);
-    if (s.mode === 'oblique') h += ro('alpha', 'α', num(s.alphaDeg, 0) + unit('°'));
-    h += '</div>';
-    h += check('grid', 'grid', s.grid, running || locked.has('grid'), t('grid'), fixTag(locked, 'grid'));
-    h += `<div class="hint">${esc(t('dims.hint'))}</div>`;
+    reads += ro('v0', 'v₀', v0);
+    if (s.mode === 'oblique') reads += ro('alpha', 'α', num(s.alphaDeg, 0) + unit('°'));
+    const scaleRow = hidden.has('scale') ? '' : `<div class="row" style="margin-top:0"><span class="row-label">${esc(t('scale.label'))}${fixTag(locked, 'scale')}</span></div><div class="seg">${Object.keys(SCALES)
+      .map((k) => btn(`scale-${k}`, t(`scale.${k}`), { action: 'scale', value: k, pressed: s.scale === k, disabled: running || (locked.has('scale') && s.scale !== k) }))
+      .join('')}</div>`;
+    const grid = hidden.has('grid') ? '' : check('grid', 'grid', s.grid, running || locked.has('grid'), t('grid'), fixTag(locked, 'grid'));
+    if (!reads && !scaleRow && !grid) return '';
+    let h = `<div class="block-title">${esc(t('blk.dims'))}</div>`;
+    h += scaleRow;
+    h += `<div style="margin-top:8px">${reads}</div>`;
+    h += grid;
+    h += `<div class="hint">${esc(t(hidden.size > 0 ? 'dims.hintStudy' : 'dims.hint'))}</div>`;
     return h;
+  }
+
+  function fixedBlock(vm) {
+    if (!vm.fixedText) return '';
+    return `<div class="block-title">${esc(t('blk.fixed'))}</div><div class="fixed-list">${esc(vm.fixedText)}</div>`;
   }
 
   function runBlock(vm) {
@@ -118,11 +131,13 @@ export function createPanel(root, { t, onAction }) {
 
   return {
     render(vm) {
+      hidden = vm.hidden ?? new Set();
       const fid = document.activeElement?.dataset?.fid;
       setBlock('mode', modeBlock(vm));
       setBlock('run', runBlock(vm));
       setBlock('results', resultsBlock(vm));
       setBlock('dims', dimsBlock(vm));
+      setBlock('fixed', fixedBlock(vm));
       if (fid && document.activeElement?.dataset?.fid !== fid) {
         const again = [...root.querySelectorAll('[data-fid]')].find((e) => e.dataset.fid === fid);
         again?.focus();
