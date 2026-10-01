@@ -27,14 +27,14 @@ export const PARAM_SCHEMA = {
 
 export const LOCKABLE = ['L', 'h', 'alpha', 'ball', 'profile', 'x0', 'level', 'timer', 'gates', 'dt', 'view', 'tape'];
 
-export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
+export function settingsFromURL(search, { makeSeed = randomSeed, base = null } = {}) {
   const p = parseParams(search, PARAM_SCHEMA);
   const v = p.values;
   const warnings = new Map(); // param → warning (a later one replaces an earlier one)
   for (const w of p.warnings) warnings.set(w.param, { ...w });
   const warn = (w) => warnings.set(w.param, w);
 
-  let s = defaultSettings();
+  let s = base ? { ...base, gates: [...base.gates] } : defaultSettings();
   if ('L' in v) s = withL(s, v.L);
   if ('h' in v) {
     if ('alpha' in v) warn({ param: 'alpha', raw: String(v.alpha), reason: 'h_and_alpha' });
