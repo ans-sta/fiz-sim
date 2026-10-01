@@ -1,7 +1,7 @@
 # Kritieni un sviedieni — simulācija (biznesa prasības)
 
-> Statuss: ideja, apspriešanai. Koderim vēl nav nodots.
-> Atjaunināts: 2026-09-30T11:40:16+03:00
+> Statuss: atvērtie jautājumi izlemti (8. sadaļa), 1. kārta tiek būvēta zarā `projectile-motion`.
+> Atjaunināts: 2026-10-01T14:00:00+03:00
 > Konteksts: blakus simulācija „Lodīte renītē” (`docs/plans/2026-09-30-lodite-renite.md`) ar to pašu fizikas dzinēju (Ansis, 30.09). Vizuālā sistēma ir aprakstīta `docs/plans/2026-07-15-rasejuma-dizains.md`.
 
 ## 1. Mērķis
@@ -85,3 +85,29 @@ Tas pats dzinējs un tās pašas daļas. Tās šeit neatkārto, bet atsaucas uz 
 6. **Mērkaķa sižets.** Lode un mērkaķis, kā klasiskajā uzdevumā, vai banāns, ko met krītošam mērkaķim?
 7. **Spēles līmeņi.** Cik līmeņu, kādi, un vai skaitīt punktus?
 8. **Izmešanas vieta rasējumā:** tornis, galds vai klints?
+
+## 8. Lēmumi (Ansis, 01.10)
+
+Ansis pieņēma visus Claude ieteikumus, izņemot vienu (6. punkts).
+
+1. **Lapas.** Režīmi 1–3 ir vienā lapā K-02 „Kritieni un sviedieni” (režīmu pārslēgs kā lodītes datu līmenim). „Trāpi mērkaķim” ir atsevišķa lapa K-03, jo spēlei ir cita gaita.
+2. **Vertikālā sviediena stroboskops.** Pozīcijas nobīda pa horizontāli kā laika asi, citādi ceļš uz augšu un uz leju pārklājas un attēlu nevar nolasīt. Parakstā to pasaka.
+3. **Otra bumbiņa** horizontālajā sviedienā (tajā pašā brīdī vienkārši krīt no tā paša augstuma) ir izvēles rūtiņa.
+4. **Mērogs: abi**, ar pārslēgu: galds klasē (centimetros) un tornis (metros). Izmešanas vieta izriet no mēroga: galds vai tornis (līdz ar to izlemts arī 8. jautājums).
+5. **Gaisa pretestība** — vēlāk, ne v1.
+6. **Mērkaķim met apelsīnu** (Ansis: „Banāna vietā ābols vai apelsīns. Apaļāks, labāk lido.”). Claude izvēlējās apelsīnu, jo tā krāsa sakrīt ar rasējuma akcenta krāsu; Ansis var nomainīt uz ābolu.
+7. **Spēles līmeņi:** četri, kā 4.1. punktā; punktus neskaita.
+8. **Izmešanas vieta:** sk. 4. punktu.
+
+## 9. Kārtas
+
+**1. kārta — K-02, viss, kas vajadzīgs skolēnam režīmos 1–3:** rasējums ar velkamām izmēru līnijām (h, v₀, α); mērogs galds/tornis; otra bumbiņa; PALAIST / ATKĀRTOT; rezultātu tabula, kas krāj atkārtojumus; datu tabula pa visu ekrānu ar KOPĒT un CSV; stroboskops ar mērrežģi, numurētām pozīcijām, tuvināšanu un PNG eksportu; troksnis, intensitāte, slazds un sēkla; URL parametri ar `lock`; LV/EN, abas tēmas, trīs režīmi. Kartīte `index.html` un saišu parametri README.
+
+**2. kārta — K-03 „Trāpi mērkaķim”** (4.1, 6. kritērijs Nr. 5).
+
+**Vēlāk, kopā ar lodītes 2. kārtu:** skolotāja skats, datu ģenerators grupām, saišu ģenerators ar rūtiņām (Ansis 01.10: skolotājs atzīmē, ko skolēns drīkst mainīt un ko redz; Ansis nāks ar savu ideju).
+
+## 10. Izmaiņas
+
+- 2026-09-30T11:40:16+03:00 — Pirmā versija (ideja).
+- 2026-10-01T14:00:00+03:00 — Ansis izlēma atvērtos jautājumus (8. sadaļa); kārtas (9. sadaļa).
