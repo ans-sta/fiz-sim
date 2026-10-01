@@ -189,8 +189,9 @@ function startRun() {
   const key = currentKey();
   const run = simulateRun(state.settings, { seed: state.seed, repeat: state.results.nextRepeat(key), noise: state.noise, traps: state.traps });
   if (!run.ok) {
-    const mode = state.settings.mode;
-    notices.show('flight', () => i18n.t(run.reason === 'none' ? `notice.noFlight.${mode}` : `notice.short.${mode}`));
+    const { mode, dt, scale } = state.settings;
+    const minDt = dt === SCALES[scale].dtOptions[0]; // mazāku Δt ieteikt nevar
+    notices.show('flight', () => i18n.t(run.reason === 'none' ? `notice.noFlight.${mode}` : `notice.short.${mode}${minDt ? '.minDt' : ''}`));
     return;
   }
   notices.clear('flight');

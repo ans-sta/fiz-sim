@@ -297,6 +297,7 @@ export function openProjectileStrobe(o) {
     exportPNG({ runIndex, checked }) {
       const plan = exportPlan(captionLines(runIndex));
       if (!plan) return Promise.resolve(null);
+      failedSize = { w: plan.w, h: plan.h }; // ja ierīce šo izmēru tomēr neizveido (toBlob → null)
       return canvasToPNG(plan.w, plan.h, (ctx) => drawStrobe(ctx, { ...base(runIndex, checked), tr: plan.tr, width: plan.w, height: plan.h, fontScale: EXPORT_FS }));
     },
     exportFilename: (i) => `sviedieni-stroboskops-${table.index}-${i + 1}.png`,
