@@ -2,10 +2,10 @@ import { createI18n, createTheme, mountTitleBlock, setupCanvas, startLoop } from
 import { STRINGS } from './i18n.js';
 import {
   derive, settingsKey, withL, withH, withAlpha, withX0, withGate, withGateCount, withLevel, withTimer, withDt, withSlow,
-  withAngleMode, withTape, withProfile, withBall, changedLocked, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
+  withAngleMode, withTape, withProfile, withBall, changedLocked, defaultSettings, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
 } from './model.js';
 import { ballById, ballFits, GROOVE_W } from './balls.js';
-import { settingsFromURL, warningText } from './params.js';
+import { settingsFromURL, warningText, LOCKABLE } from './params.js';
 import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballCenter, ARC_R } from './scene.js';
 import { createPanel } from './panel.js';
 import { createHandles } from './handles.js';
@@ -15,18 +15,45 @@ import { simulateRun } from './experiment.js';
 import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
 import { openStrobe } from './strobe.js';
+import { resolveRoute, studyFixed } from '../measure/studies.js';
+import { STUDIES, SETTING_PARAMS, fixedSummary } from './studies.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
-mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet: 'K-01', topicKey: 'tb.topicValue' });
+
+const route = resolveRoute(location.search, { studies: STUDIES, settingParams: SETTING_PARAMS });
+const study = route.kind === 'study' ? route.study : null;
+const url = settingsFromURL(location.search, study ? { base: study.preset(defaultSettings()) } : {});
+// Pētījumā nofiksētie lielumi: tiek atteikti tāpat kā `lock`, bet netiek rādīti kā vadība un bez FIKS.
+const hidden = study ? studyFixed(study, LOCKABLE) : new Set();
+const sheet = study ? `K-01 · ${study.no}` : 'K-01';
+mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, topicKey: 'tb.topicValue' });
+
+// Galvene: atpakaļ uz kartītēm; pētījuma nosaukums un numurs (spec. pētījumi 3)
+{
+  const back = document.querySelector('header .back');
+  back.href = location.pathname.split('/').pop() || 'rolling-ball.html';
+  back.dataset.i18n = 'page.backStudies';
+  const h1 = document.querySelector('header h1');
+  h1.querySelector('.sheet-no').textContent = sheet;
+  if (study) {
+    const name = document.createElement('span');
+    name.className = 'study-name';
+    name.dataset.i18n = `study.${study.id}.title`;
+    const sep = document.createElement('span');
+    sep.className = 'study-sep';
+    sep.textContent = ' · ';
+    h1.querySelector('[data-i18n="page.heading"]').after(sep, name);
+  }
+}
 i18n.apply();
 
-const url = settingsFromURL(location.search);
 const state = {
   settings: url.settings,
-  locked: url.locked,
-  views: url.views,
+  locked: new Set([...url.locked, ...hidden]),
+  hidden,
+  views: url.locked.has('view') || !study ? url.views : study.views,
   noise: url.noise,
   traps: url.traps,
   seed: url.seed,
@@ -84,6 +111,10 @@ function isLocked(kind) {
   return state.locked.has(kind === 'gate' ? 'gates' : kind);
 }
 
+function isHidden(kind) {
+  return state.hidden.has(kind === 'gate' ? 'gates' : kind);
+}
+
 function handleItems(lay, s, d, lang) {
   const t = i18n.t;
   const a = handleAnchors(lay, s, d);
@@ -97,7 +128,7 @@ function handleItems(lay, s, d, lang) {
     if (lockedQ) {
       base.kind = 'none';
       base.labelClass = 'locked';
-      base.labelText = o.labelText ? `${o.labelText} ${fixed}` : '';
+      base.labelText = o.labelText && !isHidden(kind) ? `${o.labelText} ${fixed}` : o.labelText; // pētījumā bez FIKS.
     }
     items.push(base);
   };
@@ -426,7 +457,8 @@ function render() {
     showTape: s.tape,
   });
   panel.render({
-    settings: s, derived: d, locked: state.locked, running: state.running, lang,
+    settings: s, derived: d, locked: state.locked, hidden: state.hidden, running: state.running, lang,
+    fixedText: study ? fixedSummary(s, state.hidden, { t: i18n.t, lang }) : '',
     hasTableForSettings: !!state.results.byKey(currentKey()),
     results: resultsVM(lang),
   });
@@ -453,6 +485,9 @@ document.fonts.ready.then(render);
 window.__rb = {
   get state() {
     return state;
+  },
+  get study() {
+    return study;
   },
   setSettings(next) {
     state.settings = next;
