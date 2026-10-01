@@ -1,38 +1,13 @@
 import { ERRORS, DECIMALS } from './experiment.js';
 import { derive } from './model.js';
 import { formatNumber, roundTo, decimalsOf } from '../measure/format.js';
+import { createResults as createStore } from '../measure/results-store.js';
+
+export const createResults = () => createStore({ tableFields: (s) => ({ level: s.level }) });
 
 const SUBS = '₀₁₂₃₄₅₆₇₈₉';
 const sub = (n) => String(n).replace(/\d/g, (d) => SUBS[Number(d)]);
 
-export function createResults() {
-  const tables = [];
-  const byKeyMap = new Map();
-
-  const byKey = (key) => byKeyMap.get(key);
-  const nextRepeat = (key) => {
-    const table = byKeyMap.get(key);
-    return table ? table.runs.length + 1 : 1;
-  };
-  const add = (settings, run, meta) => {
-    let table = byKeyMap.get(run.key);
-    if (!table) {
-      table = {
-        index: tables.length + 1,
-        key: run.key,
-        level: settings.level,
-        settings: JSON.parse(JSON.stringify(settings)),
-        meta: { seed: meta.seed, noise: meta.noise, traps: [...meta.traps] },
-        runs: [],
-      };
-      tables.push(table);
-      byKeyMap.set(run.key, table);
-    }
-    table.runs.push(run);
-    return table;
-  };
-  return { tables: () => tables, byKey, nextRepeat, add };
-}
 
 function settingsLine(table, { t, lang }) {
   const s = table.settings;

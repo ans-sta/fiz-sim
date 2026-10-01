@@ -1,4 +1,4 @@
-import { parseDecimal } from './format.js';
+import { parseDecimal, formatNumber } from './format.js';
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
@@ -71,4 +71,25 @@ export function parseParams(search, schema) {
   }
   const lockRaw = sp.get('lock');
   return { values, given, lock: lockRaw === '1' || lockRaw === 'true', warnings };
+}
+
+export function formatParamValue(value, lang, t) {
+  if (Array.isArray(value)) {
+    return value.length ? value.map((x) => formatParamValue(x, lang, t)).join(lang === 'lv' ? '; ' : ', ') : t('url.none');
+  }
+  if (typeof value !== 'number') return String(value);
+  const oneDecimal = Math.abs(value * 10 - Math.round(value * 10)) < 1e-9;
+  const dec = Number.isInteger(value) ? 0 : oneDecimal ? 1 : 2;
+  return formatNumber(value, dec, lang);
+}
+
+// Teksts `url.<reason>`: katrs brīdinājuma lauks ir mainīgais; skaitļi un saraksti — lapas valodas formātā.
+export function warningText(w, { t, lang }) {
+  const vars = {};
+  for (const [k, v] of Object.entries(w)) {
+    if (k === 'reason') continue;
+    vars[k] = k === 'param' || k === 'raw' ? v : formatParamValue(v, lang, t);
+  }
+  if (w.reason === 'bad_list') vars.hint = t('url.listHint');
+  return t(`url.${w.reason}`, vars);
 }

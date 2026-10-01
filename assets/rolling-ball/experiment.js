@@ -4,7 +4,8 @@
 // pie intensitātes 2 starpība var sasniegt 0,75 cm.
 // Slazds nostrādā tieši vienā no pirmajiem trim katras tabulas atkārtojumiem (kurā — nosaka sēkla).
 import { derive, settingsKey } from './model.js';
-import { rngFor, gaussian, hash32 } from '../measure/rng.js';
+import { rngFor, gaussian } from '../measure/rng.js';
+import { TRAP_REPEATS, trapRepeat } from '../measure/traps.js';
 import { roundTo } from '../measure/format.js';
 
 export const NOISE = {
@@ -21,11 +22,8 @@ export const NOISE = {
 export const RESOLUTION = { hand: 0.01, gate: 0.001, x: 0.5 };
 export const ERRORS = { hand: 0.1, gateT: 0.001, gateX: 0.2, x: 0.5 };
 export const DECIMALS = { hand: 2, gateT: 3, gateX: 1, x: 1 };
-export const TRAP_REPEATS = 3;
+export { TRAP_REPEATS, trapRepeat };
 
-export function trapRepeat(seed, key, name) {
-  return 1 + (hash32(`${seed}|${key}|trap:${name}`) % TRAP_REPEATS);
-}
 
 export function simulateRun(settings, { seed, repeat, noise, traps }) {
   const d = derive(settings);
