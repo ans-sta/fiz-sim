@@ -1,17 +1,24 @@
-import { derive, withAlpha, withLevel, withTimer } from './model.js';
+import { derive, withAlpha, withAngleMode, withLevel, withTimer } from './model.js';
 import { PARAM_SCHEMA } from './params.js';
 import { roundTo, formatNumber } from '../measure/format.js';
 
 // Pētījumi (spec. pētījumi 4, K-01): “mūsu renīte”, tērauda lodīte Ø 16 mm, renīte.
 export const STUDIES = [
   {
-    id: 'a', no: '01', measure: true, editable: ['alpha'], coupled: ['h'], views: { table: true, strobe: false },
+    id: 'a', no: '01', measure: true, angleMode: 'alpha', editable: ['alpha'], coupled: ['h'], views: { table: true, strobe: false },
     preset: (s) => withAlpha(withLevel(s, 1), roundTo(derive(s).alphaDeg, 0.1)), // slīpumu iestata ar α
   },
-  { id: 't', no: '02', measure: true, editable: ['gates'], views: { table: true, strobe: false }, preset: (s) => withTimer(withLevel(s, 2), 'gate') },
-  { id: 'x', no: '03', measure: true, editable: ['dt', 'h'], coupled: ['alpha'], views: { table: true, strobe: false }, preset: (s) => withLevel(s, 3) },
-  { id: 'strobe', no: '04', measure: true, editable: ['dt', 'h', 'tape'], coupled: ['alpha'], views: { table: false, strobe: true }, preset: (s) => withLevel(s, 3) },
+  { id: 't', no: '02', measure: true, angleMode: 'h', editable: ['gates'], views: { table: true, strobe: false }, preset: (s) => withTimer(withLevel(s, 2), 'gate') },
+  { id: 'x', no: '03', measure: true, angleMode: 'h', editable: ['dt', 'h'], coupled: ['alpha'], views: { table: true, strobe: false }, preset: (s) => withLevel(s, 3) },
+  { id: 'strobe', no: '04', measure: true, angleMode: 'h', editable: ['dt', 'h', 'tape'], coupled: ['alpha'], views: { table: false, strobe: true }, preset: (s) => withLevel(s, 3) },
 ];
+
+// Pētījumā slīpumu iestata ar pētījuma lielumu (a(α) — ar α), arī ja saitē ir h vai alpha;
+// saitē nofiksētu slīpumu neaiztiek.
+export function studyAngleMode(settings, study, urlLocked) {
+  if (!study.angleMode || urlLocked.has('h') || urlLocked.has('alpha')) return settings;
+  return withAngleMode(settings, study.angleMode);
+}
 
 export const SETTING_PARAMS = [...Object.keys(PARAM_SCHEMA), 'lock'];
 

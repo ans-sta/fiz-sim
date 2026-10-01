@@ -21,7 +21,8 @@ test('typography: no straight quotes, no "...", no spaced hyphen', () => {
 
 test('dynamic key families exist', () => {
   const need = [];
-  for (const m of MODES) need.push(`mode.${m}`, `mode.${m}.name`, `mode.${m}.hint`, `set.mode.${m}`, `notice.noFlight.${m}`, `notice.short.${m}`, `notice.short.${m}.minDt`);
+  for (const m of MODES) need.push(`mode.${m}`, `mode.${m}.name`, `mode.${m}.hint`, `set.mode.${m}`, `notice.noFlight.${m}`);
+  need.push('notice.short', 'notice.short.minDt', 'fix.dt', 'fix.increase', 'fix.up', 'fix.upNone', 'fix.or', 'fix.none');
   for (const k of Object.keys(SCALES)) need.push(`scale.${k}`, `set.scale.${k}`);
   for (const k of ['mode', 'scale', 'second', 'grid']) need.push(`lock.${k}`);
   for (const r of ['not_number', 'out_of_range', 'not_allowed', 'h_range', 'v0_clamped', 'dt_scale', 'rounded', 'none']) need.push(`url.${r}`);

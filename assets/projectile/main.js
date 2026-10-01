@@ -15,8 +15,9 @@ import { simulateRun } from './experiment.js';
 import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
 import { openProjectileStrobe } from './strobe.js';
-import { resolveRoute, studyFixed } from '../measure/studies.js';
+import { resolveRoute, studyFixed, filterStudyParams } from '../measure/studies.js';
 import { STUDIES, SETTING_PARAMS, fixedSummary } from './studies.js';
+import { flightNotice } from './advice.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
@@ -24,9 +25,11 @@ const theme = createTheme();
 
 const route = resolveRoute(location.search, { studies: STUDIES, settingParams: SETTING_PARAMS });
 const study = route.kind === 'study' ? route.study : null;
-const url = settingsFromURL(location.search, study ? { base: study.preset(defaultSettings()) } : {});
 // Pētījumā nofiksētie lielumi: tiek atteikti tāpat kā `lock`, bet netiek rādīti kā vadība un bez FIKS.
 const hidden = study ? studyFixed(study, LOCKABLE) : new Set();
+// Pētījumā saites parametri nofiksētajiem lielumiem netiek ņemti vērā (paziņojums zemāk).
+const linkParams = study ? filterStudyParams(location.search, hidden) : { search: location.search, ignored: [] };
+const url = settingsFromURL(linkParams.search, study ? { base: study.preset(defaultSettings()) } : {});
 const sheet = study ? `K-02 · ${study.no}` : 'K-02';
 mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, topicKey: 'tb.topicValue' });
 
@@ -69,6 +72,9 @@ const state = {
 const notices = createNotices(document.getElementById('notices'), { closeLabel: () => i18n.t('notice.close') });
 url.warnings.forEach((w, i) => {
   notices.show(`url${i}`, () => warningText(w, { t: i18n.t, lang: i18n.lang() }));
+});
+linkParams.ignored.forEach((w, i) => {
+  notices.show(`study${i}`, () => i18n.t('studies.paramIgnored', { study: i18n.t(`study.${study.id}.title`), param: w.param, raw: w.raw }));
 });
 
 const panel = createPanel(document.getElementById('controls'), { t: i18n.t, onAction });
@@ -216,9 +222,7 @@ function startRun() {
   const key = currentKey();
   const run = simulateRun(state.settings, { seed: state.seed, repeat: state.results.nextRepeat(key), noise: state.noise, traps: state.traps });
   if (!run.ok) {
-    const { mode, dt, scale } = state.settings;
-    const minDt = dt === SCALES[scale].dtOptions[0]; // mazāku Δt ieteikt nevar
-    notices.show('flight', () => i18n.t(run.reason === 'none' ? `notice.noFlight.${mode}` : `notice.short.${mode}${minDt ? '.minDt' : ''}`));
+    notices.show('flight', () => flightNotice(run.reason, state.settings, state.locked, i18n.t));
     return;
   }
   notices.clear('flight');
@@ -292,7 +296,7 @@ function openStrobeView(key, runIndex) {
     lang: i18n.lang(),
     colors: theme.colors(),
     grid: state.settings.grid,
-    gridLocked: state.locked.has('grid'),
+    gridLocked: state.locked.has('grid') && !state.hidden.has('grid'),
     onGridChange(on) {
       state.settings = withGrid(state.settings, on);
       render();

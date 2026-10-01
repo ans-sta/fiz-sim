@@ -1,11 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { STUDIES, SETTING_PARAMS, fixedSummary } from '../assets/rolling-ball/studies.js';
+import { STUDIES, SETTING_PARAMS, fixedSummary, studyAngleMode } from '../assets/rolling-ball/studies.js';
 import { STUDY_ART } from '../assets/rolling-ball/study-art.js';
 import { LOCKABLE, settingsFromURL } from '../assets/rolling-ball/params.js';
 import { defaultSettings, derive, changedLocked, withAlpha, withGate, withX0, withH } from '../assets/rolling-ball/model.js';
 import { simulateRun } from '../assets/rolling-ball/experiment.js';
-import { studyFixed, resolveRoute } from '../assets/measure/studies.js';
+import { studyFixed, resolveRoute, filterStudyParams } from '../assets/measure/studies.js';
 import { makeT } from '../assets/translate.js';
 import { STRINGS } from '../assets/rolling-ball/i18n.js';
 
@@ -68,4 +68,35 @@ test('router and teacher params on top of a study (Review Focus 1, 4)', () => {
   assert.equal(p.settings.level, 3);
   assert.equal(p.settings.h, 5);
   assert.deepEqual([...p.locked], ['h']);
+});
+
+function studyFromLink(search) {
+  const route = resolveRoute(search, { studies: STUDIES, settingParams: SETTING_PARAMS });
+  const study = route.study;
+  const f = filterStudyParams(search, studyFixed(study, LOCKABLE));
+  const url = settingsFromURL(f.search, { makeSeed: () => 1, base: study.preset(defaultSettings()) });
+  return { study, url, ignored: f.ignored };
+}
+
+test('K-01 study keeps its own preset: level link param is ignored (I1)', () => {
+  let r = studyFromLink('?study=t&level=3');
+  assert.equal(r.url.settings.level, 2);
+  assert.deepEqual(r.ignored, [{ param: 'level', raw: '3' }]);
+  r = studyFromLink('?study=x&h=5&lock=1');
+  assert.equal(r.url.settings.h, 5);
+  assert.ok(r.url.locked.has('h'));
+  assert.deepEqual(r.ignored, []);
+});
+
+test('the study decides how the slope is set, unless the link locked it (I2)', () => {
+  let r = studyFromLink('?study=a&h=5');
+  let s = studyAngleMode(r.url.settings, r.study, r.url.locked);
+  assert.deepEqual([s.angleMode, s.h], ['alpha', 5]);
+  r = studyFromLink('?study=x&alpha=3');
+  s = studyAngleMode(r.url.settings, r.study, r.url.locked);
+  assert.equal(s.angleMode, 'h');
+  assert.equal(Math.round(derive(s).alphaDeg), 3);
+  r = studyFromLink('?study=a&h=5&lock=1');
+  s = studyAngleMode(r.url.settings, r.study, r.url.locked);
+  assert.equal(s.angleMode, 'h');
 });

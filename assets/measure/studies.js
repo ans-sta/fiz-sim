@@ -19,3 +19,18 @@ export function studyFixed(study, lockable) {
   const free = new Set([...study.editable, ...(study.coupled ?? [])]);
   return new Set(lockable.filter((k) => !free.has(k)));
 }
+
+// Pētījumā saites parametri nofiksētajiem lielumiem netiek ņemti vērā (izņemot keep, piem. view):
+// pētījums paliek tāds, kā rakstīts kartītē. Atgriež atlikušo saiti un ignorētos parametrus paziņojumiem.
+export function filterStudyParams(search, fixed, { keep = ['view'] } = {}) {
+  const sp = new URLSearchParams(search);
+  const ignored = [];
+  for (const name of new Set(sp.keys())) {
+    if (fixed.has(name) && !keep.includes(name)) {
+      ignored.push({ param: name, raw: sp.get(name) });
+      sp.delete(name);
+    }
+  }
+  const rest = sp.toString();
+  return { search: rest ? `?${rest}` : '', ignored };
+}

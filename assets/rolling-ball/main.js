@@ -15,8 +15,8 @@ import { simulateRun } from './experiment.js';
 import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
 import { openStrobe } from './strobe.js';
-import { resolveRoute, studyFixed } from '../measure/studies.js';
-import { STUDIES, SETTING_PARAMS, fixedSummary } from './studies.js';
+import { resolveRoute, studyFixed, filterStudyParams } from '../measure/studies.js';
+import { STUDIES, SETTING_PARAMS, fixedSummary, studyAngleMode } from './studies.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
@@ -24,9 +24,11 @@ const theme = createTheme();
 
 const route = resolveRoute(location.search, { studies: STUDIES, settingParams: SETTING_PARAMS });
 const study = route.kind === 'study' ? route.study : null;
-const url = settingsFromURL(location.search, study ? { base: study.preset(defaultSettings()) } : {});
 // Pētījumā nofiksētie lielumi: tiek atteikti tāpat kā `lock`, bet netiek rādīti kā vadība un bez FIKS.
 const hidden = study ? studyFixed(study, LOCKABLE) : new Set();
+// Pētījumā saites parametri nofiksētajiem lielumiem netiek ņemti vērā (paziņojums zemāk).
+const linkParams = study ? filterStudyParams(location.search, hidden) : { search: location.search, ignored: [] };
+const url = settingsFromURL(linkParams.search, study ? { base: study.preset(defaultSettings()) } : {});
 const sheet = study ? `K-01 · ${study.no}` : 'K-01';
 mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, topicKey: 'tb.topicValue' });
 
@@ -50,7 +52,7 @@ mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, top
 i18n.apply();
 
 const state = {
-  settings: url.settings,
+  settings: study ? studyAngleMode(url.settings, study, url.locked) : url.settings,
   locked: new Set([...url.locked, ...hidden]),
   hidden,
   views: url.locked.has('view') || !study ? url.views : study.views,
@@ -70,6 +72,9 @@ const state = {
 const notices = createNotices(document.getElementById('notices'), { closeLabel: () => i18n.t('notice.close') });
 url.warnings.forEach((w, i) => {
   notices.show(`url${i}`, () => warningText(w, { t: i18n.t, lang: i18n.lang() }));
+});
+linkParams.ignored.forEach((w, i) => {
+  notices.show(`study${i}`, () => i18n.t('studies.paramIgnored', { study: i18n.t(`study.${study.id}.title`), param: w.param, raw: w.raw }));
 });
 
 const panel = createPanel(document.getElementById('controls'), { t: i18n.t, onAction });

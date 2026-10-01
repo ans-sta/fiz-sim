@@ -2,9 +2,12 @@
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export function mountStudyPicker(root, { i18n, studies, sheet, art, unknownStudy }) {
+  // rakstlaukums (valodas pogas) tiek izveidots vienreiz un nekad netiek atdalīts, tāpēc pogas fokuss saglabājas
+  const content = Object.assign(document.createElement('div'), { className: 'picker-content' });
+  root.append(content, Object.assign(document.createElement('div'), { className: 'titleblock picker-tb' }));
   function render() {
     const t = i18n.t;
-    const notice = unknownStudy === undefined ? '' : `<div class="notice picker-notice" role="status"><span>${esc(t('studies.unknown', { id: unknownStudy }))}</span></div>`;
+    const notice = unknownStudy === undefined ? '' : `<div class="notice picker-notice" role="status"><span>${esc(unknownStudy === '' ? t('studies.noId') : t('studies.unknown', { id: unknownStudy }))}</span></div>`;
     const cards = studies.map((s) => {
       const measure = s.measure ? ` · ${esc(t(`study.${s.id}.measure`))}` : ''; // K-01: ar ko mēra
       return `<a class="study-card" href="?study=${encodeURIComponent(s.id)}">
@@ -17,15 +20,13 @@ export function mountStudyPicker(root, { i18n, studies, sheet, art, unknownStudy
         </span>
       </a>`;
     }).join('');
-    const keep = root.querySelector('.titleblock'); // rakstlaukums paliek savā vietā (valodas pogu fokuss)
-    root.innerHTML = `<div class="picker-body">
+    content.innerHTML = `<div class="picker-body">
         <div class="picker-eyebrow">${esc(t('studies.eyebrow'))}</div>
         <p class="picker-lead">${esc(t('studies.lead'))}</p>
         ${notice}
         <div class="study-cards">${cards}</div>
         <a class="study-full" href="?full=1"><span class="t">${esc(t('studies.full'))}</span><span class="d">${esc(t('studies.fullDesc'))}</span><span class="arrow" aria-hidden="true">→</span></a>
       </div>`;
-    root.appendChild(keep ?? Object.assign(document.createElement('div'), { className: 'titleblock picker-tb' }));
   }
   render();
   i18n.onChange(render);

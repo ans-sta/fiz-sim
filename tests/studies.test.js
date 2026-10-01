@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveRoute, studyFixed } from '../assets/measure/studies.js';
+import { resolveRoute, studyFixed, filterStudyParams } from '../assets/measure/studies.js';
 
 const studies = [{ id: 'a', editable: ['alpha'], coupled: ['h'] }, { id: 'x', editable: ['dt', 'h'] }];
 const settingParams = ['L', 'h', 'alpha', 'view', 'lock', 'noise', 'seed', 'traps'];
@@ -30,4 +30,14 @@ test('studyFixed: everything lockable except the editable and coupled fields', (
   const lockable = ['L', 'h', 'alpha', 'ball', 'dt', 'view'];
   assert.deepEqual([...studyFixed(studies[0], lockable)], ['L', 'ball', 'dt', 'view']);
   assert.deepEqual([...studyFixed(studies[1], lockable)], ['L', 'alpha', 'ball', 'view']);
+});
+
+test('filterStudyParams drops study-fixed params (except keep), reports them, keeps the rest', () => {
+  const fixed = new Set(['scale', 'view', 'mode']);
+  assert.deepEqual(filterStudyParams('?scale=tower&h=5&lock=1&view=strobe', fixed), {
+    search: '?h=5&lock=1&view=strobe',
+    ignored: [{ param: 'scale', raw: 'tower' }],
+  });
+  assert.deepEqual(filterStudyParams('?h=5&lock=1', new Set()), { search: '?h=5&lock=1', ignored: [] });
+  assert.deepEqual(filterStudyParams('', fixed), { search: '', ignored: [] });
 });

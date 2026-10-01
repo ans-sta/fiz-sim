@@ -4,7 +4,7 @@ import { STUDIES, SETTING_PARAMS, fixedSummary } from '../assets/projectile/stud
 import { STUDY_ART } from '../assets/projectile/study-art.js';
 import { LOCKABLE, settingsFromURL } from '../assets/projectile/params.js';
 import { defaultSettings, flightCheck, changedLocked, withMode, withScale, withH } from '../assets/projectile/model.js';
-import { studyFixed, resolveRoute } from '../assets/measure/studies.js';
+import { studyFixed, resolveRoute, filterStudyParams } from '../assets/measure/studies.js';
 import { makeT } from '../assets/translate.js';
 import { STRINGS } from '../assets/projectile/i18n.js';
 
@@ -66,4 +66,28 @@ test('study + teacher params: params on top of the preset, lock fixes them (Revi
   assert.equal(p.settings.mode, 'horizontal');
   assert.equal(p.settings.h, 50);
   assert.deepEqual([...p.locked], ['h']);
+});
+
+// kā main.js: pētījumā saites parametri nofiksētajiem lielumiem tiek izmesti pirms settingsFromURL
+function studyFromLink(search) {
+  const route = resolveRoute(search, { studies: STUDIES, settingParams: SETTING_PARAMS });
+  const study = route.study;
+  const f = filterStudyParams(search, studyFixed(study, LOCKABLE));
+  const url = settingsFromURL(f.search, { makeSeed: () => 1, base: study.preset(defaultSettings()) });
+  return { url, ignored: f.ignored };
+}
+
+test('study keeps its own preset: link params for study-fixed fields are ignored (I1)', () => {
+  let r = studyFromLink('?study=oblique&scale=tower');
+  assert.deepEqual([r.url.settings.scale, r.url.settings.h], ['table', 0]);
+  assert.deepEqual(r.ignored, [{ param: 'scale', raw: 'tower' }]);
+  r = studyFromLink('?study=horizontal&mode=1');
+  assert.equal(r.url.settings.mode, 'horizontal');
+  assert.deepEqual(r.ignored, [{ param: 'mode', raw: '1' }]);
+  r = studyFromLink('?study=free&mode=3');
+  assert.deepEqual([r.url.settings.mode, r.url.settings.v0], ['vertical', 0]);
+  r = studyFromLink('?study=horizontal&h=50&lock=1');
+  assert.equal(r.url.settings.h, 50);
+  assert.ok(r.url.locked.has('h'));
+  assert.deepEqual(r.ignored, []);
 });
