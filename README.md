@@ -56,6 +56,7 @@ ES modules do not load from `file://`. To try pages locally, serve the folder:
 
     python3 -m http.server 8765
     # open http://localhost:8765/rolling-ball.html
+    # or http://localhost:8765/projectile-motion.html
 
 Unit tests for the pure modules (physics, noise, URL parameters, tables): `npm test` (Node 20+).
 
@@ -85,3 +86,27 @@ Parameters of `rolling-ball.html`, given in the URL. Without `lock=1` they are o
 Example:
 
     rolling-ball.html?L=80&h=2.0&ball=steel16&level=3&dt=0.5&view=strobe&lock=1
+
+## Teacher links (K-02)
+
+Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they are only starting values. Unknown parameters are ignored. Lengths and speeds are in the unit of the scale: cm and cm/s on the table, m and m/s on the tower.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `mode=1\|2\|3` | 1 — fall and vertical throw, 2 — horizontal throw, 3 — oblique throw. Without `v0`, mode 1 starts as a free fall (v₀ = 0) |
+| `scale=table\|tower` | Classroom table (cm, h 0–150, v₀ up to 400 cm/s) or tower (m, h 0–50, v₀ up to 30 m/s) |
+| `h=<number>` | Launch height (ball centre above the ground); larger values are clamped with a notice |
+| `v0=<number>` | Initial speed. In mode 1 the sign is the direction (+ up, − down); in modes 2 and 3 it must be ≥ 0 |
+| `alpha=<number>` | Launch angle in mode 3, degrees (0–90) |
+| `dt=<number>` | Strobe interval Δt, s: `0.02`, `0.05`, `0.1` on the table; `0.1`, `0.2`, `0.5` on the tower |
+| `second=0\|1` | Mode 2: a second ball drops from the same point at the same moment |
+| `grid=0\|1` | Measuring grid in the drawing and in the strobe view |
+| `view=table\|strobe\|both` | Which result view is shown (takes effect with `lock`) |
+| `lock=1` (or `lock=true`) | Locks every setting that is given in the link |
+| `noise=0\|1\|2` | Teacher only: measurement noise strength (0 none, 1 default, 2 double) |
+| `traps=late` | Teacher only: in one of the first three repeats of a table the clock starts 2–3 frames late |
+| `seed=<number>` | Teacher only: integer 1–2147483647; the same seed gives the same noise in every tab |
+
+Example (individual data for a horizontal throw from the table, read from the strobe image only):
+
+    projectile-motion.html?mode=2&h=90&v0=180&dt=0.05&view=strobe&lock=1

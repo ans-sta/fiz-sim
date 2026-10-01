@@ -630,6 +630,38 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 6: Falls and throws ══════ -->
+    <a href="projectile-motion.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Ground -->
+          <line x1="15" y1="118" x2="190" y2="118" stroke="#5a6d88" stroke-width="1.2"/>
+          <!-- Table -->
+          <rect x="18" y="48" width="44" height="4" fill="none" stroke="#5a6d88" stroke-width="1"/>
+          <line x1="22" y1="52" x2="22" y2="118" stroke="#5a6d88" stroke-width="1"/>
+          <line x1="58" y1="52" x2="58" y2="118" stroke="#5a6d88" stroke-width="1"/>
+          <!-- Velocity arrow -->
+          <path d="M 66 44 L 92 44 M 92 44 l -6 -3 M 92 44 l -6 3" stroke="#c8d6e8" stroke-width="1.2" fill="none"/>
+          <!-- Strobe positions on a parabola -->
+          <circle cx="66" cy="44" r="4" fill="none" stroke="#ffd70088" stroke-width="1"/>
+          <circle cx="86" cy="47" r="4" fill="none" stroke="#ffd70099" stroke-width="1"/>
+          <circle cx="106" cy="56" r="4" fill="none" stroke="#ffd700aa" stroke-width="1"/>
+          <circle cx="126" cy="71" r="4" fill="none" stroke="#ffd700bb" stroke-width="1"/>
+          <circle cx="146" cy="92" r="4" fill="none" stroke="#ffd700cc" stroke-width="1"/>
+          <circle cx="164" cy="114" r="4" fill="#ffd70066" stroke="#ffd700" stroke-width="1.2"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-mechanics" data-i18n="tagMechanics">Mechanics</div>
+        <div class="card-title" data-i18n="fallsTitle">Falls and Throws</div>
+        <p class="card-desc" data-i18n="fallsDesc">Drop or throw a ball from a table or a tower and collect realistic measurement data: positions x and y every Δt and a strobe image.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -658,6 +690,8 @@ const TRANSLATIONS = {
     cannonDesc: "Explore orbital mechanics by adjusting cannon velocity. Discover how gravity shapes the trajectory from ballistic arc to stable orbit.",
     rollingTitle: "Ball in a Groove",
     rollingDesc: "Roll a ball down an inclined groove and collect realistic measurement data: time, gates or strobe positions.",
+    fallsTitle: "Falls and Throws",
+    fallsDesc: "Drop or throw a ball from a table or a tower and collect realistic measurement data: positions x and y every Δt and a strobe image.",
     statusLive: "Live",
     statusDev: "In development",
     statusPlanned: "Planned",
@@ -682,6 +716,8 @@ const TRANSLATIONS = {
     cannonDesc: "Izpēti orbitālo mehāniku, mainot lielgabala ātrumu. Atklāj, kā gravitācija veido trajektoriju no ballistiska loka līdz stabilai orbītai.",
     rollingTitle: "Lodīte renītē",
     rollingDesc: "Palaid lodīti pa slīpu renīti un iegūsti ticamus mērījumu datus: laiku, vārtu laikus vai stroboskopa attēlu.",
+    fallsTitle: "Kritieni un sviedieni",
+    fallsDesc: "Palaid bumbiņu krist vai met to no galda vai torņa un iegūsti ticamus mērījumu datus: koordinātas x un y ik pēc Δt un stroboskopa attēlu.",
     statusLive: "Aktīvs",
     statusDev: "Izstrādē",
     statusPlanned: "Plānots",
