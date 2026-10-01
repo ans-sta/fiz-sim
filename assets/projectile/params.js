@@ -1,6 +1,6 @@
 import { parseParams } from '../measure/url-params.js';
 import { SCALES, ALPHA, MODE_NUMBER } from './scales.js';
-import { defaultSettings, withH, withV0, withAlpha, withDt, withSecond, withGrid, v0Range } from './model.js';
+import { defaultSettings, withH, withV0, withAlpha, withDt, withSecond, withGrid, v0Range, withScale, withMode } from './model.js';
 import { randomSeed } from '../measure/rng.js';
 
 export { warningText } from '../measure/url-params.js';
@@ -24,7 +24,7 @@ export const PARAM_SCHEMA = {
 
 export const LOCKABLE = ['mode', 'scale', 'h', 'v0', 'alpha', 'dt', 'second', 'grid', 'view'];
 
-export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
+export function settingsFromURL(search, { makeSeed = randomSeed, base = null } = {}) {
   const p = parseParams(search, PARAM_SCHEMA);
   const v = p.values;
   const raw = new URLSearchParams(search);
@@ -34,8 +34,11 @@ export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
 
   const scale = v.scale ?? 'table';
   const mode = 'mode' in v ? MODE_BY_NUMBER[v.mode] : 'horizontal';
-  const sc = SCALES[scale];
-  let s = defaultSettings(scale, mode);
+  // pētījumā sāk no tā iestatījumiem; mērogs un režīms no saites — virsū
+  let s = base ? { ...base } : defaultSettings(scale, mode);
+  if (base && 'scale' in v) s = withScale(s, scale);
+  if (base && 'mode' in v) s = withMode(s, mode);
+  const sc = SCALES[s.scale];
   // vērtība starp iestatāmajiem soļiem tiek noapaļota — par to arī paziņo (unit ar atstarpi priekšā vai °)
   const rounded = (param, given, used, unit) => {
     if (!warnings.has(param) && Math.abs(given - used) > 1e-9) warn({ param, raw: raw.get(param), reason: 'rounded', used, unit });
@@ -48,7 +51,7 @@ export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
     rounded('h', v.h, s.h, ` ${sc.unit}`);
   }
   if ('v0' in v) {
-    const r = v0Range(scale, mode);
+    const r = v0Range(s.scale, s.mode);
     if (v.v0 < r.min || v.v0 > r.max) {
       warn({ param: 'v0', raw: raw.get('v0'), reason: 'v0_clamped', min: r.min, max: r.max, unit: `${sc.unit}/s` });
     }

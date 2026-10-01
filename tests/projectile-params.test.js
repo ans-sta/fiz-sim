@@ -102,3 +102,12 @@ test('teacher-only params', () => {
   assert.equal(p.settings.second, true);
   assert.equal(p.settings.grid, false);
 });
+
+test('base: a study preset is the starting point; scale and mode params apply on top', () => {
+  const base = { ...defaultSettings('table', 'vertical'), v0: 0 };
+  const a = settingsFromURL('', { makeSeed: () => 1, base });
+  assert.deepEqual([a.settings.mode, a.settings.v0], ['vertical', 0]);
+  const b = settingsFromURL('?scale=tower', { makeSeed: () => 1, base });
+  assert.equal(b.settings.scale, 'tower');
+  assert.equal(b.settings.h, 20);
+});
