@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { simulateRun, NOISE } from '../assets/projectile/experiment.js';
-import { defaultSettings, derive, withMode, withScale, withH, withV0, withAlpha, withDt, withSecond, settingsKey } from '../assets/projectile/model.js';
+import { defaultSettings, derive, withMode, withScale, withH, withV0, withAlpha, withDt, withSecond, settingsKey, MIN_POSITIONS } from '../assets/projectile/model.js';
 import { SCALES } from '../assets/projectile/scales.js';
 import { roundTo } from '../assets/measure/format.js';
 import { trapRepeat } from '../assets/measure/traps.js';
@@ -111,6 +111,21 @@ test('no flight / too short → ok: false with the reason, nothing else (Review 
   assert.equal(short.ok, false);
   assert.equal(short.reason, 'short');
   assert.equal('samples' in short, false);
+});
+
+test('a recorded run always has at least MIN_POSITIONS positions (noise, late trap, short flights)', () => {
+  const settings = [];
+  for (const h of [0.5, 1, 1.5, 2, 3, 4]) settings.push(withDt(withH(defaultSettings(), h), 0.02));
+  for (const h of [1, 2, 3, 5]) settings.push(withDt(withH(withMode(withScale(defaultSettings(), 'tower'), 'vertical'), h), 0.5));
+  for (const a of [5, 10, 20]) settings.push(withDt(withAlpha(withV0(withH(withMode(defaultSettings(), 'oblique'), 0), 60), a), 0.05));
+  for (const s of settings) {
+    for (const noise of [1, 2]) {
+      for (let repeat = 1; repeat <= 12; repeat++) {
+        const run = simulateRun(s, { seed: 3, repeat, noise, traps: ['late'] });
+        if (run.ok) assert.ok(run.samples.length >= MIN_POSITIONS, `${settingsKey(s, { noise, traps: ['late'] })} r${repeat}: ${run.samples.length}`);
+      }
+    }
+  }
 });
 
 test('trap “late”: exactly one of the first three repeats starts 2–3 frames late', () => {

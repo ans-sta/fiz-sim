@@ -1,21 +1,19 @@
 import { parseParams } from '../measure/url-params.js';
-import { SCALES, ALPHA, DT_ALL, MODE_NUMBER } from './scales.js';
+import { SCALES, ALPHA, MODE_NUMBER } from './scales.js';
 import { defaultSettings, withH, withV0, withAlpha, withDt, withSecond, withGrid, v0Range } from './model.js';
 import { randomSeed } from '../measure/rng.js';
 
 export { warningText } from '../measure/url-params.js';
 
 const MODE_BY_NUMBER = { 1: 'vertical', 2: 'horizontal', 3: 'oblique' };
-const H_LIMIT = Math.max(...Object.values(SCALES).map((s) => s.h.max));
-const V0_LIMIT = Math.max(...Object.values(SCALES).map((s) => s.v0.max));
 
 export const PARAM_SCHEMA = {
   mode: { type: 'enum', values: ['1', '2', '3'] },
   scale: { type: 'enum', values: Object.keys(SCALES) },
-  h: { type: 'number', min: 0, max: H_LIMIT },
-  v0: { type: 'number', min: -V0_LIMIT, max: V0_LIMIT },
+  h: { type: 'number' }, // robežas, Δt vērtības — pēc mēroga un režīma, sk. settingsFromURL
+  v0: { type: 'number' },
   alpha: { type: 'number', min: ALPHA.min, max: ALPHA.max },
-  dt: { type: 'number', values: DT_ALL },
+  dt: { type: 'number' },
   second: { type: 'bool' },
   grid: { type: 'bool' },
   view: { type: 'enum', values: ['table', 'strobe', 'both'] },
@@ -38,9 +36,16 @@ export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
   const mode = 'mode' in v ? MODE_BY_NUMBER[v.mode] : 'horizontal';
   const sc = SCALES[scale];
   let s = defaultSettings(scale, mode);
+  // vērtība starp iestatāmajiem soļiem tiek noapaļota — par to arī paziņo (unit ar atstarpi priekšā vai °)
+  const rounded = (param, given, used, unit) => {
+    if (!warnings.has(param) && Math.abs(given - used) > 1e-9) warn({ param, raw: raw.get(param), reason: 'rounded', used, unit });
+  };
   if ('h' in v) {
-    if (v.h > sc.h.max) warn({ param: 'h', raw: raw.get('h'), reason: 'h_clamped', max: sc.h.max, unit: sc.unit });
+    if (v.h < sc.h.min || v.h > sc.h.max) {
+      warn({ param: 'h', raw: raw.get('h'), reason: 'h_range', min: sc.h.min, max: sc.h.max, unit: sc.unit });
+    }
     s = withH(s, v.h);
+    rounded('h', v.h, s.h, ` ${sc.unit}`);
   }
   if ('v0' in v) {
     const r = v0Range(scale, mode);
@@ -48,8 +53,12 @@ export function settingsFromURL(search, { makeSeed = randomSeed } = {}) {
       warn({ param: 'v0', raw: raw.get('v0'), reason: 'v0_clamped', min: r.min, max: r.max, unit: `${sc.unit}/s` });
     }
     s = withV0(s, v.v0);
+    rounded('v0', v.v0, s.v0, ` ${sc.unit}/s`);
   }
-  if ('alpha' in v) s = withAlpha(s, v.alpha);
+  if ('alpha' in v) {
+    s = withAlpha(s, v.alpha);
+    rounded('alpha', v.alpha, s.alphaDeg, '°');
+  }
   if ('dt' in v) {
     if (sc.dtOptions.includes(v.dt)) s = withDt(s, v.dt);
     else warn({ param: 'dt', raw: raw.get('dt'), reason: 'dt_scale', allowed: sc.dtOptions });

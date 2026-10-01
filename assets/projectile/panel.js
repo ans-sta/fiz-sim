@@ -51,11 +51,11 @@ export function createPanel(root, { t, onAction }) {
     const { settings: s, locked, running, lang } = vm;
     const sc = SCALES[s.scale];
     let h = `<div class="block-title">${esc(t('blk.dims'))}</div>`;
-    h += `<div class="row" style="margin-top:0"><span class="row-label">${esc(t('scale.label'))}${fixTag(locked, 'scale')}</span><div class="seg" style="flex:1">`;
+    h += `<div class="row" style="margin-top:0"><span class="row-label">${esc(t('scale.label'))}${fixTag(locked, 'scale')}</span></div><div class="seg">`;
     for (const k of Object.keys(SCALES)) {
       h += btn(`scale-${k}`, t(`scale.${k}`), { action: 'scale', value: k, pressed: s.scale === k, disabled: running || (locked.has('scale') && s.scale !== k) });
     }
-    h += '</div></div>';
+    h += '</div>';
     const num = (v, dec) => formatNumber(v, dec, lang);
     const unit = (u) => ` <span class="unit">${esc(u)}</span>`;
     const ro = (key, k, html) => `<div class="readout"><span class="k">${k}${fixTag(locked, key)}</span><span class="v">${html}</span></div>`;

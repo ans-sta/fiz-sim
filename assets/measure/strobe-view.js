@@ -71,10 +71,16 @@ export function openStrobeShell(o) {
     return b;
   };
   const zoomBy = (factor) => setTr(zoomAt(tr, factor, size.w / 2, size.h / 2, limits.min, limits.max));
+  // o.fitTop(width) — pikseļi augšā, ko aizņem lapas paraksts; zīmējums tiek ietilpināts zem tā
+  const fitted = () => {
+    const top = o.fitTop ? o.fitTop(size.w) : 0;
+    const f = fitTransform(o.box, size.w, Math.max(50, size.h - top));
+    return { ...f, ty: f.ty + top };
+  };
   const extraHead = [
     mkBtn('−', () => zoomBy(1 / 1.5), L.zoomOut),
     mkBtn('+', () => zoomBy(1.5), L.zoomIn),
-    mkBtn(L.fit, () => setTr(fitTransform(o.box, size.w, size.h))),
+    mkBtn(L.fit, () => setTr(fitted())),
   ];
 
   const runBtns = Array.from({ length: o.runCount }, (_, i) => mkBtn(`${L.run} ${i + 1}`, () => {
@@ -144,7 +150,7 @@ export function openStrobeShell(o) {
     const first = !size.w;
     size = { w, h };
     if (first) {
-      tr = fitTransform(o.box, w, h);
+      tr = fitted();
       limits = { min: tr.scale / 4, max: tr.scale * 200 };
       detach = attachZoomPan(cv, { get: () => tr, set: setTr, min: limits.min, max: limits.max });
     }

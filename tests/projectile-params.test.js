@@ -38,9 +38,18 @@ test('scale and mode set their defaults; mode=1 without v0 is free fall', () => 
 test('bad and conflicting params → sensible values + one precise notice each (Review Focus 1)', () => {
   const a = parse('?scale=tower&h=120');
   assert.equal(a.settings.h, 50);
-  assert.deepEqual(a.warnings, [{ param: 'h', raw: '120', reason: 'h_clamped', max: 50, unit: 'm', used: 50 }]);
-  assert.equal(warningText(a.warnings[0], lv), 'Saitē h = 120 m ir par lielu šim mērogam (h ≤ 50 m). Izmantots h = 50 m.');
-  assert.equal(warningText(a.warnings[0], en), 'In the link, h = 120 m is too large for this scale (h ≤ 50 m). Using h = 50 m.');
+  assert.deepEqual(a.warnings, [{ param: 'h', raw: '120', reason: 'h_range', min: 0, max: 50, unit: 'm', used: 50 }]);
+  assert.equal(warningText(a.warnings[0], lv), 'Saitē h = 120 m neder šim mērogam (atļauts no 0 līdz 50 m). Izmantots h = 50 m.');
+  assert.equal(warningText(a.warnings[0], en), 'In the link, h = 120 m does not fit this scale (allowed from 0 to 50 m). Using h = 50 m.');
+  const neg = parse('?scale=tower&h=-5');
+  assert.equal(neg.settings.h, 0);
+  assert.equal(warningText(neg.warnings[0], lv), 'Saitē h = -5 m neder šim mērogam (atļauts no 0 līdz 50 m). Izmantots h = 0 m.');
+  const fast = parse('?v0=500');
+  assert.equal(fast.settings.v0, 400);
+  assert.equal(warningText(fast.warnings[0], lv), 'Saitē v₀ = 500 cm/s neder šim režīmam un mērogam (atļauts no 0 līdz 400 cm/s). Izmantots v₀ = 400 cm/s.');
+  const dt3 = parse('?scale=tower&dt=0.3');
+  assert.equal(warningText(dt3.warnings[0], lv), 'Saitē Δt = 0.3 s neder šim mērogam. Atļautās vērtības: 0,1; 0,2; 0,5 s. Izmantots Δt = 0,2 s.');
+  assert.equal(warningText(parse('?dt=abc').warnings[0], lv), 'Saites parametrs dt=abc nav skaitlis. Izmantots dt = 0,05.');
 
   const b = parse('?scale=tower&dt=0.02');
   assert.equal(b.settings.dt, 0.2);
@@ -54,6 +63,14 @@ test('bad and conflicting params → sensible values + one precise notice each (
   const d = parse('?scale=tower&h=2,5');
   assert.equal(d.settings.h, 2.5);
   assert.deepEqual(d.warnings, []);
+  const r = parse('?h=2,5&v0=152&alpha=44.6&mode=3');
+  assert.deepEqual([r.settings.h, r.settings.v0, r.settings.alphaDeg], [3, 150, 45]);
+  assert.deepEqual(r.warnings.map((w) => warningText(w, lv)), [
+    'Saitē h = 2,5 cm noapaļots līdz iestatāmajai vērtībai 3 cm.',
+    'Saitē v0 = 152 cm/s noapaļots līdz iestatāmajai vērtībai 150 cm/s.',
+    'Saitē alpha = 44.6° noapaļots līdz iestatāmajai vērtībai 45°.',
+  ]);
+  assert.equal(warningText(r.warnings[0], en), 'In the link, h = 2,5 cm was rounded to the nearest settable value 3 cm.');
 
   const e = parse('?traps=push');
   assert.deepEqual(e.traps, []);

@@ -45,7 +45,7 @@ test('largest throws still export (Review Focus 5)', () => {
   const table = withH(withAlpha(withV0(withMode(defaultSettings(), 'oblique'), 400), 45), 150);
   for (const s of [tower, table]) {
     const p = strobePoints(simulateRun(s, opts), s);
-    const size = exportSizeFor(strobeWorldBox(s, p), exportOptions(SCALES[s.scale]));
+    const size = exportSizeFor(strobeWorldBox(s, p), { ...exportOptions(SCALES[s.scale]), extraH: 400 }); // paraksts ≤ 400 px
     assert.ok(size, s.scale);
     assert.ok(size.scale >= SCALES[s.scale].exportPx.min);
     assert.ok(size.w * size.h <= EXPORT_MAX_AREA);

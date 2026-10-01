@@ -1,4 +1,4 @@
-import { SCALES, MODES, ALPHA } from './scales.js';
+import { SCALES, MODES, ALPHA, NOISE } from './scales.js';
 import { roundTo } from '../measure/format.js';
 import { velocity, landingTime, apexTime, apexHeight } from '../physics/projectile.js';
 
@@ -94,12 +94,33 @@ export function derive(s) {
   };
 }
 
+const NOISE_SIGMAS = 4;
+
+// Vai palaišana dos vismaz MIN_POSITIONS zibšņus arī sliktākajā gadījumā: sākuma kadrs par vēlu
+// (troksnis un slazds „late”) un v₀, α novirze līdz 4σ (lidojuma laiks var būt atkarīgs no tiem).
+export function flightCheck(s, { noise, traps }) {
+  const d = derive(s);
+  if (d.flight === 'none') return 'none';
+  const sc = SCALES[s.scale];
+  const tauMax = (noise * NOISE.startFrames + (traps.includes('late') ? NOISE.lateFrames[1] : 0)) * sc.frame;
+  const f = NOISE_SIGMAS * noise;
+  let tMin = Infinity;
+  for (const kv of [-1, 1]) {
+    for (const ka of [-1, 1]) {
+      const v0 = s.v0 * (1 + kv * f * NOISE.v0Rel);
+      const alphaDeg = s.mode === 'oblique' ? clamp(s.alphaDeg + ka * f * NOISE.alphaDeg, 0, 90) : s.alphaDeg;
+      tMin = Math.min(tMin, landingTime({ g: sc.g, h: s.h, vy: launchVelocity({ ...s, v0, alphaDeg }).vy }));
+    }
+  }
+  return tMin - tauMax >= (MIN_POSITIONS - 1) * s.dt - 1e-12 ? 'ok' : 'short';
+}
+
 const SAME = (a, b) => Math.abs(a - b) < 1e-9;
 const FIELD_SAME = {
   mode: (p, n) => p.mode === n.mode,
   scale: (p, n) => p.scale === n.scale,
-  h: (p, n) => SAME(p.h, n.h),
-  v0: (p, n) => SAME(p.v0, n.v0),
+  h: (p, n) => p.scale === n.scale && SAME(p.h, n.h), // 20 cm un 20 m nav viens un tas pats
+  v0: (p, n) => p.scale === n.scale && SAME(p.v0, n.v0),
   alpha: (p, n) => SAME(p.alphaDeg, n.alphaDeg),
   dt: (p, n) => p.dt === n.dt,
   second: (p, n) => p.second === n.second,

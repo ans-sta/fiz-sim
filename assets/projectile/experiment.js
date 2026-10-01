@@ -1,19 +1,14 @@
 // Viena palaišana: patiesā kustība + mērījuma troksnis (spec. 2; kā lodītes spec. 6, 3. līmenis).
 // „±” vērtības ≈ 2σ. Nolasīšanas kļūdu nogriež pie read.max × intensitāte, tāpēc tabula un
 // stroboskops sakrīt read.max + read.resolution/2 robežās pie intensitātes 1.
-import { derive, launchVelocity, settingsKey } from './model.js';
-import { SCALES } from './scales.js';
+import { launchVelocity, settingsKey, flightCheck, MIN_POSITIONS } from './model.js';
+import { SCALES, NOISE } from './scales.js';
 import { positionAt, landingTime } from '../physics/projectile.js';
 import { rngFor, gaussian } from '../measure/rng.js';
 import { roundTo } from '../measure/format.js';
 import { trapRepeat } from '../measure/traps.js';
 
-export const NOISE = {
-  v0Rel: 0.01, // σ no v₀ starp palaišanām (relatīvi)
-  alphaDeg: 0.3, // σ leņķim slīpajā sviedienā, grādi
-  startFrames: 1, // sākuma kadra nobīde: vesels skaitlis −1…1 kadrs (× intensitāte)
-  lateFrames: [2, 3], // slazds „late”: sākuma kadrs 2–3 kadrus par vēlu
-};
+export { NOISE };
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const MAX_SAMPLES = 10000;
@@ -30,9 +25,9 @@ function motionPath(g, h, vx, vy) {
 }
 
 export function simulateRun(settings, { seed, repeat, noise, traps }) {
-  const d = derive(settings);
   const key = settingsKey(settings, { noise, traps });
-  if (d.flight !== 'ok') return { ok: false, reason: d.flight, key, repeat };
+  const flight = flightCheck(settings, { noise, traps });
+  if (flight !== 'ok') return { ok: false, reason: flight, key, repeat };
 
   const sc = SCALES[settings.scale];
   const k = noise;
@@ -68,6 +63,8 @@ export function simulateRun(settings, { seed, repeat, noise, traps }) {
     const y = roundTo(p.y + readErr(), sc.read.resolution);
     samples.push({ n, t, x, y });
   }
+  // flightCheck pieļauj 4σ izkliedi; retā vēl lielākā novirze arī netiek ierakstīta
+  if (samples.length < MIN_POSITIONS) return { ok: false, reason: 'short', key, repeat };
 
   return {
     ok: true,

@@ -6,7 +6,7 @@ import {
   changedLocked, v0Range, SLOW_FACTOR,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
-import { sceneBox, sceneLayout, drawScene, handleAnchors, valueFromPointer, launchPoint, arrowGeometry, ARC_R } from './scene.js';
+import { sceneBox, sceneLayout, drawScene, handleAnchors, valueFromPointer, launchPoint, arrowGeometry, arcRadius } from './scene.js';
 import { createPanel } from './panel.js';
 import { createHandles } from '../measure/handles.js';
 import { createNotices } from '../measure/notices.js';
@@ -107,23 +107,26 @@ function handleItems(lay, s, lang) {
   const r = v0Range(s.scale, s.mode);
   const dirWord = s.mode === 'vertical' && s.v0 !== 0 ? ` ${t(s.v0 > 0 ? 'dir.up' : 'dir.down')}` : '';
   const vText = `v₀ = ${num(Math.abs(s.v0), sc.v0.decimals)} ${sc.unit}/s${dirWord}`;
-  const { dir } = arrowGeometry(lay, s);
+  const { len, dir } = arrowGeometry(lay, s);
   const vertical = s.mode === 'vertical';
+  // etiķete beidzas pie bultas gala, virs bultas (α rokturis ir uz bultas turpinājuma); vertikāli — pa labi no gala
   add('v0', {
     id: 'v0', kind: 'diamond', x: a.v0.x, y: a.v0.y,
     labelText: vText,
-    labelX: vertical ? a.v0.x + 16 : a.v0.x + dir.x * 18,
-    labelY: vertical ? a.v0.y : a.v0.y + dir.y * 18 - 16,
-    labelAnchor: vertical ? 'left' : 'center',
+    labelX: vertical ? a.v0.x + 16 : a.v0.x + dir.y * 18,
+    labelY: vertical ? a.v0.y : a.v0.y - dir.x * 18,
+    labelAnchor: vertical ? 'left' : 'right',
     ariaLabel: t('dims.v0'), min: r.min, max: r.max, step: sc.v0.step, value: s.v0, valueText: vText,
   });
 
   if (s.mode === 'oblique') {
     const p = launchPoint(lay, s);
     const aText = `α = ${num(s.alphaDeg, 0)}°`;
+    const mid = (s.alphaDeg * Math.PI) / 360; // loka vidus, virs horizontālās līnijas
+    const R = arcRadius(len) + 14;
     add('alpha', {
       id: 'alpha', kind: 'diamond', x: a.alpha.x, y: a.alpha.y,
-      labelText: aText, labelX: p.x + ARC_R + 14, labelY: p.y + 14, labelAnchor: 'left',
+      labelText: aText, labelX: p.x + R * Math.cos(mid), labelY: p.y - R * Math.sin(mid) - 8, labelAnchor: 'left',
       ariaLabel: t('dims.alpha'), min: ALPHA.min, max: ALPHA.max, step: ALPHA.step, value: s.alphaDeg, valueText: aText,
     });
   }
@@ -187,7 +190,7 @@ function startRun() {
   const run = simulateRun(state.settings, { seed: state.seed, repeat: state.results.nextRepeat(key), noise: state.noise, traps: state.traps });
   if (!run.ok) {
     const mode = state.settings.mode;
-    notices.show('flight', () => i18n.t(run.reason === 'none' ? `notice.noFlight.${mode}` : 'notice.short'));
+    notices.show('flight', () => i18n.t(run.reason === 'none' ? `notice.noFlight.${mode}` : `notice.short.${mode}`));
     return;
   }
   notices.clear('flight');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { SCALES, MODES, ALPHA } from '../assets/projectile/scales.js';
 import {
   defaultSettings, v0Range, withMode, withScale, withH, withV0, withAlpha, withDt, withSecond, withGrid, withSlow,
-  launchVelocity, derive, changedLocked, settingsKey, MIN_POSITIONS,
+  launchVelocity, derive, changedLocked, settingsKey, flightCheck, MIN_POSITIONS,
 } from '../assets/projectile/model.js';
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} vs ${b}`);
@@ -124,4 +124,21 @@ test('changedLocked lists locked values a change would alter (also indirectly)',
   assert.deepEqual(changedLocked(s, withScale(s, 'tower'), locked), ['h', 'dt']);
   assert.deepEqual(changedLocked(s, withV0(s, 200), locked), []);
   assert.deepEqual(changedLocked(s, withGrid(s, false), new Set(['grid'])), ['grid']);
+});
+
+test('a locked number in another unit is another value: 20 cm is not 20 m', () => {
+  const s = withH(defaultSettings(), 20);
+  assert.deepEqual(changedLocked(s, withScale(s, 'tower'), new Set(['h'])), ['h']);
+  const v = withV0(defaultSettings(), 10);
+  assert.deepEqual(changedLocked(v, withScale(v, 'tower'), new Set(['v0'])), ['v0']);
+});
+
+test('flightCheck allows for the worst start frame, the late trap and the v₀/α spread', () => {
+  const s = defaultSettings();
+  assert.equal(flightCheck(s, { noise: 1, traps: [] }), 'ok');
+  assert.equal(flightCheck(withH(s, 0), { noise: 1, traps: [] }), 'none');
+  const low = withDt(withH(s, 1), 0.02);
+  assert.equal(derive(low).flight, 'ok', 'noise-free it would just fit');
+  assert.equal(flightCheck(low, { noise: 1, traps: ['late'] }), 'short');
+  assert.equal(flightCheck(low, { noise: 0, traps: [] }), 'ok');
 });

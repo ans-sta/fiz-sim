@@ -1,22 +1,39 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sceneBox, sceneLayout, arrowMaxPx, launchPoint, arrowGeometry, handleAnchors, valueFromPointer, MARGIN, ARC_R } from '../assets/projectile/scene.js';
+import { sceneBox, sceneLayout, arrowMaxPx, launchPoint, arrowGeometry, handleAnchors, valueFromPointer, arcRadius, ladderCeil, MARGIN, ARC_R } from '../assets/projectile/scene.js';
+import { SCALES } from '../assets/projectile/scales.js';
 import { defaultSettings, derive, withMode, withV0, withAlpha, withScale, withH } from '../assets/projectile/model.js';
 
 const close = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg ?? ''} ${a} vs ${b}`);
 
-test('sceneBox holds the structure, the launch point, the whole trajectory and a minimum view', () => {
+test('ladderCeil: 1; 1,5; 2; 3; 4; 5; 6; 8 × 10ⁿ', () => {
+  assert.equal(ladderCeil(73.3), 80);
+  assert.equal(ladderCeil(90), 100);
+  assert.equal(ladderCeil(1.2), 1.5);
+  assert.equal(ladderCeil(300), 300);
+  assert.equal(ladderCeil(0), 0);
+});
+
+test('sceneBox holds the whole trajectory but does not reveal the range or the apex', () => {
   const s = defaultSettings();
   const d = derive(s);
   const b = sceneBox(s, d);
   assert.equal(b.x0, -60);
   assert.equal(b.y0, 0);
-  assert.ok(b.x1 >= d.xLand);
-  assert.ok(b.y1 >= 100 && b.y1 >= s.h);
+  assert.ok(b.x1 >= d.xLand && b.y1 >= s.h && b.y1 >= SCALES.table.minView.h);
+  const o = withMode(s, 'oblique');
+  const boxes = [15, 30, 45, 60, 80].map((a) => {
+    const q = withAlpha(o, a);
+    const dq = derive(q);
+    const bq = sceneBox(q, dq);
+    assert.ok(bq.x1 >= dq.xLand && bq.y1 >= dq.yMax, `α ${a}`);
+    return bq;
+  });
+  for (const bq of boxes) assert.deepEqual(bq, boxes[0], 'the drawing does not change with α');
   const up = withV0(withMode(withScale(s, 'tower'), 'vertical'), 30);
   const bu = sceneBox(up, derive(up));
   assert.ok(bu.y1 >= derive(up).yMax);
-  assert.ok(bu.x1 - bu.x0 >= 30);
+  assert.ok(bu.x1 - bu.x0 >= SCALES.tower.minView.w);
 });
 
 test('layout: ground at the bottom margin, structure at the left margin; toWorld inverts toScreen', () => {
@@ -48,6 +65,10 @@ test('arrow direction per mode and sign', () => {
   close(o.dir.y, -0.5, 1e-12);
 });
 
+test('arc radius stays at least 30 px beyond the arrow tip', () => {
+  for (const len of [0, 10, 26, 45, 56, 82, 120]) assert.ok(arcRadius(len) - len >= 26 && arcRadius(len) >= ARC_R);
+});
+
 test('pointer at each anchor gives back the current value (all modes)', () => {
   const cases = [
     defaultSettings(),
@@ -65,7 +86,9 @@ test('pointer at each anchor gives back the current value (all modes)', () => {
       close(valueFromPointer('alpha', lay, s, a.alpha), s.alphaDeg, 1e-9, 'alpha');
       close(valueFromPointer('alpha', lay, s, a.v0), s.alphaDeg, 1e-9, 'alpha from the arrow tip');
       const p = launchPoint(lay, s);
-      close(Math.hypot(a.alpha.x - p.x, a.alpha.y - p.y), ARC_R, 1e-9);
+      const len = arrowGeometry(lay, s).len;
+      close(Math.hypot(a.alpha.x - p.x, a.alpha.y - p.y), arcRadius(len), 1e-9);
+      assert.ok(Math.hypot(a.alpha.x - a.v0.x, a.alpha.y - a.v0.y) >= 30 - 1e-9, 'the α handle never covers the v₀ handle');
     }
   }
 });

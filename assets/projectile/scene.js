@@ -10,12 +10,28 @@ export function arrowMaxPx(width, height) {
   return Math.max(60, Math.min(120, 0.25 * Math.min(width, height)));
 }
 
-// Pasaules laukums: konstrukcija, kustības sākumpunkts, visa trajektorija un mazākais skats.
+const LADDER = [1, 1.5, 2, 3, 4, 5, 6, 8, 10];
+
+// Mazākais „kāpņu” skaitlis (1; 1,5; 2; 3; 4; 5; 6; 8 × 10ⁿ), kas nav mazāks par v.
+export function ladderCeil(v) {
+  if (v <= 0) return 0;
+  const p = 10 ** Math.floor(Math.log10(v));
+  for (const m of LADDER) if (m * p >= v * (1 - 1e-12)) return Number((m * p).toPrecision(12));
+  return 10 * p;
+}
+
+// Pasaules laukums: konstrukcija, kustības sākumpunkts un visa trajektorija. Tas nav atkarīgs no α
+// (lielākais tālums un augstums pa visiem α) un ir noapaļots uz augšu pa kāpnēm, lai rasējuma mala
+// neatklātu tālumu vai augstāko punktu, ko skolēns nosaka pats (spec. 2.1).
 export function sceneBox(s, d) {
   const sc = d.sc;
+  const g = sc.g;
+  const v = Math.abs(s.v0);
   const x0 = -sc.structureW;
-  const x1 = Math.max(x0 + sc.minView.w, d.xLand + 2 * sc.ball.d, 4 * sc.ball.d);
-  const y1 = Math.max(sc.minView.h, d.yMax + 2 * sc.ball.d, s.h + 2 * sc.ball.d);
+  const reach = s.mode === 'vertical' ? 0 : (v / g) * Math.sqrt(v * v + 2 * g * s.h);
+  const top = s.h + (s.mode === 'horizontal' ? 0 : (v * v) / (2 * g));
+  const x1 = Math.max(x0 + sc.minView.w, ladderCeil(1.1 * reach + 2 * sc.ball.d));
+  const y1 = Math.max(sc.minView.h, ladderCeil(1.1 * top + 2 * sc.ball.d));
   return { x0, x1, y0: 0, y1 };
 }
 
@@ -50,15 +66,21 @@ export function arrowGeometry(lay, s) {
   return { len, dir: { x: Math.cos(a), y: -Math.sin(a) } };
 }
 
+// α loks vismaz 30 px aiz bultas gala, lai α rokturis neaizsegtu v₀ rokturi.
+export function arcRadius(len) {
+  return Math.max(ARC_R, len + 30);
+}
+
 export function handleAnchors(lay, s) {
   const p = launchPoint(lay, s);
   const { len, dir } = arrowGeometry(lay, s);
   const left = lay.toScreen(-SCALES[s.scale].structureW, 0).x;
   const a = (s.alphaDeg * Math.PI) / 180;
+  const R = arcRadius(len);
   return {
     h: { x: left - DIM_GAP, y: p.y },
     v0: { x: p.x + dir.x * len, y: p.y + dir.y * len },
-    alpha: { x: p.x + ARC_R * Math.cos(a), y: p.y - ARC_R * Math.sin(a) },
+    alpha: { x: p.x + R * Math.cos(a), y: p.y - R * Math.sin(a) },
   };
 }
 
@@ -181,8 +203,18 @@ function drawWorldGrid(ctx, lay, m, c) {
   ctx.stroke();
   const dec = decimalsOf(label);
   const u = m.derived.sc.unit;
-  for (const x of xs) text(ctx, formatNumber(x, dec, m.lang), lay.toScreen(x, 0).x, gy + 30, { font: FONT_TICK, color: c.inkDim, align: 'center' });
-  for (const y of ys) if (y > 0) text(ctx, formatNumber(y, dec, m.lang), lay.width - 6, lay.toScreen(0, y).y - 3, { font: FONT_TICK, color: c.inkDim, align: 'right' });
+  ctx.font = FONT_TICK;
+  for (const x of xs) {
+    const str = formatNumber(x, dec, m.lang);
+    const px = lay.toScreen(x, 0).x;
+    const half = ctx.measureText(str).width / 2;
+    if (px - half < 2 || px + half > lay.width - 2) continue; // nepilnu skaitli pie malas nerāda
+    text(ctx, str, px, gy + 30, { font: FONT_TICK, color: c.inkDim, align: 'center' });
+  }
+  for (const y of ys) {
+    const py = lay.toScreen(0, y).y - 3;
+    if (y > 0 && py > 26) text(ctx, formatNumber(y, dec, m.lang), lay.width - 6, py, { font: FONT_TICK, color: c.inkDim, align: 'right' }); // augšā vieta „y, cm”
+  }
   text(ctx, `x, ${u}`, lay.width - 6, gy + 44, { font: FONT_TICK, color: c.inkDim, align: 'right' });
   text(ctx, `y, ${u}`, lay.width - 6, 14, { font: FONT_TICK, color: c.inkDim, align: 'right' });
 }
@@ -257,29 +289,50 @@ function drawOrigin(ctx, lay, m, c) {
   text(ctx, 'x', o.x + 40, o.y - 4, { color: c.inkDim });
   text(ctx, 'y', o.x + 5, o.y - 40, { color: c.inkDim });
   const key = m.settings.h === 0 ? 'scene.originLaunch' : 'scene.origin';
-  text(ctx, m.t(key), o.x + 4, o.y + 16, { color: c.inkDim, bg: c.field });
+  const str = m.t(key);
+  ctx.font = FONT_LABEL;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
+  const w = ctx.measureText(str).width;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  text(ctx, str, Math.max(4, Math.min(o.x + 4, lay.width - 4 - w)), o.y + 16, { color: c.inkDim, spacing: '1px', bg: c.field });
 }
 
+// Katrs vārds savā rindā: pa kreisi no sākumpunkta (zem galda virsmas) vai, ja tur līdz h izmēru
+// līnijai nav vietas, pa labi no tā; ja līdz zemei nav vietas — virs sākumpunkta.
 function drawLaunchLabel(ctx, lay, m, c) {
-  if (m.settings.h === 0) return;
-  const p = launchPoint(lay, m.settings);
-  text(ctx, m.t('scene.launch'), p.x - 8, p.y + 28, { color: c.inkDim, align: 'right', spacing: '1px', bg: c.field }); // zem galda virsmas
+  const s = m.settings;
+  if (s.h === 0) return;
+  const p = launchPoint(lay, s);
+  const words = m.t('scene.launch').split(' ');
+  ctx.font = FONT_LABEL;
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
+  const wMax = Math.max(...words.map((w) => ctx.measureText(w).width));
+  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+  const dimX = lay.toScreen(-m.derived.sc.structureW, 0).x - DIM_GAP;
+  const left = wMax + 4 <= p.x - 8 - (dimX + 8);
+  const slabPx = left && s.scale === 'table' ? TABLE_DRAW.slab * lay.tr.scale : 0;
+  const below = p.y + slabPx + 14;
+  const fits = below + 12 * (words.length - 1) <= lay.toScreen(0, 0).y - 4;
+  const y0 = fits ? below : p.y - 10 - 12 * (words.length - 1);
+  const x = left ? p.x - 8 : p.x + 8;
+  words.forEach((w, i) => text(ctx, w, x, y0 + 12 * i, { color: c.inkDim, align: left ? 'right' : 'left', spacing: '1px', bg: c.field }));
 }
 
 function drawVelocity(ctx, lay, m, c) {
   const s = m.settings;
   const p = launchPoint(lay, s);
+  const { len, dir } = arrowGeometry(lay, s);
   if (s.mode === 'oblique') {
+    const R = arcRadius(len);
     stroke(ctx, c.hairline);
     ctx.setLineDash([4, 4]);
-    line(ctx, p.x, p.y, p.x + ARC_R + 10, p.y);
+    line(ctx, p.x, p.y, p.x + R + 10, p.y);
     ctx.setLineDash([]);
     stroke(ctx, c.ink);
     ctx.beginPath();
-    ctx.arc(p.x, p.y, ARC_R, (-s.alphaDeg * Math.PI) / 180, 0);
+    ctx.arc(p.x, p.y, R, (-s.alphaDeg * Math.PI) / 180, 0);
     ctx.stroke();
   }
-  const { len, dir } = arrowGeometry(lay, s);
   if (len < 1) return;
   stroke(ctx, c.ink);
   ctx.lineWidth = 1.5;
@@ -290,16 +343,18 @@ function drawVelocity(ctx, lay, m, c) {
 function drawBall(ctx, lay, m, c, pos, hollow) {
   const sc = m.derived.sc;
   const ctr = lay.toScreen(pos.x, pos.y);
-  const R = Math.max(3, (sc.ball.d / 2) * lay.tr.scale);
+  const R = Math.max(5, (sc.ball.d / 2) * lay.tr.scale); // sīka bumbiņa tomēr redzama
   ctx.beginPath();
   ctx.arc(ctr.x, ctr.y, R, 0, Math.PI * 2);
   if (hollow) {
     ctx.fillStyle = c.field;
     ctx.fill();
-    stroke(ctx, c.inkDim);
+    stroke(ctx, c.ink);
+    ctx.lineWidth = 1.5;
     ctx.setLineDash([3, 2]);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.lineWidth = 1;
     return;
   }
   ctx.fillStyle = c.mat[sc.ball.material];

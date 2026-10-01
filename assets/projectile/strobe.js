@@ -1,12 +1,13 @@
 import { SCALES, TABLE_DRAW } from './scales.js';
 import { gridSteps, ticks } from '../measure/world-grid.js';
 import { toScreen } from '../measure/zoom-pan.js';
-import { openStrobeShell, exportSizeFor, canvasToPNG } from '../measure/strobe-view.js';
+import { openStrobeShell, exportSizeFor, canvasToPNG, EXPORT_MAX_AREA } from '../measure/strobe-view.js';
 import { formatNumber, decimalsOf } from '../measure/format.js';
 import { tableModel } from './results.js';
 
-export const CAPTION_PX = 140;
 export const MARGIN_PX = 40;
+export const EXPORT_MIN_W = 1600; // px — lai paraksts PNG attēlā ietilpst dažās rindās
+const EXPORT_FS = 2.2;
 const MONO = "'IBM Plex Mono', ui-monospace, monospace";
 const SANS = "'IBM Plex Sans', system-ui, sans-serif";
 
@@ -33,7 +34,7 @@ export function strobeWorldBox(settings, points) {
 }
 
 export function exportOptions(sc) {
-  return { pref: sc.exportPx.pref, min: sc.exportPx.min, extraW: 2 * MARGIN_PX, extraH: CAPTION_PX + 2 * MARGIN_PX };
+  return { pref: sc.exportPx.pref, min: sc.exportPx.min, extraW: 2 * MARGIN_PX };
 }
 
 function wrapWords(ctx, textStr, maxW) {
@@ -49,6 +50,37 @@ function wrapWords(ctx, textStr, maxW) {
   }
   if (line) lines.push(line);
   return lines;
+}
+
+// Paraksta rindas, aplauztas platumā width, un to augstums (arī virsraksta rinda tiek aplauzta).
+export function captionLayout(ctx, lines, width, fs) {
+  const pad = 8 * fs;
+  const maxW = Math.max(200 * fs, width - 2 * pad);
+  ctx.font = `600 ${12 * fs}px ${MONO}`;
+  const head = wrapWords(ctx, lines[0], maxW);
+  const headW = Math.max(...head.map((l) => ctx.measureText(l).width));
+  ctx.font = `${11 * fs}px ${SANS}`;
+  const rest = lines.slice(1).flatMap((ln) => wrapWords(ctx, ln, maxW));
+  const restW = Math.max(0, ...rest.map((l) => ctx.measureText(l).width));
+  const lineH = 16 * fs;
+  return {
+    head, rest, pad, lineH,
+    width: Math.min(width, Math.max(headW, restW) + 2 * pad),
+    height: pad + lineH * (head.length + rest.length) + pad / 2,
+  };
+}
+
+function drawCaption(ctx, cap, c, fs) {
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = c.field;
+  ctx.fillRect(0, 0, cap.width, cap.height);
+  ctx.fillStyle = c.ink;
+  ctx.font = `600 ${12 * fs}px ${MONO}`;
+  cap.head.forEach((l, i) => ctx.fillText(l, cap.pad, cap.pad + cap.lineH * i));
+  ctx.fillStyle = c.inkDim;
+  ctx.font = `${11 * fs}px ${SANS}`;
+  cap.rest.forEach((l, i) => ctx.fillText(l, cap.pad, cap.pad + cap.lineH * (cap.head.length + i)));
 }
 
 function labelBox(ctx, str, x, y, align, c, fs) {
@@ -140,10 +172,12 @@ function drawBall(ctx, ctr, rPx, o, fs, hollow) {
   ctx.beginPath();
   ctx.arc(ctr.x, ctr.y, rPx, 0, Math.PI * 2);
   if (hollow) {
-    ctx.strokeStyle = c.inkDim;
+    ctx.strokeStyle = c.ink;
+    ctx.lineWidth = 1.5 * fs;
     ctx.setLineDash([3 * fs, 2 * fs]);
     ctx.stroke();
     ctx.setLineDash([]);
+    ctx.lineWidth = fs;
   } else {
     ctx.globalAlpha = 0.25;
     ctx.fillStyle = mat;
@@ -187,7 +221,7 @@ export function drawStrobe(ctx, o) {
   drawStructure(ctx, o, fs);
 
   // bumbiņas un numuri 0, 1, 2 …
-  const rPx = Math.max(2 * fs, (sc.ball.d / 2) * tr.scale);
+  const rPx = Math.max(4 * fs, (sc.ball.d / 2) * tr.scale); // sīka bumbiņa tomēr redzama
   for (const p of points.second) drawBall(ctx, toScreen(tr, p.x, p.y), rPx, o, fs, true);
   ctx.font = `${11 * fs}px ${MONO}`;
   ctx.textBaseline = 'alphabetic';
@@ -207,26 +241,7 @@ export function drawStrobe(ctx, o) {
 
   // paraksts (ekrāna telpā)
   const lines = o.captionLines ?? [];
-  if (lines.length) {
-    const pad = 8 * fs;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.font = `600 ${12 * fs}px ${MONO}`;
-    const head = lines[0];
-    const headW = ctx.measureText(head).width;
-    ctx.font = `${11 * fs}px ${SANS}`;
-    const rest = lines.slice(1).flatMap((ln) => wrapWords(ctx, ln, Math.max(200, width - 2 * pad)));
-    const restW = Math.max(0, ...rest.map((ln) => ctx.measureText(ln).width));
-    const lineH = 16 * fs;
-    ctx.fillStyle = c.field;
-    ctx.fillRect(0, 0, Math.min(width, Math.max(headW, restW) + 2 * pad), pad + lineH * (1 + rest.length) + pad / 2);
-    ctx.fillStyle = c.ink;
-    ctx.font = `600 ${12 * fs}px ${MONO}`;
-    ctx.fillText(head, pad, pad);
-    ctx.fillStyle = c.inkDim;
-    ctx.font = `${11 * fs}px ${SANS}`;
-    rest.forEach((ln, i) => ctx.fillText(ln, pad, pad + lineH * (i + 1)));
-  }
+  if (lines.length) drawCaption(ctx, captionLayout(ctx, lines, width, fs), c, fs);
   ctx.restore();
 }
 
@@ -238,7 +253,25 @@ export function openProjectileStrobe(o) {
   const box = strobeWorldBox(s, { main: perRun.flatMap((p) => p.main), second: perRun.flatMap((p) => p.second) });
   const settingsLine = tableModel(table, { t, lang }).settingsLine;
   const eo = exportOptions(sc);
-  const minSize = { w: Math.ceil((box.x1 - box.x0) * eo.min + eo.extraW), h: Math.ceil((box.y1 - box.y0) * eo.min + eo.extraH) };
+  const probe = document.createElement('canvas').getContext('2d'); // teksta mērīšanai
+  let failedSize = { w: 0, h: 0 };
+
+  // PNG: paraksts izmērīts iepriekš un novietots virs zīmējuma; attēls vismaz EXPORT_MIN_W plats.
+  function exportPlan(lines) {
+    const capH = Math.ceil(captionLayout(probe, lines, EXPORT_MIN_W, EXPORT_FS).height);
+    const opts = { ...eo, extraH: capH + 2 * MARGIN_PX };
+    const size = exportSizeFor(box, opts);
+    const w = size ? Math.max(size.w, EXPORT_MIN_W) : 0;
+    if (!size || w * size.h > EXPORT_MAX_AREA) {
+      failedSize = {
+        w: Math.max(EXPORT_MIN_W, Math.ceil((box.x1 - box.x0) * eo.min + eo.extraW)),
+        h: Math.ceil((box.y1 - box.y0) * eo.min + opts.extraH),
+      };
+      return null;
+    }
+    const tx = (w - (box.x1 - box.x0) * size.scale) / 2 - box.x0 * size.scale;
+    return { w, h: size.h, tr: { scale: size.scale, tx, ty: capH + MARGIN_PX + box.y1 * size.scale } };
+  }
 
   const captionLines = (i) => {
     const lines = [t('strobe.caption', { dt: formatNumber(s.dt, decimalsOf(s.dt), lang), n: table.index, r: i + 1 }), settingsLine];
@@ -257,18 +290,18 @@ export function openProjectileStrobe(o) {
     runIndex: o.runIndex,
     check: { checked: o.grid, disabled: !!o.gridLocked },
     box,
+    fitTop: (w) => Math.ceil(captionLayout(probe, captionLines(o.runIndex), w, 1).height) + 8,
     draw(ctx, v) {
       drawStrobe(ctx, { ...base(v.runIndex, v.checked), tr: v.tr, width: v.width, height: v.height, fontScale: 1 });
     },
     exportPNG({ runIndex, checked }) {
-      const size = exportSizeFor(box, eo);
-      if (!size) return Promise.resolve(null);
-      const tr = { scale: size.scale, tx: MARGIN_PX - box.x0 * size.scale, ty: CAPTION_PX + MARGIN_PX + box.y1 * size.scale };
-      return canvasToPNG(size.w, size.h, (ctx) => drawStrobe(ctx, { ...base(runIndex, checked), tr, width: size.w, height: size.h, fontScale: 2.2 }));
+      const plan = exportPlan(captionLines(runIndex));
+      if (!plan) return Promise.resolve(null);
+      return canvasToPNG(plan.w, plan.h, (ctx) => drawStrobe(ctx, { ...base(runIndex, checked), tr: plan.tr, width: plan.w, height: plan.h, fontScale: EXPORT_FS }));
     },
     exportFilename: (i) => `sviedieni-stroboskops-${table.index}-${i + 1}.png`,
-    exportFailedText: () => t('strobe.exportFailed', minSize),
-    onExportFailed: () => o.onExportFailed?.(minSize),
+    exportFailedText: () => t('strobe.exportFailed', failedSize),
+    onExportFailed: () => o.onExportFailed?.(failedSize),
     onCheckChange: (on) => o.onGridChange?.(on),
     onClose: o.onClose,
   });

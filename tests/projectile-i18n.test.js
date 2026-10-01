@@ -21,10 +21,10 @@ test('typography: no straight quotes, no "...", no spaced hyphen', () => {
 
 test('dynamic key families exist', () => {
   const need = [];
-  for (const m of MODES) need.push(`mode.${m}`, `mode.${m}.name`, `mode.${m}.hint`, `set.mode.${m}`, `notice.noFlight.${m}`);
+  for (const m of MODES) need.push(`mode.${m}`, `mode.${m}.name`, `mode.${m}.hint`, `set.mode.${m}`, `notice.noFlight.${m}`, `notice.short.${m}`);
   for (const k of Object.keys(SCALES)) need.push(`scale.${k}`, `set.scale.${k}`);
   for (const k of ['mode', 'scale', 'second', 'grid']) need.push(`lock.${k}`);
-  for (const r of ['not_number', 'out_of_range', 'not_allowed', 'h_clamped', 'v0_clamped', 'dt_scale', 'none']) need.push(`url.${r}`);
+  for (const r of ['not_number', 'out_of_range', 'not_allowed', 'h_range', 'v0_clamped', 'dt_scale', 'rounded', 'none']) need.push(`url.${r}`);
   for (const key of need) assert.ok(key in STRINGS.lv, `missing ${key}`);
 });
 
