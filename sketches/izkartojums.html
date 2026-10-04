@@ -79,7 +79,7 @@ button { font: inherit; color: inherit; }
 .res table.mini td.iv { color: var(--ink); }
 .res .open { font-size: 9px; letter-spacing: .1em; color: var(--ink-dim); padding: 4px 10px 0; }
 .runbtn { position: absolute; transform: translateX(-50%); display: flex; gap: 6px; }
-.runbtn .btn { background: var(--sheet); border-color: var(--ink); font-weight: 600; padding: 8px 14px; }
+.runbtn .btn { background: var(--sheet); border-color: var(--ink); font-weight: 600; font-size: calc(11px * var(--text, 1)); padding: calc(8px * var(--text, 1)) calc(14px * var(--text, 1)); } /* aug tikai poga, vieta paliek */
 .gear { position: absolute; left: 10px; bottom: 10px; width: 34px; height: 34px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 17px; line-height: 1; } /* zobrats un tā logs neaug līdzi burtiem — pogas paliek zem pirksta */
 .gear:hover, .gear[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
 .gearpop { position: absolute; left: 10px; bottom: 52px; width: 236px; background: var(--sheet); border: 1px solid var(--ink); padding: 10px; display: grid; gap: 10px; }
@@ -90,7 +90,7 @@ button { font: inherit; color: inherit; }
 .gearpop .btn { padding: 5px 7px; font-size: 10px; }
 .gearpop .ctl { display: flex; align-items: center; gap: 6px; }
 .gearpop .ctl button { min-width: 30px; height: 26px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
-.hud, .runbtn { zoom: var(--text, 1); }
+.hud { zoom: var(--text, 1); }
 .tb { position: absolute; right: 10px; bottom: 10px; display: grid; grid-template-columns: auto auto; border: 1px solid var(--hairline); background: var(--sheet); font-size: 10px; }
 .tb div { padding: 3px 8px; }
 .tb div:nth-child(odd) { border-right: 1px solid var(--hairline); }
@@ -149,7 +149,7 @@ input.dim-range:focus-visible { outline: none; }
     <strong>SKICE · JAUNAIS IZKĀRTOJUMS (piemērs — lodīte, pētījums a(α))</strong>
     <ol>
       <li>Augšā pa kreisi — LIELUMI: īss saraksts (α, h, L; Δt vai Δx, ja tie ir). Uzklikšķini uz maināmā — tieši zem tā atveras slīdnis ar rombiņu un − / +, pārējās rindas noslīd uz leju; rasējums mainās uzreiz. Slīdnis aizveras, vēlreiz uzklikšķinot uz lieluma, ar klikšķi ārpus saraksta vai ar Esc; − / + to nepabīda (fiksēts augstums). Nofiksētie ir pelēki.</li>
-      <li>Poga ir pašā rasējumā, zem slīpnes: pirmo reizi ▶ PALAIST, ▶ AIZIET vai ▶ STARTS (nejauši), tad ↻ ATKĀRTOT 2×, 3× …</li>
+      <li>Zemes līnija vienmēr ir zelta griezumā (61,8 % no augšas); zīmējums nav atkarīgs no burtu izmēra. Poga vienmēr centrēta, mazliet zem zemes: pirmo reizi ▶ PALAIST, ▶ AIZIET vai ▶ STARTS (nejauši), tad ↻ ATKĀRTOT 2×, 3× …</li>
       <li>Augšā pa labi — MĒRĪJUMI: viens liels cipars (palaišanas laikā hronometrs skaita). No 2. mērījuma zem tā parādās maza tabuliņa; uzklikšķini — atveras lielā tabula.</li>
       <li>Lielā tabula krāj sēriju: katram α sava rinda, katram atkārtojumam sava kolonna (4. punkts).</li>
     </ol>
@@ -235,9 +235,11 @@ function results() {
 
 function scene(w, h) {
   // renīte: kreisais gals pacelts; mērogs pēc laukuma
-  const padL = 40, padR = 40, top = h * 0.32, groundY = h * 0.78;
+  const padL = 40, padR = 40, groundY = h * 0.618; // horizonts zelta griezumā; zīmējums nav atkarīgs no burtu izmēra
   const run = w - padL - padR;
-  const scale = Math.min(run / (S.L * Math.cos(rad(S.alpha))), 6) * S.drawScale;
+  const topFree = Math.min(125 * S.text, (groundY - 10) * 0.6); // vieta paneļiem augšā (aug ar burtiem)
+  const rise = Math.max(1e-6, S.L * Math.sin(rad(S.alpha)));
+  const scale = Math.min(run / (S.L * Math.cos(rad(S.alpha))), (groundY - 10 - topFree) / rise, 6) * S.drawScale;
   const len = S.L * scale;
   const x0 = padL + (run - len * Math.cos(rad(S.alpha))) / 2;
   const lowX = x0 + len * Math.cos(rad(S.alpha));
@@ -259,7 +261,7 @@ function scene(w, h) {
     <rect x="${lowX - 70 * Math.cos(rad(S.alpha)) - 5}" y="${lowY + 5 - 70 * Math.sin(rad(S.alpha)) - 5}" width="11" height="11" transform="rotate(45 ${lowX - 70 * Math.cos(rad(S.alpha))} ${lowY + 5 - 70 * Math.sin(rad(S.alpha))})" class="fillsheet"/>
     <circle cx="${ball.x}" cy="${ball.y}" r="14" class="ballf"/>
     <text class="txt" x="${lowX - 34}" y="${lowY - 14}">FINIŠS</text>
-  </svg>`, runAt: { x: (x0 + lowX) / 2, y: groundY + 12 } };
+  </svg>`, runAt: { x: w / 2, y: groundY + 14 } }; // poga vienmēr centrēta, mazliet zem zemes
 }
 
 function slider(key) {
