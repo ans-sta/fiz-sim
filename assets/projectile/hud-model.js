@@ -44,7 +44,7 @@ export function quantityRows(s, { locked, hidden, study, lang, t }) {
   if (s.mode === 'oblique') {
     main.push(range('alpha', 'α', t('dims.alpha'), { min: ALPHA.min, max: ALPHA.max, step: ALPHA.step, value: s.alphaDeg, dec: 0, unit: '°' }));
   }
-  main.push(range('dt', 'Δt', t('dt.label'), { min: SCALE.dt.min, max: SCALE.dt.max, step: SCALE.dt.min, value: s.dt, dec: decimalsOf(SCALE.dt.min), unit: ' s' }));
+  main.push(range('dt', 'Δt', t('dt.label'), { min: SCALE.dt.min, max: SCALE.dt.max, step: SCALE.dt.step, value: s.dt, dec: decimalsOf(SCALE.dt.step), unit: ' s' }));
 
   const more = [choice('mode', t('hud.mode'), t('blk.mode'), s.mode, MODES.map((m) => ({ value: m, label: t(`mode.${m}`) })))];
   if (s.mode === 'horizontal') {
@@ -79,11 +79,11 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
 
   if (!views.table) { // view=strobe&lock=1: skaitli skolēns nolasa tikai attēlā
     vm.valueText = '';
-    vm.note = t('hud.readStrobe');
+    vm.note = t('hud.readStrobe', { q: vm.symbol });
     return vm;
   }
   const seen = run ? run.samples.filter((p) => p.t + run.truth.tau <= simT + 1e-9) : [];
-  const dec = decimalsOf(SCALE.dt.min);
+  const dec = decimalsOf(SCALE.dt.step);
   const pos = (p) => (vertical ? `y = ${f(p.y, 1)} m` : `x = ${f(p.x, 1)} m; y = ${f(p.y, 1)} m`);
   vm.rows = seen.slice(-LIVE_ROWS).map((p) => ({ a: `t = ${f(p.t, dec)} s`, b: pos(p) }));
   if (seen.length) {

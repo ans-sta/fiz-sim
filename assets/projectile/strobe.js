@@ -163,7 +163,10 @@ function drawTapes(ctx, o, fs) {
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'center';
   ctx.fillStyle = c.inkDim;
-  for (const tp of list) ctx.fillText(tp.ch, toScreen(tr, tp.x, 0).x, yTop + 16 * fs);
+  // virs augstākā zibšņa uzraksta (numurs ~ 12 px virs zibšņa), ne zemāk par kastes augšu + 16
+  const yFlash = Math.min(Infinity, ...points.main.map((p) => toScreen(tr, p.x, p.y).y));
+  const yGlyph = Math.max(14 * fs, Math.min(yTop + 16 * fs, yFlash - 24 * fs));
+  for (const tp of list) ctx.fillText(tp.ch, toScreen(tr, tp.x, 0).x, yGlyph);
 }
 
 function drawBall(ctx, ctr, rPx, o, fs, hollow) {

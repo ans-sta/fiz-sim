@@ -63,5 +63,8 @@ test('view=strobe&lock=1: no number, a note to read the strobe image', () => {
   const s = defaultSettings();
   const vm = measureVM({ settings: s, running: null, lastRun: null, shown: null, shownModel: null, tables: [], shownKey: '', views: { table: false, strobe: true }, lang: 'lv', t: lv });
   assert.equal(vm.valueText, '');
-  assert.equal(vm.note, lv('hud.readStrobe'));
+  assert.equal(vm.note, lv('hud.readStrobe', { q: 'x' }));
+  assert.match(vm.note, /^x nolasi/);
+  const vert = measureVM({ settings: defaultSettings('vertical'), running: null, lastRun: null, shown: null, shownModel: null, tables: [], shownKey: '', views: { table: false, strobe: true }, lang: 'lv', t: lv });
+  assert.match(vert.note, /^y nolasi/);
 });

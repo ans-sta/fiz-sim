@@ -232,15 +232,39 @@ function drawWorldGrid(ctx, lay, m, c) {
     const y = gy + 30;
     if (free({ l: px - half, r: px + half, t: y - 9, b: y + 2 })) text(ctx, str, px, y, { font: FONT_TICK, color: c.inkDim, align: 'center' });
   }
+  let topY = null; // augstākā un zemākā redzamā y skaitļa līnija — „y, m” virs augstākā, citādi zem zemākā
+  let lowY = null;
   for (const y of ys) {
     if (y <= 0) continue;
     const str = formatNumber(y, dec, m.lang);
     const py = lay.toScreen(0, y).y - 3;
     const w = ctx.measureText(str).width;
-    if (py > 26 && free({ l: lay.width - 6 - w, r: lay.width - 6, t: py - 9, b: py + 2 })) text(ctx, str, lay.width - 6, py, { font: FONT_TICK, color: c.inkDim, align: 'right' }); // augšā vieta „y, m”
+    if (py > 26 && free({ l: lay.width - 6 - w, r: lay.width - 6, t: py - 9, b: py + 2 })) {
+      text(ctx, str, lay.width - 6, py, { font: FONT_TICK, color: c.inkDim, align: 'right' });
+      if (topY === null || py < topY) topY = py;
+      if (lowY === null || py > lowY) lowY = py;
+    }
   }
-  text(ctx, `x, ${u}`, lay.width - 6, gy + 44, { font: FONT_TICK, color: c.inkDim, align: 'right' });
-  text(ctx, `y, ${u}`, lay.width - 6, 14, { font: FONT_TICK, color: c.inkDim, align: 'right' });
+  // Mērvienību uzraksti pakļauti tam pašam noteikumam kā skaitļi: nezīmē zem paneļa vai pogas.
+  let drawnUnit = false;
+  const unit = (str, y, xs0) => {
+    drawnUnit = false;
+    const w = ctx.measureText(str).width;
+    for (const xr of xs0) {
+      if (free({ l: xr - w, r: xr, t: y - 9, b: y + 2 })) {
+        text(ctx, str, xr, y, { font: FONT_TICK, color: c.inkDim, align: 'right' });
+        drawnUnit = true;
+        return;
+      }
+    }
+  };
+  const rights = [];
+  for (let xr = lay.width - 6; xr > 80; xr -= 12) rights.push(xr); // pa kreisi, līdz ir brīva vieta
+  unit(`x, ${u}`, gy + 44, rights);
+  if (topY !== null) {
+    unit(`y, ${u}`, topY - 12, [lay.width - 6]);
+    if (!drawnUnit) unit(`y, ${u}`, lowY + 13, [lay.width - 6]);
+  }
 }
 
 function drawGround(ctx, lay, c) {
