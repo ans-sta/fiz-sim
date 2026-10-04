@@ -12,7 +12,7 @@ test('the keys the shared modules need are there', () => {
     'url.not_number', 'url.out_of_range', 'url.not_allowed', 'url.bad_list', 'url.none', 'url.listHint',
     'gear.open', 'gear.theme', 'gear.light', 'gear.dark', 'gear.lang', 'gear.text', 'gear.textDown', 'gear.textUp',
     'gear.draw', 'gear.drawDown', 'gear.drawUp', 'gear.screen', 'gear.fullscreen',
-    'q.A', 'q.T', 'q.lambda', 'q.lines', 'q.lines.on', 'q.lines.off', 'rel.title', 'rel.f', 'rel.omega', 'rel.v', 'rel.phi',
+    'q.A', 'q.v', 'q.lambda', 'q.lines', 'q.lines.on', 'q.lines.off', 'rel.title', 'rel.T', 'rel.f', 'rel.omega', 'rel.phi',
     'view.circle', 'view.trans', 'view.long', 'run.pause', 'run.play', 'hint.rotate', 'scene.aria']) {
     assert.ok(k in STRINGS.lv, `missing ${k}`);
   }

@@ -127,10 +127,10 @@ Parameters of `harmonic-motion.html`, given in the URL. They are starting values
 | --------- | ------- |
 | `view=circle\|trans\|long` | Starting state: circle (end view), transverse wave, longitudinal wave. Default `circle` |
 | `A=<number>` | Amplitude, cm, 5–40 (step 1) |
-| `T=<number>` | Period, s, 1–8 (step 0.5) |
+| `v=<number>` | Wave speed, cm/s, −100…100 (step 5); negative — the wave runs to the left and the circle turns the other way. The period follows: T = λ/v |
 | `lambda=<number>` | Wavelength, cm, 50–200 (step 10) |
 | `lines=0` | Helper lines hidden at start |
 
 Example (longitudinal wave, long period):
 
-    harmonic-motion.html?view=long&T=6&lambda=80
+    harmonic-motion.html?view=long&v=10&lambda=80

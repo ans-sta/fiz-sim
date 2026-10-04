@@ -1,7 +1,7 @@
 // assets/oscillation/scene.js
 // Zīmē ainu: ass, riņķu kontūras (palīglīnijas), 41 punkts, oranžais pirmais; palīglīnijas pa stāvokļiem; izmēru līnijas A un λ.
 // Visas koordinātas nāk no model.js projekcijas; šeit tikai pikseļi un krāsas. Caurspīdīgums pārejās: no pozas (0…1).
-import { AXIS_CM, CREST, COMPRESSION, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpan, toScreen, project, point3D } from './model.js';
+import { AXIS_CM, CREST, COMPRESSION, isMarked, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpan, toScreen, project, point3D } from './model.js';
 
 const MONO = 'ui-monospace, monospace';
 const fontLabel = (k = 1) => `400 ${11 * k}px "IBM Plex Mono", ${MONO}`;
@@ -90,7 +90,7 @@ export function drawScene(ctx, lay, m) {
   if (s.lines) {
     // riņķu kontūras: no gala — viens aplis; no sāna — svītras (vertikālas → gar asi)
     for (const p of pts) {
-      strokeStyle(ctx, c.hairline, p.i === 0 ? 0.9 : 0.45);
+      strokeStyle(ctx, c.hairline, isMarked(p.i, s.lambda) ? 0.9 : 0.45);
       path(ctx, circleOutline(p.z, s.A, angles).map(S));
       ctx.stroke();
     }
@@ -145,7 +145,7 @@ export function drawScene(ctx, lay, m) {
       const combTop = S({ u: 0, w: s.A }).y;
       const combBot = S({ u: 0, w: -s.A }).y;
       for (const p of pts) {
-        strokeStyle(ctx, p.i === 0 ? c.accent : c.hairline, dimLong * (p.i === 0 ? 0.9 : 0.7));
+        strokeStyle(ctx, isMarked(p.i, s.lambda) ? c.accent : c.hairline, dimLong * (isMarked(p.i, s.lambda) ? 0.9 : 0.7));
         const x = S(p).x;
         path(ctx, [{ x, y: combTop }, { x, y: combBot }]);
         ctx.stroke();
@@ -172,7 +172,8 @@ export function drawScene(ctx, lay, m) {
   }
 
   // punkti: vispirms pārējie, oranžais pēdējais (virsū)
-  for (let i = pts.length - 1; i >= 1; i--) dot(ctx, S(pts[i]), R_POINT, c.ink, 0.9);
-  dot(ctx, S(pts[0]), R_FIRST, c.accent, 1);
+  // oranži — pirmais un visi ar to pašu fāzi (z = λ, 2λ …); tie zīmēti pēdējie, virsū
+  for (let i = pts.length - 1; i >= 1; i--) if (!isMarked(i, s.lambda)) dot(ctx, S(pts[i]), R_POINT, c.ink, 0.9);
+  for (let i = pts.length - 1; i >= 0; i--) if (isMarked(i, s.lambda)) dot(ctx, S(pts[i]), R_FIRST, c.accent, 1);
   ctx.restore();
 }

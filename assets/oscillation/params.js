@@ -1,25 +1,25 @@
-// Saite skolotājam (spec. 6): view, A, T, lambda, lines — tikai sākuma vērtības; nezināmos ignorē, ārpus robežām — nogriež ar paziņojumu.
+// Saite skolotājam (spec. 6): view, A, lambda, v, lines — tikai sākuma vērtības; nezināmos ignorē, ārpus robežām — nogriež ar paziņojumu.
 import { parseParams } from '../measure/url-params.js';
-import { VIEWS, RANGES, defaultSettings, withA, withT, withLambda, withLines } from './model.js';
+import { VIEWS, RANGES, defaultSettings, withA, withLambda, withV, withLines } from './model.js';
 
 export const PARAM_SCHEMA = {
   view: { type: 'enum', values: VIEWS },
   A: { type: 'number', min: RANGES.A.min, max: RANGES.A.max },
-  T: { type: 'number', min: RANGES.T.min, max: RANGES.T.max },
   lambda: { type: 'number', min: RANGES.lambda.min, max: RANGES.lambda.max },
+  v: { type: 'number', min: RANGES.v.min, max: RANGES.v.max },
   lines: { type: 'bool' },
 };
 
 export function settingsFromURL(search) {
   const p = parseParams(search, PARAM_SCHEMA);
-  const v = p.values;
+  const q = p.values;
   let s = defaultSettings();
-  if ('A' in v) s = withA(s, v.A);
-  if ('T' in v) s = withT(s, v.T);
-  if ('lambda' in v) s = withLambda(s, v.lambda);
-  if ('lines' in v) s = withLines(s, v.lines);
-  const view = v.view ?? 'circle';
-  const finalValue = { view, A: s.A, T: s.T, lambda: s.lambda, lines: s.lines ? '1' : '0' };
+  if ('A' in q) s = withA(s, q.A);
+  if ('lambda' in q) s = withLambda(s, q.lambda);
+  if ('v' in q) s = withV(s, q.v);
+  if ('lines' in q) s = withLines(s, q.lines);
+  const view = q.view ?? 'circle';
+  const finalValue = { view, A: s.A, lambda: s.lambda, v: s.v, lines: s.lines ? '1' : '0' };
   const warnings = p.warnings.map((w) => ('used' in w ? w : { ...w, used: finalValue[w.param] }));
   return { settings: s, view, warnings };
 }

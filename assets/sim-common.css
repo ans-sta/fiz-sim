@@ -417,6 +417,11 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .q-row .q-check.on { background: var(--ink); border-color: var(--ink); color: var(--sheet); } /* tintes krāsā, ne akcenta — nav svarīgs (Ansis) */
 .layout-hud .q-row .q-check.on::after { content: "✓"; }
 .layout-hud .q-row.check:hover .q-check { border-color: var(--accent); }
+/* čekboksa rinda: vārds, tad kastīte; teksts virsraksta izmērā, ne lielumu (Ansis 04.10) */
+.layout-hud .q-row.check { font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); }
+.layout-hud .q-row.check:hover { color: var(--ink); }
+.layout-hud .q-row.check .q-check { order: 1; margin-left: calc(2px * var(--hud)); }
+.layout-hud .q-row.check .q-val { display: none; }
 .layout-hud .q-list.narrow { width: calc(150px * var(--hud)); } /* S-01: īsas rindas, panelis šaurāks (Ansis 04.10) */
 @media (max-width: 520px) { .layout-hud .hud-title { font-size: calc(9.5px * min(var(--hud), 1.15)); white-space: nowrap; } } /* šaurā telefonā virsraksts vienā rindā */
 .layout-hud .q-sep { border-top: 1px solid var(--hairline); margin: calc(3px * var(--hud)) calc(10px * var(--hud)); }

@@ -10,8 +10,8 @@ export const SPACING_CM = 5;
 export const N_POINTS = AXIS_CM / SPACING_CM + 1; // 41
 export const RANGES = {
   A: { min: 5, max: 40, step: 1 },
-  T: { min: 1, max: 8, step: 0.5 },
   lambda: { min: 50, max: 200, step: 10 },
+  v: { min: -100, max: 100, step: 5 }, // cm/s; zīme — virziens (negatīvs: vilnis pa kreisi, aplis pretēji); Ansis 04.10
 };
 export const VIEWS = ['circle', 'trans', 'long'];
 export const VIEW_POSE = { circle: { kappa: 0, theta: 0 }, trans: { kappa: 1, theta: 0 }, long: { kappa: 1, theta: 1 } };
@@ -22,7 +22,7 @@ export const COMPRESSION = 0; // fāze, ap kuru garenvilnī ir sablīvējums (�
 const BAND_CM = 2 * RANGES.A.max * 1.15; // augstums, kam jāietilpst starp paneļiem un pogām (A nemaina mērogu)
 
 export function defaultSettings() {
-  return { A: 30, T: 4, lambda: 100, lines: true }; // A 30 (bija 20): sākuma aplis lielāks (Ansis 04.10)
+  return { A: 30, lambda: 100, v: 25, lines: true }; // A 30 (bija 20): sākuma aplis lielāks; v 25 cm/s ⇒ T = 4 s (Ansis 04.10)
 }
 
 function withRange(s, key, v) {
@@ -32,20 +32,27 @@ function withRange(s, key, v) {
   return next === s[key] ? s : { ...s, [key]: next };
 }
 export const withA = (s, v) => withRange(s, 'A', v);
-export const withT = (s, v) => withRange(s, 'T', v);
 export const withLambda = (s, v) => withRange(s, 'lambda', v);
+export const withV = (s, v) => withRange(s, 'v', v);
 export const withLines = (s, on) => (Boolean(on) === s.lines ? s : { ...s, lines: Boolean(on) });
 
+// Sakarības no mainīgajiem λ un v: T = λ/|v| (v = 0 → ∞, kustība stāv), f = |v|/λ, ω = 2π|v|/λ.
 export function derived(s) {
-  return { f: 1 / s.T, omega: TAU / s.T, v: s.lambda / s.T };
+  const speed = Math.abs(s.v);
+  return { T: speed ? s.lambda / speed : Infinity, f: speed / s.lambda, omega: TAU * speed / s.lambda, v: s.v };
 }
 
-// Laiku glabā kā fāzi: mainot T, mainās tikai ātrums, punkti nelec.
-export function advancePhase(phase, dt, T) {
-  return (((phase + TAU * dt / T) % TAU) + TAU) % TAU;
+// Laiku glabā kā fāzi: mainot v vai λ, mainās tikai ātrums, punkti nelec; v < 0 — fāze iet atpakaļ.
+export function advancePhase(phase, dt, { v, lambda }) {
+  return (((phase + TAU * v * dt / lambda) % TAU) + TAU) % TAU;
 }
 
 export const pointZ = (i) => i * SPACING_CM;
+// Punkti ar tādu pašu fāzi kā pirmajam (z = λ, 2λ …) — arī oranži: aplī sakrīt, viļņos stāv tieši λ attālumā (Ansis 04.10).
+export const isMarked = (i, lambda) => {
+  const k = pointZ(i) / lambda;
+  return Math.abs(k - Math.round(k)) < 1e-9;
+};
 export const phaseAt = (phase0, z, lambda) => phase0 - TAU * z / lambda;
 
 export function point3D(phi, z, A, thetaRad) {

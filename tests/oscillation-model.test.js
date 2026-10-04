@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AXIS_CM, N_POINTS, RANGES, VIEWS, VIEW_POSE, TURN_S, TAU, CREST, COMPRESSION,
-  defaultSettings, withA, withT, withLambda, withLines, derived, advancePhase, pointZ, phaseAt,
+  defaultSettings, withA, withV, withLambda, withLines, derived, advancePhase, pointZ, phaseAt, isMarked,
   point3D, project, viewCenterU, smooth, poseAngles, advancePose, settled,
   scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM,
 } from '../assets/oscillation/model.js';
@@ -14,10 +14,10 @@ test('constants and defaults from the spec', () => {
   assert.equal(AXIS_CM, 200);
   assert.equal(N_POINTS, 41);
   assert.deepEqual(VIEWS, ['circle', 'trans', 'long']);
-  assert.deepEqual(defaultSettings(), { A: 30, T: 4, lambda: 100, lines: true });
+  assert.deepEqual(defaultSettings(), { A: 30, lambda: 100, v: 25, lines: true });
+  assert.deepEqual(RANGES.v, { min: -100, max: 100, step: 5 });
   assert.deepEqual(RANGES.A, { min: 5, max: 40, step: 1 });
-  assert.deepEqual(RANGES.T, { min: 1, max: 8, step: 0.5 });
-  assert.deepEqual(RANGES.lambda, { min: 50, max: 200, step: 10 });
+    assert.deepEqual(RANGES.lambda, { min: 50, max: 200, step: 10 });
   assert.equal(TURN_S, 1);
 });
 
@@ -28,26 +28,45 @@ test('with*: clamp, round to the step, keep the object when nothing changes', ()
   assert.equal(withA(s, 12.3).A, 12);
   assert.equal(withA(s, 30), s);
   assert.equal(withA(s, NaN), s);
-  assert.equal(withT(s, 2.26).T, 2.5);
-  assert.equal(withT(s, 0.2).T, 1);
+  assert.equal(withV(s, 27).v, 25);
+  assert.equal(withV(s, 500).v, 100);
+  assert.equal(withV(s, -500).v, -100);
+  assert.equal(withV(s, -12.4).v, -10);
   assert.equal(withLambda(s, 55).lambda, 60);
   assert.equal(withLambda(s, 500).lambda, 200);
   assert.equal(withLines(s, false).lines, false);
   assert.equal(withLines(s, true), s);
 });
 
-test('derived: f = 1/T, ω = 2π/T, v = λ/T', () => {
-  const d = derived({ A: 20, T: 4, lambda: 100, lines: true });
+test('derived: T = λ/|v|, f = |v|/λ, ω = 2π|v|/λ; direction does not change them; v = 0 has no period', () => {
+  const d = derived({ A: 20, lambda: 100, v: 25, lines: true });
+  close(d.T, 4);
   close(d.f, 0.25);
   close(d.omega, Math.PI / 2);
   close(d.v, 25);
+  const back = derived({ A: 20, lambda: 100, v: -50, lines: true });
+  close(back.T, 2);
+  close(back.f, 0.5);
+  const still = derived({ A: 20, lambda: 100, v: 0, lines: true });
+  assert.equal(still.T, Infinity);
+  close(still.f, 0);
 });
 
-test('advancePhase: 2π per period, wrapped, and changing T only changes the rate', () => {
-  close(advancePhase(0, 1, 4), Math.PI / 2);
-  close(advancePhase(6, 1, 4), (6 + Math.PI / 2) % TAU);
-  const p = advancePhase(1, 0.1, 4);
-  close(advancePhase(p, 0.1, 8), p + TAU * 0.1 / 8); // no jump when T changes
+test('advancePhase: 2π per period T = λ/v, wrapped; negative v runs backwards; changing v only changes the rate', () => {
+  const s = { v: 25, lambda: 100 };
+  close(advancePhase(0, 1, s), Math.PI / 2);
+  close(advancePhase(6, 1, s), (6 + Math.PI / 2) % TAU);
+  close(advancePhase(1, 0.1, { v: -25, lambda: 100 }), 1 - TAU * 0.025);
+  close(advancePhase(0, 0.1, { v: -25, lambda: 100 }), TAU - TAU * 0.025); // wraps upwards
+  const p = advancePhase(1, 0.1, s);
+  close(advancePhase(p, 0.1, { v: 10, lambda: 100 }), p + TAU * 0.01); // no jump when v changes
+  close(advancePhase(1, 1, { v: 0, lambda: 100 }), 1); // v = 0: nothing moves
+});
+
+test('isMarked: the first point and every point a whole number of wavelengths away', () => {
+  assert.deepEqual([0, 10, 20, 40].map((i) => isMarked(i, 100)), [true, false, true, true]);
+  assert.deepEqual([0, 14, 28, 15].map((i) => isMarked(i, 70)), [true, true, true, false]);
+  assert.deepEqual([0, 20, 40].map((i) => isMarked(i, 200)), [true, false, true]);
 });
 
 test('geometry: circle view is a circle, side view a transverse sine, turned rods a longitudinal wave', () => {

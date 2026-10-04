@@ -2,7 +2,7 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withT, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
+  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withV, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
@@ -54,7 +54,7 @@ const quantities = createQuantityList(hudLeft, {
   }),
   onChange(key, v) {
     const s = state.settings;
-    const next = { A: () => withA(s, v), T: () => withT(s, v), lambda: () => withLambda(s, v), lines: () => withLines(s, v) }[key]?.() ?? s;
+    const next = { A: () => withA(s, v), lambda: () => withLambda(s, v), v: () => withV(s, v), lines: () => withLines(s, v) }[key]?.() ?? s;
     state.settings = next;
     render();
   },
@@ -100,7 +100,8 @@ state.drawScale = gear.drawScale();
 const MOBILE = matchMedia('(max-width: 700px), (max-height: 480px)');
 const foldLabels = () => ({ open: t('hud.unfold'), close: t('hud.fold') });
 hudLeft.classList.add('narrow'); // īsas rindas — panelis šaurāks
-const folds = [createFold(hudLeft, { labels: foldLabels, folded: MOBILE.matches }), createFold(hudRight, { labels: foldLabels, folded: MOBILE.matches })];
+const foldOpts = () => ({ labels: foldLabels, folded: MOBILE.matches, active: () => MOBILE.matches });
+const folds = [createFold(hudLeft, foldOpts()), createFold(hudRight, foldOpts())];
 i18n.onChange(() => folds.forEach((f) => f.repaint()));
 
 // Skatu pogas: APLIS · ŠĶĒRSVILNIS · GARENVILNIS un ⏸/▶ (spec. 4.3)
@@ -162,7 +163,7 @@ function layout() {
 }
 
 function step(dt) {
-  if (!state.paused) state.phase = advancePhase(state.phase, dt, state.settings.T);
+  if (!state.paused) state.phase = advancePhase(state.phase, dt, state.settings);
   state.pose = advancePose(state.pose, state.view, dt);
   render();
 }

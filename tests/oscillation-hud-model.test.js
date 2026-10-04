@@ -8,35 +8,32 @@ import { STRINGS } from '../assets/oscillation/i18n.js';
 const lv = makeT(STRINGS, () => 'lv');
 const en = makeT(STRINGS, () => 'en');
 
-test('quantityRows: A, T, λ sliders and the helper-lines choice, Latvian numbers', () => {
+test('quantityRows: A, λ, v sliders and the helper-lines checkbox under the separator, Latvian numbers', () => {
   const rows = quantityRows(defaultSettings(), { lang: 'lv', t: lv });
-  assert.deepEqual(rows.map((r) => r.key), ['A', 'T', 'lambda', 'lines']);
-  const [A, T, L, lines] = rows;
+  assert.deepEqual(rows.map((r) => r.key), ['A', 'lambda', 'v', 'lines']);
+  const [A, L, V, lines] = rows;
   assert.deepEqual([A.symbol, A.valueText, A.kind, A.state, A.min, A.max, A.step, A.value], ['A', '30 cm', 'range', 'editable', 5, 40, 1, 30]);
-  assert.deepEqual([T.symbol, T.valueText, T.minText, T.maxText], ['T', '4,0 s', '1 s', '8 s']);
   assert.deepEqual([L.symbol, L.valueText], ['λ', '100 cm']);
+  assert.deepEqual([V.symbol, V.valueText, V.minText, V.maxText, V.min, V.max, V.step], ['v', '25 cm/s', '−100 cm/s', '100 cm/s', -100, 100, 5]);
+  assert.equal(quantityRows({ ...defaultSettings(), v: -15 }, { lang: 'lv', t: lv })[2].valueText, '−15 cm/s');
   assert.deepEqual([lines.kind, lines.group, lines.value, lines.valueText], ['check', 'aside', true, 'rāda']);
   assert.equal(quantityRows({ ...defaultSettings(), lines: false }, { lang: 'lv', t: lv })[3].valueText, 'nerāda');
-  assert.equal(quantityRows({ ...defaultSettings(), T: 2.5 }, { lang: 'en', t: en })[1].valueText, '2.5 s');
+  assert.equal(quantityRows(defaultSettings(), { lang: 'en', t: en })[2].valueText, '25 cm/s');
 });
 
-test('relationsRows: f, ω, v with formulas and units; φ live in degrees', () => {
+test('relationsRows: T = λ/v, f, ω with formulas and units; φ live in degrees; v = 0 has no period', () => {
   const rows = relationsRows(defaultSettings(), Math.PI / 2, { lang: 'lv', t: lv });
   assert.deepEqual(rows.map((r) => [r.key, r.k, r.v, r.live]), [
-    ['f', 'f = 1/T', '0,25 Hz', false],
-    ['omega', 'ω = 2π/T', '1,57 rad/s', false],
-    ['v', 'v = λ/T', '25 cm/s', false],
+    ['T', 'T = λ/v', '4,0 s', false],
+    ['f', 'f = v/λ', '0,25 Hz', false],
+    ['omega', 'ω = 2πv/λ', '1,57 rad/s', false],
     ['phi', 'φ', '90°', true],
   ]);
-  assert.equal(relationsRows(defaultSettings(), 0, { lang: 'en', t: en })[0].v, '0.25 Hz');
+  assert.equal(relationsRows({ ...defaultSettings(), v: 15 }, 0, { lang: 'lv', t: lv })[0].v, '6,7 s');
+  assert.equal(relationsRows({ ...defaultSettings(), v: -25 }, 0, { lang: 'en', t: en })[0].v, '4.0 s'); // direction does not change T
+  assert.equal(relationsRows({ ...defaultSettings(), v: 0 }, 0, { lang: 'lv', t: lv })[0].v, '—');
+  assert.equal(relationsRows(defaultSettings(), 0, { lang: 'en', t: en })[1].v, '0.25 Hz');
   assert.equal(phaseDeg(0), 0);
   assert.equal(phaseDeg(2 * Math.PI - 1e-9), 0);
   assert.equal(phaseDeg(Math.PI), 180);
-});
-
-test('relationsRows: v keeps one decimal when λ/T is not a whole number', () => {
-  const v = (lambda) => relationsRows({ ...defaultSettings(), lambda }, 0, { lang: 'lv', t: lv })[2].v;
-  assert.equal(v(100), '25 cm/s');
-  assert.equal(v(50), '12,5 cm/s');
-  assert.equal(v(150), '37,5 cm/s');
 });

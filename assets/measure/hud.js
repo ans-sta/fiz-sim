@@ -274,19 +274,25 @@ export function createQuantityList(root, { labels, onChange }) {
 
 // ── Salokāms panelis ─────────────────────────────────────
 // Telefonā panelis rāda tikai virsrakstu un ▾ apakšā; klikšķis atver uz leju (Ansis 04.10). Datorā poga ir paslēpta (CSS).
-export function createFold(root, { labels, folded = false }) {
+// Salocīts: ▾ apakšā atver. Atvērts: ▴ augšā aizver, tāpat pieskāriens ārpus paneļa vai Esc (kamēr `active()` — telefonā).
+export function createFold(root, { labels, folded = false, active = () => true }) {
   const btn = button('hud-fold');
-  root.appendChild(btn);
   let on = folded;
   function paint() {
     const L = labelsOf(labels);
     root.classList.toggle('folded', on);
+    if (on) root.appendChild(btn);
+    else root.insertBefore(btn, root.firstChild);
     setText(btn, on ? '▾' : '▴');
     setAttr(btn, 'aria-expanded', !on);
     setAttr(btn, 'aria-label', on ? L.open : L.close);
   }
   btn.addEventListener('click', () => {
     on = !on;
+    paint();
+  });
+  onOutsideOrEsc(root, () => !on && active(), () => {
+    on = true;
     paint();
   });
   paint();

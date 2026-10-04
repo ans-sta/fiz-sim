@@ -15,11 +15,11 @@ test('no params: defaults, circle view, no warnings', () => {
 });
 
 test('all params given', () => {
-  const r = settingsFromURL('?view=long&A=30&T=2,5&lambda=150&lines=0');
-  assert.deepEqual(r.settings, { A: 30, T: 2.5, lambda: 150, lines: false });
+  const r = settingsFromURL('?view=long&A=30&v=-15&lambda=150&lines=0');
+  assert.deepEqual(r.settings, { A: 30, lambda: 150, v: -15, lines: false });
   assert.equal(r.view, 'long');
   assert.deepEqual(r.warnings, []);
-  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['A', 'T', 'lambda', 'lines', 'view']);
+  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['A', 'lambda', 'lines', 'v', 'view']);
 });
 
 test('out of range is clamped with a notice that names the used value', () => {
@@ -34,9 +34,9 @@ test('out of range is clamped with a notice that names the used value', () => {
 test('between steps is rounded silently; not a number and unknown view give notices with the used value', () => {
   assert.equal(settingsFromURL('?A=12.3').settings.A, 12);
   assert.deepEqual(settingsFromURL('?A=12.3').warnings, []);
-  const t = settingsFromURL('?T=abc');
-  assert.equal(t.settings.T, 4);
-  assert.deepEqual([t.warnings[0].reason, t.warnings[0].used], ['not_number', 4]);
+  const t = settingsFromURL('?v=abc');
+  assert.equal(t.settings.v, 25);
+  assert.deepEqual([t.warnings[0].reason, t.warnings[0].used], ['not_number', 25]);
   const v = settingsFromURL('?view=side');
   assert.equal(v.view, 'circle');
   assert.deepEqual([v.warnings[0].reason, v.warnings[0].used], ['not_allowed', 'circle']);
