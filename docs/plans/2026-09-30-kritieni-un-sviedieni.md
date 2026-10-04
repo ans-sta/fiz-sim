@@ -126,3 +126,4 @@ Ansis pieņēma visus Claude ieteikumus, izņemot vienu (6. punkts).
   - koordinātu sākumpunkts ir nosaukts “KOORDINĀTU SĀKUMPUNKTS (0; 0)”, kustības sākumpunkts — “KUSTĪBAS SĀKUMPUNKTS”; ja h = 0, abi ir viens punkts ar vienu uzrakstu;
   - saites vērtība starp iestatāmajiem soļiem tiek noapaļota ar paziņojumu (piem., galdam h=2,5 → 3 cm);
   - CSV vienmēr latviešu formātā, tāpat kā lodītei.
+- 2026-10-04 — Ansis: galda mēroga vairs nav, tikai metri bez torņa; jaunais izkārtojums. Aizstāj 8.4 — sk. `docs/plans/2026-10-04-sviedieni-izkartojums.md`.
