@@ -61,10 +61,14 @@ export function renderTable(model, lang, { compact = false } = {}) {
 
 export function openDataTable(model, { lang, labels, onClose }) {
   let overlay = null;
+  let ro = null;
   overlay = openOverlay({
     title: labels.heading,
     closeLabel: labels.close,
-    onClose,
+    onClose() {
+      ro?.disconnect(); // arī aizverot ar AIZVĒRT vai Esc
+      onClose?.();
+    },
     buttons: [
       {
         label: labels.copy,
@@ -97,13 +101,8 @@ export function openDataTable(model, { lang, labels, onClose }) {
   overlay.body.append(title, settings, wrap);
   const refit = () => fitTable(wrap, table);
   wrap.addEventListener('scroll', () => updateFades(wrap), { passive: true });
-  const ro = new ResizeObserver(refit);
+  ro = new ResizeObserver(refit);
   ro.observe(wrap);
   refit();
-  return {
-    close() {
-      ro.disconnect();
-      overlay.close();
-    },
-  };
+  return { close: overlay.close };
 }
