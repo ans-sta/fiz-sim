@@ -35,8 +35,7 @@ test('full control, level 3: α, h, L, Δt; more: x₀, ball, surface, measure, 
   const L = row(rows, 'L');
   assert.deepEqual([L.min, L.max, L.step, L.valueText, L.minText, L.maxText], [50, 200, 1, '80 cm', '50 cm', '200 cm']);
   const dt = row(rows, 'dt');
-  assert.equal(dt.kind, 'choice');
-  assert.deepEqual(dt.choices.map((c) => [c.value, c.label]), [[0.1, '0,1 s'], [0.2, '0,2 s'], [0.5, '0,5 s']]);
+  assert.deepEqual([dt.kind, dt.min, dt.max, dt.step], ['range', 0.1, 2, 0.1]);
   assert.equal(dt.valueText, '0,2 s');
   const x0 = row(rows, 'x0');
   assert.deepEqual([x0.symbol, x0.min, x0.max, x0.step, x0.valueText], ['x₀', 0, 65, 0.5, '0,0 cm']);
@@ -76,23 +75,23 @@ test('ball choices: all nine, short names; the ones that do not fit the groove a
   assert.equal(row(quantityRows(defaultSettings(), { ...full(), ...en }), 'ball').valueText, 'steel Ø 16');
 });
 
-test('study a(α): α editable, h and L grey (fixed), no more group', () => {
+test('study a(α): α, h and L editable, no more group', () => {
   const s = by('a').preset(defaultSettings());
   const rows = quantityRows(s, inStudy('a'));
-  assert.deepEqual(rows.map((r) => [r.key, r.state, r.group]), [['alpha', 'editable', 'main'], ['h', 'fixed', 'main'], ['L', 'fixed', 'main']]);
+  assert.deepEqual(rows.map((r) => [r.key, r.state, r.group]), [['alpha', 'editable', 'main'], ['h', 'editable', 'main'], ['L', 'editable', 'main']]);
 });
 
-test('study t(Δx): the gate count is editable; study x(Δt): Δt and h', () => {
+test('study t(Δx): α, h, L and the gate count are editable; study x(Δt): α, h, L and Δt', () => {
   const t = quantityRows(by('t').preset(defaultSettings()), inStudy('t'));
-  assert.deepEqual(t.map((r) => [r.key, r.state]), [['alpha', 'fixed'], ['h', 'fixed'], ['L', 'fixed'], ['gateCount', 'editable']]);
+  assert.deepEqual(t.map((r) => [r.key, r.state]), [['alpha', 'editable'], ['h', 'editable'], ['L', 'editable'], ['gateCount', 'editable']]);
   const x = quantityRows(by('x').preset(defaultSettings()), inStudy('x'));
-  assert.deepEqual(x.map((r) => [r.key, r.state]), [['alpha', 'fixed'], ['h', 'editable'], ['L', 'fixed'], ['dt', 'editable']]);
+  assert.deepEqual(x.map((r) => [r.key, r.state]), [['alpha', 'editable'], ['h', 'editable'], ['L', 'editable'], ['dt', 'editable']]);
 });
 
 test('study STROBOSKOPS: the tape, editable there, is listed in the main group', () => {
   const rows = quantityRows(by('strobe').preset(defaultSettings()), inStudy('strobe'));
   assert.deepEqual(rows.map((r) => [r.key, r.state, r.group]), [
-    ['alpha', 'fixed', 'main'], ['h', 'editable', 'main'], ['L', 'fixed', 'main'], ['dt', 'editable', 'main'], ['tape', 'editable', 'main'],
+    ['alpha', 'editable', 'main'], ['h', 'editable', 'main'], ['L', 'editable', 'main'], ['dt', 'editable', 'main'], ['tape', 'editable', 'main'],
   ]);
 });
 
@@ -110,7 +109,7 @@ test('quantityState maps gates and gate handles to the lock key gates', () => {
   const s = inStudy('t');
   assert.equal(quantityState('gate', s), 'editable');
   assert.equal(quantityState('x0', s), 'fixed');
-  assert.equal(quantityState('L', s), 'fixed');
+  assert.equal(quantityState('L', s), 'editable');
   const a = inStudy('a', ['h']);
   assert.equal(quantityState('alpha', a), 'fixed', 'a URL-locked h fixes α too');
 });

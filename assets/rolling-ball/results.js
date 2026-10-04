@@ -1,5 +1,5 @@
 import { ERRORS, DECIMALS } from './experiment.js';
-import { derive } from './model.js';
+import { derive, STEP } from './model.js';
 import { formatNumber, roundTo, decimalsOf } from '../measure/format.js';
 import { createResults as createStore } from '../measure/results-store.js';
 
@@ -73,7 +73,7 @@ export function tableModel(table, { t, lang }) {
     rows = table.runs[0].level2.gates.map((g, i) => [g.x, ...table.runs.map((r) => r.level2.gates[i].t)]);
   } else {
     title = t('table.l3Title', { n: table.index });
-    columns = [{ label: t('col.t'), decimals: decimalsOf(s.dt) }, ...range(n).map(xCol)];
+    columns = [{ label: t('col.t'), decimals: decimalsOf(STEP.dt) }, ...range(n).map(xCol)];
     const longest = Math.max(...table.runs.map((r) => r.level3.samples.length));
     rows = [];
     for (let i = 0; i < longest; i++) {

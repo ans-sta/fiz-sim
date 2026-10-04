@@ -3,14 +3,16 @@ import { PARAM_SCHEMA } from './params.js';
 import { roundTo, formatNumber } from '../measure/format.js';
 
 // Pētījumi (spec. pētījumi 4, K-01): “mūsu renīte”, tērauda lodīte Ø 16 mm, renīte.
+// Visos pētījumos maināmi α, h un L (Ansis 04.10), vēl — pētījuma lielums (vārti, Δt, mērlente).
+const SLOPE = ['alpha', 'h', 'L'];
 export const STUDIES = [
   {
-    id: 'a', no: '01', measure: true, angleMode: 'alpha', editable: ['alpha'], coupled: ['h'], views: { table: true, strobe: false },
+    id: 'a', no: '01', measure: true, angleMode: 'alpha', editable: SLOPE, views: { table: true, strobe: false },
     preset: (s) => withAlpha(withLevel(s, 1), roundTo(derive(s).alphaDeg, 0.1)), // slīpumu iestata ar α
   },
-  { id: 't', no: '02', measure: true, angleMode: 'h', editable: ['gates'], views: { table: true, strobe: false }, preset: (s) => withTimer(withLevel(s, 2), 'gate') },
-  { id: 'x', no: '03', measure: true, angleMode: 'h', editable: ['dt', 'h'], coupled: ['alpha'], views: { table: true, strobe: false }, preset: (s) => withLevel(s, 3) },
-  { id: 'strobe', no: '04', measure: true, angleMode: 'h', editable: ['dt', 'h', 'tape'], coupled: ['alpha'], views: { table: false, strobe: true }, preset: (s) => withLevel(s, 3) },
+  { id: 't', no: '02', measure: true, angleMode: 'h', editable: [...SLOPE, 'gates'], views: { table: true, strobe: false }, preset: (s) => withTimer(withLevel(s, 2), 'gate') },
+  { id: 'x', no: '03', measure: true, angleMode: 'h', editable: [...SLOPE, 'dt'], views: { table: true, strobe: false }, preset: (s) => withLevel(s, 3) },
+  { id: 'strobe', no: '04', measure: true, angleMode: 'h', editable: [...SLOPE, 'dt', 'tape'], views: { table: false, strobe: true }, preset: (s) => withLevel(s, 3) },
 ];
 
 // Pētījumā slīpumu iestata ar pētījuma lielumu (a(α) — ar α), arī ja saitē ir h vai alpha;

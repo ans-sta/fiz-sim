@@ -112,14 +112,17 @@ test('ball and profile: a ball narrower than the groove gap is refused in the gr
   assert.equal(withBall(s, 'glass25').ball, 'glass25');
 });
 
-test('level, timer, dt, tape, slow accept only valid values', () => {
+test('level, timer, tape, slow accept only valid values; dt is clamped to 0,1–2 s in steps of 0,1', () => {
   const s = defaultSettings();
   assert.equal(withLevel(s, 1).level, 1);
   assert.equal(withLevel(s, 4), s);
   assert.equal(withTimer(s, 'hand').timer, 'hand');
   assert.equal(withTimer(s, 'x'), s);
   assert.equal(withDt(s, 0.5).dt, 0.5);
-  assert.equal(withDt(s, 0.3), s);
+  assert.equal(withDt(s, 0.3).dt, 0.3);
+  assert.equal(withDt(s, 5).dt, 2);
+  assert.equal(withDt(s, 0.04).dt, 0.1);
+  assert.equal(withDt(s, NaN), s);
   assert.equal(withTape(s, false).tape, false);
   assert.equal(withSlow(s, true).slow, true);
 });

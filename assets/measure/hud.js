@@ -188,6 +188,7 @@ export function createQuantityList(root, { labels, onChange }) {
     if (!hasMore) moreOpen = false;
     const visible = rows.filter((r) => r.group !== 'more' || moreOpen);
     if (!visible.some((r) => r.key === openKey && r.state === 'editable')) openKey = null;
+    root.classList.toggle('sliding', openKey !== null);
 
     const order = [];
     const seen = new Set();

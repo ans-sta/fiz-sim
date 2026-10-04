@@ -1,5 +1,5 @@
 // K-01 LIELUMI un MĒRĪJUMI (spec. izkārtojums 3–4): ko rāda saraksts un mērījumu lodziņš. Tīra loģika, bez DOM.
-import { derive, hMax, x0Max, L_MIN, L_MAX, ALPHA_MAX, STEP, GATE_MIN, GATE_MAX, DT_OPTIONS } from './model.js';
+import { derive, hMax, x0Max, L_MIN, L_MAX, ALPHA_MAX, STEP, GATE_MIN, GATE_MAX, DT_MIN, DT_MAX } from './model.js';
 import { BALLS, ballById, ballFits } from './balls.js';
 import { formatNumber, decimalsOf } from '../measure/format.js';
 
@@ -42,7 +42,7 @@ export function quantityRows(s, { locked, hidden, study, lang, t }) {
       { min: GATE_MIN, max: GATE_MAX, step: 1, value: s.gates.length, dec: 0, unit: '' }, 'main'));
   }
   if (s.level === 3) {
-    main.push(choice('dt', 'Δt', t('dt.label'), s.dt, DT_OPTIONS.map((v) => ({ value: v, label: `${f(v, 1)} s` })), 'main'));
+    main.push(range('dt', 'Δt', t('dt.label'), { min: DT_MIN, max: DT_MAX, step: STEP.dt, value: s.dt, dec: 1, unit: ' s' }, 'main'));
   }
 
   const more = [
@@ -109,7 +109,7 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
       return vm;
     }
     const seen = run ? run.level3.samples.filter((p) => p.t + run.truth.tau <= simT + 1e-9) : [];
-    const dec = decimalsOf(s.dt);
+    const dec = decimalsOf(STEP.dt);
     vm.rows = seen.slice(-LIVE_ROWS).map((p) => ({ a: `t = ${f(p.t, dec)} s`, b: `x = ${f(p.x, 1)} cm` }));
     if (seen.length) vm.valueText = f(seen[seen.length - 1].x, 1);
   }

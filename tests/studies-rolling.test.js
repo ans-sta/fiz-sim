@@ -37,26 +37,26 @@ test('presets: levels, slope set by α in a(α), views; every preset rolls (Revi
   }
 });
 
-test('fixed sets; coupled h/α stay changeable together (Review Focus 3)', () => {
+test('fixed sets; α, h and L stay changeable in every study (Review Focus 3)', () => {
   const fa = studyFixed(by('a'), LOCKABLE);
-  assert.ok(!fa.has('h') && !fa.has('alpha'));
+  assert.ok(!fa.has('h') && !fa.has('alpha') && !fa.has('L'));
   const a = by('a').preset(defaultSettings());
   assert.deepEqual(changedLocked(a, withAlpha(a, 5), fa), []);
   const ft = studyFixed(by('t'), LOCKABLE);
   const t = by('t').preset(defaultSettings());
   assert.deepEqual(changedLocked(t, withGate(t, 0, t.gates[0] + 3), ft), []);
   assert.deepEqual(changedLocked(t, withX0(t, 5), ft), ['x0']);
-  assert.ok(changedLocked(t, withH(t, 5), ft).includes('h'));
+  assert.deepEqual(changedLocked(t, withH(t, 5), ft), []);
   const fx = studyFixed(by('x'), LOCKABLE);
-  assert.ok(!fx.has('h') && !fx.has('alpha') && !fx.has('dt') && fx.has('ball') && fx.has('tape'));
+  assert.ok(!fx.has('h') && !fx.has('alpha') && !fx.has('L') && !fx.has('dt') && fx.has('ball') && fx.has('tape'));
   assert.ok(!studyFixed(by('strobe'), LOCKABLE).has('tape'));
 });
 
 test('fixed summary', () => {
   const sum = (id) => fixedSummary(by(id).preset(defaultSettings()), studyFixed(by(id), LOCKABLE), lv);
-  assert.equal(sum('a'), 'L = 80 cm; lodīte: tērauds, Ø 16 mm, 16,8 g; renīte; kustības sākumpunkts x₀ = 0,0 cm; finišs x = 70,0 cm');
-  assert.equal(sum('t'), 'L = 80 cm; h = 3,0 cm (α = 2,1°); lodīte: tērauds, Ø 16 mm, 16,8 g; renīte; kustības sākumpunkts x₀ = 0,0 cm');
-  assert.equal(sum('x'), 'L = 80 cm; lodīte: tērauds, Ø 16 mm, 16,8 g; renīte; kustības sākumpunkts x₀ = 0,0 cm');
+  assert.equal(sum('a'), 'lodīte: tērauds, Ø 16 mm, 16,8 g; renīte; kustības sākumpunkts x₀ = 0,0 cm; finišs x = 70,0 cm');
+  assert.equal(sum('t'), 'lodīte: tērauds, Ø 16 mm, 16,8 g; renīte; kustības sākumpunkts x₀ = 0,0 cm');
+  assert.equal(sum('x'), 'lodīte: tērauds, Ø 16 mm, 16,8 g; renīte; kustības sākumpunkts x₀ = 0,0 cm');
 });
 
 test('router and teacher params on top of a study (Review Focus 1, 4)', () => {

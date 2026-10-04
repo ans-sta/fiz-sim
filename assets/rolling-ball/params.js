@@ -2,7 +2,7 @@ import { parseParams } from '../measure/url-params.js';
 import { BALLS, ballById, ballFits } from './balls.js';
 import {
   defaultSettings, withL, withH, withAlpha, withX0, withLevel, withTimer, withDt, withTape,
-  hMax, x0Max, finishX, spreadGates, L_MIN, L_MAX, ALPHA_MAX, DT_OPTIONS, GATE_MIN, GATE_MAX, GATE_GAP, STEP,
+  hMax, x0Max, finishX, spreadGates, L_MIN, L_MAX, ALPHA_MAX, DT_MIN, DT_MAX, GATE_MIN, GATE_MAX, GATE_GAP, STEP,
 } from './model.js';
 import { randomSeed } from '../measure/rng.js';
 import { roundTo } from '../measure/format.js';
@@ -17,7 +17,7 @@ export const PARAM_SCHEMA = {
   level: { type: 'enum', values: ['1', '2', '3'] },
   timer: { type: 'enum', values: ['gate', 'hand'] },
   gates: { type: 'list-number', min: 0, max: L_MAX, minLen: GATE_MIN, maxLen: GATE_MAX },
-  dt: { type: 'number', values: DT_OPTIONS },
+  dt: { type: 'number', min: DT_MIN, max: DT_MAX },
   view: { type: 'enum', values: ['table', 'strobe', 'both'] },
   tape: { type: 'bool' },
   noise: { type: 'enum', values: ['0', '1', '2'] },

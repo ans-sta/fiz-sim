@@ -123,8 +123,12 @@ test('level, timer, tape, dt', () => {
   assert.equal(r.settings.timer, 'hand');
   assert.equal(r.settings.tape, false);
   assert.deepEqual([...r.locked].sort(), ['level', 'tape', 'timer']);
-  assert.equal(one(url('?dt=0.3')).reason, 'not_allowed');
-  assert.equal(url('?dt=0.3').settings.dt, 0.2);
+  const ok = url('?dt=0.3');
+  assert.deepEqual(ok.warnings, []);
+  assert.equal(ok.settings.dt, 0.3);
+  const bad = one(url('?dt=5'));
+  assert.equal(bad.reason, 'out_of_range');
+  assert.equal(url('?dt=5').settings.dt, 2);
 });
 
 test('Facebook and tracking params are ignored silently', () => {
@@ -142,9 +146,9 @@ test('warningText gives precise LV and EN messages', () => {
   const b = one(url('?ball=steel12'));
   assert.ok(warningText(b, { t: tl, lang: 'lv' }).includes('Atļautās vērtības: steel10; steel16')); // was ', ' — now '; ' so decimals do not collide
   assert.ok(warningText(b, { t: te, lang: 'en' }).includes('Allowed values: steel10, steel16'));
-  const d = one(url('?dt=0.3'));
-  assert.ok(warningText(d, { t: tl, lang: 'lv' }).includes('Atļautās vērtības: 0,1; 0,2; 0,5'));
-  assert.ok(warningText(d, { t: te, lang: 'en' }).includes('Allowed values: 0.1, 0.2, 0.5'));
+  const d = one(url('?dt=5'));
+  assert.equal(warningText(d, { t: tl, lang: 'lv' }), 'Saites parametrs dt=5 ir ārpus robežām (0,1–2). Izmantots dt = 2.');
+  assert.equal(warningText(d, { t: te, lang: 'en' }), 'Link parameter dt=5 is out of range (0.1–2). Using dt = 2.');
 });
 
 test('warningText: empty list renders as nav / none; ball_no_fit tells what to do', () => {

@@ -79,7 +79,7 @@ Without parameters a page opens its study cards.
 | `level=1\|2\|3` | Data level |
 | `timer=gate\|hand` | Timing by light gates or by hand |
 | `gates=<list>` | Gate positions, cm: 2–6 values separated by commas, decimals with a point. The first gate at least 1 cm after x₀, gates at least 1 cm apart, the last at most L; the list is sorted. An invalid list is replaced by evenly spread gates with a notice |
-| `dt=0.1\|0.2\|0.5` | Strobe interval Δt, s |
+| `dt=<number>` | Strobe interval Δt, s: 0.1–2 in steps of 0.1. If the ball reaches the end sooner than Δt, only the start flash is recorded (no notice, as in a real experiment) |
 | `view=table\|strobe\|both` | Which result view is shown (takes effect with `lock`) |
 | `tape=0\|1` | Measuring tape in the strobe view |
 | `lock=1` (or `lock=true`) | Locks every setting that is given in the link |

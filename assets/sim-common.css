@@ -398,6 +398,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 
 /* LIELUMI */
 .layout-hud .q-list { left: 8px; width: calc(178px * var(--hud)); max-height: calc(100% - 16px); overflow-y: auto; overscroll-behavior: contain; }
+/* kamēr slīdnis vaļā, LIELUMI ir virsējais slānis: platāks un drīkst uzbraukt MĒRĪJUMIEM (Ansis 04.10) */
+.layout-hud .q-list.sliding { z-index: 4; width: min(calc(300px * var(--hud)), calc(100% - 16px)); max-width: calc(100% - 16px); background: var(--field); }
 .layout-hud .q-row { display: flex; align-items: center; gap: calc(6px * var(--hud)); width: 100%; height: calc(24px * var(--hud)); padding: 0 calc(10px * var(--hud)); background: none; border: none; border-left: 2px solid transparent; cursor: pointer; text-align: left; font-size: calc(12px * var(--hud)); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .layout-hud .q-row .q-sym { flex: none; }
 .layout-hud .q-row .q-val { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }

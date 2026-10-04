@@ -12,8 +12,9 @@ export const MIN_RUN = 5; // cm — mazākais attālums no starta līdz finišam
 export const GATE_MIN = 2;
 export const GATE_MAX = 6;
 export const GATE_GAP = 1; // cm
-export const DT_OPTIONS = [0.1, 0.2, 0.5];
-export const STEP = { L: 1, h: 0.1, alpha: 0.1, x: 0.5 };
+export const DT_MIN = 0.1; // s — stroboskopa intervāls; garāks par ripošanas laiku — tikai starta zibsnis (kā dzīvē)
+export const DT_MAX = 2;
+export const STEP = { L: 1, h: 0.1, alpha: 0.1, x: 0.5, dt: 0.1 };
 
 const toRad = (deg) => (deg * Math.PI) / 180;
 const toDeg = (rad) => (rad * 180) / Math.PI;
@@ -158,7 +159,7 @@ export function withTimer(s, timer) {
 }
 
 export function withDt(s, dt) {
-  return DT_OPTIONS.includes(dt) ? { ...s, dt } : s;
+  return Number.isFinite(dt) ? { ...s, dt: roundTo(clamp(dt, DT_MIN, DT_MAX), STEP.dt) } : s;
 }
 
 export function withTape(s, tape) {
