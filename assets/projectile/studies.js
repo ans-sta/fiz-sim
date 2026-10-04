@@ -1,19 +1,19 @@
-import { withMode, withV0, withH } from './model.js';
+import { withMode, withV0, withH, withAlpha } from './model.js';
 import { PARAM_SCHEMA } from './params.js';
 import { SCALE } from './scales.js';
 import { formatNumber, decimalsOf } from '../measure/format.js';
 
 const BOTH = { table: true, strobe: true };
 
-// Pētījumi (spec. pētījumi 4, K-02). Galīgie sākuma iestatījumi — 6. uzdevumā.
+// Pētījumi (spec. sviedieni-izkartojums 5): visi metros.
 export const STUDIES = [
-  { id: 'free', no: '01', editable: ['h', 'dt'], views: BOTH, preset: (s) => withV0(withMode(s, 'vertical'), 0) },
-  { id: 'vertical', no: '02', editable: ['v0', 'h', 'dt'], views: BOTH, preset: (s) => withV0(withMode(s, 'vertical'), 150) },
-  { id: 'horizontal', no: '03', editable: ['v0', 'h', 'dt', 'second'], views: BOTH, preset: (s) => withMode(s, 'horizontal') },
-  { id: 'oblique', no: '04', editable: ['v0', 'alpha', 'dt'], views: BOTH, preset: (s) => withH(withV0(withMode(s, 'oblique'), 250), 0) },
+  { id: 'free', no: '01', editable: ['h', 'dt'], views: BOTH, preset: (s) => withH(withV0(withMode(s, 'vertical'), 0), 20) },
+  { id: 'vertical', no: '02', editable: ['v0', 'h', 'dt'], views: BOTH, preset: (s) => withH(withV0(withMode(s, 'vertical'), 10), 20) },
+  { id: 'horizontal', no: '03', editable: ['v0', 'h', 'dt', 'second'], views: BOTH, preset: (s) => withH(withV0(withMode(s, 'horizontal'), 10), 20) },
+  { id: 'oblique', no: '04', editable: ['v0', 'alpha', 'h', 'dt'], views: BOTH, preset: (s) => withH(withAlpha(withV0(withMode(s, 'oblique'), 15), 45), 0) },
 ];
 
-export const SETTING_PARAMS = [...Object.keys(PARAM_SCHEMA), 'lock'];
+export const SETTING_PARAMS = [...Object.keys(PARAM_SCHEMA), 'lock', 'scale'];
 
 // Bloks IESTATĪTS: nofiksētās fizikālās vērtības (režīmu, mērrežģi un skatus nerāda).
 export function fixedSummary(s, hidden, { t, lang }) {

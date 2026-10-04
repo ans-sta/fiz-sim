@@ -25,8 +25,6 @@ export const STRINGS = {
     'slow': 'PALĒNINĀT ×0,25',
     'second': 'OTRA BUMBIŅA KRĪT VIENLAIKUS',
 
-    'blk.dims': 'IZMĒRI',
-    'dims.hint': 'Velc rasējumā izmēru līniju h un bultas galu v₀ (slīpajā sviedienā arī α uz loka). Precīzāk — ar bultiņu taustiņiem vai pogām − un +.',
     'dims.h': 'Izmešanas augstums h',
     'dims.v0': 'Sākuma ātrums v₀',
     'dims.alpha': 'Izmešanas leņķis α',
@@ -34,8 +32,6 @@ export const STRINGS = {
     'dims.fixedTitle': 'Šo lielumu skolotājs ir nofiksējis saitē.',
     'dims.decrease': 'Samazināt: {name}',
     'dims.increase': 'Palielināt: {name}',
-    'dir.up': 'uz augšu',
-    'dir.down': 'uz leju',
     'grid': 'RĀDĪT MĒRREŽĢI',
 
     'run.start1': '▶ PALAIST',
@@ -44,12 +40,8 @@ export const STRINGS = {
     'run.repeatN': '↻ ATKĀRTOT {n}×',
     'run.running': 'BUMBIŅA LIDO…',
 
-    'blk.results': 'REZULTĀTI',
-    'results.none': 'Ar šiem iestatījumiem vēl nav mērījumu. Nospied pogu ▶.',
     'results.option': '{n}. tabula · mērījumi: {m}',
-    'results.other': 'Rādīta {n}. tabula — tās iestatījumi atšķiras no pašreizējiem.',
     'results.table': 'DATU TABULA',
-    'results.strobe': 'STROBOSKOPS',
 
     'scene.origin': 'KOORDINĀTU SĀKUMPUNKTS (0; 0)',
     'scene.launch': 'KUSTĪBAS SĀKUMPUNKTS',
@@ -90,6 +82,7 @@ export const STRINGS = {
     'strobe.export': 'EKSPORTĒT ATTĒLU',
     'strobe.hint': 'Tuvini ar peles ritenīti vai diviem pirkstiem, pārvieto, velkot ar peli vai pirkstu.',
     'strobe.verticalNote': 'Vertikālais sviediens: augšupejošā lente ↑ pa kreisi, lejupejošā ↓ pa labi. Lentes nobīde ir tikai attēlā — x netiek mērīts.',
+    'strobe.verticalNoteDown': 'Kritiens uz leju: viena lejupejošā lente ↓ — x netiek mērīts.',
     'strobe.secondNote': 'Tukšie apļi — otra bumbiņa, kas tajā pašā brīdī sāk krist no tā paša augstuma.',
     'strobe.exportFailed': 'Attēlu neizdevās izveidot: šī ierīce neļauj tik lielu attēlu ({w} × {h} px). Mēģini datorā vai ar mazāku h vai v₀.',
 
@@ -111,7 +104,7 @@ export const STRINGS = {
     'url.h_range': 'Saitē h = {raw} {unit} neder šim mērogam (atļauts no {min} līdz {max} {unit}). Izmantots h = {used} {unit}.',
     'url.rounded': 'Saitē {param} = {raw}{unit} noapaļots līdz iestatāmajai vērtībai {used}{unit}.',
     'url.v0_clamped': 'Saitē v₀ = {raw} {unit} neder šim režīmam un mērogam (atļauts no {min} līdz {max} {unit}). Izmantots v₀ = {used} {unit}.',
-    'url.scale_removed': 'Saites parametrs scale={raw} vairs nedarbojas: galda mēroga vairs nav, visi lielumi ir metros.',
+    'url.scale_removed': 'Saites parametrs scale={raw} vairs nedarbojas: mēroga izvēles vairs nav, visi lielumi ir metros.',
     'url.none': 'nav',
 
     'page.backStudies': '← PĒTĪJUMI',
@@ -123,8 +116,6 @@ export const STRINGS = {
     'studies.unknown': 'Pētījums “{id}” nav atrasts. Izvēlies kādu no kartītēm.',
     'studies.noId': 'Saitē ir “study=”, bet nav pētījuma nosaukuma. Izvēlies kādu no kartītēm.',
     'studies.paramIgnored': 'Pētījumā “{study}” {param} ir iestatīts, tāpēc saites parametrs {param}={raw} netiek ņemts vērā. Visiem lielumiem — saite ar full=1.',
-    'blk.fixed': 'IESTATĪTS',
-    'dims.hintStudy': 'Velc rasējumā izmēru līnijas, ko var mainīt. Precīzāk — ar bultiņu taustiņiem vai pogām − un +.',
     'study.free.title': 'BRĪVĀ KRIŠANA',
     'study.free.q': 'Kā krīt bumbiņa? Ko var uzzināt no Δy vienādos laika sprīžos?',
     'study.free.changes': 'h, Δt',
@@ -136,7 +127,7 @@ export const STRINGS = {
     'study.horizontal.changes': 'v₀, h, Δt, otrā bumbiņa',
     'study.oblique.title': 'SLĪPAIS SVIEDIENS',
     'study.oblique.q': 'Pie kāda leņķa bumbiņa aizlido vistālāk?',
-    'study.oblique.changes': 'v₀, α, Δt',
+    'study.oblique.changes': 'v₀, α, h, Δt',
 
     'hud.title': 'LIELUMI',
     'hud.more': 'citi…',
@@ -193,8 +184,6 @@ export const STRINGS = {
     'slow': 'SLOW ×0.25',
     'second': 'SECOND BALL DROPS AT THE SAME TIME',
 
-    'blk.dims': 'DIMENSIONS',
-    'dims.hint': 'Drag the dimension line h and the tip of the v₀ arrow in the drawing (in the oblique throw also α on the arc). For precise steps use the arrow keys or the − and + buttons.',
     'dims.h': 'Launch height h',
     'dims.v0': 'Initial speed v₀',
     'dims.alpha': 'Launch angle α',
@@ -202,8 +191,6 @@ export const STRINGS = {
     'dims.fixedTitle': 'The teacher has fixed this value in the link.',
     'dims.decrease': 'Decrease: {name}',
     'dims.increase': 'Increase: {name}',
-    'dir.up': 'upwards',
-    'dir.down': 'downwards',
     'grid': 'SHOW GRID',
 
     'run.start1': '▶ RUN',
@@ -212,12 +199,8 @@ export const STRINGS = {
     'run.repeatN': '↻ REPEAT {n}×',
     'run.running': 'BALL IN FLIGHT…',
 
-    'blk.results': 'RESULTS',
-    'results.none': 'No measurements with these settings yet. Press the ▶ button.',
     'results.option': 'Table {n} · runs: {m}',
-    'results.other': 'Showing table {n} — its settings differ from the current ones.',
     'results.table': 'DATA TABLE',
-    'results.strobe': 'STROBE',
 
     'scene.origin': 'ORIGIN (0; 0)',
     'scene.launch': 'LAUNCH POINT',
@@ -258,6 +241,7 @@ export const STRINGS = {
     'strobe.export': 'EXPORT IMAGE',
     'strobe.hint': 'Zoom with the mouse wheel or two fingers; drag with the mouse or a finger to move.',
     'strobe.verticalNote': 'Vertical throw: the rising tape ↑ on the left, the falling tape ↓ on the right. The tapes are side by side only in the picture — x is not measured.',
+    'strobe.verticalNoteDown': 'Falling only: one falling tape ↓ — x is not measured.',
     'strobe.secondNote': 'Hollow circles: the second ball, which starts falling from the same height at the same moment.',
     'strobe.exportFailed': 'Could not create the image: this device does not allow an image this large ({w} × {h} px). Try on a computer or with a smaller h or v₀.',
 
@@ -279,7 +263,7 @@ export const STRINGS = {
     'url.h_range': 'In the link, h = {raw} {unit} does not fit this scale (allowed from {min} to {max} {unit}). Using h = {used} {unit}.',
     'url.rounded': 'In the link, {param} = {raw}{unit} was rounded to the nearest settable value {used}{unit}.',
     'url.v0_clamped': 'In the link, v₀ = {raw} {unit} does not fit this mode and scale (allowed from {min} to {max} {unit}). Using v₀ = {used} {unit}.',
-    'url.scale_removed': 'Link parameter scale={raw} no longer works: there is no table scale any more, all quantities are in metres.',
+    'url.scale_removed': 'Link parameter scale={raw} no longer works: there is no scale choice any more, all quantities are in metres.',
     'url.none': 'none',
 
     'page.backStudies': '← STUDIES',
@@ -291,8 +275,6 @@ export const STRINGS = {
     'studies.unknown': 'Study “{id}” was not found. Choose one of the cards.',
     'studies.noId': 'The link has “study=” but no study name. Choose one of the cards.',
     'studies.paramIgnored': 'In the study “{study}”, {param} is preset, so the link parameter {param}={raw} is ignored. For every quantity use a link with full=1.',
-    'blk.fixed': 'PRESET',
-    'dims.hintStudy': 'Drag the dimension lines you can change in the drawing. For precise steps use the arrow keys or the − and + buttons.',
     'study.free.title': 'FREE FALL',
     'study.free.q': 'How does the ball fall? What do Δy in equal time intervals tell you?',
     'study.free.changes': 'h, Δt',
@@ -304,7 +286,7 @@ export const STRINGS = {
     'study.horizontal.changes': 'v₀, h, Δt, second ball',
     'study.oblique.title': 'OBLIQUE THROW',
     'study.oblique.q': 'At which angle does the ball fly farthest?',
-    'study.oblique.changes': 'v₀, α, Δt',
+    'study.oblique.changes': 'v₀, α, h, Δt',
 
     'hud.title': 'QUANTITIES',
     'hud.more': 'more…',

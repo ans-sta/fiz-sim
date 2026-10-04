@@ -280,7 +280,7 @@ export function openProjectileStrobe(o) {
 
   const captionLines = (i) => {
     const lines = [t('strobe.caption', { dt: formatNumber(s.dt, decimalsOf(s.dt), lang), n: table.index, r: i + 1 }), settingsLine];
-    if (s.mode === 'vertical') lines.push(t('strobe.verticalNote'));
+    if (s.mode === 'vertical') lines.push(t(perRun[i].tapes.up === null ? 'strobe.verticalNoteDown' : 'strobe.verticalNote'));
     if (perRun[i].second.length) lines.push(t('strobe.secondNote'));
     return lines;
   };

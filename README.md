@@ -93,18 +93,18 @@ Example:
 
 ## Teacher links (K-02)
 
-Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they are only starting values. Unknown parameters are ignored. Lengths and speeds are in the unit of the scale: cm and cm/s on the table, m and m/s on the tower.
+Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they are only starting values. Unknown parameters are ignored. Lengths are in metres and speeds in m/s.
 
 | Parameter | Meaning |
 | --------- | ------- |
 | `study=<id>` | Opens one study (K-02: `free`, `vertical`, `horizontal`, `oblique`; K-01: `a`, `t`, `x`, `strobe`). Other parameters apply on top of the study; with `lock=1` they are fixed. |
 | `full=1` | Opens the full page with every control. Any other setting parameter also opens the full page. |
 | `mode=1\|2\|3` | 1 — fall and vertical throw, 2 — horizontal throw, 3 — oblique throw. Without `v0`, mode 1 starts as a free fall (v₀ = 0) |
-| `scale=table\|tower` | Classroom table (cm, h 0–150, v₀ up to 400 cm/s) or tower (m, h 0–50, v₀ up to 30 m/s) |
-| `h=<number>` | Launch height (ball centre above the ground). Values outside the scale’s range are clamped and values between steps (1 cm on the table, 0.5 m on the tower) are rounded, each with a notice |
-| `v0=<number>` | Initial speed. In mode 1 the sign is the direction (+ up, − down); in modes 2 and 3 it must be ≥ 0 |
+| `scale=…` | No longer works: there is only one scale (metres). The link opens full control and shows a notice. |
+| `h=<number>` | Launch height (ball centre above the ground). Metres, 0–50, step 0.5. Values outside the range are clamped and values between steps are rounded, each with a notice |
+| `v0=<number>` | Initial speed, m/s, up to 30 (mode 1: −30…30). In mode 1 the sign is the direction (+ up, − down); in modes 2 and 3 it must be ≥ 0 |
 | `alpha=<number>` | Launch angle in mode 3, degrees (0–90) |
-| `dt=<number>` | Strobe interval Δt, s: `0.02`, `0.05`, `0.1` on the table; `0.1`, `0.2`, `0.5` on the tower |
+| `dt=<number>` | Strobe interval Δt, s: 0.1–2, step 0.1 |
 | `second=0\|1` | Mode 2: a second ball drops from the same point at the same moment |
 | `grid=0\|1` | Measuring grid in the drawing and in the strobe view |
 | `view=table\|strobe\|both` | Which result view is shown (takes effect with `lock`) |
@@ -113,6 +113,6 @@ Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they 
 | `traps=late` | Teacher only: in one of the first three repeats of a table the clock starts 2–3 frames late |
 | `seed=<number>` | Teacher only: integer 1–2147483647; the same seed gives the same noise in every tab |
 
-Example (individual data for a horizontal throw from the table, read from the strobe image only):
+Example (individual data for a horizontal throw from 20 m, read from the strobe image only):
 
-    projectile-motion.html?mode=2&h=90&v0=180&dt=0.05&view=strobe&lock=1
+    projectile-motion.html?mode=2&h=20&v0=10&dt=0.5&view=strobe&lock=1

@@ -25,7 +25,7 @@ test('studies: only quantities the student may change are advised', () => {
   assert.equal(flightNotice('none', sf, studyFixed(free, LOCKABLE), t), 'Bumbiņa jau ir uz zemes (h = 0) un nepaceļas. Palielini h.');
   const ob = STUDIES.find((s) => s.id === 'oblique');
   const so = ob.preset(defaultSettings());
-  assert.equal(flightNotice('none', so, studyFixed(ob, LOCKABLE), t), 'Bumbiņa no zemes (h = 0) nepaceļas, jo v₀ = 0 vai α = 0. Palielini v₀ vai α.');
+  assert.equal(flightNotice('none', so, studyFixed(ob, LOCKABLE), t), 'Bumbiņa no zemes (h = 0) nepaceļas, jo v₀ = 0 vai α = 0. Palielini h, v₀ vai α.');
 });
 
 test('nothing changeable: tell the student to ask the teacher', () => {

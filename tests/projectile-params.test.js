@@ -84,8 +84,8 @@ test('old links: scale is gone with a notice, values are metres', () => {
   assert.equal(b.settings.h, 20);
   assert.deepEqual(b.warnings.map((w) => w.reason), ['scale_removed']);
   assert.equal(warningText(b.warnings[0], { t: lv.t, lang: 'lv' }),
-    'Saites parametrs scale=tower vairs nedarbojas: galda mēroga vairs nav, visi lielumi ir metros.');
-  assert.equal(warningText(b.warnings[0], en), 'Link parameter scale=tower no longer works: there is no table scale any more, all quantities are in metres.');
+    'Saites parametrs scale=tower vairs nedarbojas: mēroga izvēles vairs nav, visi lielumi ir metros.');
+  assert.equal(warningText(b.warnings[0], en), 'Link parameter scale=tower no longer works: there is no scale choice any more, all quantities are in metres.');
   assert.ok(!('scale' in a.settings));
   assert.ok(!LOCKABLE.includes('scale'));
   assert.ok(!settingsFromURL('?scale=tower&lock=1', { makeSeed: () => 1 }).locked.has('scale'));

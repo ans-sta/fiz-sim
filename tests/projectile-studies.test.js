@@ -50,7 +50,7 @@ test('fixed summary lists only the study-fixed physical values', () => {
   const sum = (id) => fixedSummary(by(id).preset(defaultSettings()), studyFixed(by(id), LOCKABLE), lv);
   assert.equal(sum('free'), 'v₀ = 0 (brīvā krišana)');
   assert.equal(sum('vertical'), '');
-  assert.equal(sum('oblique'), 'h = 0,0 m');
+  assert.equal(sum('oblique'), '');
 });
 
 test('router: cards without params, study by id, old links full', () => {
@@ -78,9 +78,9 @@ function studyFromLink(search) {
 }
 
 test('study keeps its own preset: link params for study-fixed fields are ignored (I1)', () => {
-  let r = studyFromLink('?study=oblique&h=20');
-  assert.equal(r.url.settings.h, 0);
-  assert.deepEqual(r.ignored, [{ param: 'h', raw: '20' }]);
+  let r = studyFromLink('?study=free&v0=5');
+  assert.equal(r.url.settings.v0, 0);
+  assert.deepEqual(r.ignored, [{ param: 'v0', raw: '5' }]);
   r = studyFromLink('?study=horizontal&mode=1');
   assert.equal(r.url.settings.mode, 'horizontal');
   assert.deepEqual(r.ignored, [{ param: 'mode', raw: '1' }]);
@@ -90,4 +90,41 @@ test('study keeps its own preset: link params for study-fixed fields are ignored
   assert.equal(r.url.settings.h, 50);
   assert.ok(r.url.locked.has('h'));
   assert.deepEqual(r.ignored, []);
+});
+
+test('studies are in metres with the spec presets', () => {
+  const p = (id) => STUDIES.find((x) => x.id === id).preset(defaultSettings());
+  assert.deepEqual([p('free').mode, p('free').h, p('free').v0], ['vertical', 20, 0]);
+  assert.deepEqual([p('vertical').h, p('vertical').v0], [20, 10]);
+  assert.deepEqual([p('horizontal').mode, p('horizontal').h, p('horizontal').v0], ['horizontal', 20, 10]);
+  assert.deepEqual([p('oblique').mode, p('oblique').h, p('oblique').v0, p('oblique').alphaDeg], ['oblique', 0, 15, 45]);
+  assert.deepEqual(STUDIES.find((x) => x.id === 'oblique').editable, ['v0', 'alpha', 'h', 'dt']);
+});
+
+test('no K-02 text mentions the table or the tower', () => {
+  for (const lang of ['lv', 'en']) {
+    for (const [k, v] of Object.entries(STRINGS[lang])) {
+      assert.ok(!/gald|torn|\btower\b|\bon the table\b|lab table/i.test(v), `${lang} ${k}: ${v}`);
+    }
+  }
+});
+
+test('old link scale=table opens full control (the notice is shown there)', () => {
+  const r = resolveRoute('?scale=table', { studies: STUDIES, settingParams: SETTING_PARAMS });
+  assert.equal(r.kind, 'full');
+});
+
+test('strobe notes: one for two tapes, one for the single falling tape, LV and EN', () => {
+  for (const lang of ['lv', 'en']) {
+    assert.ok(STRINGS[lang]['strobe.verticalNote'] && STRINGS[lang]['strobe.verticalNoteDown'], lang);
+    assert.ok(!/↑/.test(STRINGS[lang]['strobe.verticalNoteDown']), lang);
+  }
+});
+
+test('side-panel-only i18n keys are gone from K-02 strings', () => {
+  for (const lang of ['lv', 'en']) {
+    for (const k of ['blk.dims', 'blk.results', 'blk.fixed', 'dims.hint', 'dims.hintStudy', 'results.none', 'results.other', 'results.strobe', 'dir.up', 'dir.down']) {
+      assert.ok(!(k in STRINGS[lang]), `${lang} ${k}`);
+    }
+  }
 });
