@@ -91,6 +91,7 @@ export function mountTitleBlock(el, { i18n, theme, sheet, topicKey }) {
     <div class="cell"><span class="k" data-i18n="tb.langTheme"></span><span class="v">
       <button type="button" data-lang="lv">LV</button><button type="button" data-lang="en">EN</button>
       <button type="button" class="theme-toggle" data-i18n-aria="tb.themeToggle">◐</button>
+      ${document.fullscreenEnabled ? '<button type="button" class="fs-toggle" data-i18n-aria="tb.fullscreen">⛶</button>' : ''}
     </span></div>`;
   const sync = () => {
     el.querySelectorAll('[data-lang]').forEach((b) => {
@@ -101,6 +102,16 @@ export function mountTitleBlock(el, { i18n, theme, sheet, topicKey }) {
   };
   el.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => i18n.set(b.dataset.lang)));
   el.querySelector('.theme-toggle').addEventListener('click', () => theme.toggle());
+  const fs = el.querySelector('.fs-toggle');
+  if (fs) {
+    fs.addEventListener('click', () => {
+      const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+      p?.catch(() => {});
+    });
+    const fsSync = () => fs.setAttribute('aria-pressed', String(Boolean(document.fullscreenElement)));
+    document.addEventListener('fullscreenchange', fsSync);
+    fsSync();
+  }
   i18n.onChange(sync);
   sync();
   i18n.apply(el);

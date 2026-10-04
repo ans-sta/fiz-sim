@@ -2,6 +2,31 @@ import { openOverlay } from './overlay.js';
 import { toTSV, toCSV, copyText, downloadText } from './table-export.js';
 import { formatNumber } from './format.js';
 
+// “t₁, s (±0,10 s)” → galvene “t₁, s” un otrā rindā “(±0,10 s)”; bez kļūdas daļas viena rinda.
+export function splitLabel(label) {
+  const m = /^(.*\S) (\(.*\))$/.exec(label);
+  return m ? { main: m[1], err: m[2] } : { main: label, err: '' };
+}
+
+const MIN_FONT_PX = 14;
+
+// Tabula vispirms mazinās (līdz MIN_FONT_PX), tad ritinās ar izbalējumu pie malas, kur ir paslēptas kolonnas.
+function fitTable(wrap, table) {
+  table.style.fontSize = '';
+  let size = parseFloat(getComputedStyle(table).fontSize);
+  while (table.offsetWidth > wrap.clientWidth && size > MIN_FONT_PX) {
+    size = Math.max(MIN_FONT_PX, size - 1);
+    table.style.fontSize = `${size}px`;
+  }
+  updateFades(wrap);
+}
+
+function updateFades(wrap) {
+  const max = wrap.scrollWidth - wrap.clientWidth;
+  wrap.classList.toggle('more-left', wrap.scrollLeft > 1);
+  wrap.classList.toggle('more-right', wrap.scrollLeft < max - 1);
+}
+
 export function renderTable(model, lang, { compact = false } = {}) {
   const table = document.createElement('table');
   table.className = `data${compact ? ' compact' : ''}`;
@@ -10,7 +35,17 @@ export function renderTable(model, lang, { compact = false } = {}) {
   for (const c of model.columns) {
     const th = document.createElement('th');
     th.scope = 'col';
-    th.textContent = c.label;
+    const { main, err } = splitLabel(c.label);
+    const mainEl = document.createElement('span');
+    mainEl.className = 'col-main';
+    mainEl.textContent = main;
+    th.appendChild(mainEl);
+    if (err) {
+      const errEl = document.createElement('span');
+      errEl.className = 'col-err';
+      errEl.textContent = err;
+      th.appendChild(errEl);
+    }
     hr.appendChild(th);
   }
   const tbody = table.createTBody();
@@ -54,6 +89,21 @@ export function openDataTable(model, { lang, labels, onClose }) {
   const settings = document.createElement('div');
   settings.className = 'data-settings';
   settings.textContent = model.settingsLine;
-  overlay.body.append(title, settings, renderTable(model, lang));
-  return { close: overlay.close };
+  const table = renderTable(model, lang);
+  const wrap = document.createElement('div');
+  wrap.className = 'data-scroll';
+  wrap.appendChild(table);
+  overlay.root.classList.add('overlay-data');
+  overlay.body.append(title, settings, wrap);
+  const refit = () => fitTable(wrap, table);
+  wrap.addEventListener('scroll', () => updateFades(wrap), { passive: true });
+  const ro = new ResizeObserver(refit);
+  ro.observe(wrap);
+  refit();
+  return {
+    close() {
+      ro.disconnect();
+      overlay.close();
+    },
+  };
 }

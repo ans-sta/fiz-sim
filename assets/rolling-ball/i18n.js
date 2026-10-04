@@ -9,6 +9,7 @@ export const STRINGS = {
     'tb.langTheme': 'VALODA / TĒMA',
     'tb.topicValue': 'KINEMĀTIKA',
     'tb.themeToggle': 'Pārslēgt gaišo un tumšo režīmu',
+    'tb.fullscreen': 'Pilnekrāns',
 
     'blk.level': 'DATU LĪMENIS',
     'level.1': '1 · LAIKS',
@@ -170,6 +171,7 @@ export const STRINGS = {
     'tb.langTheme': 'LANGUAGE / THEME',
     'tb.topicValue': 'KINEMATICS',
     'tb.themeToggle': 'Toggle light and dark mode',
+    'tb.fullscreen': 'Full screen',
 
     'blk.level': 'DATA LEVEL',
     'level.1': '1 · TIME',
