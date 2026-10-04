@@ -48,6 +48,16 @@ export function saveScales({ text, draw }, { storage } = {}) {
   write(DRAW_KEY, draw);
 }
 
+// Rasējuma uzraksti (simboli pie rokturiem, STARTS, mērlentes numuri) aug līdzi burtiem uz pusi: ×2 → ×1,5.
+export function legendScale(text) {
+  return 1 + (text - 1) / 2;
+}
+
+// Kur vērtība ir uz slīdņa sliedes: 0 (min) … 1 (max).
+export function trackFraction(v, { min, max }) {
+  return Number(Math.min(1, Math.max(0, (v - min) / (max - min))).toFixed(4));
+}
+
 export function applyTextScale(text, root = document.documentElement) {
   root.style.setProperty('--ui', String(text));
 }

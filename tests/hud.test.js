@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { miniCells, stepValue } from '../assets/measure/hud.js';
+import { miniCells, stepValue, runSlotTop } from '../assets/measure/hud.js';
 
 const model = (rows, cols) => ({
   columns: Array.from({ length: cols }, (_, i) => ({ label: `c${i}`, decimals: i === 0 ? 1 : 2 })),
@@ -33,4 +33,10 @@ test('stepValue: one step from the current value, within the range', () => {
   assert.equal(stepValue(r, 1), 2.2491);
   assert.equal(stepValue({ ...r, value: 14.95 }, 1), 15);
   assert.equal(stepValue({ ...r, value: 0.05 }, -1), 0);
+});
+
+test('runSlotTop: the run button sits half its own height below the ground line', () => {
+  assert.equal(runSlotTop(400, 32), 416);
+  assert.equal(runSlotTop(400, 33), 417);
+  assert.equal(runSlotTop(400.4, 64), 432);
 });

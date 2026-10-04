@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  defaultTextScale, clampScale, loadScales, saveScales, TEXT_KEY, DRAW_KEY, TEXT_RANGE, DRAW_RANGE,
+  defaultTextScale, clampScale, loadScales, saveScales, legendScale, trackFraction, TEXT_KEY, DRAW_KEY, TEXT_RANGE, DRAW_RANGE,
 } from '../assets/measure/ui-scale.js';
 
 function fakeStorage(init = {}) {
@@ -57,4 +57,19 @@ test('saveScales writes only the given values', () => {
   assert.equal(st.map.has(DRAW_KEY), false);
   saveScales({ draw: 0.6 }, { storage: st });
   assert.equal(st.map.get(DRAW_KEY), '0.6');
+});
+
+test('legend in the drawing grows half as much as the text: ×2 → ×1,5, ×0,8 → ×0,9', () => {
+  assert.equal(legendScale(1), 1);
+  assert.equal(legendScale(2), 1.5);
+  assert.equal(legendScale(0.8), 0.9);
+  assert.equal(legendScale(1.35), 1.175);
+});
+
+test('trackFraction: where a value sits on a slider track, 0…1', () => {
+  assert.equal(trackFraction(0.6, DRAW_RANGE), 0);
+  assert.equal(trackFraction(1.5, DRAW_RANGE), 1);
+  assert.equal(trackFraction(1.05, DRAW_RANGE), 0.5);
+  assert.equal(trackFraction(0.3, DRAW_RANGE), 0, 'even 60 % does not fit: all grey');
+  assert.equal(trackFraction(3, DRAW_RANGE), 1, '150 % still fits: nothing grey');
 });

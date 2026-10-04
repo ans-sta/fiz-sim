@@ -488,6 +488,12 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .gear-pop .k b { color: var(--ink); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
 .layout-hud .gear-pop .btn { padding: 5px 8px; font-size: 10px; flex: none; }
 .layout-hud .gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
+/* ZĪMĒJUMS: no --fit (0…1) līdz galam zīmējums vairs neietilpst ekrāna platumā — sliede pelēka, raustīta */
+.layout-hud .gear-pop input.dim-range.fit-track { background:
+  linear-gradient(var(--ink), var(--ink)) left center / calc(6.5px + var(--fit, 1) * (100% - 13px)) 1px no-repeat,
+  repeating-linear-gradient(90deg, var(--ink-dim) 0 3px, transparent 3px 6px) right center / calc(100% - 6.5px - var(--fit, 1) * (100% - 13px)) 1px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) left center / 1px 9px no-repeat,
+  linear-gradient(var(--ink-dim), var(--ink-dim)) right center / 1px 9px no-repeat; }
 .layout-hud .gear-pop .gear-step { min-width: 32px; height: 28px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
 .layout-hud .gear-pop .gear-step:hover { background: var(--ink); color: var(--sheet); }
 .layout-hud .gear-pop input.dim-range { height: 26px; }
@@ -501,4 +507,4 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .title-small .cell .v { font-size: 10px; }
 
 /* rokturu etiķetes — tikai lieluma simbols */
-.layout-hud .handle-label.sym { font-weight: 500; padding: 0 3px; }
+.layout-hud .handle-label.sym { font-weight: 500; padding: 0 3px; font-size: calc(12px * (0.5 + var(--ui, 1) / 2)); } /* aug uz pusi līdzi burtiem */

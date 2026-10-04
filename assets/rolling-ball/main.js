@@ -6,7 +6,7 @@ import {
 } from './model.js';
 import { ballById, ballFits, GROOVE_W } from './balls.js';
 import { settingsFromURL, warningText, LOCKABLE } from './params.js';
-import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballDraw, headroomCm } from './scene.js';
+import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballDraw, ballRadiusPx } from './scene.js';
 import { createHandles } from './handles.js';
 import { createNotices } from '../measure/notices.js';
 import { formatNumber } from '../measure/format.js';
@@ -17,7 +17,8 @@ import { openStrobe } from './strobe.js';
 import { resolveRoute, studyFixed, filterStudyParams } from '../measure/studies.js';
 import { STUDIES, SETTING_PARAMS, studyAngleMode } from './studies.js';
 import { quantityRows, quantityState, measureVM } from './hud-model.js';
-import { createQuantityList, createMeasureBox, createSettingsCorner } from '../measure/hud.js';
+import { createQuantityList, createMeasureBox, createSettingsCorner, runSlotTop } from '../measure/hud.js';
+import { legendScale } from '../measure/ui-scale.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
@@ -69,7 +70,7 @@ const state = {
   shownKey: null,
   overlay: null, // { kind, key, close }
   selected: null,
-  drag: null, // { id, fit, panels } — mērogs velkot nemainās
+  drag: null, // { id, fit, avoid } — mērogs velkot nemainās
   ball: { x: null, angle: 0 }, // null → lodīte stāv kustības sākumpunktā
   drawScale: 1,
 };
@@ -143,7 +144,7 @@ const handles = createHandles(document.getElementById('handles'), {
   onChange: onHandleChange,
   onDragStart(id) {
     if (state.running) return false;
-    state.drag = { id, fit: geometry(), panels: panels() };
+    state.drag = { id, fit: geometry(), avoid: measuresBox() };
   },
   onSelect(id) {
     if (state.selected === id) return;
@@ -167,7 +168,7 @@ view = setupCanvas(canvas, () => {
   render();
 });
 
-// Paneļu augstums mainās (burti, mērījumi, tabuliņa) → renīte jāievieto no jauna.
+// MĒRĪJUMI augstums mainās (burti, mērījumi, tabuliņa) → renīte jāievieto no jauna.
 {
   let queued = false;
   const ro = new ResizeObserver(() => {
@@ -178,21 +179,17 @@ view = setupCanvas(canvas, () => {
       render();
     });
   });
-  ro.observe(hudLeft);
   ro.observe(hudRight);
 }
 
 function geometry() {
   const d = derive(state.settings);
-  return { L: state.settings.L, alphaRad: d.alphaRad, above: headroomCm(d), ballCm: 2 * d.r };
+  return { L: state.settings.L, alphaRad: d.alphaRad, ballR: ballRadiusPx(d) };
 }
 
-// Augšējo paneļu malas rasējumā (spec. izkārtojums 2.1); atvērtais slīdnis un “citi…” uz brīdi pārklāj rasējumu.
-function panels() {
-  return {
-    left: { right: hudLeft.offsetLeft + hudLeft.offsetWidth, bottom: hudLeft.offsetTop + quantities.restHeight() },
-    right: { left: hudRight.offsetLeft, bottom: hudRight.offsetTop + hudRight.offsetHeight },
-  };
+// MĒRĪJUMI rasējumā: renīte to apiet tikai, ja tas pārklātu konstrukciju; LIELUMI drīkst pārklāt (Ansis 04.10).
+function measuresBox() {
+  return { left: hudRight.offsetLeft, bottom: hudRight.offsetTop + hudRight.offsetHeight };
 }
 
 function layout() {
@@ -201,7 +198,7 @@ function layout() {
   const { w, h } = view.size();
   const geo = geometry();
   const lay = sceneLayout(w, h, geo, state.drag ? state.drag.fit : geo, {
-    panels: state.drag ? state.drag.panels : panels(),
+    avoid: state.drag ? state.drag.avoid : measuresBox(),
     drawScale: state.drawScale,
   });
   if (state.running) state.running.lay = lay;
@@ -220,9 +217,10 @@ function handleItems(lay, s, d, lang) {
     items.push({ labelAnchor: 'center', ...o, kind: on ? o.kind : 'none', labelClass: on ? 'sym' : 'sym locked' });
   };
   const up = lay.up;
+  const k = legendScale(gear.textScale()); // simboli aug līdzi burtiem uz pusi — un tā attālums no roktura
   add('L', {
     id: 'L', kind: 'diamond', x: a.L.x, y: a.L.y,
-    labelText: 'L', labelX: a.L.x + up.x * 16, labelY: a.L.y + up.y * 16,
+    labelText: 'L', labelX: a.L.x + up.x * (8 + 8 * k), labelY: a.L.y + up.y * (8 + 8 * k),
     ariaLabel: t('dims.L'), min: L_MIN, max: L_MAX, step: STEP.L, value: s.L, valueText: `${num(s.L, 0)} cm`,
   });
   add('h', {
@@ -233,10 +231,10 @@ function handleItems(lay, s, d, lang) {
   });
   add('alpha', {
     id: 'alpha', kind: 'diamond', x: a.alpha.x, y: a.alpha.y,
-    labelText: 'α', labelX: a.alpha.x + up.x * 16, labelY: a.alpha.y + up.y * 16,
+    labelText: 'α', labelX: a.alpha.x + up.x * (6 + 6 * k), labelY: a.alpha.y + up.y * (6 + 6 * k),
     ariaLabel: t('dims.alpha'), min: 0, max: ALPHA_MAX, step: STEP.alpha, value: d.alphaDeg, valueText: `${num(d.alphaDeg, 1)}°`,
   });
-  const lift = ballDraw(lay, d).R + 10;
+  const lift = ballDraw(d).R + 4 + 6 * k;
   add('x0', {
     id: 'x0', kind: 'ball', x: a.x0.x, y: a.x0.y,
     labelText: 'x₀', labelX: a.x0.x + up.x * lift - 4, labelY: a.x0.y + up.y * lift, labelAnchor: 'right', // pa labi ir STARTS karogs
@@ -525,10 +523,12 @@ function render() {
     ballX: state.ball.x ?? s.x0,
     ballAngle: state.ball.angle,
     showTape: s.tape,
+    legend: legendScale(gear.textScale()),
     avoid: { l: (w - runSlot.offsetWidth) / 2, r: (w + runSlot.offsetWidth) / 2 }, // poga zem zemes līnijas
   });
-  // poga centrēta, mazliet zem zemes; paziņojumi zem pogas (spec. izkārtojums 2.5–2.6)
-  const runTop = Math.round(lay.tableY + 14);
+  gear.setDrawFit(lay.fill);
+  // poga centrēta zem zemes, atstarpe — puse pogas augstuma; paziņojumi zem pogas (spec. izkārtojums 2.5–2.6)
+  const runTop = runSlotTop(lay.tableY, runSlot.offsetHeight);
   runSlot.style.top = `${runTop}px`;
   drawing.style.setProperty('--notices-top', `${runTop + runSlot.offsetHeight + 10}px`);
 

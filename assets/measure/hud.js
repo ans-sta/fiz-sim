@@ -1,7 +1,7 @@
 // Rasējuma paneļi jaunajā izkārtojumā (spec. izkārtojums 3, 4, 6): LIELUMI, MĒRĪJUMI, ⚙.
 // UI tekstus dod izsaucējs (labels — objekts vai funkcija, kas to atdod); šeit to nav.
 import { formatNumber } from './format.js';
-import { TEXT_RANGE, DRAW_RANGE, clampScale, loadScales, saveScales, applyTextScale } from './ui-scale.js';
+import { TEXT_RANGE, DRAW_RANGE, clampScale, loadScales, saveScales, applyTextScale, trackFraction } from './ui-scale.js';
 import { toggleFullscreen } from '../sim-core.js';
 
 const MINI_ROWS = 6;
@@ -21,6 +21,11 @@ export function miniCells(model, lang, { maxRows = MINI_ROWS, maxCols = MINI_COL
 export function stepValue(row, dir) {
   const v = Number((row.value + dir * row.step).toFixed(10));
   return Math.min(row.max, Math.max(row.min, v));
+}
+
+// Palaišanas poga zem zemes līnijas: atstarpe — puse no pogas augstuma (Ansis 04.10), lai poga neplūst ar zīmējumu.
+export function runSlotTop(groundY, buttonH) {
+  return Math.round(groundY) + Math.ceil(buttonH / 2);
 }
 
 const labelsOf = (labels) => (typeof labels === 'function' ? labels() : labels);
@@ -241,13 +246,6 @@ export function createQuantityList(root, { labels, onChange }) {
       disabled = off;
       paint();
     },
-    // Saraksta augstums bez atvērtā slīdņa un izvērstās daļas “citi…” — tās uz brīdi pārklāj rasējumu.
-    restHeight() {
-      let h = root.offsetHeight;
-      if (slide) h -= slide.box.offsetHeight;
-      if (moreOpen) for (const r of rows) if (r.group === 'more') h -= rowEls.get(r.key)?.btn.offsetHeight ?? 0;
-      return h;
-    },
   };
 }
 
@@ -419,6 +417,7 @@ export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, o
   };
   const text = sizeRow(TEXT_RANGE);
   const draw = sizeRow(DRAW_RANGE);
+  draw.input.classList.add('fit-track');
 
   let fsBtn = null;
   let screenK = null;
@@ -512,5 +511,13 @@ export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, o
   theme.onChange(paint);
   paint();
 
-  return { drawScale: () => scales.draw, textScale: () => scales.text };
+  return {
+    drawScale: () => scales.draw,
+    textScale: () => scales.text,
+    // ZĪMĒJUMS, no kura zīmējums vairs neietilpst ekrāna platumā: sliede no tā līdz 150 % ir pelēka (Ansis 04.10).
+    setDrawFit(fill) {
+      const f = String(trackFraction(fill, DRAW_RANGE));
+      if (draw.input.style.getPropertyValue('--fit') !== f) draw.input.style.setProperty('--fit', f);
+    },
+  };
 }
