@@ -76,11 +76,25 @@ test('vertical tapes: rising at x = 0, falling one tape gap to the right; v₀ �
 });
 test('MĒRĪJUMI is avoided only when the drawing would reach it', () => {
   const box = sceneBox(defaultSettings('horizontal'));
+  const GAP = 12; // PANEL_GAP
+  // zīmējuma taisnstūris: kaste + malas + vieta bultai
+  const rect = (lay) => ({
+    r: lay.toScreen(lay.box.x1, 0).x + BALL_R_PX + 4,
+    t: lay.groundY - (lay.box.y1 - lay.box.y0) * lay.tr.scale - lay.arrow,
+  });
   const free = sceneLayout(390, 780, box);
+  // far: the drawing does not reach the panel — identical layout
   const far = sceneLayout(390, 780, box, { avoid: { left: 380, bottom: 20 } });
-  assert.equal(far.tr.scale, free.tr.scale);
-  const tall = sceneLayout(390, 780, box, { avoid: { left: 220, bottom: 400 } });
-  assert.ok(tall.tr.scale <= free.tr.scale);
+  assert.deepEqual(far.tr, free.tr);
+  // only “below” has real room (beside would be narrower than 50 px): smaller, entirely below the panel
+  const below = sceneLayout(390, 780, box, { avoid: { left: 220, bottom: 100 } });
+  assert.ok(below.tr.scale < free.tr.scale - 1e-9, 'below: smaller than without avoid');
+  assert.ok(rect(below).t >= 100 + GAP - 1e-6, 'below: top of the drawing under the panel');
+  // only “beside” has real room (below would leave no height): smaller, entirely left of the panel
+  const beside = sceneLayout(390, 780, box, { avoid: { left: 300, bottom: 600 } });
+  assert.ok(beside.tr.scale < free.tr.scale - 1e-9, 'beside: smaller than without avoid');
+  assert.ok(rect(beside).r <= 300 - GAP + 1e-6, 'beside: right edge left of the panel');
+  close((extent(beside).l + extent(beside).r) / 2, 195, 1e-6, 'beside: still centred');
 });
 
 test('arrow direction per mode and sign', () => {
