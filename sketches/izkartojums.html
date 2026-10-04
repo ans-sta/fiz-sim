@@ -35,9 +35,9 @@ button { font: inherit; color: inherit; }
 .btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 
 /* ierīces rāmis */
-.stage { display: flex; justify-content: center; overflow-x: auto; padding: 6px 0 12px; }
+.stage { display: flex; justify-content: safe center; overflow-x: auto; padding: 6px 0 12px; }
 .device { flex: none; border: 1px solid var(--hairline); background: var(--sheet); position: relative; overflow: hidden; display: flex; flex-direction: column; }
-.device.phone-p { width: 390px; height: 760px; border-radius: 0; }
+.device.phone-p { width: min(390px, 100%); height: 760px; border-radius: 0; }
 .device.phone-l { width: 800px; height: 370px; }
 .device.desk { width: 1180px; height: 700px; }
 .caption { text-align: center; font-family: var(--sans); color: var(--ink-dim); font-size: 12.5px; }
