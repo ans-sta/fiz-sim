@@ -59,7 +59,7 @@ button { font: inherit; color: inherit; }
 .hud { position: absolute; background: color-mix(in srgb, var(--field) 88%, transparent); border: 1px solid var(--hairline); }
 .meas { top: 8px; left: 8px; }
 .meas .ttl, .res .ttl { font-size: 9.5px; letter-spacing: .14em; color: var(--ink-dim); padding: 6px 10px 2px; }
-.meas button.m { display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 3px 10px; background: none; border: none; border-left: 2px solid transparent; cursor: pointer; text-align: left; font-variant-numeric: tabular-nums; }
+.meas button.m { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; height: 24px; padding: 0 10px; background: none; border: none; border-left: 2px solid transparent; cursor: pointer; text-align: left; font-variant-numeric: tabular-nums; }
 .meas button.m .v { font-weight: 500; }
 .meas button.m.edit:hover, .meas button.m.edit[aria-pressed="true"] { border-left-color: var(--accent); }
 .meas button.m.edit[aria-pressed="true"] .v { color: var(--accent); }
@@ -80,13 +80,13 @@ button { font: inherit; color: inherit; }
 .res .open { font-size: 9px; letter-spacing: .1em; color: var(--ink-dim); padding: 4px 10px 0; }
 .runbtn { position: absolute; transform: translateX(-50%); display: flex; gap: 6px; }
 .runbtn .btn { background: var(--sheet); border-color: var(--ink); font-weight: 600; padding: 8px 14px; }
-.gear { position: absolute; left: 10px; bottom: 10px; width: 34px; height: 34px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 17px; line-height: 1; zoom: var(--text, 1); }
+.gear { position: absolute; left: 10px; bottom: 10px; width: 34px; height: 34px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 17px; line-height: 1; } /* zobrats un tā logs neaug līdzi burtiem — pogas paliek zem pirksta */
 .gear:hover, .gear[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
-.gearpop { position: absolute; left: 10px; bottom: 52px; width: 236px; background: var(--sheet); border: 1px solid var(--ink); padding: 10px; display: grid; gap: 10px; zoom: var(--text, 1); }
-.gearpop .gr { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.gearpop .gr.col { display: grid; gap: 4px; }
+.gearpop { position: absolute; left: 10px; bottom: 52px; width: 236px; background: var(--sheet); border: 1px solid var(--ink); padding: 10px; display: grid; gap: 10px; }
+.gearpop .gr { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 28px; }
+.gearpop .gr.col { display: grid; grid-template-rows: 14px 26px; gap: 4px; height: auto; }
 .gearpop .k { font-size: 9.5px; letter-spacing: .14em; color: var(--ink-dim); }
-.gearpop .k b { color: var(--ink); font-weight: 500; letter-spacing: 0; margin-left: 4px; }
+.gearpop .k b { color: var(--ink); font-weight: 500; letter-spacing: 0; margin-left: 4px; display: inline-block; min-width: 4.5ch; font-variant-numeric: tabular-nums; }
 .gearpop .btn { padding: 5px 7px; font-size: 10px; }
 .gearpop .ctl { display: flex; align-items: center; gap: 6px; }
 .gearpop .ctl button { min-width: 30px; height: 26px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
@@ -100,10 +100,11 @@ button { font: inherit; color: inherit; }
 .device [hidden] { display: none !important; }
 
 /* apakšējais slīdnis */
-.slide { padding: 2px 10px 8px; display: grid; gap: 4px; width: 210px; max-width: calc(100vw - 60px); animation: open .16s ease-out; }
+.slide { padding: 2px 10px 8px; display: grid; grid-template-rows: 26px 12px; gap: 4px; width: 210px; max-width: calc(100vw - 60px); animation: open .16s ease-out; }
+.slide:has(.choices) { grid-template-rows: auto; }
 @keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .slide { animation: none; } }
-.slide .ctl { display: flex; align-items: center; gap: 6px; }
+.slide .ctl { display: flex; align-items: center; gap: 6px; height: 26px; }
 .slide .ctl button { width: 26px; height: 26px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; flex: none; }
 .slide .ctl button:hover { background: var(--ink); color: var(--sheet); }
 .slide .choices { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -147,7 +148,7 @@ input.dim-range:focus-visible { outline: none; }
   <div class="sketchbar">
     <strong>SKICE · JAUNAIS IZKĀRTOJUMS (piemērs — lodīte, pētījums a(α))</strong>
     <ol>
-      <li>Augšā pa kreisi — LIELUMI: īss saraksts (α, h, L; Δt vai Δx, ja tie ir). Uzklikšķini uz maināmā — tieši zem tā atveras slīdnis ar rombiņu un − / +, pārējās rindas noslīd uz leju; rasējums mainās uzreiz. Vēlreiz uzklikšķini — slīdnis aizveras. Nofiksētie ir pelēki.</li>
+      <li>Augšā pa kreisi — LIELUMI: īss saraksts (α, h, L; Δt vai Δx, ja tie ir). Uzklikšķini uz maināmā — tieši zem tā atveras slīdnis ar rombiņu un − / +, pārējās rindas noslīd uz leju; rasējums mainās uzreiz. Slīdnis aizveras, vēlreiz uzklikšķinot uz lieluma, ar klikšķi ārpus saraksta vai ar Esc; − / + to nepabīda (fiksēts augstums). Nofiksētie ir pelēki.</li>
       <li>Poga ir pašā rasējumā, zem slīpnes: pirmo reizi ▶ PALAIST, ▶ AIZIET vai ▶ STARTS (nejauši), tad ↻ ATKĀRTOT 2×, 3× …</li>
       <li>Augšā pa labi — MĒRĪJUMI: viens liels cipars (palaišanas laikā hronometrs skaita). No 2. mērījuma zem tā parādās maza tabuliņa; uzklikšķini — atveras lielā tabula.</li>
       <li>Lielā tabula krāj sēriju: katram α sava rinda, katram atkārtojumam sava kolonna (4. punkts).</li>
@@ -171,7 +172,7 @@ input.dim-range:focus-visible { outline: none; }
   <div class="notes">
     <div><b>Kas paliek ārpus rasējuma:</b> tikai galvene (atpakaļ, nosaukums, LV/EN, ◐, ⛶). Datorā rakstlaukums ir rasējuma apakšējā labajā stūrī; telefonā tas saiet galvenē.</div>
     <div><b>Lodīte</b> zīmējumā ir 2× lielāka nekā mērogā — lai to labi redz (koordinātas un dati tik un tā attiecas uz tās centru).</div>
-    <div><b>⚙ apakšā pa kreisi</b> (pilnekrānā galvenes nav — tas viss ir šeit): tēma, valoda, BURTI (80–200 %) un ZĪMĒJUMS (60–150 %) — abi mainās uzreiz, ierīce izvēli atceras; arī PILNEKRĀNS. Sākumā BURTI pielāgojas ekrāna izmēram pats (lielā ekrānā lielāki), slīdnis ļauj to pamainīt.</div>
+    <div><b>⚙ apakšā pa kreisi</b> (pilnekrānā galvenes nav — tas viss ir šeit): tēma, valoda, BURTI (80–200 %) un ZĪMĒJUMS (60–150 %) — abi mainās uzreiz, ierīce izvēli atceras; arī PILNEKRĀNS. Logs aizveras ar klikšķi ārpusē vai Esc; tas pats neaug līdzi burtiem, lai pogas paliek zem pirksta. Sākumā BURTI pielāgojas ekrāna izmēram pats (lielā ekrānā lielāki), slīdnis ļauj to pamainīt.</div>
     <div><b>Pilnā kontrole:</b> zem lielumiem ir “citi…” — saraksts izvēršas uz leju, un tur var mainīt visu: x₀, lodīti, virsmu, ar ko mēra, mērlenti, palēninājumu. Izvēles lielumam zem tā parādās pogas (slīdņa vietā). Pētījumā “citi…” nav — tur viss jau iestatīts.</div>
     <div><b>Renītes garums L:</b> 50–200 cm, maina ar to pašu slīdni.</div>
   </div>
@@ -348,6 +349,10 @@ document.addEventListener('click', (e) => {
   const mode = t.closest('[data-mode]'); if (mode) { S.mode = mode.dataset.mode; S.edit = null; render(); return; }
   const ed = t.closest('[data-edit]'); if (ed) { S.edit = S.edit === ed.dataset.edit ? null : ed.dataset.edit; render(); return; }
   if (t.closest('[data-gear]')) { S.gear = !S.gear; render(); return; }
+  // ⚙ logs aizveras arī ar klikšķi ārpus tā (un klikšķis turpat izpildās)
+  if (S.gear && !t.closest('.gearpop')) { S.gear = false; render(); }
+  // slīdnis lielumu sarakstā arī aizveras ar klikšķi ārpus saraksta
+  if (S.edit && !t.closest('.meas')) { S.edit = null; render(); }
   const th = t.closest('[data-theme-set]'); if (th) { document.documentElement.dataset.theme = th.dataset.themeSet; render(); return; }
   const lg = t.closest('[data-lang-set]'); if (lg) { S.lang = lg.dataset.langSet; render(); return; }
   if (t.closest('[data-fs]')) { S.fs = !S.fs; render(); return; }
@@ -356,13 +361,18 @@ document.addEventListener('click', (e) => {
     const key = sz.dataset.size === 'text' ? 'text' : 'drawScale';
     const [lo, hi] = key === 'text' ? [0.8, 2] : [0.6, 1.5];
     S[key] = Math.min(hi, Math.max(lo, Math.round((S[key] + Number(sz.dataset.d)) * 100) / 100));
-    render();
+    const d = $('#device');
+    const i = key === 'text' ? 0 : 1;
+    d.querySelectorAll('.gearpop .gr.col .k b')[i].textContent = `${Math.round(S[key] * 100)} %`;
+    $(key === 'text' ? '#rngText' : '#rngDraw').value = S[key];
+    if (key === 'text') d.style.setProperty('--text', S.text);
+    else refreshLive();
     return;
   }
   if (t.closest('[data-more]')) { S.more = !S.more; if (!S.more && OTHER_KEYS.includes(S.edit)) S.edit = null; render(); return; }
   const ch = t.closest('[data-choice]'); if (ch) { CHOICE[ch.dataset.choice] = ch.dataset.v; render(); return; }
   const st = t.closest('[data-step]');
-  if (st && S.edit && !PARAMS[S.edit].choices) { const p = PARAMS[S.edit]; p.set(Math.min(p.max, Math.max(p.min, Math.round((p.get() + Number(st.dataset.step) * p.step) / p.step) * p.step))); newSeriesRowIfNeeded(); render(); return; }
+  if (st && S.edit && !PARAMS[S.edit].choices) { const p = PARAMS[S.edit]; p.set(Math.min(p.max, Math.max(p.min, Math.round((p.get() + Number(st.dataset.step) * p.step) / p.step) * p.step))); newSeriesRowIfNeeded(); $('#rng').value = p.get(); refreshLive(); return; }
   if (t.closest('[data-run]')) {
     if (S.live !== null) return;
     const tt = Math.round((Math.sqrt((2 * (S.L - 10)) / (0.55 * 981 * Math.sin(rad(Math.max(S.alpha, 0.5))))) + (Math.random() - 0.5) * 0.08) * 100) / 100;
@@ -378,6 +388,7 @@ document.addEventListener('click', (e) => {
   if (t.closest('[data-bigclose]')) { S.big = false; render(); return; }
   if (t.closest('[data-big]')) { S.big = true; render(); }
 });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && (S.gear || S.edit)) { S.gear = false; S.edit = null; render(); } });
 render();
 </script>
 
