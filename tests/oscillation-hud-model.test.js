@@ -12,7 +12,7 @@ test('quantityRows: A, T, λ sliders and the helper-lines choice, Latvian number
   const rows = quantityRows(defaultSettings(), { lang: 'lv', t: lv });
   assert.deepEqual(rows.map((r) => r.key), ['A', 'T', 'lambda', 'lines']);
   const [A, T, L, lines] = rows;
-  assert.deepEqual([A.symbol, A.valueText, A.kind, A.state, A.min, A.max, A.step, A.value], ['A', '20 cm', 'range', 'editable', 5, 40, 1, 20]);
+  assert.deepEqual([A.symbol, A.valueText, A.kind, A.state, A.min, A.max, A.step, A.value], ['A', '30 cm', 'range', 'editable', 5, 40, 1, 30]);
   assert.deepEqual([T.symbol, T.valueText, T.minText, T.maxText], ['T', '4,0 s', '1 s', '8 s']);
   assert.deepEqual([L.symbol, L.valueText], ['λ', '100 cm']);
   assert.deepEqual([lines.kind, lines.group, lines.value, lines.valueText], ['check', 'aside', true, 'rāda']);

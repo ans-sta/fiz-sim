@@ -272,6 +272,27 @@ export function createQuantityList(root, { labels, onChange }) {
   };
 }
 
+// ── Salokāms panelis ─────────────────────────────────────
+// Telefonā panelis rāda tikai virsrakstu un ▾ apakšā; klikšķis atver uz leju (Ansis 04.10). Datorā poga ir paslēpta (CSS).
+export function createFold(root, { labels, folded = false }) {
+  const btn = button('hud-fold');
+  root.appendChild(btn);
+  let on = folded;
+  function paint() {
+    const L = labelsOf(labels);
+    root.classList.toggle('folded', on);
+    setText(btn, on ? '▾' : '▴');
+    setAttr(btn, 'aria-expanded', !on);
+    setAttr(btn, 'aria-label', on ? L.open : L.close);
+  }
+  btn.addEventListener('click', () => {
+    on = !on;
+    paint();
+  });
+  paint();
+  return { folded: () => on, repaint: paint };
+}
+
 // ── MĒRĪJUMI ─────────────────────────────────────────────
 // vm: { symbol, valueText, unit, live, note, rows: [{ a, b }] | null, mini: TableModel | null,
 //       canOpen, strobe, tableChoices: [{ key, label }] | null, shownKey }

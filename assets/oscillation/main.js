@@ -2,13 +2,13 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withT, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout,
+  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withT, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
 import { drawScene } from './scene.js';
 import { createNotices } from '../measure/notices.js';
-import { createQuantityList, createSettingsCorner } from '../measure/hud.js';
+import { createQuantityList, createSettingsCorner, createFold } from '../measure/hud.js';
 import { legendScale } from '../measure/ui-scale.js';
 import { TOP_MARGIN, PANEL_GAP, EDGE_PX } from '../measure/hud-layout.js';
 
@@ -33,7 +33,8 @@ const state = {
   phase: 0,
   paused: false,
   drawScale: 1,
-  leftH: 0, // LIELUMI augstums aizvērtā stāvoklī (atvērts slīdnis zīmējumu nebīda)
+  leftH: 0, // LIELUMI augstums un platums aizvērtā stāvoklī (atvērts slīdnis zīmējumu nebīda)
+  leftW: 0,
 };
 const painted = { settings: null, lang: null }; // ko LIELUMI pēdējo reizi rādīja
 
@@ -95,6 +96,13 @@ const gear = createSettingsCorner(document.getElementById('gear'), {
 });
 state.drawScale = gear.drawScale();
 
+// Telefonā abi paneļi sākumā salocīti — tikai virsraksts un ▾ (Ansis 04.10); datorā poga paslēpta (CSS)
+const MOBILE = matchMedia('(max-width: 700px), (max-height: 480px)');
+const foldLabels = () => ({ open: t('hud.unfold'), close: t('hud.fold') });
+hudLeft.classList.add('narrow'); // īsas rindas — panelis šaurāks
+const folds = [createFold(hudLeft, { labels: foldLabels, folded: MOBILE.matches }), createFold(hudRight, { labels: foldLabels, folded: MOBILE.matches })];
+i18n.onChange(() => folds.forEach((f) => f.repaint()));
+
 // Skatu pogas: APLIS · ŠĶĒRSVILNIS · GARENVILNIS un ⏸/▶ (spec. 4.3)
 const viewBtns = new Map();
 for (const v of VIEWS) {
@@ -138,12 +146,19 @@ view = setupCanvas(canvas, () => render());
 
 function layout() {
   const { w, h } = view.size();
-  if (!hudLeft.classList.contains('sliding')) state.leftH = hudLeft.offsetHeight; // atvērts slīdnis zīmējumu nebīda
+  if (!hudLeft.classList.contains('sliding')) { // atvērts slīdnis zīmējumu nebīda
+    state.leftH = hudLeft.offsetHeight;
+    state.leftW = hudLeft.offsetWidth;
+  }
   const top = TOP_MARGIN + Math.max(state.leftH, hudRight.offsetHeight) + PANEL_GAP;
   const bottom = h - viewSlot.offsetTop + PANEL_GAP; // pogas un (telefonā stāvus) padoms zem tām
   // GARENVILNĪ galējie punkti aiziet līdz A aiz ass galiem: platumā rezervē 2·A_max (A mērogu nemaina — kā augstumā)
   const fitW = (w - 2 * EDGE_PX) / (AXIS_CM + 2 * RANGES.A.max);
-  return sceneLayout(w, h, { top, bottom, drawScale: state.drawScale, edge: (w - AXIS_CM * fitW) / 2 });
+  const side = sceneLayout(w, h, { top, bottom, drawScale: state.drawScale, edge: (w - AXIS_CM * fitW) / 2 });
+  // APLIS: tuvplāns — aplis ar A_max aizpilda joslu starp paneļiem vai zem tiem; pagriezienā mērogs mīksti pāriet uz ass mērogu
+  const clearW = w - 2 * (Math.max(state.leftW, hudRight.offsetWidth) + 8 + PANEL_GAP);
+  const circle = circleLayout(w, h, { topFree: TOP_MARGIN, topBelow: top, bottom, clearW, drawScale: state.drawScale });
+  return blendLayout(circle, side, state.pose.kappa);
 }
 
 function step(dt) {

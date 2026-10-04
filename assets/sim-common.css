@@ -414,10 +414,20 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .q-row:focus-visible { outline-offset: -2px; }
 /* čekbokss (kind 'check') un atdalītājs rindām, kas nav mainīgie lielumi (group 'aside') — Ansis 04.10 */
 .layout-hud .q-row .q-check { flex: none; display: grid; place-items: center; width: calc(13px * var(--hud)); height: calc(13px * var(--hud)); border: 1px solid var(--ink); background: var(--sheet); font-size: calc(10px * var(--hud)); line-height: 1; }
-.layout-hud .q-row .q-check.on { background: var(--accent); border-color: var(--accent); color: var(--sheet); }
+.layout-hud .q-row .q-check.on { background: var(--ink); border-color: var(--ink); color: var(--sheet); } /* tintes krāsā, ne akcenta — nav svarīgs (Ansis) */
 .layout-hud .q-row .q-check.on::after { content: "✓"; }
 .layout-hud .q-row.check:hover .q-check { border-color: var(--accent); }
+.layout-hud .q-list.narrow { width: calc(150px * var(--hud)); } /* S-01: īsas rindas, panelis šaurāks (Ansis 04.10) */
+@media (max-width: 520px) { .layout-hud .hud-title { font-size: calc(9.5px * min(var(--hud), 1.15)); white-space: nowrap; } } /* šaurā telefonā virsraksts vienā rindā */
 .layout-hud .q-sep { border-top: 1px solid var(--hairline); margin: calc(3px * var(--hud)) calc(10px * var(--hud)); }
+/* salokāms panelis telefonā: tikai virsraksts un ▾ apakšā, klikšķis atver uz leju (Ansis 04.10); datorā pogas nav */
+.layout-hud .hud-fold { display: none; width: 100%; height: calc(16px * var(--hud)); background: none; border: none; border-top: 1px solid var(--hairline); color: var(--ink-dim); cursor: pointer; font-size: calc(11px * var(--hud)); line-height: 1; padding: 0; }
+.layout-hud .hud-fold:hover { color: var(--accent); }
+@media (max-width: 700px), (max-height: 480px) {
+  .layout-hud .hud-fold { display: block; }
+  .layout-hud .hud.folded > :not(.hud-title):not(.hud-fold) { display: none; }
+  .layout-hud .hud.folded .hud-title { padding-bottom: calc(5px * var(--hud)); }
+}
 .layout-hud .q-more { display: flex; align-items: center; width: 100%; height: calc(24px * var(--hud)); background: none; border: none; border-top: 1px dashed var(--hairline); padding: 0 calc(10px * var(--hud)); font-size: calc(10.5px * var(--hud)); color: var(--ink-dim); letter-spacing: 0.08em; cursor: pointer; text-align: left; }
 .layout-hud .q-more:hover { color: var(--ink); }
 .layout-hud .q-slide { padding: 0 calc(10px * var(--hud)) calc(6px * var(--hud)); }

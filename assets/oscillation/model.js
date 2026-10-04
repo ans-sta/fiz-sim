@@ -22,7 +22,7 @@ export const COMPRESSION = 0; // fāze, ap kuru garenvilnī ir sablīvējums (�
 const BAND_CM = 2 * RANGES.A.max * 1.15; // augstums, kam jāietilpst starp paneļiem un pogām (A nemaina mērogu)
 
 export function defaultSettings() {
-  return { A: 20, T: 4, lambda: 100, lines: true };
+  return { A: 30, T: 4, lambda: 100, lines: true }; // A 30 (bija 20): sākuma aplis lielāks (Ansis 04.10)
 }
 
 function withRange(s, key, v) {
@@ -116,6 +116,23 @@ export function sceneLayout(w, h, { top = 0, bottom = 0, drawScale = 1, edge = E
   const fitH = band / BAND_CM;
   const base = Math.min(fitW, fitH);
   return { scale: base * drawScale, cx: w / 2, cy: top + band / 2, fill: Math.min(DRAW_RANGE.max, fitW / base) };
+}
+// APĻA skats (Ansis 04.10: aplis par mazu): aplis ar A_max aizpilda vai nu joslu starp paneļiem (visā augstumā no topFree,
+// platumā clearW), vai joslu zem paneļiem (no topBelow, visā platumā) — ņem to, kas dod lielāku mērogu.
+export const CIRCLE_CM = 2 * RANGES.A.max * 1.1;
+export function circleLayout(w, h, { topFree = 0, topBelow = 0, bottom = 0, clearW = 0, drawScale = 1, edge = EDGE_PX } = {}) {
+  const fullBand = Math.max(1, h - topFree - bottom);
+  const between = Math.min(fullBand, clearW);
+  const belowBand = Math.max(1, h - topBelow - bottom);
+  const below = Math.min(belowBand, w - 2 * edge);
+  const useBetween = between >= below;
+  const fit = Math.max(1, useBetween ? between : below) / CIRCLE_CM;
+  return { scale: fit * drawScale, cx: w / 2, cy: useBetween ? topFree + fullBand / 2 : topBelow + belowBand / 2 };
+}
+// Kamerai griežoties (t = κ 0…1) tuvplāns pāriet uz visas ass mērogu — mīksti, nekas nelec.
+export function blendLayout(a, b, t) {
+  const k = smooth(Math.min(1, Math.max(0, t)));
+  return { scale: a.scale + (b.scale - a.scale) * k, cx: a.cx + (b.cx - a.cx) * k, cy: a.cy + (b.cy - a.cy) * k, fill: b.fill ?? a.fill };
 }
 export function toScreen(lay, pt, kappaRad) {
   return { x: lay.cx + (pt.u - viewCenterU(kappaRad)) * lay.scale, y: lay.cy - pt.w * lay.scale };

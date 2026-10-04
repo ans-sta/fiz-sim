@@ -4,7 +4,7 @@ import {
   AXIS_CM, N_POINTS, RANGES, VIEWS, VIEW_POSE, TURN_S, TAU, CREST, COMPRESSION,
   defaultSettings, withA, withT, withLambda, withLines, derived, advancePhase, pointZ, phaseAt,
   point3D, project, viewCenterU, smooth, poseAngles, advancePose, settled,
-  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen,
+  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM,
 } from '../assets/oscillation/model.js';
 
 const close = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
@@ -14,7 +14,7 @@ test('constants and defaults from the spec', () => {
   assert.equal(AXIS_CM, 200);
   assert.equal(N_POINTS, 41);
   assert.deepEqual(VIEWS, ['circle', 'trans', 'long']);
-  assert.deepEqual(defaultSettings(), { A: 20, T: 4, lambda: 100, lines: true });
+  assert.deepEqual(defaultSettings(), { A: 30, T: 4, lambda: 100, lines: true });
   assert.deepEqual(RANGES.A, { min: 5, max: 40, step: 1 });
   assert.deepEqual(RANGES.T, { min: 1, max: 8, step: 0.5 });
   assert.deepEqual(RANGES.lambda, { min: 50, max: 200, step: 10 });
@@ -26,7 +26,7 @@ test('with*: clamp, round to the step, keep the object when nothing changes', ()
   assert.equal(withA(s, 100).A, 40);
   assert.equal(withA(s, 0).A, 5);
   assert.equal(withA(s, 12.3).A, 12);
-  assert.equal(withA(s, 20), s);
+  assert.equal(withA(s, 30), s);
   assert.equal(withA(s, NaN), s);
   assert.equal(withT(s, 2.26).T, 2.5);
   assert.equal(withT(s, 0.2).T, 1);
@@ -159,4 +159,27 @@ test('sceneLayout: the axis fits the width, 2 × 40 cm fits the band, centre in 
   close(a.y, lay.cy - 10 * lay.scale);
   const b = toScreen(lay, { u: 100, w: 0 }, Math.PI / 2);
   close(b.x, 500);
+});
+
+test('circleLayout: the A_max circle fills the band between the panels or, when that is narrower, the band below them', () => {
+  // desktop: between the panels (full height 900 − 12 − 90 = 798 vs clear width 1036 → 798)
+  const d = circleLayout(1600, 900, { topFree: 12, topBelow: 180, bottom: 90, clearW: 1036 });
+  close(d.scale, 798 / CIRCLE_CM);
+  close(d.cy, 12 + 798 / 2);
+  // portrait phone: panels span the width (clearW < 0) → below them, width-limited
+  const p = circleLayout(390, 844, { topFree: 12, topBelow: 60, bottom: 110, clearW: -4 });
+  close(p.scale, (390 - 32) / CIRCLE_CM);
+  close(p.cy, 60 + (844 - 60 - 110) / 2);
+  close(circleLayout(1600, 900, { topFree: 12, topBelow: 180, bottom: 90, clearW: 1036, drawScale: 0.5 }).scale, d.scale / 2);
+});
+
+test('blendLayout: κ = 0 gives the circle layout, κ = 1 the side layout, in between a smooth mix', () => {
+  const a = { scale: 10, cx: 800, cy: 400 };
+  const b = { scale: 5, cx: 800, cy: 460, fill: 1.2 };
+  assert.deepEqual(blendLayout(a, b, 0), { scale: 10, cx: 800, cy: 400, fill: 1.2 });
+  assert.deepEqual(blendLayout(a, b, 1), { scale: 5, cx: 800, cy: 460, fill: 1.2 });
+  const m = blendLayout(a, b, 0.5);
+  close(m.scale, 7.5);
+  close(m.cy, 430);
+  assert.deepEqual(blendLayout(a, b, 2), blendLayout(a, b, 1));
 });
