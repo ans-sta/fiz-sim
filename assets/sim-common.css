@@ -364,14 +364,10 @@ table.data.compact td { padding: 2px 6px; }
 /* ══ Jaunais izkārtojums (spec. izkārtojums, K-01): rasējums pa visu laukumu, paneļi virs tā ══
    Viss zem .layout-hud — lapas bez šīs klases (K-02) paliek kā līdz šim.
    Burtu izmēri × var(--hud) (= ⚙ BURTI, --ui); zīmējums un ⚙ logs no tā neatkarīgi. */
-.layout-hud { --bar-gap: 0px; --hud: var(--ui, 1); }
+.layout-hud { --hud: var(--ui, 1); }
 /* zems ekrāns (telefons ainavā): paneļiem nav vietas augt — burti aug ne vairāk kā līdz 125 % */
 @media (max-height: 480px) and (orientation: landscape) {
   .layout-hud { --hud: min(var(--ui, 1), 1.25); }
-}
-@supports (height: 100svh) {
-  /* telefonā lapa ir 100lvh augsta (pārlūka joslas var aizritināt), tāpēc apakšas lietas ceļ virs joslām */
-  .layout-hud { --bar-gap: calc(100lvh - 100svh); }
 }
 html.is-fullscreen body.layout-hud header { display: none; }
 
@@ -469,8 +465,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .run-slot .btn:disabled:hover { background: var(--sheet); }
 
 /* paziņojumi: rasējuma apakšā, zem pogas */
-.layout-hud .notices { top: var(--notices-top, auto); bottom: calc(10px + var(--bar-gap)); left: 56px; right: 56px; align-items: center; overflow-y: auto; z-index: 4; }
-.layout-hud .drawing.has-title .notices { bottom: calc(64px + var(--bar-gap)); }
+.layout-hud .notices { top: var(--notices-top, auto); bottom: 10px; left: 56px; right: 56px; align-items: center; overflow-y: auto; z-index: 4; }
+.layout-hud .drawing.has-title .notices { bottom: 64px; }
 .layout-hud .notice { width: 100%; font-size: calc(12.5px * var(--hud)); }
 .layout-hud .notice button { font-size: calc(13px * var(--hud)); }
 @media (max-width: 520px) {
@@ -478,8 +474,9 @@ html.is-fullscreen body.layout-hud header { display: none; }
 }
 
 /* ⚙ — fiksēts izmērs (neaug līdzi burtiem), pogas paliek zem pirksta */
-.layout-hud .gear-corner { position: absolute; left: 10px; bottom: calc(10px + var(--bar-gap)); z-index: 5; font-size: 11px; }
-.layout-hud .gear-btn { display: block; width: 34px; height: 34px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 17px; line-height: 1; }
+/* ⚙ un rakstlaukums — piestiprināti ekrāna stūriem (arī telefonā ainavā, kad pārlūka joslas mainās) */
+.layout-hud .gear-corner { position: fixed; left: max(16px, calc(env(safe-area-inset-left) + 4px)); bottom: max(16px, calc(env(safe-area-inset-bottom) + 4px)); z-index: 5; font-size: 11px; }
+.layout-hud .gear-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 26px; line-height: 1; }
 .layout-hud .gear-btn:hover, .layout-hud .gear-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
 .layout-hud .gear-pop { position: absolute; left: 0; bottom: 42px; width: 250px; background: var(--sheet); border: 1px solid var(--ink); padding: 10px; display: grid; gap: 10px; }
 .layout-hud .gear-pop .gr { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; }
@@ -488,18 +485,18 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .gear-pop .k b { color: var(--ink); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
 .layout-hud .gear-pop .btn { padding: 5px 8px; font-size: 10px; flex: none; }
 .layout-hud .gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
+.layout-hud .gear-pop .gear-step { min-width: 32px; height: 28px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
+.layout-hud .gear-pop .gear-step:hover { background: var(--ink); color: var(--sheet); }
+.layout-hud .gear-pop input.dim-range { height: 26px; }
 /* ZĪMĒJUMS: no --fit (0…1) līdz galam zīmējums vairs neietilpst ekrāna platumā — sliede pelēka, raustīta */
 .layout-hud .gear-pop input.dim-range.fit-track { background:
   linear-gradient(var(--ink), var(--ink)) left center / calc(6.5px + var(--fit, 1) * (100% - 13px)) 1px no-repeat,
   repeating-linear-gradient(90deg, var(--ink-dim) 0 3px, transparent 3px 6px) right center / calc(100% - 6.5px - var(--fit, 1) * (100% - 13px)) 1px no-repeat,
   linear-gradient(var(--ink), var(--ink)) left center / 1px 9px no-repeat,
   linear-gradient(var(--ink-dim), var(--ink-dim)) right center / 1px 9px no-repeat; }
-.layout-hud .gear-pop .gear-step { min-width: 32px; height: 28px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
-.layout-hud .gear-pop .gear-step:hover { background: var(--ink); color: var(--sheet); }
-.layout-hud .gear-pop input.dim-range { height: 26px; }
 
 /* mazais rakstlaukums (tikai lielā rasējumā) */
-.layout-hud .title-small { position: absolute; right: 10px; bottom: calc(10px + var(--bar-gap)); z-index: 2; display: grid; grid-template-columns: repeat(3, auto); border: 1px solid var(--hairline); background: var(--sheet); }
+.layout-hud .title-small { position: fixed; right: max(16px, calc(env(safe-area-inset-right) + 4px)); bottom: max(16px, calc(env(safe-area-inset-bottom) + 4px)); z-index: 2; display: grid; grid-template-columns: repeat(3, auto); border: 1px solid var(--hairline); background: var(--sheet); }
 .layout-hud .title-small .cell { min-height: 0; padding: 3px 8px; border-bottom: none; }
 .layout-hud .title-small .cell + .cell { border-left: 1px solid var(--hairline); }
 .layout-hud .title-small .cell:nth-child(odd) { border-right: none; }
@@ -508,3 +505,19 @@ html.is-fullscreen body.layout-hud header { display: none; }
 
 /* rokturu etiķetes — tikai lieluma simbols */
 .layout-hud .handle-label.sym { font-weight: 500; padding: 0 3px; font-size: calc(12px * (0.5 + var(--ui, 1) / 2)); } /* aug uz pusi līdzi burtiem */
+
+/* Skārienekrāns (telefons, planšete): virs rāmja josla un zem tā brīva vieta, lai ar vienu vilcienu pa rasējumu
+   lapu var paritināt un pārlūks paslēpj savas joslas; lapa apstājas ar rāmi tieši pa visu ekrānu (Ansis 04.10).
+   Datorā (pele) nekas nemainās. Rokturi, slīdņi un stroboskops lapu neritina. */
+@media (hover: none) and (pointer: coarse) {
+  html:has(> body.layout-hud) { scroll-snap-type: y mandatory; }
+  body.layout-hud {
+    height: auto; overflow: visible;
+    padding: 48px max(6px, env(safe-area-inset-right)) 40vh max(6px, env(safe-area-inset-left));
+  }
+  /* otrs apstāšanās punkts — lapas augša: ielādējot lapa paliek tur, vilciens to aiznes līdz rāmim */
+  body.layout-hud::before { content: ""; position: absolute; top: 0; left: 0; width: 1px; height: 1px; scroll-snap-align: start; pointer-events: none; }
+  .layout-hud > .frame { height: 100vh; height: 100lvh; scroll-snap-align: start; }
+  .layout-hud input.dim-range { touch-action: none; }
+  .layout-hud .overlay-body { overscroll-behavior: contain; }
+}
