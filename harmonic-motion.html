@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="lv" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Svārstības un viļņi — FIZ-SIM</title>
+<script>
+  // Tēma pirms pirmā zīmējuma, lai nemirgo; tā pati loģika kā sim-core.js createTheme().
+  try {
+    var saved = localStorage.getItem('fiz-sim-theme');
+    document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/sim-common.css">
+<script type="module" src="assets/oscillation/main.js"></script>
+</head>
+<body class="layout-hud">
+<div class="frame">
+  <header>
+    <a class="back" href="index.html" data-i18n="page.back">← SARAKSTS</a>
+    <h1><span data-i18n="page.heading">SVĀRSTĪBAS UN VIĻŅI</span> <span class="sheet-no">S-01</span></h1>
+    <div class="head-tools" id="headTools"></div>
+  </header>
+  <div class="work">
+    <div class="drawing" id="drawing">
+      <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
+      <canvas id="scene" role="img" data-i18n-aria="scene.aria"></canvas>
+      <div id="hudLeft"></div>
+      <div id="hudRight"></div>
+      <div class="s01-views" id="viewSlot" role="group"></div>
+      <p class="s01-hint" id="turnHint" data-i18n="hint.rotate"></p>
+      <div class="notices" id="notices" role="status" aria-live="polite"></div>
+      <div class="title-small" id="titleSmall" hidden></div>
+      <div id="gear"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
