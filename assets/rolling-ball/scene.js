@@ -26,7 +26,7 @@ export function headroomCm(derived) {
 
 // Renīte: zeme zelta griezumā; renīte ietilpst platumā un starp augšējiem paneļiem un zemi, centrēta; tad × ⚙ ZĪMĒJUMS.
 // topReserve — konstrukcija zem šīs līnijas. panels — { left: { right, bottom }, right: { left, bottom } }:
-// konstrukcija iet zem abiem paneļiem vai blakus vienam no tiem — kur zīmējums sanāk lielāks (zems ekrāns).
+// konstrukcija iet zem abiem paneļiem, blakus vienam vai starp tiem — kur zīmējums sanāk lielāks (zems ekrāns).
 // fit — mērogs velkot nemainās.
 export function sceneLayout(width, height, geo, fit = geo, { topReserve = 0, drawScale = 1, panels = null } = {}) {
   const tableY = Math.round(height * GROUND);
@@ -39,16 +39,20 @@ export function sceneLayout(width, height, geo, fit = geo, { topReserve = 0, dra
     const availH = Math.max(40, lowY - top - ABOVE_PX);
     // platums: L·cos α·s + sideRoom(s) ≤ w (abi gali — lodīte un h izmēru līnija ar etiķeti)
     const sw = Math.min((w - MARGIN.left - MARGIN.right) / lc, (w - MARGIN.right - BALL_ROOM.left) / (lc + a), (w - BALL_ROOM.left - BALL_ROOM.right) / (lc + 2 * a));
-    return { x0, w, s: Math.min(60, sw, availH / (fit.L * Math.sin(fit.alphaRad) + above)) };
+    // ok — vieta tiešām ir (ne tikai minimālā rezerve, kas pārklātos ar paneli)
+    const ok = x1 - x0 >= w && lowY - top - ABOVE_PX >= availH;
+    return { x0, w, ok, s: Math.min(60, sw, availH / (fit.L * Math.sin(fit.alphaRad) + above)) };
   };
+  const better = (a, b) => (b.ok !== a.ok ? (b.ok ? b : a) : b.s > a.s + 1e-9 ? b : a);
   let box = fitIn(0, width, topReserve);
   if (panels) {
     const { left: pl, right: pr } = panels;
     box = [
-      fitIn(0, width, Math.max(pl.bottom, pr.bottom) + PANEL_GAP),
-      fitIn(pl.right + PANEL_GAP, width, pr.bottom + PANEL_GAP),
-      fitIn(0, pr.left - PANEL_GAP, pl.bottom + PANEL_GAP),
-    ].reduce((a, b) => (b.s > a.s + 1e-9 ? b : a));
+      fitIn(0, width, Math.max(pl.bottom, pr.bottom) + PANEL_GAP), // zem abiem
+      fitIn(pl.right + PANEL_GAP, width, pr.bottom + PANEL_GAP), // pa labi no LIELUMI
+      fitIn(0, pr.left - PANEL_GAP, pl.bottom + PANEL_GAP), // pa kreisi no MĒRĪJUMI
+      fitIn(pl.right + PANEL_GAP, pr.left - PANEL_GAP, PANEL_GAP), // starp abiem
+    ].reduce(better);
   }
   const s = box.s * drawScale;
   const cos = Math.cos(geo.alphaRad);
@@ -289,11 +293,12 @@ function drawTape(ctx, lay, m, c) {
     labelAt(ctx, lay, x, TAPE_TEXT_Y - GROOVE_PX, String(x), opts);
   }
   labelAt(ctx, lay, 2 / s, TAPE_TEXT_Y - GROOVE_PX, '0', { ...opts, align: 'left' });
-  // "x = 0" zem galda līnijas, zemes svītrojuma laukā
-  const ox = Math.round(lay.high.x);
+  // "x = 0" zem galda līnijas, zemes svītrojuma laukā; ja tur ir palaišanas poga (m.avoid) — pa kreisi no balsta
+  let ox = Math.round(lay.high.x);
   const oy = Math.round(lay.tableY) + 16;
   ctx.font = FONT_LABEL;
   const w = ctx.measureText(m.t('scene.origin')).width;
+  if (m.avoid && ox - 2 < m.avoid.r && ox + w + 2 > m.avoid.l) ox = Math.round(lay.high.x - 6 - w);
   ctx.fillStyle = c.field;
   ctx.fillRect(ox - 2, oy - 10, w + 4, 13);
   text(ctx, m.t('scene.origin'), ox, oy, { color: c.inkDim });

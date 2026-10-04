@@ -215,3 +215,21 @@ test('table choices: one per table, with “—” first when the current settin
   assert.equal(own.tableChoices, null, 'one table and it is the shown one: no selector');
   assert.equal(own.shownKey, k1);
 });
+
+test('while running only the live rows; when idle the tiny table if there is one, else the rows', () => {
+  const s = defaultSettings();
+  const r = createResults();
+  const a = run1(s, 1);
+  const b = run1(s, 2);
+  r.add(s, a, cfg);
+  const tb = r.add(s, b, cfg);
+  const base = { shown: tb, shownModel: tableModel(tb, lv), tables: r.tables(), shownKey: tb.key };
+  const idle = vmFor(s, { ...base, lastRun: b });
+  assert.ok(idle.mini);
+  assert.equal(idle.rows, null);
+  const c = run1(s, 3);
+  const live = vmFor(s, { ...base, running: { run: c, simT: 0.5 } });
+  assert.equal(live.mini, null);
+  assert.ok(live.rows.length > 0);
+  assert.equal(live.canOpen, true);
+});

@@ -156,3 +156,12 @@ test('a big drawn ball gets room at both ends; the h dimension line clears it', 
   const l2 = sceneLayout(600, 600, g2);
   close(l2.high.x, MARGIN.left, 1e-6);
 });
+
+test('panels: on a low wide screen with both panels tall, the groove goes between them', () => {
+  const geo = { L: 80, alphaRad: 0.0375, above: 5 };
+  const panels = { left: { right: 190, bottom: 150 }, right: { left: 708, bottom: 140 } };
+  const lay = sceneLayout(830, 347, geo, geo, { panels });
+  assert.ok(lay.high.x - MARGIN.left >= 190 + 12 - 1e-6, 'right of LIELUMI');
+  assert.ok(lay.low.x + MARGIN.right <= 708 - 12 + 1e-6, 'left of MĒRĪJUMI');
+  assert.ok(lay.high.y - geo.above * lay.s - ABOVE_PX >= 12 - 1e-6, 'inside the drawing at the top');
+});

@@ -508,6 +508,12 @@ function render() {
   const label = runLabel();
   if (runBtn.textContent !== label) runBtn.textContent = label;
   runBtn.disabled = !!state.running;
+  const { w, h } = view.size();
+  // tabuliņa ir simboliska: ja MĒRĪJUMI sniegtos zemāk par 45 % rasējuma (lieli burti), to nerāda — paliek ↗ VISA TABULA
+  if (!state.running) {
+    hudRight.classList.remove('mini-off');
+    hudRight.classList.toggle('mini-off', hudRight.offsetTop + hudRight.offsetHeight > h * 0.45);
+  }
 
   const lay = layout();
   drawScene(view.ctx, lay, {
@@ -519,6 +525,7 @@ function render() {
     ballX: state.ball.x ?? s.x0,
     ballAngle: state.ball.angle,
     showTape: s.tape,
+    avoid: { l: (w - runSlot.offsetWidth) / 2, r: (w + runSlot.offsetWidth) / 2 }, // poga zem zemes līnijas
   });
   // poga centrēta, mazliet zem zemes; paziņojumi zem pogas (spec. izkārtojums 2.5–2.6)
   const runTop = Math.round(lay.tableY + 14);
@@ -532,7 +539,6 @@ function render() {
     handles.setSelected(null);
   }
   // rakstlaukums tikai lielā rasējumā (datorā), telefonā tā nav
-  const { w, h } = view.size();
   const big = w >= 900 && h >= 560;
   titleSmall.hidden = !big;
   drawing.classList.toggle('has-title', big);

@@ -78,7 +78,8 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
   const simT = running ? running.simT : Infinity;
   const vm = {
     symbol: 't', valueText: '—', unit: 's', live: Boolean(running), rows: null, note: null,
-    mini: views.table && shown && shown.runs.length >= 2 ? shownModel : null,
+    // palaišanas laikā — dinamiskie mērījumi; citādi, no 2. mērījuma, — tabuliņa (lodziņš neaug palaišanas laikā)
+    mini: !running && views.table && shown && shown.runs.length >= 2 ? shownModel : null,
     canOpen: Boolean(views.table && shown),
     strobe: Boolean(views.strobe && shown && shown.level === 3),
     tableChoices: null,
@@ -112,5 +113,6 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
     vm.rows = seen.slice(-LIVE_ROWS).map((p) => ({ a: `t = ${f(p.t, dec)} s`, b: `x = ${f(p.x, 1)} cm` }));
     if (seen.length) vm.valueText = f(seen[seen.length - 1].x, 1);
   }
+  if (vm.mini) vm.rows = null;
   return vm;
 }
