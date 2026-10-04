@@ -2,12 +2,17 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   sceneLayout, ballRadiusPx, ballDraw, ballDrawCenter, handleAnchors, valueFromPointer, tapeSpacing,
-  MARGIN, GROUND, ABOVE_PX, GROOVE_PX, PANEL_GAP, TOP_MARGIN,
+  drawingPads, EDGE_PX, GROUND, ABOVE_PX, GROOVE_PX, PANEL_GAP, TOP_MARGIN,
 } from '../assets/rolling-ball/scene.js';
 import { defaultSettings, derive, withAlpha, withLevel } from '../assets/rolling-ball/model.js';
 
 const close = (a, b, tol, msg) => assert.ok(Math.abs(a - b) <= tol, `${msg ?? ''} ${a} vs ${b}`);
 const R16 = GROOVE_PX / 2; // 16 mm lodīte — tikpat augsta kā renīte
+// zīmējuma malas: burts h kreisajā pusē, noripojusī lodīte labajā
+const extent = (lay, geo) => {
+  const p = drawingPads(geo.ballR ?? 0, geo.alphaRad);
+  return { l: lay.high.x - p.left, r: lay.low.x + p.right, mid: (lay.high.x - p.left + lay.low.x + p.right) / 2 };
+};
 
 test('the ground (table line) is at 61.8 % of the drawing height, the low end sits on it', () => {
   for (const [w, h] of [[800, 400], [390, 780], [1920, 1000]]) {
@@ -18,12 +23,14 @@ test('the ground (table line) is at 61.8 % of the drawing height, the low end si
   assert.equal(GROUND, 0.618);
 });
 
-test('a flat groove fits the full width and is centred horizontally', () => {
+test('a flat groove: the drawing (h label to the rolled ball) fills the width and is exactly centred', () => {
   const s = defaultSettings();
   const d = derive(s);
-  const lay = sceneLayout(800, 600, { L: s.L, alphaRad: d.alphaRad });
-  close(lay.low.x - lay.high.x, 800 - MARGIN.left - MARGIN.right, 1e-6);
-  close((lay.high.x + lay.low.x) / 2, 400, 1e-6);
+  const geo = { L: s.L, alphaRad: d.alphaRad, ballR: ballRadiusPx(d) };
+  const lay = sceneLayout(800, 600, geo);
+  const e = extent(lay, geo);
+  close(e.l, EDGE_PX, 1e-6);
+  close(e.r, 800 - EDGE_PX, 1e-6);
   close(lay.low.y - lay.high.y, s.L * Math.sin(d.alphaRad) * lay.s, 1e-9);
 });
 
@@ -35,7 +42,7 @@ test('a steep groove fits between a small top margin and the ground, with room a
   for (const top of [60, 100]) {
     const l = sceneLayout(844, 340, geo, geo, { topReserve: top });
     close(l.high.y - above(l), top, 1e-6, `top ${top}`);
-    close((l.high.x + l.low.x) / 2, 422, 1e-6);
+    close(extent(l, geo).mid, 422, 1e-6);
   }
   // gandrīz līdz zemei: renīte tik un tā dabū vismaz 40 px augstuma
   const squeezed = sceneLayout(844, 340, geo, geo, { topReserve: 190 });
@@ -43,15 +50,18 @@ test('a steep groove fits between a small top margin and the ground, with room a
   close(squeezed.s, Math.min(40 / (ls + 5), (40 - 2 * R16) / (ls + 0.8)), 1e-9);
 });
 
-test('the drawing scale multiplies the fitted scale; the ground does not move', () => {
-  const geo = { L: 80, alphaRad: 0.1 };
+test('the drawing scale multiplies the fitted scale; the drawing stays exactly centred, the ground does not move', () => {
+  const geo = { L: 80, alphaRad: 0.1, ballR: R16 };
   const a = sceneLayout(900, 600, geo, geo, { topReserve: 100 });
   const b = sceneLayout(900, 600, geo, geo, { topReserve: 100, drawScale: 0.6 });
   const c = sceneLayout(900, 600, geo, geo, { topReserve: 100, drawScale: 1.5 });
   close(b.s, a.s * 0.6, 1e-9);
   close(c.s, a.s * 1.5, 1e-9);
   assert.equal(b.tableY, a.tableY);
-  close((c.high.x + c.low.x) / 2, 450, 1e-6);
+  for (const l of [a, b, c]) close(extent(l, geo).mid, 450, 1e-6);
+  // arī tad, ja MĒRĪJUMI liek renītei sarukt
+  const avoid = { left: 520, bottom: 300 };
+  for (const k of [0.6, 1, 1.5]) close(extent(sceneLayout(900, 600, geo, geo, { avoid, drawScale: k }), geo).mid, 450, 1e-6);
 });
 
 test('fill: the drawing scale at which the construction exactly fills the width', () => {
@@ -61,7 +71,8 @@ test('fill: the drawing scale at which the construction exactly fills the width'
   const lay = sceneLayout(1258, 500, steep);
   assert.ok(lay.fill > 1, 'a steep groove on a low screen is height-limited: there is room to grow');
   const big = sceneLayout(1258, 500, steep, steep, { drawScale: lay.fill });
-  close(big.low.x + MARGIN.right - (big.high.x - MARGIN.left), 1258, 1e-6);
+  const e = extent(big, steep);
+  close(e.r - e.l, 1258 - 2 * EDGE_PX, 1e-6);
 });
 
 test('the drawn ball does not depend on the drawing scale: 16 mm = groove thickness, others in proportion, ≥ 4 px', () => {
@@ -139,8 +150,10 @@ test('a big ball gets room at both ends in px; the h dimension line clears it', 
   const R = ballRadiusPx(d);
   for (const [w, h] of [[376, 780], [1898, 1006]]) {
     const lay = sceneLayout(w, h, { L: 80, alphaRad: d.alphaRad, ballR: R });
-    assert.ok(lay.high.x - R - 34 >= -1e-6, `${w}: ball, h line and its label inside on the left`);
-    assert.ok(lay.low.x + R + 12 <= w + 1e-6, `${w}: ball at the end inside on the right`);
+    const e = extent(lay, { alphaRad: d.alphaRad, ballR: R });
+    assert.ok(e.l >= EDGE_PX - 1e-6, `${w}: ball, h line and its label inside on the left`);
+    assert.ok(e.r <= w - EDGE_PX + 1e-6, `${w}: ball at the end inside on the right`);
+    assert.ok(lay.low.x + R * (1 + Math.sin(d.alphaRad)) <= e.r + 1e-9, 'the rolled ball is inside the drawing');
     const a = handleAnchors(lay, defaultSettings(), d);
     assert.ok(lay.high.x - a.h.x >= R + 10 - 1e-9, 'h handle is not under the ball');
   }
@@ -155,7 +168,7 @@ test('MĒRĪJUMI is avoided only when it would cover the construction; LIELUMI i
   assert.equal(far.high.x, free.high.x);
   const tall = { left: 600, bottom: 190 };
   const lay = sceneLayout(830, 347, geo, geo, { avoid: tall });
-  const right = lay.low.x + MARGIN.right;
+  const right = extent(lay, geo).r;
   const top = lay.high.y - 5 * lay.s - ABOVE_PX;
   assert.ok(right <= tall.left - PANEL_GAP + 1e-6 || top >= tall.bottom + PANEL_GAP - 1e-6, 'left of it or below it');
   assert.ok(lay.s < free.s);

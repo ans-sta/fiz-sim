@@ -1,4 +1,4 @@
-export const MARGIN = { left: 48, right: 48 }; // vieta h izmēru līnijai pa kreisi un renītes galam pa labi
+export const EDGE_PX = 16; // px no ekrāna malas līdz zīmējumam
 export const GROUND = 0.618; // zemes (galda) līnija zelta griezumā no rasējuma augšas (spec. izkārtojums 2.1)
 export const ABOVE_PX = 34; // virs L izmēru līnijas: DIM_GAP + rombiņš
 export const PANEL_GAP = 12; // px starp MĒRĪJUMI un konstrukciju
@@ -8,7 +8,8 @@ export const DIM_GAP = 26; // px starp objektu un izmēru līniju
 export const ARC_R = 110; // px — α loka rādiuss
 // vārtu rokturis tieši zem renītes: rombiņš paliek virs palaišanas pogas
 export const GATE_HANDLE = GROOVE_PX + 6;
-const BALL_ROOM = { left: 34, right: 12 }; // px aiz zīmētās lodītes: pa kreisi vēl h līnija ar etiķeti
+export const H_LABEL_GAP = 10; // px no h roktura līdz burta “h” labajai malai
+const H_LABEL_PX = 12; // burta “h” platums
 const L_LABEL_PX = 24; // etiķete “L” virs L izmēru līnijas gala
 
 // Zīmētā lodīte (Ansis 04.10): izmērs nav atkarīgs no mēroga — 16 mm lodīte ir tikpat augsta kā renīte,
@@ -28,14 +29,18 @@ export function ballDrawCenter(lay, x, derived) {
   return { x: p.x + lay.up.x * R, y: p.y + lay.up.y * R };
 }
 
-// Vieta renītes galos: MARGIN vai, lielai lodītei (rādiuss R px), R + BALL_ROOM.
-function sideRoom(R) {
-  return { left: Math.max(MARGIN.left, R + BALL_ROOM.left), right: Math.max(MARGIN.right, R + BALL_ROOM.right) };
+// h izmēru līnija pa kreisi no renītes gala — tālāk par zīmēto lodīti (rādiuss R px), lai rokturis nav zem tās.
+function hDimGap(R) {
+  return Math.max(DIM_GAP, R + 10);
 }
 
-// h izmēru līnija pa kreisi no renītes gala — tālāk par zīmēto lodīti, lai rokturis nav zem tās.
-function hDimGap(derived) {
-  return Math.max(DIM_GAP, ballDraw(derived).R + 10);
+// Zīmējuma platums (Ansis 04.10) — no burta h kreisajā pusē līdz noripojušajai lodītei labajā: px ārpus renītes galiem.
+export function drawingPads(R, alphaRad) {
+  const sin = Math.sin(alphaRad);
+  return {
+    left: hDimGap(R) + H_LABEL_GAP + H_LABEL_PX,
+    right: Math.max(R * (1 + sin), sin * (2 * R + 4)), // lodīte pie gala atbalsta vai pats atbalsts
+  };
 }
 
 // Izmēru līnija L ir paralēla renītei, virs augstākās vārtu galotnes un zīmētās lodītes.
@@ -52,47 +57,51 @@ function ballTop(derived) {
   return 2 * ballDraw(derived).R;
 }
 
-// Renīte: zeme zelta griezumā; renīte ietilpst visā platumā un starp mazu atstarpi augšā (topReserve) un zemi,
-// centrēta; tad × ⚙ ZĪMĒJUMS. LIELUMI drīkst renīti pārklāt (Ansis 04.10). avoid — MĒRĪJUMI { left, bottom }:
-// tikai ja tas pārklātu konstrukciju, renīte iet zem tā vai pa kreisi no tā — kur zīmējums sanāk lielāks.
-// fit — mērogs velkot nemainās. fill — ZĪMĒJUMS, pie kura konstrukcija tieši aizpilda platumu.
+// Renīte: zeme zelta griezumā; zīmējums (drawingPads) ietilpst visā platumā un starp mazu atstarpi augšā (topReserve)
+// un zemi, tad × ⚙ ZĪMĒJUMS. Zīmējums vienmēr precīzi ekrāna vidū (Ansis 04.10). LIELUMI drīkst renīti pārklāt.
+// avoid — MĒRĪJUMI { left, bottom }: tikai ja tas pārklātu konstrukciju, renīte iet zem tā vai sarūk, līdz ir pa kreisi
+// no tā, — kur zīmējums sanāk lielāks. fit — mērogs un vieta velkot nemainās. fill — ZĪMĒJUMS, pie kura zīmējums
+// tieši aizpilda platumu.
 export function sceneLayout(width, height, geo, fit = geo, { topReserve = TOP_MARGIN, drawScale = 1, avoid = null } = {}) {
   const tableY = Math.round(height * GROUND);
   const lowY = tableY - GROOVE_PX;
   const R = fit.ballR ?? 0;
-  const room = sideRoom(R);
+  const pad = drawingPads(R, fit.alphaRad);
   const lc = fit.L * Math.cos(fit.alphaRad);
   const ls = fit.L * Math.sin(fit.alphaRad);
-  const fitIn = (x0, x1, top) => {
-    const availW = Math.max(50, x1 - x0 - room.left - room.right);
+  // renītes kreisais gals, ja zīmējums (lc · sc + malas) ir ekrāna vidū
+  const leftAt = (sc) => (width - lc * sc - pad.right + pad.left) / 2;
+  // w — zīmējuma platums; top — konstrukcija zem šīs līnijas
+  const fitIn = (w, top) => {
+    const availW = Math.max(50, w - pad.left - pad.right);
     const availH = Math.max(40, lowY - top - ABOVE_PX);
     // ok — vieta tiešām ir (ne tikai minimālā rezerve)
-    const ok = x1 - x0 - room.left - room.right >= 50 && lowY - top - ABOVE_PX >= 40;
-    const sc = Math.min(60, availW / lc, availH / (ls + 5), (availH - 2 * R) / (ls + 0.8));
-    return { x0, availW, ok, s: sc };
+    const ok = w - pad.left - pad.right >= 50 && lowY - top - ABOVE_PX >= 40;
+    return { ok, s: Math.min(60, availW / lc, availH / (ls + 5), (availH - 2 * R) / (ls + 0.8)) };
   };
-  const leftOf = (box, sc) => box.x0 + room.left + (box.availW - lc * sc) / 2;
+  const better = (a, b) => (b.ok !== a.ok ? (b.ok ? b : a) : b.s > a.s + 1e-9 ? b : a);
   // vai konstrukcija (L izmēru līnija ar etiķeti) sniedzas MĒRĪJUMI laukumā
-  const covered = (box) => {
-    const sc = box.s;
-    const left = leftOf(box, sc);
+  const covered = (sc) => {
+    const left = leftAt(sc);
     const xa = avoid.left - PANEL_GAP;
-    if (left + lc * sc + room.right <= xa) return false;
+    if (left + lc * sc + pad.right <= xa) return false;
     const cos = Math.cos(fit.alphaRad);
     const sin = Math.sin(fit.alphaRad);
     const off = dimOffset(sc, R);
     const t = Math.min(fit.L, Math.max(0, (xa - left - sin * off) / (cos * sc))); // L līnija krītas uz labo pusi
     return lowY - ls * sc + sin * t * sc - cos * off - L_LABEL_PX < avoid.bottom + PANEL_GAP;
   };
-  const better = (a, b) => (b.ok !== a.ok ? (b.ok ? b : a) : b.s > a.s + 1e-9 ? b : a);
-  let box = fitIn(0, width, topReserve);
-  if (avoid && covered(box)) {
-    box = [fitIn(0, width, Math.max(topReserve, avoid.bottom + PANEL_GAP)), fitIn(0, avoid.left - PANEL_GAP, topReserve)].reduce(better);
+  let base = fitIn(width - 2 * EDGE_PX, topReserve).s;
+  if (avoid && covered(base)) {
+    // zem MĒRĪJUMI vai, ekrāna vidū, tik šaurs, ka labā mala ir pa kreisi no tā
+    const below = fitIn(width - 2 * EDGE_PX, Math.max(topReserve, avoid.bottom + PANEL_GAP));
+    const beside = fitIn(2 * (avoid.left - PANEL_GAP) - width, topReserve);
+    base = better(below, beside).s;
   }
-  const s = box.s * drawScale;
+  const s = base * drawScale;
   const cos = Math.cos(geo.alphaRad);
   const sin = Math.sin(geo.alphaRad);
-  const left = leftOf(box, s);
+  const left = leftAt(s); // ⚙ ZĪMĒJUMS aug uz abām pusēm vienādi; velkot (fit) kreisais gals stāv
   const low = { x: left + geo.L * cos * s, y: lowY };
   const high = { x: left, y: low.y - geo.L * sin * s };
   const dir = { x: cos, y: sin };
@@ -100,7 +109,7 @@ export function sceneLayout(width, height, geo, fit = geo, { topReserve = TOP_MA
   return {
     s, width, height, high, low, dir, up,
     tableY,
-    fill: (width - room.left - room.right) / (lc * box.s),
+    fill: (width - 2 * EDGE_PX - pad.left - pad.right) / (lc * base),
     at: (x) => ({ x: high.x + dir.x * x * s, y: high.y + dir.y * x * s }),
     along: (px, py) => ((px - high.x) * dir.x + (py - high.y) * dir.y) / s,
   };
@@ -117,7 +126,7 @@ export function handleAnchors(lay, settings, derived) {
   const arcAngle = Math.PI + derived.alphaRad;
   return {
     L: { x: endL.x + lay.up.x * off, y: endL.y + lay.up.y * off },
-    h: { x: lay.high.x - hDimGap(derived), y: lay.high.y },
+    h: { x: lay.high.x - hDimGap(ballDraw(derived).R), y: lay.high.y },
     alpha: { x: lay.low.x + ARC_R * Math.cos(arcAngle), y: lay.low.y + ARC_R * Math.sin(arcAngle) },
     x0: ballDrawCenter(lay, settings.x0, derived),
     gates: settings.gates.map((x) => {
@@ -335,7 +344,7 @@ function drawDimL(ctx, lay, m, c) {
 }
 
 function drawDimH(ctx, lay, m, c) {
-  const x = Math.round(lay.high.x - hDimGap(m.derived)) + 0.5;
+  const x = Math.round(lay.high.x - hDimGap(ballDraw(m.derived).R)) + 0.5;
   const yTop = lay.high.y;
   const yLow = Math.round(lay.low.y) + 0.5;
   stroke(ctx, m.settings.angleMode === 'alpha' ? c.inkDim : c.ink);

@@ -6,7 +6,7 @@ import {
 } from './model.js';
 import { ballById, ballFits, GROOVE_W } from './balls.js';
 import { settingsFromURL, warningText, LOCKABLE } from './params.js';
-import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballDraw, ballRadiusPx } from './scene.js';
+import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballDraw, ballRadiusPx, H_LABEL_GAP } from './scene.js';
 import { createHandles } from './handles.js';
 import { createNotices } from '../measure/notices.js';
 import { formatNumber } from '../measure/format.js';
@@ -225,7 +225,7 @@ function handleItems(lay, s, d, lang) {
   });
   add('h', {
     id: 'h', kind: 'diamond', x: a.h.x, y: a.h.y,
-    labelText: 'h', labelX: a.h.x - 10, labelY: lay.low.y - lay.high.y >= 24 ? (lay.high.y + lay.low.y) / 2 : lay.high.y + 16,
+    labelText: 'h', labelX: a.h.x - H_LABEL_GAP, labelY: lay.low.y - lay.high.y >= 24 ? (lay.high.y + lay.low.y) / 2 : lay.high.y + 16,
     labelAnchor: 'right',
     ariaLabel: t('dims.h'), min: 0, max: hMax(s.L), step: STEP.h, value: d.h, valueText: `${num(d.h, 1)} cm`,
   });
