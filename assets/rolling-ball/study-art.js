@@ -15,12 +15,19 @@ const ball = (k, last) => { const [x, y] = at(k); return `<circle cx="${x}" cy="
 const svg = (body) => `<svg viewBox="0 0 ${W} ${H}" role="img" aria-hidden="true">${grid}${groove}${body}</svg>`;
 
 const gate = (k) => { const [x, y] = at(k); return `<line class="art-ink" x1="${x}" y1="${y + 9}" x2="${x}" y2="${y - 12}"/><rect class="art-sheet" x="${x - 3}" y="${y - 18}" width="6" height="6"/>`; };
+// h izmēru līnija pa kreisi no renītes: no augstā gala līdz zemā gala līmenim
+const HX = 12;
+const hDim = `<line class="art-ink" x1="${HX}" y1="${Y0}" x2="${HX}" y2="${Y1}"/>`
+  + `<line class="art-hair" x1="${HX}" y1="${Y0}" x2="${X0}" y2="${Y0}"/>`
+  + [Y0, Y1].map((y) => `<line class="art-ink" x1="${HX - 3}" y1="${y + 3}" x2="${HX + 3}" y2="${y - 3}"/>`).join('')
+  + `<text class="art-label" x="${HX - 4}" y="${(Y0 + Y1) / 2 + 4}" text-anchor="end">h</text>`;
 const tick = (k) => { const [x, y] = at(k); return `<line class="art-hair" x1="${x}" y1="${y + 2}" x2="${x}" y2="${y + 8}"/>`; };
 
 export const STUDY_ART = {
   a: svg(`<path class="art-ink" d="M${X1 - 40} ${Y1} A40 40 0 0 0 ${X1 - 40 * Math.cos(Math.atan2(Y1 - Y0, X1 - X0))} ${Y1 - 40 * Math.sin(Math.atan2(Y1 - Y0, X1 - X0))}"/>`
-    + `<line class="art-ink" x1="${X0}" y1="${Y1}" x2="${X1}" y2="${Y1}" stroke-dasharray="3 3"/>`
+    + `<line class="art-ink" x1="${HX}" y1="${Y1}" x2="${X1}" y2="${Y1}" stroke-dasharray="3 3"/>`
     + `<text class="art-label" x="${X1 - 54}" y="${Y1 - 4}">α</text>`
+    + hDim
     + `<rect class="art-sheet" x="${W - 58}" y="8" width="50" height="20"/><text class="art-label" x="${W - 33}" y="22" text-anchor="middle">2,71 s</text>`
     + ball(0.3, true)),
   t: svg([0.2, 0.4, 0.6, 0.8].map(gate).join('') + ball(0.05, true)),
