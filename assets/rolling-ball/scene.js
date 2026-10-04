@@ -1,8 +1,7 @@
-export const EDGE_PX = 16; // px no ekrāna malas līdz zīmējumam
-export const GROUND = 0.618; // zemes (galda) līnija zelta griezumā no rasējuma augšas (spec. izkārtojums 2.1)
+import { GROUND, EDGE_PX, TOP_MARGIN, PANEL_GAP } from '../measure/hud-layout.js';
+
+export { GROUND, EDGE_PX, TOP_MARGIN, PANEL_GAP };
 export const ABOVE_PX = 34; // virs L izmēru līnijas: DIM_GAP + rombiņš
-export const PANEL_GAP = 12; // px starp MĒRĪJUMI un konstrukciju
-export const TOP_MARGIN = 12; // px no rasējuma augšas līdz konstrukcijai (LIELUMI to drīkst pārklāt)
 export const GROOVE_PX = 14; // renītes biezums zīmējumā
 export const DIM_GAP = 26; // px starp objektu un izmēru līniju
 export const ARC_R = 110; // px — α loka rādiuss

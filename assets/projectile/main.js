@@ -104,7 +104,7 @@ let view = null; // setupCanvas izsauc render jau pirms atgriešanās
 view = setupCanvas(canvas, () => render());
 
 function currentBox() {
-  return sceneBox(state.settings, derive(state.settings));
+  return sceneBox(state.settings);
 }
 
 function layout() {
@@ -256,11 +256,11 @@ function ballPositions() {
   const r = state.running;
   const run = r ? r.run : state.lastRun;
   if (!run) {
-    const start = { x: 0, y: s.h };
+    const start = { x: 0, y: s.h, rising: s.v0 > 0 };
     return { ball: start, ball2: s.mode === 'horizontal' && s.second ? start : null };
   }
   const tNow = r ? r.simT : run.tEnd;
-  return { ball: run.posAt(tNow), ball2: run.posAt2 ? run.posAt2(tNow) : null };
+  return { ball: { ...run.posAt(tNow), rising: run.risingAt(tNow) }, ball2: run.posAt2 ? run.posAt2(tNow) : null };
 }
 
 function shownTable() {
@@ -390,7 +390,7 @@ function render() {
   const lay = layout();
   const pos = ballPositions();
   drawScene(view.ctx, lay, {
-    settings: s, derived: derive(s), colors: theme.colors(), t: i18n.t, lang, ball: pos.ball, ball2: pos.ball2, showGrid: s.grid,
+    settings: s, derived: derive(s), colors: theme.colors(), t: i18n.t, lang, ball: pos.ball, ball2: pos.ball2, avoidRects: [],
   });
   panel.render({
     settings: s, locked: state.locked, hidden: state.hidden, running: state.running, lang,

@@ -1,9 +1,12 @@
 import { SCALE } from './scales.js';
 import { gridSteps, ticks } from '../measure/world-grid.js';
 import { formatNumber, decimalsOf } from '../measure/format.js';
+import { GROUND, EDGE_PX, TOP_MARGIN, PANEL_GAP } from '../measure/hud-layout.js';
 
-export const MARGIN = { left: 130, right: 56, top: 40, bottom: 56 };
-export const DIM_GAP = 30; // px: h izmēru līnija pa kreisi no galda vai torņa
+export const BALL_R_PX = 7; // zīmētās bumbiņas rādiuss (neatkarīgs no mēroga)
+export const DIM_GAP = 30; // px: h izmēru līnija pa kreisi no sākumpunkta
+export const H_LABEL_GAP = 10; // px no h roktura līdz burta “h” labajai malai
+export const H_LABEL_PX = 12; // burta “h” platums
 export const ARC_R = 56; // px: α loks ap kustības sākumpunktu
 
 export function arrowMaxPx(width, height) {
@@ -20,35 +23,74 @@ export function ladderCeil(v) {
   return 10 * p;
 }
 
-// Pasaules laukums: konstrukcija, kustības sākumpunkts un visa trajektorija. Tas nav atkarīgs no α
-// (lielākais tālums un augstums pa visiem α) un ir noapaļots uz augšu pa kāpnēm, lai rasējuma mala
-// neatklātu tālumu vai augstāko punktu, ko skolēns nosaka pats (spec. 2.1).
-export function sceneBox(s, d) {
+// Pasaules laukums: kustības sākumpunkts un visa trajektorija. Tas nav atkarīgs no α (lielākais tālums
+// un augstums pa visiem α) un ir noapaļots uz augšu pa kāpnēm, lai rasējuma mala neatklātu tālumu vai
+// augstāko punktu, ko skolēns nosaka pats (spec. 2.1). Vertikālajā metienā platums ir divas lentes.
+export function sceneBox(s) {
   const sc = SCALE;
   const g = sc.g;
   const v = Math.abs(s.v0);
-  const x0 = 0;
-  const reach = s.mode === 'vertical' ? 0 : (v / g) * Math.sqrt(v * v + 2 * g * s.h);
   const top = s.h + (s.mode === 'horizontal' ? 0 : (v * v) / (2 * g));
-  const x1 = Math.max(x0 + sc.minView.w, ladderCeil(1.1 * reach + 2 * sc.ball.d));
   const y1 = Math.max(sc.minView.h, ladderCeil(1.1 * top + 2 * sc.ball.d));
-  return { x0, x1, y0: 0, y1 };
+  if (s.mode === 'vertical') return { x0: 0, x1: 2 * tapeGap({ y0: 0, y1 }), y0: 0, y1 };
+  const reach = (v / g) * Math.sqrt(v * v + 2 * g * s.h);
+  const x1 = Math.max(sc.minView.w, ladderCeil(1.1 * reach + 2 * sc.ball.d));
+  return { x0: 0, x1, y0: 0, y1 };
 }
 
-// Zeme apakšā, konstrukcija pa kreisi; virs laukuma vieta bultai v₀.
-export function sceneLayout(width, height, box) {
+// Vertikālajā metienā attālums (m) starp ↑ un ↓ lenti.
+export function tapeGap(box) {
+  return 0.12 * (box.y1 - box.y0);
+}
+
+// Kur bumbiņu zīmē: vertikālajā metienā augšupejošo pa kreisi (x = 0), krītošo pa labi; dati paliek x = 0.
+export function displayX(s, box, p) {
+  if (s.mode !== 'vertical') return p.x;
+  return p.rising || s.v0 <= 0 ? 0 : tapeGap(box);
+}
+
+// Zeme zelta griezumā, zīmējums (h uzraksts pa kreisi līdz kastes labajai malai + bumbiņa) precīzi ekrāna vidū;
+// ⚙ ZĪMĒJUMS (drawScale) aug uz abām pusēm vienādi, zeme stāv. avoid — MĒRĪJUMI { left, bottom }: tikai ja
+// zīmējums to sasniegtu, zīmējums iet zem tā vai sarūk, līdz ir pa kreisi no tā, — kur sanāk lielāks.
+export function sceneLayout(width, height, box, { drawScale = 1, avoid = null, topReserve = TOP_MARGIN } = {}) {
   const arrow = arrowMaxPx(width, height);
-  const top = MARGIN.top + arrow;
-  const availW = Math.max(50, width - MARGIN.left - MARGIN.right);
-  const availH = Math.max(50, height - top - MARGIN.bottom);
-  const scale = Math.min(availW / (box.x1 - box.x0), availH / (box.y1 - box.y0));
-  const tr = { scale, tx: MARGIN.left - box.x0 * scale, ty: height - MARGIN.bottom + box.y0 * scale };
+  const groundY = Math.round(height * GROUND);
+  const padL = DIM_GAP + H_LABEL_GAP + H_LABEL_PX;
+  const padR = BALL_R_PX + 4;
+  const bw = box.x1 - box.x0;
+  const bh = box.y1 - box.y0;
+  // w — zīmējuma platums; top — zīmējums zem šīs līnijas
+  const fitIn = (w, top) => {
+    const aw = w - padL - padR;
+    const ah = groundY - top - arrow;
+    return { ok: aw >= 50 && ah >= 40, s: Math.min(Math.max(50, aw) / bw, Math.max(40, ah) / bh) };
+  };
+  const better = (a, b) => (b.ok !== a.ok ? (b.ok ? b : a) : b.s > a.s + 1e-9 ? b : a);
+  const centred = (sc) => {
+    const l = width / 2 - (bw * sc + padL + padR) / 2;
+    return { l, r: l + bw * sc + padL + padR };
+  };
+  let base = fitIn(width - 2 * EDGE_PX, topReserve).s;
+  if (avoid) {
+    const e = centred(base);
+    const top = groundY - bh * base - arrow;
+    if (e.r > avoid.left - PANEL_GAP && top < avoid.bottom + PANEL_GAP) {
+      const below = fitIn(width - 2 * EDGE_PX, Math.max(topReserve, avoid.bottom + PANEL_GAP));
+      const beside = fitIn(2 * (avoid.left - PANEL_GAP) - width, topReserve);
+      base = better(below, beside).s;
+    }
+  }
+  const scale = base * drawScale;
+  const tx = width / 2 - (box.x0 + box.x1) * scale / 2 - (padR - padL) / 2;
+  const tr = { scale, tx, ty: groundY + box.y0 * scale };
   return {
     width,
     height,
     box,
     tr,
     arrow,
+    groundY,
+    fill: (width - 2 * EDGE_PX - padL - padR) / (bw * base),
     toScreen: (x, y) => ({ x: tr.tx + x * scale, y: tr.ty - y * scale }),
     toWorld: (px, py) => ({ x: (px - tr.tx) / scale, y: (tr.ty - py) / scale }),
   };
@@ -148,35 +190,12 @@ function arrow(ctx, x1, y1, x2, y2, head) {
   ctx.fill();
 }
 
-function hatchRect(ctx, x, y, w, h, color, step = 8) {
-  if (w <= 0 || h <= 0) return;
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(x, y, w, h);
-  ctx.clip();
-  stroke(ctx, color);
-  ctx.beginPath();
-  for (let k = -h; k < w; k += step) {
-    ctx.moveTo(x + k, y + h);
-    ctx.lineTo(x + k + h, y);
-  }
-  ctx.stroke();
-  ctx.restore();
+function hits(r, q) {
+  return r.l < q.r && r.r > q.l && r.t < q.b && r.b > q.t;
 }
 
-function drawPaper(ctx, lay, c) {
-  ctx.fillStyle = c.field;
-  ctx.fillRect(0, 0, lay.width, lay.height);
-  stroke(ctx, c.hairline);
-  ctx.globalAlpha = 0.35;
-  ctx.beginPath();
-  for (let x = 0.5; x < lay.width; x += 24) { ctx.moveTo(x, 0); ctx.lineTo(x, lay.height); }
-  for (let y = 0.5; y < lay.height; y += 24) { ctx.moveTo(0, y); ctx.lineTo(lay.width, y); }
-  ctx.stroke();
-  ctx.globalAlpha = 1;
-}
-
-// Mērrežģis pasaules vienībās; x skaitļi zem zemes, y skaitļi pie labās malas.
+// Mērrežģis pasaules vienībās = mērogs; x skaitļi zem zemes, y skaitļi pie labās malas. Skaitli nezīmē,
+// ja tā rāmis krustojas ar kādu m.avoidRects taisnstūri vai iziet no audekla.
 function drawWorldGrid(ctx, lay, m, c) {
   ctx.fillStyle = c.field;
   ctx.fillRect(0, 0, lay.width, lay.height);
@@ -203,17 +222,22 @@ function drawWorldGrid(ctx, lay, m, c) {
   ctx.stroke();
   const dec = decimalsOf(label);
   const u = SCALE.unit;
+  const avoid = m.avoidRects ?? [];
+  const free = (r) => r.l >= 2 && r.r <= lay.width - 2 && r.t >= 0 && r.b <= lay.height && !avoid.some((q) => hits(r, q));
   ctx.font = FONT_TICK;
   for (const x of xs) {
     const str = formatNumber(x, dec, m.lang);
     const px = lay.toScreen(x, 0).x;
     const half = ctx.measureText(str).width / 2;
-    if (px - half < 2 || px + half > lay.width - 2) continue; // nepilnu skaitli pie malas nerāda
-    text(ctx, str, px, gy + 30, { font: FONT_TICK, color: c.inkDim, align: 'center' });
+    const y = gy + 30;
+    if (free({ l: px - half, r: px + half, t: y - 9, b: y + 2 })) text(ctx, str, px, y, { font: FONT_TICK, color: c.inkDim, align: 'center' });
   }
   for (const y of ys) {
+    if (y <= 0) continue;
+    const str = formatNumber(y, dec, m.lang);
     const py = lay.toScreen(0, y).y - 3;
-    if (y > 0 && py > 26) text(ctx, formatNumber(y, dec, m.lang), lay.width - 6, py, { font: FONT_TICK, color: c.inkDim, align: 'right' }); // augšā vieta „y, cm”
+    const w = ctx.measureText(str).width;
+    if (py > 26 && free({ l: lay.width - 6 - w, r: lay.width - 6, t: py - 9, b: py + 2 })) text(ctx, str, lay.width - 6, py, { font: FONT_TICK, color: c.inkDim, align: 'right' }); // augšā vieta „y, m”
   }
   text(ctx, `x, ${u}`, lay.width - 6, gy + 44, { font: FONT_TICK, color: c.inkDim, align: 'right' });
   text(ctx, `y, ${u}`, lay.width - 6, 14, { font: FONT_TICK, color: c.inkDim, align: 'right' });
@@ -232,8 +256,26 @@ function drawGround(ctx, lay, c) {
   ctx.stroke();
 }
 
-// Galds un tornis noņemti (1. uzdevums); rasējumu pārbūvē 2. uzdevumā.
-function drawStructure() {}
+// Vertikālais metiens: blāvas raustītas lentes no zemes līdz kastes augšai; ↑ virs kreisās, ↓ virs labās
+// (ja v₀ ≤ 0 — tikai ↓ pie x = 0).
+function drawTapes(ctx, lay, m, c) {
+  const s = m.settings;
+  if (s.mode !== 'vertical') return;
+  const up = s.v0 > 0;
+  const tapes = up ? [{ x: 0, ch: '↑' }, { x: tapeGap(lay.box), ch: '↓' }] : [{ x: 0, ch: '↓' }];
+  const yTop = lay.toScreen(0, lay.box.y1).y;
+  const yGround = lay.toScreen(0, 0).y;
+  ctx.globalAlpha = 0.6;
+  for (const tp of tapes) {
+    const x = Math.round(lay.toScreen(tp.x, 0).x) + 0.5;
+    stroke(ctx, c.hairline);
+    ctx.setLineDash([3, 4]);
+    line(ctx, x, yGround, x, yTop);
+    ctx.setLineDash([]);
+  }
+  ctx.globalAlpha = 1;
+  for (const tp of tapes) text(ctx, tp.ch, lay.toScreen(tp.x, 0).x, yTop - 4, { color: c.inkDim, align: 'center' });
+}
 
 function drawDimH(ctx, lay, m, c) {
   const s = m.settings;
@@ -311,8 +353,8 @@ function drawVelocity(ctx, lay, m, c) {
 
 function drawBall(ctx, lay, m, c, pos, hollow) {
   const sc = SCALE;
-  const ctr = lay.toScreen(pos.x, pos.y);
-  const R = Math.max(5, (sc.ball.d / 2) * lay.tr.scale); // sīka bumbiņa tomēr redzama
+  const ctr = lay.toScreen(displayX(m.settings, lay.box, pos), pos.y);
+  const R = BALL_R_PX;
   ctx.beginPath();
   ctx.arc(ctr.x, ctr.y, R, 0, Math.PI * 2);
   if (hollow) {
@@ -334,10 +376,9 @@ function drawBall(ctx, lay, m, c, pos, hollow) {
 
 export function drawScene(ctx, lay, m) {
   const c = m.colors;
-  if (m.showGrid) drawWorldGrid(ctx, lay, m, c);
-  else drawPaper(ctx, lay, c);
+  drawWorldGrid(ctx, lay, m, c);
   drawGround(ctx, lay, c);
-  drawStructure(ctx, lay, m, c);
+  drawTapes(ctx, lay, m, c);
   drawDimH(ctx, lay, m, c);
   drawOrigin(ctx, lay, m, c);
   drawLaunchLabel(ctx, lay, m, c);
