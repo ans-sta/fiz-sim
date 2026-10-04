@@ -117,6 +117,50 @@ export function mountTitleBlock(el, { i18n, theme, sheet, topicKey }) {
   i18n.apply(el);
 }
 
+export function toggleFullscreen() {
+  const p = document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+  p?.catch(() => {});
+}
+
+// Galvenes rīki jaunajā izkārtojumā (spec. izkārtojums 7): LV · EN · ◐ · ⛶ (⛶ tikai, ja ierīce ļauj).
+// Pilnekrānā <html> saņem klasi is-fullscreen — tad galvenes nav (viss ir zem ⚙).
+export function mountHeaderTools(el, { i18n, theme }) {
+  el.innerHTML = `
+    <button type="button" data-lang="lv">LV</button><button type="button" data-lang="en">EN</button>
+    <button type="button" class="ht-theme" data-i18n-aria="tb.themeToggle">◐</button>
+    ${document.fullscreenEnabled ? '<button type="button" class="ht-fs" data-i18n-aria="tb.fullscreen">⛶</button>' : ''}`;
+  const sync = () => {
+    el.querySelectorAll('[data-lang]').forEach((b) => {
+      const on = b.dataset.lang === i18n.lang();
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  };
+  el.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => i18n.set(b.dataset.lang)));
+  el.querySelector('.ht-theme').addEventListener('click', () => theme.toggle());
+  const fs = el.querySelector('.ht-fs');
+  const fsSync = () => {
+    const on = Boolean(document.fullscreenElement);
+    document.documentElement.classList.toggle('is-fullscreen', on);
+    fs?.setAttribute('aria-pressed', String(on));
+  };
+  fs?.addEventListener('click', toggleFullscreen);
+  document.addEventListener('fullscreenchange', fsSync);
+  fsSync();
+  i18n.onChange(sync);
+  sync();
+  i18n.apply(el);
+}
+
+// Mazais rakstlaukums rasējuma stūrī (spec. izkārtojums 7): KOMPLEKTS / LAPA / TĒMA, bez pogām.
+export function mountTitleCells(el, { i18n, sheet, topicKey }) {
+  el.innerHTML = `
+    <div class="cell"><span class="k" data-i18n="tb.set"></span><span class="v">FIZ-SIM</span></div>
+    <div class="cell"><span class="k" data-i18n="tb.sheet"></span><span class="v">${sheet}</span></div>
+    <div class="cell"><span class="k" data-i18n="tb.topic"></span><span class="v" data-i18n="${topicKey}"></span></div>`;
+  i18n.apply(el);
+}
+
 export function setupCanvas(canvas, onResize) {
   const ctx = canvas.getContext('2d');
   let w = 0;

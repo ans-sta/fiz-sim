@@ -359,3 +359,138 @@ table.data.compact td { padding: 2px 6px; }
 @media (max-width: 520px) { h1 { flex-wrap: wrap; } }
 .study-sep { white-space: pre; color: var(--ink-dim); font-weight: 400; } /* h1 ir flex: tukšumi ap punktu citādi pazūd */
 .fixed-list { font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; line-height: 1.5; color: var(--ink-dim); }
+
+/* ══ Jaunais izkārtojums (spec. izkārtojums, K-01): rasējums pa visu laukumu, paneļi virs tā ══
+   Viss zem .layout-hud — lapas bez šīs klases (K-02) paliek kā līdz šim.
+   Burtu izmēri × var(--ui) (⚙ BURTI); zīmējums un ⚙ logs no tā neatkarīgi. */
+.layout-hud { --bar-gap: 0px; }
+@supports (height: 100svh) {
+  /* telefonā lapa ir 100lvh augsta (pārlūka joslas var aizritināt), tāpēc apakšas lietas ceļ virs joslām */
+  .layout-hud { --bar-gap: calc(100lvh - 100svh); }
+}
+html.is-fullscreen body.layout-hud header { display: none; }
+
+/* galvene */
+.layout-hud .back { font-size: calc(11px * var(--ui, 1)); padding: 0 calc(16px * var(--ui, 1)); }
+.layout-hud h1 { font-size: calc(14px * var(--ui, 1)); padding: calc(10px * var(--ui, 1)) calc(16px * var(--ui, 1)); min-width: 0; }
+.layout-hud .head-tools { display: flex; align-items: center; gap: calc(4px * var(--ui, 1)); padding: 0 calc(10px * var(--ui, 1)); border-left: 1px solid var(--hairline); flex: none; }
+.layout-hud .head-tools:empty { display: none; }
+.layout-hud .head-tools button { background: none; border: none; cursor: pointer; color: var(--ink-dim); font-size: calc(11px * var(--ui, 1)); font-weight: 500; padding: calc(4px * var(--ui, 1)); letter-spacing: 0.04em; }
+.layout-hud .head-tools button:hover { color: var(--ink); }
+.layout-hud .head-tools button.active { color: var(--accent); }
+@media (max-width: 700px) and (orientation: portrait) {
+  .layout-hud h1 { font-size: calc(12px * var(--ui, 1)); padding: calc(8px * var(--ui, 1)) calc(10px * var(--ui, 1)); }
+  .layout-hud .back { padding: 0 calc(10px * var(--ui, 1)); }
+}
+@media (max-height: 480px) and (orientation: landscape) {
+  .layout-hud h1 { font-size: calc(12px * var(--ui, 1)); padding: calc(6px * var(--ui, 1)) calc(12px * var(--ui, 1)); }
+}
+@media (max-width: 520px) {
+  .layout-hud h1 .sheet-no { display: none; } /* telefonā lapas numurs ir rasējuma vietā, kā skicē */
+}
+
+/* paneļi virs rasējuma */
+.layout-hud .hud { position: absolute; z-index: 3; top: 8px; background: color-mix(in srgb, var(--field) 88%, transparent); border: 1px solid var(--hairline); max-width: calc(50% - 12px); }
+.layout-hud .hud-title { font-size: calc(9.5px * var(--ui, 1)); letter-spacing: 0.14em; color: var(--ink-dim); padding: calc(6px * var(--ui, 1)) calc(10px * var(--ui, 1)) calc(2px * var(--ui, 1)); }
+
+/* LIELUMI */
+.layout-hud .q-list { left: 8px; width: calc(178px * var(--ui, 1)); }
+.layout-hud .q-row { display: flex; align-items: center; gap: calc(6px * var(--ui, 1)); width: 100%; height: calc(24px * var(--ui, 1)); padding: 0 calc(10px * var(--ui, 1)); background: none; border: none; border-left: 2px solid transparent; cursor: pointer; text-align: left; font-size: calc(12px * var(--ui, 1)); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.layout-hud .q-row .q-sym { flex: none; }
+.layout-hud .q-row .q-val { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+.layout-hud .q-row .fix { flex: none; margin-left: 0; font-size: calc(8.5px * var(--ui, 1)); }
+.layout-hud .q-row.editable:hover, .layout-hud .q-row.open { border-left-color: var(--accent); }
+.layout-hud .q-row.open .q-val { color: var(--accent); }
+.layout-hud .q-row.fixed, .layout-hud .q-row.locked { cursor: default; color: var(--ink-dim); }
+.layout-hud .q-row.fixed .q-val, .layout-hud .q-row.locked .q-val { font-weight: 400; }
+.layout-hud .q-row:focus-visible { outline-offset: -2px; }
+.layout-hud .q-more { display: flex; align-items: center; width: 100%; height: calc(24px * var(--ui, 1)); background: none; border: none; border-top: 1px dashed var(--hairline); padding: 0 calc(10px * var(--ui, 1)); font-size: calc(10.5px * var(--ui, 1)); color: var(--ink-dim); letter-spacing: 0.08em; cursor: pointer; text-align: left; }
+.layout-hud .q-more:hover { color: var(--ink); }
+.layout-hud .q-slide { padding: 0 calc(10px * var(--ui, 1)) calc(6px * var(--ui, 1)); }
+.layout-hud .q-slide.range { height: calc(50px * var(--ui, 1)); display: grid; grid-template-rows: calc(30px * var(--ui, 1)) calc(14px * var(--ui, 1)); }
+.layout-hud .q-ctl { display: flex; align-items: center; gap: calc(6px * var(--ui, 1)); }
+.layout-hud .q-step { flex: none; width: calc(28px * var(--ui, 1)); height: calc(28px * var(--ui, 1)); background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: calc(13px * var(--ui, 1)); }
+.layout-hud .q-step:hover { background: var(--ink); color: var(--sheet); }
+.layout-hud .q-step:disabled { opacity: 0.4; cursor: not-allowed; background: var(--sheet); color: inherit; }
+.layout-hud .q-ends { display: flex; justify-content: space-between; align-items: center; font-size: calc(9px * var(--ui, 1)); color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.layout-hud .q-choices { display: flex; flex-wrap: wrap; gap: calc(4px * var(--ui, 1)); }
+.layout-hud .q-choices .btn { flex: none; padding: calc(4px * var(--ui, 1)) calc(6px * var(--ui, 1)); font-size: calc(10px * var(--ui, 1)); letter-spacing: 0.04em; }
+.layout-hud .q-choices .btn.unavailable { opacity: 0.45; }
+
+/* slīdnis kā izmēru līnija: līnija ar atzīmēm galos, rokturis — rombiņš */
+.layout-hud input.dim-range { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; height: calc(26px * var(--ui, 1)); margin: 0; background:
+  linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) left center / 1px 9px no-repeat,
+  linear-gradient(var(--ink), var(--ink)) right center / 1px 9px no-repeat; cursor: pointer; }
+.layout-hud input.dim-range::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; background: var(--sheet); border: 1px solid var(--ink); transform: rotate(45deg); }
+.layout-hud input.dim-range::-moz-range-thumb { width: 11px; height: 11px; background: var(--sheet); border: 1px solid var(--ink); border-radius: 0; transform: rotate(45deg); }
+.layout-hud input.dim-range:active::-webkit-slider-thumb, .layout-hud input.dim-range:focus-visible::-webkit-slider-thumb { background: var(--accent); border-color: var(--accent); }
+.layout-hud input.dim-range:active::-moz-range-thumb, .layout-hud input.dim-range:focus-visible::-moz-range-thumb { background: var(--accent); border-color: var(--accent); }
+.layout-hud input.dim-range:focus-visible { outline: none; }
+.layout-hud input.dim-range:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* MĒRĪJUMI — viss pie labās malas */
+.layout-hud .m-box { right: 8px; text-align: right; padding-bottom: calc(6px * var(--ui, 1)); min-width: calc(110px * var(--ui, 1)); }
+.layout-hud .m-box.can-open { cursor: pointer; }
+.layout-hud .m-box.can-open:hover { border-color: var(--accent); }
+.layout-hud .m-select { display: block; margin: 0 calc(10px * var(--ui, 1)) calc(2px * var(--ui, 1)) auto; max-width: calc(100% - 20px * var(--ui, 1)); background: var(--sheet); border: 1px solid var(--hairline); font-size: calc(10px * var(--ui, 1)); padding: 1px 2px; }
+.layout-hud .m-big { font-size: calc(26px * var(--ui, 1)); font-weight: 500; font-variant-numeric: tabular-nums; padding: 0 calc(10px * var(--ui, 1)); line-height: 1.15; }
+.layout-hud .m-big.live { color: var(--accent); }
+.layout-hud .m-big .m-sym { display: inline-block; font-size: calc(12px * var(--ui, 1)); color: var(--ink-dim); font-weight: 400; margin-right: 0.3em; }
+.layout-hud .m-big .m-num { display: inline-block; white-space: nowrap; }
+.layout-hud .m-big .m-unit { font-size: calc(12px * var(--ui, 1)); color: var(--ink-dim); font-weight: 400; margin-left: 0.25em; }
+.layout-hud .m-note { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11.5px * var(--ui, 1)); line-height: 1.35; color: var(--ink-dim); padding: 0 calc(10px * var(--ui, 1)); }
+.layout-hud .m-rows { font-size: calc(10px * var(--ui, 1)); font-variant-numeric: tabular-nums; padding: calc(2px * var(--ui, 1)) calc(10px * var(--ui, 1)) 0; line-height: 1.4; }
+.layout-hud .m-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 0.5em; }
+.layout-hud .m-row .arr { color: var(--ink-dim); }
+.layout-hud .m-mini { border-collapse: collapse; margin: calc(4px * var(--ui, 1)) calc(10px * var(--ui, 1)) 0 auto; font-size: calc(9px * var(--ui, 1)); font-variant-numeric: tabular-nums; color: var(--ink-dim); }
+.layout-hud .m-mini td { padding: 0 0 0 calc(6px * var(--ui, 1)); border-bottom: 1px solid var(--hairline); text-align: right; }
+.layout-hud .m-mini td:first-child { color: var(--ink); }
+.layout-hud .m-mini td.more, .layout-hud .m-mini tr.more td { border-bottom: none; color: var(--ink-dim); }
+.layout-hud .m-links { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 0 calc(10px * var(--ui, 1)); padding: calc(4px * var(--ui, 1)) calc(10px * var(--ui, 1)) 0; }
+.layout-hud .m-link { background: none; border: none; padding: 0; cursor: pointer; font-size: calc(9px * var(--ui, 1)); letter-spacing: 0.1em; color: var(--ink-dim); }
+.layout-hud .m-link:hover, .layout-hud .m-box.can-open:hover .m-link:first-child { color: var(--accent); }
+@media (max-height: 480px) and (orientation: landscape) {
+  .layout-hud .m-mini { display: none; } /* zems ekrāns: tabuliņas vietā tikai ↗ VISA TABULA, lai paliek vieta renītei */
+}
+
+/* palaišanas poga: centrēta, mazliet zem zemes; aug tikai burti, vieta paliek */
+.layout-hud .run-slot { position: absolute; left: 50%; top: 0; transform: translateX(-50%); z-index: 3; }
+.layout-hud .run-slot .btn { background: var(--sheet); border-color: var(--ink); font-weight: 600; font-size: calc(11px * var(--ui, 1)); padding: calc(8px * var(--ui, 1)) calc(14px * var(--ui, 1)); letter-spacing: 0.1em; }
+.layout-hud .run-slot .btn:hover:not(:disabled) { background: var(--ink); color: var(--sheet); }
+.layout-hud .run-slot .btn:disabled:hover { background: var(--sheet); }
+
+/* paziņojumi: rasējuma apakšā, zem pogas */
+.layout-hud .notices { top: var(--notices-top, auto); bottom: calc(10px + var(--bar-gap)); left: 56px; right: 56px; align-items: center; overflow-y: auto; z-index: 4; }
+.layout-hud .drawing.has-title .notices { bottom: calc(64px + var(--bar-gap)); }
+.layout-hud .notice { width: 100%; font-size: calc(12.5px * var(--ui, 1)); }
+.layout-hud .notice button { font-size: calc(13px * var(--ui, 1)); }
+@media (max-width: 520px) {
+  .layout-hud .notices { left: 50px; right: 8px; }
+}
+
+/* ⚙ — fiksēts izmērs (neaug līdzi burtiem), pogas paliek zem pirksta */
+.layout-hud .gear-corner { position: absolute; left: 10px; bottom: calc(10px + var(--bar-gap)); z-index: 5; font-size: 11px; }
+.layout-hud .gear-btn { display: block; width: 34px; height: 34px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 17px; line-height: 1; }
+.layout-hud .gear-btn:hover, .layout-hud .gear-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.layout-hud .gear-pop { position: absolute; left: 0; bottom: 42px; width: 250px; background: var(--sheet); border: 1px solid var(--ink); padding: 10px; display: grid; gap: 10px; }
+.layout-hud .gear-pop .gr { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; }
+.layout-hud .gear-pop .gr.col { display: grid; grid-template-rows: 14px 28px; gap: 4px; }
+.layout-hud .gear-pop .k { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-dim); }
+.layout-hud .gear-pop .k b { color: var(--ink); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.layout-hud .gear-pop .btn { padding: 5px 8px; font-size: 10px; flex: none; }
+.layout-hud .gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
+.layout-hud .gear-pop .gear-step { min-width: 32px; height: 28px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
+.layout-hud .gear-pop .gear-step:hover { background: var(--ink); color: var(--sheet); }
+.layout-hud .gear-pop input.dim-range { height: 26px; }
+
+/* mazais rakstlaukums (tikai lielā rasējumā) */
+.layout-hud .title-small { position: absolute; right: 10px; bottom: calc(10px + var(--bar-gap)); z-index: 2; display: grid; grid-template-columns: repeat(3, auto); border: 1px solid var(--hairline); background: var(--sheet); }
+.layout-hud .title-small .cell { min-height: 0; padding: 3px 8px; border-bottom: none; }
+.layout-hud .title-small .cell + .cell { border-left: 1px solid var(--hairline); }
+.layout-hud .title-small .cell:nth-child(odd) { border-right: none; }
+.layout-hud .title-small .cell .k { font-size: 8px; }
+.layout-hud .title-small .cell .v { font-size: 10px; }
+
+/* rokturu etiķetes — tikai lieluma simbols */
+.layout-hud .handle-label.sym { font-weight: 500; padding: 0 3px; }
