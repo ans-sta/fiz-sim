@@ -55,3 +55,4 @@
 
 - 2026-10-04 — Pirmā versija no Anša piezīmēm (04.10, telefona ekrānuzņēmumi `scr.mini/sim-*.PNG` un skices komentāri).
 - 2026-10-04 — Ansis: zīmējums (no burta h līdz noripojušajai lodītei) vienmēr precīzi ekrāna vidū, arī mainot ZĪMĒJUMS. Visos K-01 pētījumos maināmi α, h, L (un vārti / Δt, kur tie ir); Δt — slīdnis 0,1–2 s ik pa 0,1 s, bez brīdinājuma, ja lodīte noripo ātrāk par Δt. Kamēr slīdnis vaļā, LIELUMI ir platāks un virs MĒRĪJUMIEM. Pētījums a(α) → t(α), t(h); sērijas tabulā katrā rindā α un h.
+- 2026-10-04 — Ansis: panelis visās simulācijās saucas **MAINĪGIE LIELUMI** (EN VARIABLES). Rinda, kas nav mainīgais lielums (S-01 palīglīnijas), tajā pašā panelī zem horizontālas līnijas kā čekbokss — ieslēdz ar vienu klikšķi.

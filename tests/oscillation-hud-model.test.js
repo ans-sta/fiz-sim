@@ -15,8 +15,8 @@ test('quantityRows: A, T, λ sliders and the helper-lines choice, Latvian number
   assert.deepEqual([A.symbol, A.valueText, A.kind, A.state, A.min, A.max, A.step, A.value], ['A', '20 cm', 'range', 'editable', 5, 40, 1, 20]);
   assert.deepEqual([T.symbol, T.valueText, T.minText, T.maxText], ['T', '4,0 s', '1 s', '8 s']);
   assert.deepEqual([L.symbol, L.valueText], ['λ', '100 cm']);
-  assert.deepEqual([lines.kind, lines.value, lines.valueText], ['choice', true, 'rāda']);
-  assert.deepEqual(lines.choices.map((c) => [c.value, c.label]), [[true, 'rāda'], [false, 'nerāda']]);
+  assert.deepEqual([lines.kind, lines.group, lines.value, lines.valueText], ['check', 'aside', true, 'rāda']);
+  assert.equal(quantityRows({ ...defaultSettings(), lines: false }, { lang: 'lv', t: lv })[3].valueText, 'nerāda');
   assert.equal(quantityRows({ ...defaultSettings(), T: 2.5 }, { lang: 'en', t: en })[1].valueText, '2.5 s');
 });
 

@@ -10,7 +10,7 @@ export const STRINGS = {
     'tb.themeToggle': 'Pārslēgt gaišo un tumšo režīmu',
     'tb.fullscreen': 'Pilnekrāns',
 
-    'hud.quantities': 'LIELUMI',
+    'hud.quantities': 'MAINĪGIE LIELUMI',
     'hud.more': 'citi…',
     'hud.less': 'mazāk ▴',
     'dims.decrease': 'Samazināt: {name}',
@@ -70,7 +70,7 @@ export const STRINGS = {
     'tb.themeToggle': 'Toggle light and dark mode',
     'tb.fullscreen': 'Full screen',
 
-    'hud.quantities': 'QUANTITIES',
+    'hud.quantities': 'VARIABLES',
     'hud.more': 'more…',
     'hud.less': 'less ▴',
     'dims.decrease': 'Decrease: {name}',

@@ -124,7 +124,7 @@ export const STRINGS = {
     'study.oblique.q': 'Pie kāda leņķa bumbiņa aizlido vistālāk?',
     'study.oblique.changes': 'v₀, α, h, Δt',
 
-    'hud.title': 'LIELUMI',
+    'hud.title': 'MAINĪGIE LIELUMI',
     'hud.more': 'citi…',
     'hud.less': 'mazāk ▴',
     'hud.measures': 'MĒRĪJUMI',
@@ -279,7 +279,7 @@ export const STRINGS = {
     'study.oblique.q': 'At which angle does the ball fly farthest?',
     'study.oblique.changes': 'v₀, α, h, Δt',
 
-    'hud.title': 'QUANTITIES',
+    'hud.title': 'VARIABLES',
     'hud.more': 'more…',
     'hud.less': 'less ▴',
     'hud.measures': 'MEASUREMENTS',

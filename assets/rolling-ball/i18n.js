@@ -165,7 +165,7 @@ export const STRINGS = {
     'study.strobe.changes': 'α, h, L, Δt, mērlente',
     'study.strobe.measure': 'STROBOSKOPA ATTĒLS',
 
-    'hud.quantities': 'LIELUMI',
+    'hud.quantities': 'MAINĪGIE LIELUMI',
     'hud.measurements': 'MĒRĪJUMI',
     'hud.more': 'citi…',
     'hud.less': 'mazāk ▴',
@@ -377,7 +377,7 @@ export const STRINGS = {
     'study.strobe.changes': 'α, h, L, Δt, tape',
     'study.strobe.measure': 'STROBE IMAGE',
 
-    'hud.quantities': 'QUANTITIES',
+    'hud.quantities': 'VARIABLES',
     'hud.measurements': 'MEASUREMENTS',
     'hud.more': 'more…',
     'hud.less': 'less ▴',

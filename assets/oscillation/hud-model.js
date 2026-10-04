@@ -15,10 +15,8 @@ export function quantityRows(s, { lang, t }) {
     range('A', 'A', t('q.A'), `${num(s.A, 0)} cm`, 'cm'),
     range('T', 'T', t('q.T'), `${num(s.T, 1)} s`, 's'),
     range('lambda', 'λ', t('q.lambda'), `${num(s.lambda, 0)} cm`, 'cm'),
-    {
-      key: 'lines', symbol: t('q.lines'), name: t('q.lines'), valueText: s.lines ? on : off, state: 'editable', kind: 'choice', group: 'main',
-      value: s.lines, choices: [{ value: true, label: on }, { value: false, label: off }],
-    },
+    // nav mainīgais lielums: čekbokss zem horizontālas līnijas, viens klikšķis (Ansis 04.10)
+    { key: 'lines', symbol: t('q.lines'), name: t('q.lines'), valueText: s.lines ? on : off, state: 'editable', kind: 'check', group: 'aside', value: s.lines },
   ];
 }
 

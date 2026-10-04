@@ -63,8 +63,9 @@ function onOutsideOrEsc(root, isOpen, close) {
 }
 
 // ── LIELUMI ──────────────────────────────────────────────
-// Rinda: { key, symbol, name, valueText, state: 'editable'|'fixed'|'locked', kind: 'range'|'choice',
-//          min, max, step, value, minText, maxText, choices: [{ value, label, unavailable }], group: 'main'|'more' }.
+// Rinda: { key, symbol, name, valueText, state: 'editable'|'fixed'|'locked', kind: 'range'|'choice'|'check',
+//          min, max, step, value, minText, maxText, choices: [{ value, label, unavailable }], group: 'main'|'more'|'aside' }.
+// kind 'check' — čekbokss, viens klikšķis pārslēdz (onChange(key, !value)); group 'aside' — zem horizontālas līnijas.
 // Atvērtais slīdnis netiek veidots no jauna, kamēr to velk vai spiež − / + — vērtības mainās uz vietas.
 export function createQuantityList(root, { labels, onChange }) {
   root.classList.add('hud', 'q-list');
@@ -73,7 +74,8 @@ export function createQuantityList(root, { labels, onChange }) {
   const moreBtn = button('q-more');
   root.append(title, body, moreBtn);
 
-  const rowEls = new Map(); // key → { btn, sym, tag, val }
+  const rowEls = new Map(); // key → { btn, box, sym, tag, val }
+  const sep = node('div', 'q-sep');
   let rows = [];
   let openKey = null;
   let moreOpen = false;
@@ -84,16 +86,22 @@ export function createQuantityList(root, { labels, onChange }) {
 
   function makeRow(key) {
     const btn = button('q-row');
+    const box = node('span', 'q-check'); // tikai kind 'check' rindām: ☐/☑, pārslēdz ar vienu klikšķi
     const sym = node('span', 'q-sym');
     const tag = node('span', 'fix');
     const val = node('span', 'q-val');
-    btn.append(sym, tag, val);
+    btn.append(box, sym, tag, val);
     btn.addEventListener('click', () => {
-      if (rowOf(key)?.state !== 'editable') return;
+      const r = rowOf(key);
+      if (r?.state !== 'editable') return;
+      if (r.kind === 'check') {
+        onChange(key, !r.value);
+        return;
+      }
       openKey = openKey === key ? null : key;
       paint();
     });
-    return { btn, sym, tag, val };
+    return { btn, box, sym, tag, val };
   }
 
   function makeSlide(r) {
@@ -167,17 +175,28 @@ export function createQuantityList(root, { labels, onChange }) {
 
   function paintRow(e, r, L) {
     const editable = r.state === 'editable';
-    const cls = `q-row ${r.state}${r.key === openKey ? ' open' : ''}`;
+    const check = r.kind === 'check';
+    const cls = `q-row ${r.state}${r.key === openKey ? ' open' : ''}${check ? ' check' : ''}`;
     if (e.btn.className !== cls) e.btn.className = cls;
+    e.box.hidden = !check;
+    if (check) e.box.classList.toggle('on', Boolean(r.value));
     setText(e.sym, r.symbol);
-    setText(e.val, r.valueText);
+    setText(e.val, check ? '' : r.valueText);
     setText(e.tag, r.state === 'locked' ? L.fixed : '');
     e.tag.hidden = r.state !== 'locked';
     if (L.fixedTitle) setAttr(e.tag, 'title', L.fixedTitle);
     e.btn.tabIndex = editable ? 0 : -1;
     setAttr(e.btn, 'aria-disabled', !editable);
-    if (editable) setAttr(e.btn, 'aria-expanded', r.key === openKey);
-    else e.btn.removeAttribute('aria-expanded');
+    if (check) {
+      setAttr(e.btn, 'role', 'checkbox');
+      setAttr(e.btn, 'aria-checked', Boolean(r.value));
+      e.btn.removeAttribute('aria-expanded');
+    } else {
+      e.btn.removeAttribute('role');
+      e.btn.removeAttribute('aria-checked');
+      if (editable) setAttr(e.btn, 'aria-expanded', r.key === openKey);
+      else e.btn.removeAttribute('aria-expanded');
+    }
     setAttr(e.btn, 'aria-label', `${r.name ?? r.symbol} ${r.valueText}${r.state === 'locked' ? ` ${L.fixed}` : ''}`);
   }
 
@@ -199,6 +218,8 @@ export function createQuantityList(root, { labels, onChange }) {
         e = makeRow(r.key);
         rowEls.set(r.key, e);
       }
+      // rindas, kas nav mainīgie lielumi (group 'aside'), zem horizontālas līnijas (Ansis 04.10)
+      if (r.group === 'aside' && order.length && !order.includes(sep)) order.push(sep);
       paintRow(e, r, L);
       order.push(e.btn);
       if (r.key === openKey) {
@@ -219,6 +240,7 @@ export function createQuantityList(root, { labels, onChange }) {
       e.btn.remove();
       rowEls.delete(k);
     }
+    if (!order.includes(sep)) sep.remove();
     // secība — pārvieto tikai to, kas nav savā vietā (atvērtais slīdnis netiek aiztikts)
     order.forEach((n, i) => {
       if (body.children[i] !== n) body.insertBefore(n, body.children[i] ?? null);
