@@ -1,7 +1,7 @@
 // assets/oscillation/scene.js
 // Zīmē ainu: ass, riņķu kontūras (palīglīnijas), 41 punkts, oranžais pirmais; palīglīnijas pa stāvokļiem; izmēru līnijas A un λ.
 // Visas koordinātas nāk no model.js projekcijas; šeit tikai pikseļi un krāsas. Caurspīdīgums pārejās: no pozas (0…1).
-import { AXIS_CM, CREST, COMPRESSION, isMarked, longAmplitude, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpan, toScreen, project, point3D } from './model.js';
+import { AXIS_CM, CREST, COMPRESSION, isMarked, longAmplitude, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpans, crestAlpha, toScreen, project, point3D } from './model.js';
 
 const MONO = 'ui-monospace, monospace';
 const fontLabel = (k = 1) => `400 ${11 * k}px "IBM Plex Mono", ${MONO}`;
@@ -128,17 +128,20 @@ export function drawScene(ctx, lay, m) {
     // ŠĶĒRSVILNIS: A līdz kalnam, λ starp kalniem
     if (dimTrans > 0.01) {
       const zc = phaseZ(phase, s.lambda, CREST);
-      dimLine(ctx, Z(zc), tip(zc), 'A', { x: 1, y: 0 }, m, dimTrans);
-      const { z1, z2 } = lambdaSpan(phase, s.lambda, CREST);
+      const aA = dimTrans * crestAlpha(zc, s.lambda, s.v);
+      if (aA > 0.01) dimLine(ctx, Z(zc), tip(zc), 'A', { x: 1, y: 0 }, m, aA);
       const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
-      strokeStyle(ctx, c.hairline, dimTrans, 1, [3, 3]);
-      const c1 = onWave(z1);
-      const c2 = onWave(z2);
-      path(ctx, [c1, { x: c1.x, y: yDim }]);
-      ctx.stroke();
-      path(ctx, [c2, { x: c2.x, y: yDim }]);
-      ctx.stroke();
-      dimLine(ctx, { x: c1.x, y: yDim }, { x: c2.x, y: yDim }, 'λ', { x: 0, y: -1 }, m, dimTrans);
+      for (const sp of lambdaSpans(phase, s.lambda, CREST, s.v)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
+        const al = dimTrans * sp.alpha;
+        strokeStyle(ctx, c.hairline, al, 1, [3, 3]);
+        const c1 = onWave(sp.z1);
+        const c2 = onWave(sp.z2);
+        path(ctx, [c1, { x: c1.x, y: yDim }]);
+        ctx.stroke();
+        path(ctx, [c2, { x: c2.x, y: yDim }]);
+        ctx.stroke();
+        dimLine(ctx, { x: c1.x, y: yDim }, { x: c2.x, y: yDim }, 'λ', { x: 0, y: -1 }, m, al);
+      }
     }
     // GARENVILNIS: ķemme — caur katru punktu vertikāla svītra ±A, lai sablīvējumi un retinājumi ir redzami (Ansis 04.10);
     // A no pirmā punkta centra līdz tā galējam stāvoklim, λ starp sablīvējumiem — abas ārpus ķemmes
@@ -159,16 +162,18 @@ export function drawScene(ctx, lay, m) {
       path(ctx, [{ x: xA, y: origin.y }, { x: xA, y: yA }]);
       ctx.stroke();
       dimLine(ctx, { x: origin.x, y: yA }, { x: xA, y: yA }, 'A', { x: 0, y: 1 }, m, dimLong);
-      const { z1, z2 } = lambdaSpan(phase, s.lambda, COMPRESSION);
       const yL = combTop - 14 - 6 * m.legend;
-      strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
-      const k1 = Z(z1);
-      const k2 = Z(z2);
-      path(ctx, [k1, { x: k1.x, y: yL }]);
-      ctx.stroke();
-      path(ctx, [k2, { x: k2.x, y: yL }]);
-      ctx.stroke();
-      dimLine(ctx, { x: k1.x, y: yL }, { x: k2.x, y: yL }, 'λ', { x: 0, y: -1 }, m, dimLong);
+      for (const sp of lambdaSpans(phase, s.lambda, COMPRESSION, s.v)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
+        const al = dimLong * sp.alpha;
+        strokeStyle(ctx, c.hairline, al, 1, [3, 3]);
+        const k1 = Z(sp.z1);
+        const k2 = Z(sp.z2);
+        path(ctx, [k1, { x: k1.x, y: yL }]);
+        ctx.stroke();
+        path(ctx, [k2, { x: k2.x, y: yL }]);
+        ctx.stroke();
+        dimLine(ctx, { x: k1.x, y: yL }, { x: k2.x, y: yL }, 'λ', { x: 0, y: -1 }, m, al);
+      }
     }
   }
 

@@ -169,6 +169,23 @@ export function phaseZ(phase0, lambda, target) {
   const frac = ((phase0 - target) / TAU) % 1;
   return lambda * ((frac + 1) % 1);
 }
+// λ un A mēri slīd līdzi vilnim un pārlec uz viļņa sākumu; lēciena vietā — krusteniska izbālēšana FADE_S laikā (Ansis 04.10).
+export const FADE_S = 1.5; // s
+export const fadeDistance = (v, lambda) => Math.min(lambda / 4, Math.max(5, Math.abs(v) * FADE_S)); // cm, ko vilnis noskrien FADE_S laikā
+// Kalnu (vai sablīvējumu) mērs {z1, z1+λ} izbāl, kad tā gals tuvojas ass galam; rezerves mērs {0, λ} tikmēr iebāl.
+export function lambdaSpans(phase0, lambda, target, v) {
+  const z1 = phaseZ(phase0, lambda, target);
+  const d = z1 + lambda - AXIS_CM; // > 0: kalnu mērs vairs neietilpst
+  const a = Math.min(1, Math.max(0, -d / fadeDistance(v, lambda)));
+  const out = [];
+  if (a > 0.01) out.push({ z1, z2: z1 + lambda, alpha: a });
+  if (1 - a > 0.01) out.push({ z1: 0, z2: lambda, alpha: 1 - a });
+  return out;
+}
+// A mērs pie pirmā kalna: iebāl, kalnam ienākot pie z = 0, un izbāl, kad tas tuvojas z = λ (tad “pirmais” kļūst nākamais).
+export function crestAlpha(zc, lambda, v) {
+  return Math.min(1, Math.max(0, Math.min(zc, lambda - zc) / fadeDistance(v, lambda)));
+}
 export function lambdaSpan(phase0, lambda, target) {
   const z1 = phaseZ(phase0, lambda, target);
   return z1 + lambda <= AXIS_CM ? { z1, z2: z1 + lambda } : { z1: 0, z2: lambda };

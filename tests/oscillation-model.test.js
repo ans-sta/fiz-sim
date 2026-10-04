@@ -4,7 +4,7 @@ import {
   AXIS_CM, N_POINTS, RANGES, VIEWS, VIEW_POSE, TURN_S, TAU, CREST, COMPRESSION,
   defaultSettings, withA, withT, withV, withLambda, withLines, derived, advancePhase, pointZ, phaseAt, isMarked,
   point3D, project, viewCenterU, smooth, poseAngles, advancePose, settled,
-  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM, longAmplitude,
+  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM, longAmplitude, lambdaSpans, crestAlpha, fadeDistance, FADE_S,
 } from '../assets/oscillation/model.js';
 
 const close = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
@@ -234,4 +234,35 @@ test('longAmplitude: the axial amplitude never exceeds 0,8·λ/2π, so neighbour
   close(Math.max(...side.map((p) => Math.abs(p.w))), 40, 0.05);
   const circle = scenePoints(s, 0.3, angles(0, 0));
   for (const p of circle) close(Math.hypot(p.u, p.w), 40);
+});
+
+test('lambdaSpans: the sliding λ measure fades out as its end nears the axis end while the fallback {0, λ} fades in; no jump', () => {
+  assert.equal(FADE_S, 1.5);
+  close(fadeDistance(25, 100), 25); // λ/4 caps 37,5 → 25
+  close(fadeDistance(0, 100), 5);
+  const v = 10; // Δ = 15 cm
+  // crest at z = 60 with λ = 100: end at 160, far from 200 → only the sliding measure, full alpha
+  let sp = lambdaSpans(CREST + TAU * 60 / 100, 100, CREST, v);
+  assert.equal(sp.length, 1);
+  close(sp[0].z1, 60); close(sp[0].z2, 160); close(sp[0].alpha, 1);
+  // crest at z = 92,5: end at 192,5 → 7,5 cm before the end → half-way through the fade: both measures, alphas 0,5
+  sp = lambdaSpans(CREST + TAU * 92.5 / 100, 100, CREST, v);
+  assert.equal(sp.length, 2);
+  close(sp[0].z1, 92.5); close(sp[0].alpha, 0.5);
+  assert.deepEqual([sp[1].z1, sp[1].z2], [0, 100]); close(sp[1].alpha, 0.5);
+  // crest at z = 5 with λ = 100 → end 105 fits → sliding measure only (continuous with the fallback {0, 100} it replaces)
+  sp = lambdaSpans(CREST + TAU * 5 / 100, 100, CREST, v);
+  assert.equal(sp.length, 1); close(sp[0].z1, 5); close(sp[0].alpha, 1);
+  // λ = 200: never fits → fallback only
+  sp = lambdaSpans(1, 200, CREST, v);
+  assert.equal(sp.length, 1); assert.deepEqual([sp[0].z1, sp[0].z2, sp[0].alpha], [0, 200, 1]);
+});
+
+test('crestAlpha: the A measure fades in after a crest enters at z = 0 and fades out before the first crest reaches z = λ', () => {
+  const v = 10; // Δ = 15 cm at λ = 100
+  close(crestAlpha(0, 100, v), 0);
+  close(crestAlpha(7.5, 100, v), 0.5);
+  close(crestAlpha(50, 100, v), 1);
+  close(crestAlpha(92.5, 100, v), 0.5);
+  close(crestAlpha(100, 100, v), 0);
 });
