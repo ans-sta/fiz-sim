@@ -265,6 +265,12 @@
     border: 1px solid #ff663333;
   }
 
+  .tag-waves {
+    color: #ff7a29;
+    background: #ff7a2922;
+    border: 1px solid #ff7a2933;
+  }
+
   .card-title {
     font-family: 'Orbitron', monospace;
     font-size: 16px;
@@ -662,6 +668,37 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 7: Oscillations and waves ══════ -->
+    <a href="harmonic-motion.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Circle (end view) -->
+          <circle cx="42" cy="70" r="30" fill="none" stroke="#5a6d88" stroke-width="1.2"/>
+          <line x1="42" y1="70" x2="63" y2="49" stroke="#c8d6e8" stroke-width="1"/>
+          <circle cx="63" cy="49" r="4.5" fill="#ff7a29"/>
+          <!-- Projection to the wave -->
+          <line x1="63" y1="49" x2="86" y2="49" stroke="#ff7a2988" stroke-width="1" stroke-dasharray="3 3"/>
+          <!-- Transverse wave (side view) -->
+          <line x1="86" y1="70" x2="190" y2="70" stroke="#5a6d88" stroke-width="0.8"/>
+          <path d="M 86 49 C 96 49 101 91 112 91 S 128 49 138 49 S 154 91 164 91 S 180 49 190 49" fill="none" stroke="#c8d6e8" stroke-width="1.2"/>
+          <circle cx="86" cy="49" r="4.5" fill="#ff7a29"/>
+          <circle cx="99" cy="63" r="2.5" fill="#c8d6e8"/><circle cx="112" cy="91" r="2.5" fill="#c8d6e8"/><circle cx="125" cy="77" r="2.5" fill="#c8d6e8"/>
+          <circle cx="138" cy="49" r="2.5" fill="#c8d6e8"/><circle cx="151" cy="63" r="2.5" fill="#c8d6e8"/><circle cx="164" cy="91" r="2.5" fill="#c8d6e8"/><circle cx="177" cy="77" r="2.5" fill="#c8d6e8"/>
+          <!-- Longitudinal hint: ticks of varying density -->
+          <path d="M 90 120 v 8 M 95 120 v 8 M 99 120 v 8 M 102 120 v 8 M 104 120 v 8 M 110 120 v 8 M 118 120 v 8 M 128 120 v 8 M 138 120 v 8 M 146 120 v 8 M 151 120 v 8 M 154 120 v 8 M 156 120 v 8 M 162 120 v 8 M 170 120 v 8 M 180 120 v 8" stroke="#5a6d88" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-waves" data-i18n="tagWaves">Oscillations &amp; waves</div>
+        <div class="card-title" data-i18n="shmTitle">Oscillations and Waves</div>
+        <p class="card-desc" data-i18n="shmDesc">One motion seen three ways: points circling from the end, a transverse wave from the side, and the same rods turned into a longitudinal wave.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -680,6 +717,9 @@ const TRANSLATIONS = {
     tagElectrostatics: "Electrostatics",
     tagQuantization: "Charge quantization",
     tagMechanics: "Mechanics",
+    tagWaves: "Oscillations & waves",
+    shmTitle: "Oscillations and Waves",
+    shmDesc: "One motion seen three ways: points circling from the end, a transverse wave from the side, and the same rods turned into a longitudinal wave.",
     hockeyTitle: "Electric Field Hockey",
     hockeyDesc: "Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.",
     millikanTitle: "Millikan Experiment",
@@ -706,6 +746,9 @@ const TRANSLATIONS = {
     tagElectrostatics: "Elektrostatika",
     tagQuantization: "Lādiņa kvantēšana",
     tagMechanics: "Mehānika",
+    tagWaves: "Svārstības un viļņi",
+    shmTitle: "Svārstības un viļņi",
+    shmDesc: "Viena kustība no trim pusēm: punkti riņķo, skatoties no gala; šķērsvilnis no sāna; tās pašas svītras pagrieztas — garenvilnis.",
     hockeyTitle: "Elektriskā lauka hokejs",
     hockeyDesc: "Novieto pozitīvus un negatīvus lādiņus, lai ar Kulona spēku vadītu lādētu ripu cauri šķēršļiem uz vārtiem.",
     millikanTitle: "Milikena eksperiments",

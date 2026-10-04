@@ -16,6 +16,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | 🧲 Electric Field        | Field visualization            | ✅ Live |
 | 🚀 Newton's Cannon       | Orbital mechanics / gravity    | ✅ Live |
 | 🟠 Ball in a Groove (K-01) | Kinematics / rolling on an incline | ✅ Live |
+| 〜 Oscillations and Waves (S-01) | Oscillations / transverse and longitudinal waves | ✅ Live |
 
 ## Structure
 
@@ -27,8 +28,9 @@ fiz-sim/
 ├── millikan.html                   ← Oil drop experiment
 ├── newtons-cannon.html             ← Orbital mechanics
 ├── rolling-ball.html               ← Ball in a Groove (K-01)
+├── harmonic-motion.html            ← Oscillations and Waves (S-01)
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/
+│                                     physics/, measure/, rolling-ball/, oscillation/
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -116,3 +118,19 @@ Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they 
 Example (individual data for a horizontal throw from 20 m, read from the strobe image only):
 
     projectile-motion.html?mode=2&h=20&v0=10&dt=0.5&view=strobe&lock=1
+
+## Teacher links (S-01)
+
+Parameters of `harmonic-motion.html`, given in the URL. They are starting values only — the student can change everything; there is no `lock` on this page. Unknown parameters are ignored; values outside the range are clamped with a notice.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `view=circle\|trans\|long` | Starting state: circle (end view), transverse wave, longitudinal wave. Default `circle` |
+| `A=<number>` | Amplitude, cm, 5–40 (step 1) |
+| `T=<number>` | Period, s, 1–8 (step 0.5) |
+| `lambda=<number>` | Wavelength, cm, 50–200 (step 10) |
+| `lines=0` | Helper lines hidden at start |
+
+Example (longitudinal wave, long period):
+
+    harmonic-motion.html?view=long&T=6&lambda=80
