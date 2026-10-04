@@ -39,19 +39,19 @@ test('bad and conflicting params → sensible values + one precise notice each (
   const a = parse('?h=120');
   assert.equal(a.settings.h, 50);
   assert.deepEqual(a.warnings, [{ param: 'h', raw: '120', reason: 'h_range', min: 0, max: 50, unit: 'm', used: 50 }]);
-  assert.equal(warningText(a.warnings[0], lv), 'Saitē h = 120 m neder šim mērogam (atļauts no 0 līdz 50 m). Izmantots h = 50 m.');
-  assert.equal(warningText(a.warnings[0], en), 'In the link, h = 120 m does not fit this scale (allowed from 0 to 50 m). Using h = 50 m.');
+  assert.equal(warningText(a.warnings[0], lv), 'Saitē h = 120 m ir ārpus robežām (atļauts no 0 līdz 50 m). Izmantots h = 50 m.');
+  assert.equal(warningText(a.warnings[0], en), 'In the link, h = 120 m is out of range (allowed from 0 to 50 m). Using h = 50 m.');
   const neg = parse('?h=-5');
   assert.equal(neg.settings.h, 0);
-  assert.equal(warningText(neg.warnings[0], lv), 'Saitē h = -5 m neder šim mērogam (atļauts no 0 līdz 50 m). Izmantots h = 0 m.');
+  assert.equal(warningText(neg.warnings[0], lv), 'Saitē h = -5 m ir ārpus robežām (atļauts no 0 līdz 50 m). Izmantots h = 0 m.');
   const fast = parse('?v0=500');
   assert.equal(fast.settings.v0, 30);
-  assert.equal(warningText(fast.warnings[0], lv), 'Saitē v₀ = 500 m/s neder šim režīmam un mērogam (atļauts no 0 līdz 30 m/s). Izmantots v₀ = 30 m/s.');
+  assert.equal(warningText(fast.warnings[0], lv), 'Saitē v₀ = 500 m/s neder šim režīmam (atļauts no 0 līdz 30 m/s). Izmantots v₀ = 30 m/s.');
   assert.equal(warningText(parse('?dt=abc').warnings[0], lv), 'Saites parametrs dt=abc nav skaitlis. Izmantots dt = 0,2.');
 
   const c = parse('?mode=2&v0=-100');
   assert.equal(c.settings.v0, 0);
-  assert.equal(warningText(c.warnings[0], lv), 'Saitē v₀ = -100 m/s neder šim režīmam un mērogam (atļauts no 0 līdz 30 m/s). Izmantots v₀ = 0 m/s.');
+  assert.equal(warningText(c.warnings[0], lv), 'Saitē v₀ = -100 m/s neder šim režīmam (atļauts no 0 līdz 30 m/s). Izmantots v₀ = 0 m/s.');
 
   const d = parse('?h=2,5');
   assert.equal(d.settings.h, 2.5);

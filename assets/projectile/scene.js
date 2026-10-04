@@ -25,14 +25,15 @@ export function ladderCeil(v) {
 
 // Pasaules laukums: kustības sākumpunkts un visa trajektorija. Tas nav atkarīgs no α (lielākais tālums
 // un augstums pa visiem α) un ir noapaļots uz augšu pa kāpnēm, lai rasējuma mala neatklātu tālumu vai
-// augstāko punktu, ko skolēns nosaka pats (spec. 2.1). Vertikālajā metienā platums ir divas lentes.
+// augstāko punktu, ko skolēns nosaka pats (spec. 2.1). Vertikālajā metienā platums ir attālums starp lentēm.
 export function sceneBox(s) {
   const sc = SCALE;
   const g = sc.g;
   const v = Math.abs(s.v0);
   const top = s.h + (s.mode === 'horizontal' ? 0 : (v * v) / (2 * g));
   const y1 = Math.max(sc.minView.h, ladderCeil(1.1 * top + 2 * sc.ball.d));
-  if (s.mode === 'vertical') return { x0: 0, x1: 2 * tapeGap({ y0: 0, y1 }), y0: 0, y1 };
+  // Platums beidzas pie krītošās lentes (↓ ir labā mala); ja v₀ ≤ 0, ir tikai viena lente pie x = 0.
+  if (s.mode === 'vertical') return { x0: 0, x1: s.v0 > 0 ? tapeGap({ y0: 0, y1 }) : 0, y0: 0, y1 };
   const reach = (v / g) * Math.sqrt(v * v + 2 * g * s.h);
   const x1 = Math.max(sc.minView.w, ladderCeil(1.1 * reach + 2 * sc.ball.d));
   return { x0: 0, x1, y0: 0, y1 };
@@ -41,6 +42,31 @@ export function sceneBox(s) {
 // Vertikālajā metienā attālums (m) starp ↑ un ↓ lenti.
 export function tapeGap(box) {
   return 0.12 * (box.y1 - box.y0);
+}
+
+// Ko rasējumā raksta pie režģa: vertikālajā metienā x ass nav (lente ir nobīdīta tikai attēlā, x = 0).
+export function gridLabels(mode) {
+  return { x: mode !== 'vertical', y: true };
+}
+
+// Pie x režģa raksta tikai x ≥ 0 (pa kreisi no sākumpunkta skaitļu nav).
+export function labelXs(xs) {
+  return xs.filter((x) => x >= 0);
+}
+
+// Kur zīmēt sākumpunkta uzrakstu (platums w, sākumpunkts o): vispirms pa labi, tad pa kreisi; null, ja
+// abas vietas pieskartos kādam avoid taisnstūrim (piem., palaišanas pogai) vai iziet no audekla.
+export function originLabelSpot(o, w, lay, avoidRects) {
+  const rect = (x, align) => {
+    const l = align === 'right' ? x - w : x;
+    return { l: l - 2, r: l + w + 2, t: o.y + 16 - 10, b: o.y + 16 + 3 };
+  };
+  const ok = (r) => r.l >= 2 && r.r <= lay.width - 2 && !avoidRects.some((q) => hits(r, q));
+  const right = Math.max(4, Math.min(o.x + 4, lay.width - 4 - w));
+  if (ok(rect(right, 'left'))) return { x: right, align: 'left' };
+  const left = Math.max(4 + w, o.x - 4);
+  if (ok(rect(left, 'right'))) return { x: left, align: 'right' };
+  return null;
 }
 
 // Kur bumbiņu zīmē: vertikālajā metienā augšupejošo pa kreisi (x = 0), krītošo pa labi; dati paliek x = 0.
@@ -90,7 +116,7 @@ export function sceneLayout(width, height, box, { drawScale = 1, avoid = null, t
     tr,
     arrow,
     groundY,
-    fill: (width - 2 * EDGE_PX - padL - padR) / (bw * base),
+    fill: Math.min(1e9, (width - 2 * EDGE_PX - padL - padR) / (bw * base)), // bw = 0: platums nekad neierobežo
     toScreen: (x, y) => ({ x: tr.tx + x * scale, y: tr.ty - y * scale }),
     toWorld: (px, py) => ({ x: (px - tr.tx) / scale, y: (tr.ty - py) / scale }),
   };
@@ -225,7 +251,8 @@ function drawWorldGrid(ctx, lay, m, c) {
   const avoid = m.avoidRects ?? [];
   const free = (r) => r.l >= 2 && r.r <= lay.width - 2 && r.t >= 0 && r.b <= lay.height && !avoid.some((q) => hits(r, q));
   ctx.font = FONT_TICK;
-  for (const x of xs) {
+  const show = gridLabels(m.settings.mode);
+  for (const x of show.x ? labelXs(xs) : []) {
     const str = formatNumber(x, dec, m.lang);
     const px = lay.toScreen(x, 0).x;
     const half = ctx.measureText(str).width / 2;
@@ -260,7 +287,7 @@ function drawWorldGrid(ctx, lay, m, c) {
   };
   const rights = [];
   for (let xr = lay.width - 6; xr > 80; xr -= 12) rights.push(xr); // pa kreisi, līdz ir brīva vieta
-  unit(`x, ${u}`, gy + 44, rights);
+  if (show.x) unit(`x, ${u}`, gy + 44, rights);
   if (topY !== null) {
     unit(`y, ${u}`, topY - 12, [lay.width - 6]);
     if (!drawnUnit) unit(`y, ${u}`, lowY + 13, [lay.width - 6]);
@@ -330,10 +357,11 @@ function drawOrigin(ctx, lay, m, c) {
   if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
   const w = ctx.measureText(str).width;
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-  text(ctx, str, Math.max(4, Math.min(o.x + 4, lay.width - 4 - w)), o.y + 16, { color: c.inkDim, spacing: '1px', bg: c.field });
+  const spot = originLabelSpot(o, w, lay, m.avoidRects ?? []);
+  if (spot) text(ctx, str, spot.x, o.y + 16, { color: c.inkDim, spacing: '1px', bg: c.field, align: spot.align });
 }
 
-// Katrs vārds savā rindā: pa kreisi no sākumpunkta (zem galda virsmas) vai, ja tur līdz h izmēru
+// Katrs vārds savā rindā: pa kreisi no sākumpunkta vai, ja tur līdz h izmēru
 // līnijai nav vietas, pa labi no tā; ja līdz zemei nav vietas — virs sākumpunkta.
 function drawLaunchLabel(ctx, lay, m, c) {
   const s = m.settings;

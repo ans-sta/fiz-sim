@@ -28,9 +28,9 @@ export function quantityRows(s, { locked, hidden, study, lang, t }) {
     valueText: choices.find((c) => c.value === value)?.label ?? '',
   });
 
-  const main = [range('h', 'h', t('dims.h'), { min: SCALE.h.min, max: SCALE.h.max, step: SCALE.h.step, value: s.h, dec: SCALE.h.decimals, unit: ' m' })];
+  const main = [range('h', 'h', t('dims.h'), { min: SCALE.h.min, max: SCALE.h.max, step: SCALE.h.step, value: s.h, dec: SCALE.h.decimals, unit: ` ${SCALE.unit}` })];
   const r = v0Range(s.mode);
-  const vu = ' m/s';
+  const vu = ` ${SCALE.unit}/s`;
   const v0 = { min: r.min, max: r.max, step: SCALE.v0.step, value: s.v0, dec: SCALE.v0.decimals, unit: vu };
   if (vertical) {
     const arrow = s.v0 > 0 ? ' ↑' : s.v0 < 0 ? ' ↓' : '';
@@ -66,7 +66,7 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
   const simT = running ? running.simT : Infinity;
   const vertical = s.mode === 'vertical';
   const vm = {
-    symbol: vertical ? 'y' : 'x', valueText: '—', unit: 'm', live: Boolean(running), rows: null, note: null,
+    symbol: vertical ? 'y' : 'x', valueText: '—', unit: SCALE.unit, live: Boolean(running), rows: null, note: null,
     mini: !running && views.table && shown && shown.runs.length >= 2 ? shownModel : null,
     canOpen: Boolean(views.table && shown),
     strobe: Boolean(views.strobe && shown),
@@ -84,11 +84,12 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
   }
   const seen = run ? run.samples.filter((p) => p.t + run.truth.tau <= simT + 1e-9) : [];
   const dec = decimalsOf(SCALE.dt.step);
-  const pos = (p) => (vertical ? `y = ${f(p.y, 1)} m` : `x = ${f(p.x, 1)} m; y = ${f(p.y, 1)} m`);
+  const d1 = SCALE.read.decimals;
+  const pos = (p) => (vertical ? `y = ${f(p.y, d1)} ${SCALE.unit}` : `x = ${f(p.x, d1)} ${SCALE.unit}; y = ${f(p.y, d1)} ${SCALE.unit}`);
   vm.rows = seen.slice(-LIVE_ROWS).map((p) => ({ a: `t = ${f(p.t, dec)} s`, b: pos(p) }));
   if (seen.length) {
     const last = seen[seen.length - 1];
-    vm.valueText = f(vertical ? last.y : last.x, 1);
+    vm.valueText = f(vertical ? last.y : last.x, d1);
   }
   if (vm.mini) vm.rows = null;
   return vm;

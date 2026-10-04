@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sceneBox, sceneLayout, tapeGap, displayX, arrowMaxPx, launchPoint, arrowGeometry, handleAnchors, valueFromPointer, arcRadius, ladderCeil, ARC_R, BALL_R_PX, DIM_GAP, H_LABEL_GAP, H_LABEL_PX } from '../assets/projectile/scene.js';
+import { sceneBox, sceneLayout, tapeGap, gridLabels, labelXs, originLabelSpot, displayX, arrowMaxPx, launchPoint, arrowGeometry, handleAnchors, valueFromPointer, arcRadius, ladderCeil, ARC_R, BALL_R_PX, DIM_GAP, H_LABEL_GAP, H_LABEL_PX } from '../assets/projectile/scene.js';
 import { GROUND, EDGE_PX } from '../assets/measure/hud-layout.js';
 import { SCALE } from '../assets/projectile/scales.js';
 import { defaultSettings, derive, withMode, withV0, withAlpha, withH } from '../assets/projectile/model.js';
@@ -68,7 +68,7 @@ test('vertical tapes: rising at x = 0, falling one tape gap to the right; v₀ �
   assert.equal(displayX(up, box, { x: 0, rising: true }), 0);
   close(displayX(up, box, { x: 0, rising: false }), tapeGap(box), 1e-12);
   close(tapeGap(box), 0.12 * (box.y1 - box.y0), 1e-12);
-  close(box.x1, 2 * tapeGap(box), 1e-12);
+  close(box.x1, tapeGap(box), 1e-12); // the width ends at the falling tape
   const down = withV0(defaultSettings('vertical'), -5);
   assert.equal(displayX(down, sceneBox(down), { x: 0, rising: false }), 0);
   const hz = defaultSettings('horizontal');
@@ -135,4 +135,41 @@ test('pointer at each anchor gives back the current value (all modes)', () => {
       assert.ok(Math.hypot(a.alpha.x - a.v0.x, a.alpha.y - a.v0.y) >= 30 - 1e-9, 'the α handle never covers the v₀ handle');
     }
   }
+});
+
+test('vertical drawing is centred on the tapes: ↑ at x = 0 left edge, ↓ right edge; v₀ ≤ 0 one tape at 0', () => {
+  for (const v0 of [12, 30, 0.5, 0, -5, -30]) {
+    const s = withV0(defaultSettings('vertical'), v0);
+    const box = sceneBox(s);
+    assert.equal(box.x1, v0 > 0 ? tapeGap(box) : 0, `v0 ${v0}`);
+    for (const k of [0.6, 1, 1.5]) {
+      const lay = sceneLayout(390, 780, box, { drawScale: k });
+      const e = extent(lay);
+      close((e.l + e.r) / 2, 195, 1e-6, `v0 ${v0} k ${k}`);
+      const down = lay.toScreen(v0 > 0 ? tapeGap(box) : 0, 0).x;
+      close(down + BALL_R_PX + 4, e.r, 1e-6, 'the right edge is the falling tape plus the ball');
+    }
+  }
+});
+test('zero-width box: only the height limits the scale, everything finite', () => {
+  const box = { x0: 0, x1: 0, y0: 0, y1: 50 };
+  for (const [w, h] of [[390, 780], [844, 340]]) {
+    const lay = sceneLayout(w, h, box);
+    for (const v of [lay.tr.scale, lay.tr.tx, lay.tr.ty, lay.fill]) assert.ok(Number.isFinite(v), String(v));
+    assert.ok(lay.tr.scale > 0);
+  }
+});
+test('grid labels: no x numbers or x unit in the vertical mode, y always; only x ≥ 0 are labelled', () => {
+  assert.deepEqual(gridLabels('vertical'), { x: false, y: true });
+  assert.deepEqual(gridLabels('horizontal'), { x: true, y: true });
+  assert.deepEqual(gridLabels('oblique'), { x: true, y: true });
+  assert.deepEqual(labelXs([-10, -5, 0, 5, 10]), [0, 5, 10]);
+});
+test('origin label: moved to the other side or skipped when it would touch an avoid rectangle', () => {
+  const lay = { width: 400 };
+  const o = { x: 200, y: 300 };
+  assert.deepEqual(originLabelSpot(o, 100, lay, []), { x: 204, align: 'left' });
+  const btnRight = { l: 204, r: 300, t: 300, b: 330 }; // covers the right candidate (y 306–319)
+  assert.deepEqual(originLabelSpot(o, 100, lay, [btnRight]), { x: 196, align: 'right' });
+  assert.equal(originLabelSpot(o, 100, lay, [{ l: 0, r: 400, t: 310, b: 330 }]), null);
 });

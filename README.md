@@ -106,7 +106,7 @@ Parameters of `projectile-motion.html`, given in the URL. Without `lock=1` they 
 | `alpha=<number>` | Launch angle in mode 3, degrees (0–90) |
 | `dt=<number>` | Strobe interval Δt, s: 0.1–2, step 0.1 |
 | `second=0\|1` | Mode 2: a second ball drops from the same point at the same moment |
-| `grid=0\|1` | Measuring grid in the drawing and in the strobe view |
+| `grid=0\|1` | Measuring grid in the strobe view (the drawing always shows its grid) |
 | `view=table\|strobe\|both` | Which result view is shown (takes effect with `lock`) |
 | `lock=1` (or `lock=true`) | Locks every setting that is given in the link |
 | `noise=0\|1\|2` | Teacher only: measurement noise strength (0 none, 1 default, 2 double) |

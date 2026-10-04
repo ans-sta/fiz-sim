@@ -7,10 +7,19 @@ export function flightRemedies(s, locked) {
   const free = (k) => !locked.has(k);
   const increase = [];
   if (free('h')) increase.push('h');
-  if (s.mode === 'oblique' && free('v0')) increase.push('v0');
-  if (s.mode === 'oblique' && free('alpha') && s.alphaDeg < ALPHA.max) increase.push('alpha');
+  let both = false;
+  if (s.mode === 'oblique') {
+    const noV0 = s.v0 === 0;
+    const noAlpha = s.alphaDeg === ALPHA.min;
+    if (noV0 && noAlpha) both = free('v0') && free('alpha'); // vajag abus reizē
+    else {
+      if (noV0 && free('v0')) increase.push('v0');
+      if (noAlpha && free('alpha')) increase.push('alpha');
+    }
+  }
   return {
     increase,
+    both,
     up: s.mode === 'vertical' && free('v0'),
   };
 }
@@ -23,9 +32,16 @@ function joinOr(items, t) {
 // Vienīgais iemesls, kāpēc palaišana netiek ierakstīta: bumbiņa nekustas (reason 'none').
 export function flightNotice(reason, s, locked, t) {
   const r = flightRemedies(s, locked);
-  const cause = t(`notice.noFlight.${s.mode}`);
+  let causeKey = `notice.noFlight.${s.mode}`;
+  if (s.mode === 'oblique') {
+    const noV0 = s.v0 === 0;
+    const noAlpha = s.alphaDeg === ALPHA.min;
+    causeKey += noV0 && noAlpha ? '.both' : noAlpha ? '.alpha' : '.v0';
+  }
+  const cause = t(causeKey);
   const parts = [];
   if (r.increase.length) parts.push(t('fix.increase', { list: joinOr(r.increase.map((k) => SYM[k]), t) }));
+  if (r.both) parts.push(t('fix.increaseBoth'));
   if (r.up) parts.push(t('fix.upNone'));
   if (!parts.length) return `${cause} ${t('fix.none')}`;
   const sentence = joinOr(parts, t);
