@@ -10,6 +10,7 @@ export const SPACING_CM = 5;
 export const N_POINTS = AXIS_CM / SPACING_CM + 1; // 41
 export const RANGES = {
   A: { min: 5, max: 40, step: 1 },
+  T: { min: 1, max: 8, step: 0.5 },
   lambda: { min: 50, max: 200, step: 10 },
   v: { min: -100, max: 100, step: 5 }, // cm/s; zīme — virziens (negatīvs: vilnis pa kreisi, aplis pretēji); Ansis 04.10
 };
@@ -22,7 +23,8 @@ export const COMPRESSION = 0; // fāze, ap kuru garenvilnī ir sablīvējums (�
 const BAND_CM = 2 * RANGES.A.max * 1.15; // augstums, kam jāietilpst starp paneļiem un pogām (A nemaina mērogu)
 
 export function defaultSettings() {
-  return { A: 30, lambda: 100, v: 25, lines: true }; // A 30 (bija 20): sākuma aplis lielāks; v 25 cm/s ⇒ T = 4 s (Ansis 04.10)
+  // T, λ, v ir saistīti (v = λ/T); `order` — no visagrāk mainītā uz jaunāko: mainot vienu, pieskaņojas vecākais (Ansis 04.10).
+  return { A: 30, T: 4, lambda: 100, v: 25, lines: true, order: ['v', 'T', 'lambda'] };
 }
 
 function withRange(s, key, v) {
@@ -32,14 +34,63 @@ function withRange(s, key, v) {
   return next === s[key] ? s : { ...s, [key]: next };
 }
 export const withA = (s, v) => withRange(s, 'A', v);
-export const withLambda = (s, v) => withRange(s, 'lambda', v);
-export const withV = (s, v) => withRange(s, 'v', v);
+export const withT = (s, v) => setLinked(s, 'T', v);
+export const withLambda = (s, v) => setLinked(s, 'lambda', v);
+export const withV = (s, v) => setLinked(s, 'v', v);
+
+const LINKED = ['T', 'lambda', 'v'];
+const clampTo = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
+// Saistītie lielumi v = λ/T: mainot vienu, pieskaņojas tas, kurš mainīts visagrāk (s.order[0], ja tas nav pats mainītais).
+// Mainīto nogriež tā, lai pieskaņotais paliek savās robežās (kā K-01 h ≤ L·sin 15°). v = 0 — nekas nepieskaņojas, kustība stāv.
+// Zīme paliek pie v (virziens); T un λ vienmēr pozitīvi.
+function setLinked(s, key, raw) {
+  if (!Number.isFinite(raw)) return s;
+  const r = RANGES[key];
+  let val = roundTo(clampTo(raw, r.min, r.max), r.step);
+  const adapt = s.order.find((k) => k !== key);
+  const dir = s.v < 0 ? -1 : 1;
+  const speed = Math.abs(s.v);
+  const next = { ...s };
+  if (key === 'v') {
+    const sgn = val < 0 ? -1 : 1;
+    if (val !== 0 && adapt === 'T') {
+      val = sgn * clampTo(Math.abs(val), s.lambda / RANGES.T.max, s.lambda / RANGES.T.min);
+      next.T = s.lambda / Math.abs(val);
+    } else if (val !== 0) {
+      val = sgn * clampTo(Math.abs(val), RANGES.lambda.min / s.T, RANGES.lambda.max / s.T);
+      next.lambda = Math.abs(val) * s.T;
+    }
+    next.v = val;
+  } else if (key === 'lambda') {
+    if (adapt === 'T' && speed) {
+      val = clampTo(val, speed * RANGES.T.min, speed * RANGES.T.max);
+      next.T = val / speed;
+    } else if (adapt === 'v') {
+      val = clampTo(val, r.min, RANGES.v.max * s.T);
+      next.v = dir * val / s.T;
+    }
+    next.lambda = val;
+  } else {
+    if (adapt === 'v') {
+      val = clampTo(val, s.lambda / RANGES.v.max, r.max);
+      next.v = dir * s.lambda / val;
+    } else if (speed) {
+      val = clampTo(val, RANGES.lambda.min / speed, RANGES.lambda.max / speed);
+      next.lambda = speed * val;
+    }
+    next.T = val;
+  }
+  next.order = [...s.order.filter((k) => k !== key), key];
+  const sameValues = LINKED.every((k) => next[k] === s[k]);
+  const sameOrder = next.order.join() === s.order.join();
+  if (sameValues && sameOrder) return s;
+  return sameValues ? { ...s, order: next.order } : next;
+}
 export const withLines = (s, on) => (Boolean(on) === s.lines ? s : { ...s, lines: Boolean(on) });
 
 // Sakarības no mainīgajiem λ un v: T = λ/|v| (v = 0 → ∞, kustība stāv), f = |v|/λ, ω = 2π|v|/λ.
 export function derived(s) {
-  const speed = Math.abs(s.v);
-  return { T: speed ? s.lambda / speed : Infinity, f: speed / s.lambda, omega: TAU * speed / s.lambda, v: s.v };
+  return { T: s.T, f: 1 / s.T, omega: TAU / s.T, v: s.v };
 }
 
 // Laiku glabā kā fāzi: mainot v vai λ, mainās tikai ātrums, punkti nelec; v < 0 — fāze iet atpakaļ.

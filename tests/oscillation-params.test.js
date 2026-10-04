@@ -15,11 +15,11 @@ test('no params: defaults, circle view, no warnings', () => {
 });
 
 test('all params given', () => {
-  const r = settingsFromURL('?view=long&A=30&v=-15&lambda=150&lines=0');
-  assert.deepEqual(r.settings, { A: 30, lambda: 150, v: -15, lines: false });
+  const r = settingsFromURL('?view=long&A=30&T=2&lambda=100&lines=0');
+  assert.deepEqual(r.settings, { A: 30, T: 2, lambda: 100, v: 50, lines: false, order: ['v', 'T', 'lambda'] }); // T then λ: v adapts both times
   assert.equal(r.view, 'long');
   assert.deepEqual(r.warnings, []);
-  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['A', 'lambda', 'lines', 'v', 'view']);
+  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['A', 'T', 'lambda', 'lines', 'v', 'view']);
 });
 
 test('out of range is clamped with a notice that names the used value', () => {
@@ -47,4 +47,11 @@ test('unknown parameters are ignored', () => {
   const r = settingsFromURL('?fbclid=xyz&A=10');
   assert.equal(r.settings.A, 10);
   assert.deepEqual(r.warnings, []);
+});
+
+test('linked parameters are applied in link order: the one given earliest adapts', () => {
+  const r = settingsFromURL('?v=-15&lambda=150'); // v first (T adapts → 6,67 s), then λ: T is the oldest → T would be 10 → λ clamped to 120, T = 8
+  assert.deepEqual([r.settings.v, r.settings.lambda, r.settings.T], [-15, 120, 8]);
+  const q = settingsFromURL('?lambda=150&v=-15'); // λ first (v adapts), then v: T is the oldest → T = 10 → v clamped to −18,75
+  assert.deepEqual([q.settings.lambda, q.settings.v, q.settings.T], [150, -18.75, 8]);
 });

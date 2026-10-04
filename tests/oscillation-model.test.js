@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   AXIS_CM, N_POINTS, RANGES, VIEWS, VIEW_POSE, TURN_S, TAU, CREST, COMPRESSION,
-  defaultSettings, withA, withV, withLambda, withLines, derived, advancePhase, pointZ, phaseAt, isMarked,
+  defaultSettings, withA, withT, withV, withLambda, withLines, derived, advancePhase, pointZ, phaseAt, isMarked,
   point3D, project, viewCenterU, smooth, poseAngles, advancePose, settled,
   scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM, longAmplitude,
 } from '../assets/oscillation/model.js';
@@ -14,7 +14,8 @@ test('constants and defaults from the spec', () => {
   assert.equal(AXIS_CM, 200);
   assert.equal(N_POINTS, 41);
   assert.deepEqual(VIEWS, ['circle', 'trans', 'long']);
-  assert.deepEqual(defaultSettings(), { A: 30, lambda: 100, v: 25, lines: true });
+  assert.deepEqual(defaultSettings(), { A: 30, T: 4, lambda: 100, v: 25, lines: true, order: ['v', 'T', 'lambda'] });
+  assert.deepEqual(RANGES.T, { min: 1, max: 8, step: 0.5 });
   assert.deepEqual(RANGES.v, { min: -100, max: 100, step: 5 });
   assert.deepEqual(RANGES.A, { min: 5, max: 40, step: 1 });
     assert.deepEqual(RANGES.lambda, { min: 50, max: 200, step: 10 });
@@ -31,25 +32,42 @@ test('with*: clamp, round to the step, keep the object when nothing changes', ()
   assert.equal(withV(s, 27).v, 25);
   assert.equal(withV(s, 500).v, 100);
   assert.equal(withV(s, -500).v, -100);
-  assert.equal(withV(s, -12.4).v, -10);
-  assert.equal(withLambda(s, 55).lambda, 60);
-  assert.equal(withLambda(s, 500).lambda, 200);
   assert.equal(withLines(s, false).lines, false);
   assert.equal(withLines(s, true), s);
 });
 
-test('derived: T = λ/|v|, f = |v|/λ, ω = 2π|v|/λ; direction does not change them; v = 0 has no period', () => {
-  const d = derived({ A: 20, lambda: 100, v: 25, lines: true });
+test('linked T, λ, v: the one changed earliest adapts; the changed one is clamped so the adapting one stays in range; v = 0 freezes', () => {
+  let s = defaultSettings(); // order v, T, λ: v is the oldest
+  s = withLambda(s, 200); // v adapts: 200 / 4
+  assert.deepEqual([s.T, s.lambda, s.v, s.order], [4, 200, 50, ['v', 'T', 'lambda']]); // the adapted one stays the oldest
+  s = withT(s, 2); // v is still older than λ → v adapts
+  assert.deepEqual([s.T, s.lambda, s.v], [2, 200, 100]);
+  s = withV(s, 20); // λ is now the oldest → λ = 20 · 2 = 40 → below 50 → v clamped to 25, λ = 50
+  assert.deepEqual([s.T, s.lambda, s.v, s.order], [2, 50, 25, ['lambda', 'T', 'v']]);
+  s = withLambda(s, 100); // T is the oldest → T = 100 / 25
+  assert.deepEqual([s.T, s.lambda, s.v], [4, 100, 25]);
+  s = withV(s, -10); // T adapts: |v| ≥ λ/8 = 12,5 → v = −12,5, T = 8; direction reversed
+  assert.deepEqual([s.T, s.lambda, s.v], [8, 100, -12.5]);
+  s = withV(s, 0); // nothing adapts, motion stops
+  assert.deepEqual([s.T, s.lambda, s.v], [8, 100, 0]);
+  s = withT(s, 1); // v is 0: λ would adapt but cannot (speed 0) → T just changes
+  assert.deepEqual([s.T, s.lambda, s.v], [1, 100, 0]);
+  assert.equal(withT(s, NaN), s);
+  assert.equal(withLambda(s, 55).lambda, 60);
+  assert.deepEqual([withLambda(s, 500).lambda, withLambda(s, 500).v], [100, 100]); // at T = 1 s, v ≤ 100 cm/s caps λ at 100
+  assert.equal(withLines(s, false).lines, false);
+  assert.equal(withLines(s, true), s);
+});
+
+test('derived: f = 1/T, ω = 2π/T from the stored T; v keeps its sign', () => {
+  const d = derived({ A: 20, T: 4, lambda: 100, v: 25, lines: true });
   close(d.T, 4);
   close(d.f, 0.25);
   close(d.omega, Math.PI / 2);
   close(d.v, 25);
-  const back = derived({ A: 20, lambda: 100, v: -50, lines: true });
+  const back = derived({ A: 20, T: 2, lambda: 100, v: -50, lines: true });
   close(back.T, 2);
   close(back.f, 0.5);
-  const still = derived({ A: 20, lambda: 100, v: 0, lines: true });
-  assert.equal(still.T, Infinity);
-  close(still.f, 0);
 });
 
 test('advancePhase: 2π per period T = λ/v, wrapped; negative v runs backwards; changing v only changes the rate', () => {

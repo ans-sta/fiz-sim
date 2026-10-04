@@ -127,7 +127,9 @@ Parameters of `harmonic-motion.html`, given in the URL. They are starting values
 | --------- | ------- |
 | `view=circle\|trans\|long` | Starting state: circle (end view), transverse wave, longitudinal wave. Default `circle` |
 | `A=<number>` | Amplitude, cm, 5–40 (step 1) |
-| `v=<number>` | Wave speed, cm/s, −100…100 (step 5); negative — the wave runs to the left and the circle turns the other way. The period follows: T = λ/v |
+| `T=<number>` | Period, s, 1–8 (step 0.5) |
+| `v=<number>` | Wave speed, cm/s, −100…100 (step 5); negative — the wave runs to the left and the circle turns the other way |
+| | T, λ and v are linked (v = λ/T): when one is given, the one given earliest adapts, like on the page; by default v adapts to λ and T |
 | `lambda=<number>` | Wavelength, cm, 50–200 (step 10) |
 | `lines=0` | Helper lines hidden at start |
 

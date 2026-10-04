@@ -18,6 +18,7 @@ export const STRINGS = {
     'dims.decrease': 'Samazināt: {name}',
     'dims.increase': 'Palielināt: {name}',
     'q.A': 'Amplitūda A',
+    'q.T': 'Periods T',
     'q.v': 'Viļņa ātrums v',
     'q.lambda': 'Viļņa garums λ',
     'q.lines': 'palīglīnijas',
@@ -25,9 +26,8 @@ export const STRINGS = {
     'q.lines.off': 'nerāda',
 
     'rel.title': 'SAKARĪBAS',
-    'rel.f': 'f = v/λ',
-    'rel.omega': 'ω = 2πv/λ',
-    'rel.T': 'T = λ/v',
+    'rel.f': 'f = 1/T',
+    'rel.omega': 'ω = 2π/T',
     'rel.phi': 'φ',
 
     'view.circle': 'APLIS',
@@ -81,6 +81,7 @@ export const STRINGS = {
     'dims.decrease': 'Decrease: {name}',
     'dims.increase': 'Increase: {name}',
     'q.A': 'Amplitude A',
+    'q.T': 'Period T',
     'q.v': 'Wave speed v',
     'q.lambda': 'Wavelength λ',
     'q.lines': 'helper lines',
@@ -88,9 +89,8 @@ export const STRINGS = {
     'q.lines.off': 'hidden',
 
     'rel.title': 'RELATIONS',
-    'rel.f': 'f = v/λ',
-    'rel.omega': 'ω = 2πv/λ',
-    'rel.T': 'T = λ/v',
+    'rel.f': 'f = 1/T',
+    'rel.omega': 'ω = 2π/T',
     'rel.phi': 'φ',
 
     'view.circle': 'CIRCLE',

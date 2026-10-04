@@ -2,7 +2,7 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
+  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withT, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
@@ -55,7 +55,7 @@ const quantities = createQuantityList(hudLeft, {
   }),
   onChange(key, v) {
     const s = state.settings;
-    const next = { A: () => withA(s, v), lambda: () => withLambda(s, v), v: () => withV(s, v), lines: () => withLines(s, v) }[key]?.() ?? s;
+    const next = { A: () => withA(s, v), T: () => withT(s, v), lambda: () => withLambda(s, v), v: () => withV(s, v), lines: () => withLines(s, v) }[key]?.() ?? s;
     state.settings = next;
     render();
   },
