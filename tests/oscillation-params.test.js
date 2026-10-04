@@ -35,8 +35,8 @@ test('between steps is rounded silently; not a number and unknown view give noti
   assert.equal(settingsFromURL('?A=12.3').settings.A, 12);
   assert.deepEqual(settingsFromURL('?A=12.3').warnings, []);
   const t = settingsFromURL('?v=abc');
-  assert.equal(t.settings.v, 25);
-  assert.deepEqual([t.warnings[0].reason, t.warnings[0].used], ['not_number', 25]);
+  assert.equal(t.settings.v, 10);
+  assert.deepEqual([t.warnings[0].reason, t.warnings[0].used], ['not_number', 10]);
   const v = settingsFromURL('?view=side');
   assert.equal(v.view, 'circle');
   assert.deepEqual([v.warnings[0].reason, v.warnings[0].used], ['not_allowed', 'circle']);

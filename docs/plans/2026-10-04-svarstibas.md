@@ -166,3 +166,5 @@ LV / EN kā citās lapās. Angliski: *Oscillations and Waves*, CIRCLE · TRANSVE
 - 2026-10-04 — Ansis: maināmi visi trīs — T, λ, v (v = λ/T); mainot vienu, pieskaņojas tas, kurš mainīts visagrāk (sākumā v, tad T, tad λ: mainot T vai λ, pieskaņojas v; mainot v — T). Mainīto nogriež tā, lai pieskaņotais paliek robežās. SAKARĪBĀS paliek f, ω, φ.
 - 2026-10-04 — Ansis: ierobežojuma paziņojums nav uzkrītošs — virs skatu pogām mazs pelēks uzraksts “Ierobežojums”, skaidrojums (“Viļņu attēlojums ir ierobežots, jo …”) tikai uz klikšķa.
 - 2026-10-04 — Ansis: λ mērs, kas slīd līdzi vilnim, vairs nelec uz viļņa sākumu — slīdošais mērs un rezerves mērs {0, λ} krusteniski izbāl ~1,5 s laikā (`lambdaSpans`, `FADE_S`); tāpat A mērs pie pirmā kalna iebāl un izbāl (`crestAlpha`).
+- 2026-10-04 — Ansis (prezentācijai datorā): pagriezienā nav tuvinājuma un nobīdes — aplis paliek centrā tādā pašā izmērā un kļūst par pirmo svītru, vilnis skrien no centra pa labi (daļa drīkst palikt zem SAKARĪBĀM vai aiz malas); garenvilnī ķemme ±A — augstums visos trijos skatos vienāds.
+- 2026-10-04 — Ansis (prezentācijai): lapa atveras ar A = 30 cm, T = 7 s, λ = 70 cm, v = 10 cm/s.

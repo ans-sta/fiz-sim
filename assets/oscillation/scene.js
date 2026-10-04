@@ -146,8 +146,8 @@ export function drawScene(ctx, lay, m) {
     // GARENVILNIS: ķemme — caur katru punktu vertikāla svītra ±A, lai sablīvējumi un retinājumi ir redzami (Ansis 04.10);
     // A no pirmā punkta centra līdz tā galējam stāvoklim, λ starp sablīvējumiem — abas ārpus ķemmes
     if (dimLong > 0.01) {
-      const combTop = S({ u: 0, w: Az }).y;
-      const combBot = S({ u: 0, w: -Az }).y;
+      const combTop = S({ u: 0, w: s.A }).y; // ķemme apļa augstumā (±A), lai augstums visos skatos ir vienāds (Ansis 04.10)
+      const combBot = S({ u: 0, w: -s.A }).y;
       for (const p of pts) {
         strokeStyle(ctx, isMarked(p.i, s.lambda) ? c.accent : c.hairline, dimLong * (isMarked(p.i, s.lambda) ? 0.9 : 0.7));
         const x = S(p).x;

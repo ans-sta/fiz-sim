@@ -24,7 +24,7 @@ const BAND_CM = 2 * RANGES.A.max * 1.15; // augstums, kam jāietilpst starp pane
 
 export function defaultSettings() {
   // T, λ, v ir saistīti (v = λ/T); `order` — no visagrāk mainītā uz jaunāko: mainot vienu, pieskaņojas vecākais (Ansis 04.10).
-  return { A: 30, T: 4, lambda: 100, v: 25, lines: true, order: ['v', 'T', 'lambda'] };
+  return { A: 30, T: 7, lambda: 70, v: 10, lines: true, order: ['v', 'T', 'lambda'] }; // Anša prezentācijas forma (04.10): lēns, ~2,5 viļņi uz ass
 }
 
 function withRange(s, key, v) {
@@ -215,6 +215,8 @@ export function blendLayout(a, b, t) {
   const k = smooth(Math.min(1, Math.max(0, t)));
   return { scale: a.scale + (b.scale - a.scale) * k, cx: a.cx + (b.cx - a.cx) * k, cy: a.cy + (b.cy - a.cy) * k, fill: b.fill ?? a.fill };
 }
-export function toScreen(lay, pt, kappaRad) {
-  return { x: lay.cx + (pt.u - viewCenterU(kappaRad)) * lay.scale, y: lay.cy - pt.w * lay.scale };
+// Ekrānā u = 0 (pirmā punkta riņķis) vienmēr ir centrā: kamera tikai pagriežas, bez tuvinājuma un nobīdes (Ansis 04.10, prezentācijai);
+// sānskatā vilnis skrien no centra pa labi un drīkst aiziet aiz malas vai zem paneļa.
+export function toScreen(lay, pt) {
+  return { x: lay.cx + pt.u * lay.scale, y: lay.cy - pt.w * lay.scale };
 }

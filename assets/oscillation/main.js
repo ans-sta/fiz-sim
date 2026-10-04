@@ -2,7 +2,7 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withT, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
+  VIEWS, VIEW_POSE, withA, withT, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, circleLayout,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
@@ -11,7 +11,7 @@ import { createNotices } from '../measure/notices.js';
 import { formatNumber } from '../measure/format.js';
 import { createQuantityList, createSettingsCorner, createFold } from '../measure/hud.js';
 import { legendScale } from '../measure/ui-scale.js';
-import { TOP_MARGIN, PANEL_GAP, EDGE_PX } from '../measure/hud-layout.js';
+import { TOP_MARGIN, PANEL_GAP } from '../measure/hud-layout.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
@@ -166,13 +166,10 @@ function layout() {
   }
   const top = TOP_MARGIN + Math.max(state.leftH, hudRight.offsetHeight) + PANEL_GAP;
   const bottom = h - viewSlot.offsetTop + PANEL_GAP; // pogas un (telefonā stāvus) padoms zem tām
-  // GARENVILNĪ galējie punkti aiziet līdz A aiz ass galiem: platumā rezervē 2·A_max (A mērogu nemaina — kā augstumā)
-  const fitW = (w - 2 * EDGE_PX) / (AXIS_CM + 2 * RANGES.A.max);
-  const side = sceneLayout(w, h, { top, bottom, drawScale: state.drawScale, edge: (w - AXIS_CM * fitW) / 2 });
-  // APLIS: tuvplāns — aplis ar A_max aizpilda joslu starp paneļiem vai zem tiem; pagriezienā mērogs mīksti pāriet uz ass mērogu
+  // Viens mērogs visiem skatiem: aplis ar A_max aizpilda joslu starp paneļiem (vai zem tiem); pagriezienā nav ne tuvinājuma, ne nobīdes —
+  // aplis kļūst par pirmo svītru centrā, vilnis skrien no centra pa labi (Ansis 04.10, prezentācijai).
   const clearW = w - 2 * (Math.max(state.leftW, hudRight.offsetWidth) + 8 + PANEL_GAP);
-  const circle = circleLayout(w, h, { topFree: TOP_MARGIN, topBelow: top, bottom, clearW, drawScale: state.drawScale });
-  return blendLayout(circle, side, state.pose.kappa);
+  return { ...circleLayout(w, h, { topFree: TOP_MARGIN, topBelow: top, bottom, clearW, drawScale: state.drawScale }), fill: 1 };
 }
 
 function step(dt) {

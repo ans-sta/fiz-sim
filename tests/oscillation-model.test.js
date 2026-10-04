@@ -14,7 +14,7 @@ test('constants and defaults from the spec', () => {
   assert.equal(AXIS_CM, 200);
   assert.equal(N_POINTS, 41);
   assert.deepEqual(VIEWS, ['circle', 'trans', 'long']);
-  assert.deepEqual(defaultSettings(), { A: 30, T: 4, lambda: 100, v: 25, lines: true, order: ['v', 'T', 'lambda'] });
+  assert.deepEqual(defaultSettings(), { A: 30, T: 7, lambda: 70, v: 10, lines: true, order: ['v', 'T', 'lambda'] });
   assert.deepEqual(RANGES.T, { min: 1, max: 8, step: 0.5 });
   assert.deepEqual(RANGES.v, { min: -100, max: 100, step: 5 });
   assert.deepEqual(RANGES.A, { min: 5, max: 40, step: 1 });
@@ -23,7 +23,7 @@ test('constants and defaults from the spec', () => {
 });
 
 test('with*: clamp, round to the step, keep the object when nothing changes', () => {
-  const s = defaultSettings();
+  const s = { ...defaultSettings(), T: 4, lambda: 100, v: 25 };
   assert.equal(withA(s, 100).A, 40);
   assert.equal(withA(s, 0).A, 5);
   assert.equal(withA(s, 12.3).A, 12);
@@ -37,7 +37,7 @@ test('with*: clamp, round to the step, keep the object when nothing changes', ()
 });
 
 test('linked T, λ, v: the one changed earliest adapts; the changed one is clamped so the adapting one stays in range; v = 0 freezes', () => {
-  let s = defaultSettings(); // order v, T, λ: v is the oldest
+  let s = { ...defaultSettings(), T: 4, lambda: 100, v: 25 }; // order v, T, λ: v is the oldest
   s = withLambda(s, 200); // v adapts: 200 / 4
   assert.deepEqual([s.T, s.lambda, s.v, s.order], [4, 200, 50, ['v', 'T', 'lambda']]); // the adapted one stays the oldest
   s = withT(s, 2); // v is still older than λ → v adapts
@@ -194,8 +194,8 @@ test('sceneLayout: the axis fits the width, 2 × 40 cm fits the band, centre in 
   const a = toScreen(lay, { u: 0, w: 10 }, 0);
   close(a.x, 500);
   close(a.y, lay.cy - 10 * lay.scale);
-  const b = toScreen(lay, { u: 100, w: 0 }, Math.PI / 2);
-  close(b.x, 500);
+  const b = toScreen(lay, { u: 100, w: 0 }); // bez nobīdes: u = 0 paliek centrā arī sānskatā
+  close(b.x, 500 + 100 * lay.scale);
 });
 
 test('circleLayout: the A_max circle fills the band between the panels or, when that is narrower, the band below them', () => {
