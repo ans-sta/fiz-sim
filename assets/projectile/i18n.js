@@ -89,7 +89,7 @@ export const STRINGS = {
     'strobe.fit': 'VISS',
     'strobe.export': 'EKSPORTĒT ATTĒLU',
     'strobe.hint': 'Tuvini ar peles ritenīti vai diviem pirkstiem, pārvieto, velkot ar peli vai pirkstu.',
-    'strobe.verticalNote': 'Pozīcijas nobīdītas pa labi pēc kārtas, kā uz laika ass. Bumbiņa kustas tikai vertikāli.',
+    'strobe.verticalNote': 'Vertikālais sviediens: augšupejošā lente ↑ pa kreisi, lejupejošā ↓ pa labi. Lentes nobīde ir tikai attēlā — x netiek mērīts.',
     'strobe.secondNote': 'Tukšie apļi — otra bumbiņa, kas tajā pašā brīdī sāk krist no tā paša augstuma.',
     'strobe.exportFailed': 'Attēlu neizdevās izveidot: šī ierīce neļauj tik lielu attēlu ({w} × {h} px). Mēģini datorā vai ar mazāku h vai v₀.',
 
@@ -228,7 +228,7 @@ export const STRINGS = {
     'strobe.fit': 'FIT',
     'strobe.export': 'EXPORT IMAGE',
     'strobe.hint': 'Zoom with the mouse wheel or two fingers; drag with the mouse or a finger to move.',
-    'strobe.verticalNote': 'Positions are shifted to the right one after another, as on a time axis. The ball moves only vertically.',
+    'strobe.verticalNote': 'Vertical throw: the rising tape ↑ on the left, the falling tape ↓ on the right. The tapes are side by side only in the picture — x is not measured.',
     'strobe.secondNote': 'Hollow circles: the second ball, which starts falling from the same height at the same moment.',
     'strobe.exportFailed': 'Could not create the image: this device does not allow an image this large ({w} × {h} px). Try on a computer or with a smaller h or v₀.',
 

@@ -4,19 +4,38 @@ import { strobePoints, strobeWorldBox, exportOptions } from '../assets/projectil
 import { simulateRun } from '../assets/projectile/experiment.js';
 import { defaultSettings, withMode, withH, withV0, withAlpha, withSecond } from '../assets/projectile/model.js';
 import { SCALE } from '../assets/projectile/scales.js';
+import { sceneBox, tapeGap } from '../assets/projectile/scene.js';
 import { exportSizeFor, EXPORT_MAX_AREA } from '../assets/measure/strobe-view.js';
 
+const close = (a, b, e) => assert.ok(Math.abs(a - b) <= e, `${a} vs ${b}`);
 const opts = { seed: 99, repeat: 1, noise: 0, traps: [] };
 
-test('vertical mode: positions shifted to the right like a time axis', () => {
-  const s = withMode(withV0(defaultSettings(), 0), 'vertical');
-  const run = simulateRun(s, opts);
-  const p = strobePoints(run, s);
-  p.main.forEach((q, i) => {
-    assert.equal(q.x, i * 0.6); // pagaidu nobīde līdz 3. uzdevumam
-    assert.equal(q.y, run.strobe[i].y);
+test('vertical strobe: rising flashes on the ↑ tape at x = 0, falling ones on the ↓ tape', () => {
+  const s = { ...defaultSettings('vertical'), h: 20, v0: 10, dt: 0.3 };
+  const run = simulateRun(s, { seed: 3, repeat: 1, noise: 0, traps: [] });
+  const pts = strobePoints(run, s);
+  const gap = tapeGap(sceneBox(s));
+  run.strobe.forEach((p, i) => {
+    close(pts.main[i].x, p.rising ? 0 : gap, 1e-12);
+    assert.equal(pts.main[i].y, p.y);
   });
-  assert.deepEqual(p.second, []);
+  assert.deepEqual(pts.tapes, { up: 0, down: gap });
+  assert.deepEqual(pts.second, []);
+});
+
+test('free fall: one ↓ tape at x = 0', () => {
+  const s = { ...defaultSettings('vertical'), h: 20, v0: 0, dt: 0.2 };
+  const pts = strobePoints(simulateRun(s, { seed: 1, repeat: 1, noise: 0, traps: [] }), s);
+  assert.ok(pts.main.every((p) => p.x === 0));
+  assert.deepEqual(pts.tapes, { up: null, down: 0 });
+});
+
+test('horizontal and oblique: real x, no tapes', () => {
+  const s = defaultSettings('horizontal');
+  const run = simulateRun(s, { seed: 1, repeat: 1, noise: 0, traps: [] });
+  const pts = strobePoints(run, s);
+  assert.equal(pts.tapes, null);
+  run.strobe.forEach((p, i) => assert.equal(pts.main[i].x, p.x));
 });
 
 test('other modes: true positions; second ball included', () => {

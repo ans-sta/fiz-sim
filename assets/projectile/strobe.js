@@ -4,6 +4,7 @@ import { toScreen } from '../measure/zoom-pan.js';
 import { openStrobeShell, exportSizeFor, canvasToPNG, EXPORT_MAX_AREA } from '../measure/strobe-view.js';
 import { formatNumber, decimalsOf } from '../measure/format.js';
 import { tableModel } from './results.js';
+import { sceneBox, tapeGap, displayX } from './scene.js';
 
 export const MARGIN_PX = 40;
 export const EXPORT_MIN_W = 1600; // px — lai paraksts PNG attēlā ietilpst dažās rindās
@@ -11,21 +12,27 @@ const EXPORT_FS = 2.2;
 const MONO = "'IBM Plex Mono', ui-monospace, monospace";
 const SANS = "'IBM Plex Sans', system-ui, sans-serif";
 
-// Kur zīmēt katru zibsni. Vertikālajā sviedienā pozīcijas nobīda pa labi kā laika asi (spec. 8.2).
+// Kur zīmēt katru zibsni. Vertikālajā sviedienā augšupejošie zibsņi iet uz ↑ lenti (x = 0), krītošie uz ↓ lenti;
+// nobīde ir tikai attēlā, dati paliek x = 0.
 export function strobePoints(run, settings) {
-  const shift = settings.mode === 'vertical';
+  const vertical = settings.mode === 'vertical';
+  const box = sceneBox(settings);
+  const gap = tapeGap(box);
+  const tapes = !vertical ? null : settings.v0 > 0 ? { up: 0, down: gap } : { up: null, down: 0 };
   return {
-    main: run.strobe.map((p) => ({ n: p.n, x: shift ? p.n * 0.6 : p.x, y: p.y })),
+    main: run.strobe.map((p) => ({ n: p.n, x: vertical ? displayX(settings, box, p) : p.x, y: p.y })),
     second: run.strobe2 ? run.strobe2.map((p) => ({ n: p.n, x: p.x, y: p.y })) : [],
+    tapes,
   };
 }
 
 export function strobeWorldBox(settings, points) {
   const sc = SCALE;
   const all = [...points.main, ...points.second];
+  if (points.tapes) for (const x of [points.tapes.up, points.tapes.down]) if (x !== null) all.push({ x, y: 0 });
   const pad = Math.max(2 * sc.ball.d, 0.05 * sc.minView.w);
   return {
-    x0: Math.min(0, ...all.map((p) => p.x)) - pad,
+    x0: Math.min(...all.map((p) => p.x)) - pad,
     x1: Math.max(...all.map((p) => p.x)) + pad,
     y0: -pad,
     y1: Math.max(settings.h, ...all.map((p) => p.y)) + pad,
@@ -130,8 +137,34 @@ function drawGrid(ctx, o, fs) {
   labelBox(ctx, o.unit, 4 * fs, height - 6 * fs, 'left', c, fs);
 }
 
-// Galds un tornis noņemti (1. uzdevums); stroboskopa skatu pārbūvē 3. uzdevumā.
-function drawStructure() {}
+// Vertikālais sviediens: blāvas raustītas lentes no zemes līdz kastes augšai, ↑ / ↓ tai virs (kā rasējumā).
+function drawTapes(ctx, o, fs) {
+  const { tr, colors: c, points } = o;
+  const list = [];
+  if (points.tapes?.up != null) list.push({ x: points.tapes.up, ch: '↑' });
+  if (points.tapes) list.push({ x: points.tapes.down, ch: '↓' });
+  if (!list.length) return;
+  const yTop = toScreen(tr, 0, o.box.y1).y;
+  const yGround = toScreen(tr, 0, 0).y;
+  ctx.strokeStyle = c.hairline;
+  ctx.lineWidth = fs;
+  ctx.globalAlpha = 0.6;
+  ctx.setLineDash([3 * fs, 4 * fs]);
+  for (const tp of list) {
+    const x = Math.round(toScreen(tr, tp.x, 0).x) + 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x, yGround);
+    ctx.lineTo(x, yTop);
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+  ctx.font = `${14 * fs}px ${MONO}`;
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = c.inkDim;
+  for (const tp of list) ctx.fillText(tp.ch, toScreen(tr, tp.x, 0).x, yTop + 16 * fs);
+}
 
 function drawBall(ctx, ctr, rPx, o, fs, hollow) {
   const c = o.colors;
@@ -187,7 +220,7 @@ export function drawStrobe(ctx, o) {
     ctx.lineTo(x + 8 * fs, gy);
   }
   ctx.stroke();
-  drawStructure(ctx, o, fs);
+  drawTapes(ctx, o, fs);
 
   // bumbiņas un numuri 0, 1, 2 …
   const rPx = Math.max(4 * fs, (sc.ball.d / 2) * tr.scale); // sīka bumbiņa tomēr redzama
