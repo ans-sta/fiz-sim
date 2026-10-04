@@ -139,9 +139,18 @@ export function drawScene(ctx, lay, m) {
       ctx.stroke();
       dimLine(ctx, { x: c1.x, y: yDim }, { x: c2.x, y: yDim }, 'λ', { x: 0, y: -1 }, m, dimTrans);
     }
-    // GARENVILNIS: A no pirmā punkta centra līdz tā galējam stāvoklim, λ starp sablīvējumiem
+    // GARENVILNIS: ķemme — caur katru punktu vertikāla svītra ±A, lai sablīvējumi un retinājumi ir redzami (Ansis 04.10);
+    // A no pirmā punkta centra līdz tā galējam stāvoklim, λ starp sablīvējumiem — abas ārpus ķemmes
     if (dimLong > 0.01) {
-      const yA = lay.cy + 14 + 6 * m.legend;
+      const combTop = S({ u: 0, w: s.A }).y;
+      const combBot = S({ u: 0, w: -s.A }).y;
+      for (const p of pts) {
+        strokeStyle(ctx, p.i === 0 ? c.accent : c.hairline, dimLong * (p.i === 0 ? 0.9 : 0.7));
+        const x = S(p).x;
+        path(ctx, [{ x, y: combTop }, { x, y: combBot }]);
+        ctx.stroke();
+      }
+      const yA = combBot + 14 + 6 * m.legend;
       strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
       path(ctx, [origin, { x: origin.x, y: yA }]);
       ctx.stroke();
@@ -150,7 +159,7 @@ export function drawScene(ctx, lay, m) {
       ctx.stroke();
       dimLine(ctx, { x: origin.x, y: yA }, { x: xA, y: yA }, 'A', { x: 0, y: 1 }, m, dimLong);
       const { z1, z2 } = lambdaSpan(phase, s.lambda, COMPRESSION);
-      const yL = lay.cy - 14 - 6 * m.legend;
+      const yL = combTop - 14 - 6 * m.legend;
       strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
       const k1 = Z(z1);
       const k2 = Z(z2);

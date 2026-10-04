@@ -51,7 +51,7 @@ Pārejas:
 
 - **APLIS:** pats aplis (plāna līnija), rādiuss no centra līdz oranžajam punktam, fāzes leņķa φ loks pie centra ar uzrakstu φ, vertikālais diametrs un horizontāla līnija no oranžā punkta līdz tam (projekcija — tā ir svārstība), uz diametra projekcijas punkts.
 - **ŠĶĒRSVILNIS:** svītras (visu 41 riņķu redzamie diametri, blāvas), gluda sinusoīda caur punktiem, izmēru līnijas **A** (no ass līdz kalnam) un **λ** (starp diviem kalniem).
-- **GARENVILNIS:** svītras gar asi (blāvas, pārklājas), izmēru līnijas **A** (oranžā punkta novirze no sava centra, tā centrs atzīmēts) un **λ** (starp diviem sablīvējumiem).
+- **GARENVILNIS:** svītras gar asi (blāvas, pārklājas), **ķemme** — caur katru punktu vertikāla svītra ±A (pēc pagrieziena iebāl, pagriežot prom izbāl; Ansis 04.10), lai sablīvējumi un retinājumi ir redzami; izmēru līnijas **A** (no pirmā punkta centra līdz tā galējam stāvoklim) un **λ** (starp diviem sablīvējumiem) — ārpus ķemmes.
 - Pārejās palīglīnijas pārveidojas līdzi (svītras griežas); sinusoīda un izmēru līnijas parādās tikai galastāvokļos (izbāl/iebāl).
 - Ar izslēgtām palīglīnijām paliek tikai punkti un ass.
 
@@ -158,3 +158,4 @@ LV / EN kā citās lapās. Angliski: *Oscillations and Waves*, CIRCLE · TRANSVE
 
 - 2026-10-04 — Pirmā versija pēc sarunas ar Ansi un ophysics.com/w0.html apleta izpētes (tur: punkti uz spirāles ap z asi, `SetViewDirection` pogas, slīdņi Spread / Number / Separation / Amplitude).
 - 2026-10-04 — Būvējot (plāns `2026-10-04-svarstibas-plan.md`): zīmējuma platumā rezervēti 200 + 2·A_max cm, lai garenvilnī galējie punkti neiziet aiz ekrāna (A mērogu nemaina); garenvilnī A izmēru līnija ir no pirmā punkta centra līdz tā galējam stāvoklim (fiksēts garums A); apļa skatā pievienots blāvs horizontālais diametrs kā φ atskaite; telefona padomam pievienots paskaidrojums; SAKARĪBĀS v ar vienu decimāli, ja nav vesels skaitlis.
+- 2026-10-04 — Ansis pēc publicēšanas: garenvilnī ķemme (vertikālas svītras ±A caur katru punktu), lai sablīvējumi redzami; izmēru līnijas ārpus ķemmes.
