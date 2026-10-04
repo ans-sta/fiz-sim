@@ -1,7 +1,7 @@
 // assets/oscillation/scene.js
 // Zīmē ainu: ass, riņķu kontūras (palīglīnijas), 41 punkts, oranžais pirmais; palīglīnijas pa stāvokļiem; izmēru līnijas A un λ.
 // Visas koordinātas nāk no model.js projekcijas; šeit tikai pikseļi un krāsas. Caurspīdīgums pārejās: no pozas (0…1).
-import { AXIS_CM, CREST, COMPRESSION, smooth, scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, toScreen, project, point3D } from './model.js';
+import { AXIS_CM, CREST, COMPRESSION, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpan, toScreen, project, point3D } from './model.js';
 
 const MONO = 'ui-monospace, monospace';
 const fontLabel = (k = 1) => `400 ${11 * k}px "IBM Plex Mono", ${MONO}`;
@@ -76,6 +76,7 @@ export function drawScene(ctx, lay, m) {
   // izmēru līniju enkuri caur to pašu projekciju kā punkti — pārejās tie seko kamerai un svītrām
   const Z = (z) => S(project({ x: 0, y: 0, z }, κ)); // punkts uz ass
   const tip = (z) => S(project(point3D(CREST, z, s.A, angles.thetaRad), κ)); // svītras gals (kalns / galējais stāvoklis)
+  const onWave = (z) => S(project(point3D(phaseAt(phase, z, s.lambda), z, s.A, angles.thetaRad), κ)); // viļņa punkts pie z
 
   // ass (sānskatā; no gala tā ir punkts)
   if (side > 0) {
@@ -97,11 +98,13 @@ export function drawScene(ctx, lay, m) {
       path(ctx, waveCurve(s, phase, angles).map(S));
       ctx.stroke();
     }
-    // APLIS: rādiuss, vertikālais diametrs, projekcija, φ loks
+    // APLIS: rādiuss, abi diametri (horizontālais — φ atskaites līnija), projekcija, φ loks
     if (circleA > 0.01) {
       const first = S(pts[0]);
       strokeStyle(ctx, c.hairline, circleA);
       path(ctx, [S({ u: 0, w: s.A }), S({ u: 0, w: -s.A })]);
+      ctx.stroke();
+      path(ctx, [S(project({ x: -s.A, y: 0, z: 0 }, κ)), S(project({ x: s.A, y: 0, z: 0 }, κ))]);
       ctx.stroke();
       strokeStyle(ctx, c.ink, circleA);
       path(ctx, [origin, first]);
@@ -124,10 +127,10 @@ export function drawScene(ctx, lay, m) {
       const zc = phaseZ(phase, s.lambda, CREST);
       dimLine(ctx, Z(zc), tip(zc), 'A', { x: 1, y: 0 }, m, transA);
       const { z1, z2 } = lambdaSpan(phase, s.lambda, CREST);
-      const yDim = lay.cy - s.A * lay.scale - DIM_GAP;
+      const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
       strokeStyle(ctx, c.hairline, transA, 1, [3, 3]);
-      const c1 = tip(z1);
-      const c2 = tip(z2);
+      const c1 = onWave(z1);
+      const c2 = onWave(z2);
       path(ctx, [c1, { x: c1.x, y: yDim }]);
       ctx.stroke();
       path(ctx, [c2, { x: c2.x, y: yDim }]);

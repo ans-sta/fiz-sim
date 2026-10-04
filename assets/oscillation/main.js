@@ -2,7 +2,7 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, AXIS_CM, RANGES, defaultSettings, withA, withT, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout,
+  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withT, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
@@ -16,6 +16,9 @@ document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
 const t = (key, vars) => i18n.t(key, vars);
+// render() iet katrā kadrā: DOM raksta tikai, ja vērtība mainījusies
+const setText = (el, s) => { if (el.textContent !== s) el.textContent = s; };
+const setAttr = (el, name, v) => { const s = String(v); if (el.getAttribute(name) !== s) el.setAttribute(name, s); };
 
 mountHeaderTools(document.getElementById('headTools'), { i18n, theme });
 const titleSmall = document.getElementById('titleSmall');
@@ -32,6 +35,7 @@ const state = {
   drawScale: 1,
   leftH: 0, // LIELUMI augstums aizvērtā stāvoklī (atvērts slīdnis zīmējumu nebīda)
 };
+const painted = { settings: null, lang: null }; // ko LIELUMI pēdējo reizi rādīja
 
 const drawing = document.getElementById('drawing');
 const hudLeft = document.getElementById('hudLeft');
@@ -62,7 +66,7 @@ relTitle.className = 'hud-title';
 hudRight.appendChild(relTitle);
 const relRows = new Map();
 function paintRelations() {
-  relTitle.textContent = t('rel.title');
+  setText(relTitle, t('rel.title'));
   for (const r of relationsRows(state.settings, state.phase, { lang: i18n.lang() })) {
     let el = relRows.get(r.key);
     if (!el) {
@@ -72,8 +76,8 @@ function paintRelations() {
       hudRight.appendChild(el);
       relRows.set(r.key, el);
     }
-    if (el.firstChild.textContent !== r.k) el.firstChild.textContent = r.k;
-    if (el.lastChild.textContent !== r.v) el.lastChild.textContent = r.v;
+    setText(el.firstChild, r.k);
+    setText(el.lastChild, r.v);
   }
 }
 
@@ -116,24 +120,27 @@ function setView(v) {
 document.addEventListener('keydown', (ev) => {
   const tag = ev.target?.tagName;
   if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+  if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if (ev.key === '1') setView('circle');
   else if (ev.key === '2') setView('trans');
   else if (ev.key === '3') setView('long');
-  else if (ev.key === ' ' && tag !== 'BUTTON') { ev.preventDefault(); state.paused = !state.paused; render(); }
+  else if (ev.key === ' ' && tag !== 'BUTTON') {
+    ev.preventDefault();
+    if (ev.repeat) return;
+    state.paused = !state.paused;
+    render();
+  }
 });
 
 const canvas = document.getElementById('scene');
 let view = null;
 view = setupCanvas(canvas, () => render());
-new ResizeObserver(() => render()).observe(hudRight);
 
 function layout() {
   const { w, h } = view.size();
   if (!hudLeft.classList.contains('sliding')) state.leftH = hudLeft.offsetHeight; // atvērts slīdnis zīmējumu nebīda
   const top = TOP_MARGIN + Math.max(state.leftH, hudRight.offsetHeight) + PANEL_GAP;
-  const hint = document.getElementById('turnHint');
-  const hintH = hint.offsetParent ? hint.offsetHeight : 0;
-  const bottom = h - viewSlot.offsetTop + PANEL_GAP + hintH;
+  const bottom = h - viewSlot.offsetTop + PANEL_GAP; // pogas un (telefonā stāvus) padoms zem tām
   // GARENVILNĪ galējie punkti aiziet līdz A aiz ass galiem: platumā rezervē 2·A_max (A mērogu nemaina — kā augstumā)
   const fitW = (w - 2 * EDGE_PX) / (AXIS_CM + 2 * RANGES.A.max);
   return sceneLayout(w, h, { top, bottom, drawScale: state.drawScale, edge: (w - AXIS_CM * fitW) / 2 });
@@ -148,17 +155,21 @@ startLoop(step);
 
 function render() {
   if (!view) return;
-  quantities.update(quantityRows(state.settings, { lang: i18n.lang(), t: i18n.t }));
+  // LIELUMI pārzīmē tikai, kad mainās iestatījumi vai valoda (kopīgais saraksts citādi katrā kadrā pārraksta atribūtus)
+  if (state.settings !== painted.settings || i18n.lang() !== painted.lang) {
+    painted.settings = state.settings;
+    painted.lang = i18n.lang();
+    quantities.update(quantityRows(state.settings, { lang: painted.lang, t: i18n.t }));
+  }
   paintRelations();
   for (const [v, b] of viewBtns) {
     const label = t(`view.${v}`);
-    if (b.textContent !== label) b.textContent = label;
-    b.setAttribute('aria-pressed', String(v === state.view));
+    setText(b, label);
+    setAttr(b, 'aria-pressed', v === state.view);
   }
-  viewSlot.setAttribute('aria-label', t('view.group'));
-  pauseBtn.textContent = state.paused ? '▶' : '⏸';
-  pauseBtn.setAttribute('aria-label', state.paused ? t('run.play') : t('run.pause'));
-  pauseBtn.setAttribute('aria-pressed', String(state.paused));
+  setAttr(viewSlot, 'aria-label', t('view.group'));
+  setText(pauseBtn, state.paused ? '▶\uFE0E' : '⏸\uFE0E'); // U+FE0E — teksta zīme, ne krāsaina emocijzīme telefonā
+  setAttr(pauseBtn, 'aria-label', state.paused ? t('run.play') : t('run.pause'));
 
   const lay = layout();
   drawScene(view.ctx, lay, {
@@ -168,7 +179,6 @@ function render() {
     angles: poseAngles(state.pose),
     colors: theme.colors(),
     legend: legendScale(gear.textScale()),
-    t: i18n.t,
   });
   gear.setDrawFit(lay.fill);
   const { w, h } = view.size();
@@ -176,7 +186,7 @@ function render() {
   const noticesBottom = `${h - viewSlot.offsetTop + PANEL_GAP}px`;
   if (noticesEl.style.bottom !== noticesBottom) noticesEl.style.bottom = noticesBottom;
   const big = w >= 900 && h >= 560;
-  titleSmall.hidden = !big;
+  if (titleSmall.hidden === big) titleSmall.hidden = !big;
   drawing.classList.toggle('has-title', big);
 }
 
