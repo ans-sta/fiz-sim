@@ -1,6 +1,6 @@
 import { parseParams } from '../measure/url-params.js';
-import { SCALES, ALPHA, MODE_NUMBER } from './scales.js';
-import { defaultSettings, withH, withV0, withAlpha, withDt, withSecond, withGrid, v0Range, withScale, withMode } from './model.js';
+import { SCALE, ALPHA, MODE_NUMBER } from './scales.js';
+import { defaultSettings, withH, withV0, withAlpha, withDt, withSecond, withGrid, v0Range, withMode } from './model.js';
 import { randomSeed } from '../measure/rng.js';
 
 export { warningText } from '../measure/url-params.js';
@@ -9,11 +9,10 @@ const MODE_BY_NUMBER = { 1: 'vertical', 2: 'horizontal', 3: 'oblique' };
 
 export const PARAM_SCHEMA = {
   mode: { type: 'enum', values: ['1', '2', '3'] },
-  scale: { type: 'enum', values: Object.keys(SCALES) },
-  h: { type: 'number' }, // robežas, Δt vērtības — pēc mēroga un režīma, sk. settingsFromURL
+  h: { type: 'number' }, // robežas — sk. settingsFromURL
   v0: { type: 'number' },
   alpha: { type: 'number', min: ALPHA.min, max: ALPHA.max },
-  dt: { type: 'number' },
+  dt: { type: 'number', min: SCALE.dt.min, max: SCALE.dt.max },
   second: { type: 'bool' },
   grid: { type: 'bool' },
   view: { type: 'enum', values: ['table', 'strobe', 'both'] },
@@ -22,7 +21,7 @@ export const PARAM_SCHEMA = {
   seed: { type: 'int', min: 1, max: 2147483647 },
 };
 
-export const LOCKABLE = ['mode', 'scale', 'h', 'v0', 'alpha', 'dt', 'second', 'grid', 'view'];
+export const LOCKABLE = ['mode', 'h', 'v0', 'alpha', 'dt', 'second', 'grid', 'view'];
 
 export function settingsFromURL(search, { makeSeed = randomSeed, base = null } = {}) {
   const p = parseParams(search, PARAM_SCHEMA);
@@ -32,13 +31,13 @@ export function settingsFromURL(search, { makeSeed = randomSeed, base = null } =
   for (const w of p.warnings) warnings.set(w.param, { ...w });
   const warn = (w) => warnings.set(w.param, w);
 
-  const scale = v.scale ?? 'table';
   const mode = 'mode' in v ? MODE_BY_NUMBER[v.mode] : 'horizontal';
-  // pētījumā sāk no tā iestatījumiem; mērogs un režīms no saites — virsū
-  let s = base ? { ...base } : defaultSettings(scale, mode);
-  if (base && 'scale' in v) s = withScale(s, scale);
+  // pētījumā sāk no tā iestatījumiem; režīms no saites — virsū
+  let s = base ? { ...base } : defaultSettings(mode);
   if (base && 'mode' in v) s = withMode(s, mode);
-  const sc = SCALES[s.scale];
+  const sc = SCALE;
+  // vecās saites ar mēroga parametru: mēroga vairs nav, lielumi ir metros
+  if (raw.has('scale')) warn({ param: 'scale', raw: raw.get('scale'), reason: 'scale_removed' });
   // vērtība starp iestatāmajiem soļiem tiek noapaļota — par to arī paziņo (unit ar atstarpi priekšā vai °)
   const rounded = (param, given, used, unit) => {
     if (!warnings.has(param) && Math.abs(given - used) > 1e-9) warn({ param, raw: raw.get(param), reason: 'rounded', used, unit });
@@ -51,7 +50,7 @@ export function settingsFromURL(search, { makeSeed = randomSeed, base = null } =
     rounded('h', v.h, s.h, ` ${sc.unit}`);
   }
   if ('v0' in v) {
-    const r = v0Range(s.scale, s.mode);
+    const r = v0Range(s.mode);
     if (v.v0 < r.min || v.v0 > r.max) {
       warn({ param: 'v0', raw: raw.get('v0'), reason: 'v0_clamped', min: r.min, max: r.max, unit: `${sc.unit}/s` });
     }
@@ -63,8 +62,8 @@ export function settingsFromURL(search, { makeSeed = randomSeed, base = null } =
     rounded('alpha', v.alpha, s.alphaDeg, '°');
   }
   if ('dt' in v) {
-    if (sc.dtOptions.includes(v.dt)) s = withDt(s, v.dt);
-    else warn({ param: 'dt', raw: raw.get('dt'), reason: 'dt_scale', allowed: sc.dtOptions });
+    s = withDt(s, v.dt);
+    rounded('dt', v.dt, s.dt, ' s');
   }
   if ('second' in v) s = withSecond(s, v.second);
   if ('grid' in v) s = withGrid(s, v.grid);
@@ -78,7 +77,7 @@ export function settingsFromURL(search, { makeSeed = randomSeed, base = null } =
 
   // `used` for every warning = the final value of that setting
   const finalValue = {
-    mode: String(MODE_NUMBER[s.mode]), scale: s.scale, h: s.h, v0: s.v0, alpha: s.alphaDeg, dt: s.dt,
+    mode: String(MODE_NUMBER[s.mode]), scale: '', h: s.h, v0: s.v0, alpha: s.alphaDeg, dt: s.dt,
     second: s.second ? '1' : '0', grid: s.grid ? '1' : '0', view: 'both', noise, traps: [], seed,
   };
   for (const w of warnings.values()) if (!('used' in w)) w.used = finalValue[w.param];

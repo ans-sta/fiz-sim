@@ -1,4 +1,4 @@
-import { SCALES, TABLE_DRAW } from './scales.js';
+import { SCALE } from './scales.js';
 import { gridSteps, ticks } from '../measure/world-grid.js';
 import { formatNumber, decimalsOf } from '../measure/format.js';
 
@@ -24,10 +24,10 @@ export function ladderCeil(v) {
 // (lielākais tālums un augstums pa visiem α) un ir noapaļots uz augšu pa kāpnēm, lai rasējuma mala
 // neatklātu tālumu vai augstāko punktu, ko skolēns nosaka pats (spec. 2.1).
 export function sceneBox(s, d) {
-  const sc = d.sc;
+  const sc = SCALE;
   const g = sc.g;
   const v = Math.abs(s.v0);
-  const x0 = -sc.structureW;
+  const x0 = 0;
   const reach = s.mode === 'vertical' ? 0 : (v / g) * Math.sqrt(v * v + 2 * g * s.h);
   const top = s.h + (s.mode === 'horizontal' ? 0 : (v * v) / (2 * g));
   const x1 = Math.max(x0 + sc.minView.w, ladderCeil(1.1 * reach + 2 * sc.ball.d));
@@ -59,7 +59,7 @@ export function launchPoint(lay, s) {
 }
 
 export function arrowGeometry(lay, s) {
-  const len = (Math.abs(s.v0) / SCALES[s.scale].v0.max) * lay.arrow;
+  const len = (Math.abs(s.v0) / SCALE.v0.max) * lay.arrow;
   if (s.mode === 'vertical') return { len, dir: { x: 0, y: s.v0 < 0 ? 1 : -1 } };
   if (s.mode === 'horizontal') return { len, dir: { x: 1, y: 0 } };
   const a = (s.alphaDeg * Math.PI) / 180;
@@ -74,7 +74,7 @@ export function arcRadius(len) {
 export function handleAnchors(lay, s) {
   const p = launchPoint(lay, s);
   const { len, dir } = arrowGeometry(lay, s);
-  const left = lay.toScreen(-SCALES[s.scale].structureW, 0).x;
+  const left = lay.toScreen(0, 0).x;
   const a = (s.alphaDeg * Math.PI) / 180;
   const R = arcRadius(len);
   return {
@@ -86,7 +86,7 @@ export function handleAnchors(lay, s) {
 
 export function valueFromPointer(kind, lay, s, ptr) {
   const p = launchPoint(lay, s);
-  const perPx = SCALES[s.scale].v0.max / lay.arrow; // v₀ vienības uz pikseli
+  const perPx = SCALE.v0.max / lay.arrow; // v₀ vienības uz pikseli
   switch (kind) {
     case 'h':
       return lay.toWorld(ptr.x, ptr.y).y;
@@ -202,7 +202,7 @@ function drawWorldGrid(ctx, lay, m, c) {
   hLines(ys);
   ctx.stroke();
   const dec = decimalsOf(label);
-  const u = m.derived.sc.unit;
+  const u = SCALE.unit;
   ctx.font = FONT_TICK;
   for (const x of xs) {
     const str = formatNumber(x, dec, m.lang);
@@ -232,42 +232,12 @@ function drawGround(ctx, lay, c) {
   ctx.stroke();
 }
 
-// Galds vai tornis; augšējā virsma — zem bumbiņas (x, y ir bumbiņas centrs).
-function drawStructure(ctx, lay, m, c) {
-  const s = m.settings;
-  const sc = m.derived.sc;
-  const top = s.h - sc.ball.d / 2;
-  if (top <= 0) return;
-  const rect = (x0, y0, x1, y1) => {
-    const a = lay.toScreen(x0, y1);
-    const b = lay.toScreen(x1, y0);
-    return { x: Math.round(a.x) + 0.5, y: Math.round(a.y) + 0.5, w: Math.round(b.x - a.x), h: Math.round(b.y - a.y) };
-  };
-  if (s.scale === 'tower') {
-    const r = rect(-sc.structureW, 0, 0, top);
-    hatchRect(ctx, r.x, r.y, r.w, r.h, c.hairline);
-    stroke(ctx, c.ink);
-    ctx.strokeRect(r.x, r.y, r.w, r.h);
-    return;
-  }
-  const slab = Math.min(TABLE_DRAW.slab, top);
-  const parts = [
-    rect(-sc.structureW, top - slab, 0, top),
-    rect(-sc.structureW + TABLE_DRAW.leg, 0, -sc.structureW + 2 * TABLE_DRAW.leg, top - slab),
-    rect(-2 * TABLE_DRAW.leg, 0, -TABLE_DRAW.leg, top - slab),
-  ];
-  for (const r of parts) {
-    if (r.w <= 0 || r.h <= 0) continue;
-    ctx.fillStyle = c.sheet;
-    ctx.fillRect(r.x, r.y, r.w, r.h);
-    stroke(ctx, c.ink);
-    ctx.strokeRect(r.x, r.y, r.w, r.h);
-  }
-}
+// Galds un tornis noņemti (1. uzdevums); rasējumu pārbūvē 2. uzdevumā.
+function drawStructure() {}
 
 function drawDimH(ctx, lay, m, c) {
   const s = m.settings;
-  const left = lay.toScreen(-m.derived.sc.structureW, 0).x;
+  const left = lay.toScreen(0, 0).x;
   const x = Math.round(left - DIM_GAP) + 0.5;
   const yTop = Math.round(lay.toScreen(0, s.h).y) + 0.5;
   const yLow = Math.round(lay.toScreen(0, 0).y) + 0.5;
@@ -308,10 +278,9 @@ function drawLaunchLabel(ctx, lay, m, c) {
   if ('letterSpacing' in ctx) ctx.letterSpacing = '1px';
   const wMax = Math.max(...words.map((w) => ctx.measureText(w).width));
   if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-  const dimX = lay.toScreen(-m.derived.sc.structureW, 0).x - DIM_GAP;
+  const dimX = lay.toScreen(0, 0).x - DIM_GAP;
   const left = wMax + 4 <= p.x - 8 - (dimX + 8);
-  const slabPx = left && s.scale === 'table' ? TABLE_DRAW.slab * lay.tr.scale : 0;
-  const below = p.y + slabPx + 14;
+  const below = p.y + 14;
   const fits = below + 12 * (words.length - 1) <= lay.toScreen(0, 0).y - 4;
   const y0 = fits ? below : p.y - 10 - 12 * (words.length - 1);
   const x = left ? p.x - 8 : p.x + 8;
@@ -341,7 +310,7 @@ function drawVelocity(ctx, lay, m, c) {
 }
 
 function drawBall(ctx, lay, m, c, pos, hollow) {
-  const sc = m.derived.sc;
+  const sc = SCALE;
   const ctr = lay.toScreen(pos.x, pos.y);
   const R = Math.max(5, (sc.ball.d / 2) * lay.tr.scale); // sīka bumbiņa tomēr redzama
   ctx.beginPath();

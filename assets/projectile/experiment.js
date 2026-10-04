@@ -1,8 +1,8 @@
 // Viena palaišana: patiesā kustība + mērījuma troksnis (spec. 2; kā lodītes spec. 6, 3. līmenis).
 // „±” vērtības ≈ 2σ. Nolasīšanas kļūdu nogriež pie read.max × intensitāte, tāpēc tabula un
 // stroboskops sakrīt read.max + read.resolution/2 robežās pie intensitātes 1.
-import { launchVelocity, settingsKey, flightCheck, MIN_POSITIONS } from './model.js';
-import { SCALES, NOISE } from './scales.js';
+import { launchVelocity, settingsKey, flightCheck } from './model.js';
+import { SCALE, NOISE } from './scales.js';
 import { positionAt, landingTime } from '../physics/projectile.js';
 import { rngFor, gaussian } from '../measure/rng.js';
 import { roundTo } from '../measure/format.js';
@@ -26,15 +26,16 @@ function motionPath(g, h, vx, vy) {
 
 export function simulateRun(settings, { seed, repeat, noise, traps }) {
   const key = settingsKey(settings, { noise, traps });
-  const flight = flightCheck(settings, { noise, traps });
+  const flight = flightCheck(settings);
   if (flight !== 'ok') return { ok: false, reason: flight, key, repeat };
 
-  const sc = SCALES[settings.scale];
+  const sc = SCALE;
   const k = noise;
   const rand = rngFor(seed, key, repeat);
   const v0Run = settings.v0 * (1 + k * NOISE.v0Rel * gaussian(rand));
   const alphaRun = settings.mode === 'oblique' ? clamp(settings.alphaDeg + k * NOISE.alphaDeg * gaussian(rand), 0, 90) : settings.alphaDeg;
   const { vx, vy } = launchVelocity({ ...settings, v0: v0Run, alphaDeg: alphaRun });
+  const rising = (t) => vy - sc.g * t > 0; // pacelšanās: ātruma vertikālā sastāvdaļa > 0
   const main = motionPath(sc.g, settings.h, vx, vy);
   const second = settings.mode === 'horizontal' && settings.second ? motionPath(sc.g, settings.h, 0, 0) : null;
 
@@ -54,26 +55,23 @@ export function simulateRun(settings, { seed, repeat, noise, traps }) {
   for (let n = 0; n < MAX_SAMPLES; n++) {
     const tf = n * settings.dt;
     const tPhys = tf + tau;
-    if (tPhys > main.tLand + 1e-12) break;
+    if (n > 0 && tPhys > main.tLand + 1e-12) break; // sākuma zibsnis vienmēr ir, arī ja lidojums īsāks par Δt
     const t = roundTo(tf, settings.dt);
     const p = main.at(tPhys);
-    strobe.push({ n, t, x: p.x, y: p.y });
+    strobe.push({ n, t, x: p.x, y: p.y, rising: rising(tPhys) });
     if (second) strobe2.push({ n, t, ...second.at(tPhys) });
     const x = vertical ? 0 : roundTo(p.x + readErr(), sc.read.resolution);
     const y = roundTo(p.y + readErr(), sc.read.resolution);
     samples.push({ n, t, x, y });
   }
-  // flightCheck pieļauj 4σ izkliedi; retā vēl lielākā novirze arī netiek ierakstīta
-  if (samples.length < MIN_POSITIONS) return { ok: false, reason: 'short', key, repeat };
-
   return {
     ok: true,
     key,
     repeat,
     mode: settings.mode,
-    scale: settings.scale,
     tEnd: second ? Math.max(main.tLand, second.tLand) : main.tLand,
     posAt: main.at,
+    risingAt: rising,
     posAt2: second ? second.at : null,
     samples,
     strobe,

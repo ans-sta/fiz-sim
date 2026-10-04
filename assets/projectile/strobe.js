@@ -1,4 +1,4 @@
-import { SCALES, TABLE_DRAW } from './scales.js';
+import { SCALE } from './scales.js';
 import { gridSteps, ticks } from '../measure/world-grid.js';
 import { toScreen } from '../measure/zoom-pan.js';
 import { openStrobeShell, exportSizeFor, canvasToPNG, EXPORT_MAX_AREA } from '../measure/strobe-view.js';
@@ -13,20 +13,19 @@ const SANS = "'IBM Plex Sans', system-ui, sans-serif";
 
 // Kur zīmēt katru zibsni. Vertikālajā sviedienā pozīcijas nobīda pa labi kā laika asi (spec. 8.2).
 export function strobePoints(run, settings) {
-  const sc = SCALES[settings.scale];
   const shift = settings.mode === 'vertical';
   return {
-    main: run.strobe.map((p) => ({ n: p.n, x: shift ? p.n * sc.strobeSpacing : p.x, y: p.y })),
+    main: run.strobe.map((p) => ({ n: p.n, x: shift ? p.n * 0.6 : p.x, y: p.y })),
     second: run.strobe2 ? run.strobe2.map((p) => ({ n: p.n, x: p.x, y: p.y })) : [],
   };
 }
 
 export function strobeWorldBox(settings, points) {
-  const sc = SCALES[settings.scale];
+  const sc = SCALE;
   const all = [...points.main, ...points.second];
   const pad = Math.max(2 * sc.ball.d, 0.05 * sc.minView.w);
   return {
-    x0: Math.min(-0.5 * sc.structureW, ...all.map((p) => p.x)) - pad,
+    x0: Math.min(0, ...all.map((p) => p.x)) - pad,
     x1: Math.max(...all.map((p) => p.x)) + pad,
     y0: -pad,
     y1: Math.max(settings.h, ...all.map((p) => p.y)) + pad,
@@ -131,42 +130,12 @@ function drawGrid(ctx, o, fs) {
   labelBox(ctx, o.unit, 4 * fs, height - 6 * fs, 'left', c, fs);
 }
 
-function drawStructure(ctx, o, fs) {
-  const { tr, colors: c, settings: s, box } = o;
-  const sc = SCALES[s.scale];
-  const top = s.h - sc.ball.d / 2;
-  if (top <= 0) return;
-  const a = toScreen(tr, box.x0, top);
-  const right = toScreen(tr, 0, 0).x;
-  ctx.strokeStyle = c.ink;
-  ctx.lineWidth = fs;
-  if (s.scale === 'tower') {
-    const h = toScreen(tr, 0, 0).y - a.y;
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(a.x, a.y, right - a.x, h);
-    ctx.clip();
-    ctx.strokeStyle = c.hairline;
-    ctx.beginPath();
-    for (let k = -h; k < right - a.x; k += 8 * fs) {
-      ctx.moveTo(a.x + k, a.y + h);
-      ctx.lineTo(a.x + k + h, a.y);
-    }
-    ctx.stroke();
-    ctx.restore();
-    ctx.strokeStyle = c.ink;
-    ctx.strokeRect(a.x, a.y, right - a.x, h);
-    return;
-  }
-  const slab = Math.min(TABLE_DRAW.slab, top) * tr.scale;
-  ctx.fillStyle = c.sheet;
-  ctx.fillRect(a.x, a.y, right - a.x, slab);
-  ctx.strokeRect(a.x, a.y, right - a.x, slab);
-}
+// Galds un tornis noņemti (1. uzdevums); stroboskopa skatu pārbūvē 3. uzdevumā.
+function drawStructure() {}
 
 function drawBall(ctx, ctr, rPx, o, fs, hollow) {
   const c = o.colors;
-  const mat = c.mat[SCALES[o.settings.scale].ball.material];
+  const mat = c.mat[SCALE.ball.material];
   const arm = Math.max(3 * fs, 0.6 * rPx);
   ctx.lineWidth = fs;
   ctx.beginPath();
@@ -197,7 +166,7 @@ function drawBall(ctx, ctr, rPx, o, fs, hollow) {
 export function drawStrobe(ctx, o) {
   const { tr, colors: c, width, height, points } = o;
   const fs = o.fontScale ?? 1;
-  const sc = SCALES[o.settings.scale];
+  const sc = SCALE;
   ctx.save();
   ctx.fillStyle = c.field;
   ctx.fillRect(0, 0, width, height);
@@ -248,7 +217,7 @@ export function drawStrobe(ctx, o) {
 export function openProjectileStrobe(o) {
   const { table, t, lang, colors } = o;
   const s = table.settings;
-  const sc = SCALES[s.scale];
+  const sc = SCALE;
   const perRun = table.runs.map((run) => strobePoints(run, s));
   const box = strobeWorldBox(s, { main: perRun.flatMap((p) => p.main), second: perRun.flatMap((p) => p.second) });
   const settingsLine = tableModel(table, { t, lang }).settingsLine;

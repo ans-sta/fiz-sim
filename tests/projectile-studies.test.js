@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { STUDIES, SETTING_PARAMS, fixedSummary } from '../assets/projectile/studies.js';
 import { STUDY_ART } from '../assets/projectile/study-art.js';
 import { LOCKABLE, settingsFromURL } from '../assets/projectile/params.js';
-import { defaultSettings, flightCheck, changedLocked, withMode, withScale, withH } from '../assets/projectile/model.js';
+import { defaultSettings, flightCheck, changedLocked, withMode, withH, withDt, withV0 } from '../assets/projectile/model.js';
 import { studyFixed, resolveRoute, filterStudyParams } from '../assets/measure/studies.js';
 import { makeT } from '../assets/translate.js';
 import { STRINGS } from '../assets/projectile/i18n.js';
@@ -21,11 +21,11 @@ test('four studies in the spec order, each with texts and a drawing', () => {
   }
 });
 
-test('every preset gives a measurable flight on the table (Review Focus 5)', () => {
+test('every preset gives a measurable flight (Review Focus 5)', () => {
   for (const s of STUDIES) {
     const p = s.preset(defaultSettings());
-    assert.equal(p.scale, 'table', s.id);
-    assert.equal(flightCheck(p, { noise: 1, traps: [] }), 'ok', s.id);
+    assert.ok(!('scale' in p), s.id);
+    assert.equal(flightCheck(p), 'ok', s.id);
   }
   const by = Object.fromEntries(STUDIES.map((s) => [s.id, s.preset(defaultSettings())]));
   assert.deepEqual([by.free.mode, by.free.v0], ['vertical', 0]);
@@ -37,27 +37,27 @@ test('every preset gives a measurable flight on the table (Review Focus 5)', () 
 test('study-fixed values cannot be changed, also not indirectly (Review Focus 3)', () => {
   const free = STUDIES[0];
   const fixed = studyFixed(free, LOCKABLE);
-  assert.deepEqual([...fixed].sort(), ['alpha', 'grid', 'mode', 'scale', 'second', 'v0', 'view']);
+  assert.deepEqual([...fixed].sort(), ['alpha', 'grid', 'mode', 'second', 'v0', 'view']);
   const s = free.preset(defaultSettings());
   assert.deepEqual(changedLocked(s, withMode(s, 'horizontal'), fixed), ['mode']);
-  // uz torni: mainās mērogs, un v₀ kļūst m/s — abi ir nofiksēti; h un Δt šajā pētījumā drīkst mainīties
-  assert.deepEqual(changedLocked(s, withScale(s, 'tower'), fixed).sort(), ['scale', 'v0']);
-  assert.deepEqual(changedLocked(s, withH(s, 120), fixed), []);
+  assert.deepEqual(changedLocked(s, withV0(s, 5), fixed), ['v0']);
+  // h un Δt šajā pētījumā drīkst mainīties
+  assert.deepEqual(changedLocked(s, withDt(withH(s, 30), 0.5), fixed), []);
 });
 
 test('fixed summary lists only the study-fixed physical values', () => {
   const by = (id) => STUDIES.find((s) => s.id === id);
   const sum = (id) => fixedSummary(by(id).preset(defaultSettings()), studyFixed(by(id), LOCKABLE), lv);
-  assert.equal(sum('free'), 'galds; v₀ = 0 (brīvā krišana)');
-  assert.equal(sum('vertical'), 'galds');
-  assert.equal(sum('oblique'), 'galds; h = 0 cm');
+  assert.equal(sum('free'), 'v₀ = 0 (brīvā krišana)');
+  assert.equal(sum('vertical'), '');
+  assert.equal(sum('oblique'), 'h = 0,0 m');
 });
 
 test('router: cards without params, study by id, old links full', () => {
   const r = (q) => resolveRoute(q, { studies: STUDIES, settingParams: SETTING_PARAMS });
   assert.equal(r('').kind, 'cards');
   assert.equal(r('?study=oblique').study.id, 'oblique');
-  assert.equal(r('?mode=2&h=90&v0=180&dt=0.05&view=strobe&lock=1').kind, 'full');
+  assert.equal(r('?mode=2&h=30&v0=18&dt=0.5&view=strobe&lock=1').kind, 'full');
 });
 
 test('study + teacher params: params on top of the preset, lock fixes them (Review Focus 4)', () => {
@@ -78,9 +78,9 @@ function studyFromLink(search) {
 }
 
 test('study keeps its own preset: link params for study-fixed fields are ignored (I1)', () => {
-  let r = studyFromLink('?study=oblique&scale=tower');
-  assert.deepEqual([r.url.settings.scale, r.url.settings.h], ['table', 0]);
-  assert.deepEqual(r.ignored, [{ param: 'scale', raw: 'tower' }]);
+  let r = studyFromLink('?study=oblique&h=20');
+  assert.equal(r.url.settings.h, 0);
+  assert.deepEqual(r.ignored, [{ param: 'h', raw: '20' }]);
   r = studyFromLink('?study=horizontal&mode=1');
   assert.equal(r.url.settings.mode, 'horizontal');
   assert.deepEqual(r.ignored, [{ param: 'mode', raw: '1' }]);

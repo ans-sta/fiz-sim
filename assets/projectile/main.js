@@ -1,8 +1,8 @@
 import { createI18n, createTheme, mountTitleBlock, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
-import { SCALES, ALPHA } from './scales.js';
+import { SCALE, ALPHA } from './scales.js';
 import {
-  derive, settingsKey, withMode, withScale, withH, withV0, withAlpha, withDt, withSecond, withGrid, withSlow,
+  derive, settingsKey, withMode, withH, withV0, withAlpha, withDt, withSecond, withGrid, withSlow,
   changedLocked, v0Range, SLOW_FACTOR, defaultSettings,
 } from './model.js';
 import { settingsFromURL, warningText, LOCKABLE } from './params.js';
@@ -115,7 +115,7 @@ function layout() {
 
 function handleItems(lay, s, lang) {
   const t = i18n.t;
-  const sc = SCALES[s.scale];
+  const sc = SCALE;
   const a = handleAnchors(lay, s);
   const num = (v, dec) => formatNumber(v, dec, lang);
   const items = [];
@@ -137,7 +137,7 @@ function handleItems(lay, s, lang) {
     ariaLabel: t('dims.h'), min: sc.h.min, max: sc.h.max, step: sc.h.step, value: s.h, valueText: hText,
   });
 
-  const r = v0Range(s.scale, s.mode);
+  const r = v0Range(s.mode);
   const dirWord = s.mode === 'vertical' && s.v0 !== 0 ? ` ${t(s.v0 > 0 ? 'dir.up' : 'dir.down')}` : '';
   const vText = `v₀ = ${num(Math.abs(s.v0), sc.v0.decimals)} ${sc.unit}/s${dirWord}`;
   const { len, dir } = arrowGeometry(lay, s);
@@ -347,7 +347,6 @@ function onAction(type, value) {
   let next = s;
   switch (type) {
     case 'mode': if (!lk('mode')) next = withMode(s, value); break;
-    case 'scale': if (!lk('scale')) next = withScale(s, value); break;
     case 'dt': if (!lk('dt')) next = withDt(s, value); break;
     case 'slow': next = withSlow(s, value); break;
     case 'second': if (!lk('second')) next = withSecond(s, value); break;

@@ -1,5 +1,5 @@
-import { SCALES, MODES } from './scales.js';
-import { formatNumber, decimalsOf } from '../measure/format.js';
+import { SCALE, MODES } from './scales.js';
+import { formatNumber, decimalsOf, roundTo } from '../measure/format.js';
 import { renderTable } from '../measure/data-table-view.js';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -44,11 +44,14 @@ export function createPanel(root, { t, onAction }) {
       h += `<div class="hint">${esc(t(`mode.${s.mode}.hint`))}</div>`;
     }
     if (!hidden.has('dt')) {
-      h += `<div class="row"><span class="row-label">${esc(t('dt.label'))}${fixTag(locked, 'dt')}</span><div class="seg" style="flex:1;max-width:200px">`;
-      for (const v of SCALES[s.scale].dtOptions) {
-        h += btn(`dt${v}`, `${formatNumber(v, decimalsOf(v), lang)} s`, { action: 'dt', value: v, pressed: s.dt === v, disabled: running || (locked.has('dt') && s.dt !== v) });
+      // pagaidu izvēlne; slīdni 5. uzdevumā
+      h += `<div class="row"><span class="row-label">${esc(t('dt.label'))}${fixTag(locked, 'dt')}</span><select class="select" style="flex:1;max-width:200px" data-fid="dt" data-a="dt"${running || locked.has('dt') ? ' disabled' : ''}>`;
+      const n = Math.round((SCALE.dt.max - SCALE.dt.min) / SCALE.dt.step);
+      for (let i = 0; i <= n; i++) {
+        const v = roundTo(SCALE.dt.min + i * SCALE.dt.step, SCALE.dt.step);
+        h += `<option value="${v}"${s.dt === v ? ' selected' : ''}>${esc(formatNumber(v, decimalsOf(SCALE.dt.step), lang))} s</option>`;
       }
-      h += '</div></div>';
+      h += '</select></div>';
       h += check('slow', 'slow', s.slow, running, t('slow'));
     }
     if (s.mode === 'horizontal' && !hidden.has('second')) h += check('second', 'second', s.second, running || locked.has('second'), t('second'), fixTag(locked, 'second'));
@@ -57,7 +60,7 @@ export function createPanel(root, { t, onAction }) {
 
   function dimsBlock(vm) {
     const { settings: s, locked, running, lang } = vm;
-    const sc = SCALES[s.scale];
+    const sc = SCALE;
     const num = (v, dec) => formatNumber(v, dec, lang);
     const unit = (u) => ` <span class="unit">${esc(u)}</span>`;
     const ro = (key, k, html) => (hidden.has(key) ? '' : `<div class="readout"><span class="k">${k}${fixTag(locked, key)}</span><span class="v">${html}</span></div>`);
@@ -66,13 +69,9 @@ export function createPanel(root, { t, onAction }) {
     if (s.mode === 'vertical' && s.v0 !== 0) v0 += unit(t(s.v0 > 0 ? 'dir.up' : 'dir.down'));
     reads += ro('v0', 'v₀', v0);
     if (s.mode === 'oblique') reads += ro('alpha', 'α', num(s.alphaDeg, 0) + unit('°'));
-    const scaleRow = hidden.has('scale') ? '' : `<div class="row" style="margin-top:0"><span class="row-label">${esc(t('scale.label'))}${fixTag(locked, 'scale')}</span></div><div class="seg">${Object.keys(SCALES)
-      .map((k) => btn(`scale-${k}`, t(`scale.${k}`), { action: 'scale', value: k, pressed: s.scale === k, disabled: running || (locked.has('scale') && s.scale !== k) }))
-      .join('')}</div>`;
     const grid = hidden.has('grid') ? '' : check('grid', 'grid', s.grid, running || locked.has('grid'), t('grid'), fixTag(locked, 'grid'));
-    if (!reads && !scaleRow && !grid) return '';
+    if (!reads && !grid) return '';
     let h = `<div class="block-title">${esc(t('blk.dims'))}</div>`;
-    h += scaleRow;
     h += `<div style="margin-top:8px">${reads}</div>`;
     h += grid;
     h += `<div class="hint">${esc(t(hidden.size > 0 ? 'dims.hintStudy' : 'dims.hint'))}</div>`;
@@ -123,7 +122,7 @@ export function createPanel(root, { t, onAction }) {
   root.addEventListener('change', (ev) => {
     const sel = ev.target.closest('select[data-a]');
     if (sel) {
-      onAction(sel.dataset.a, sel.value);
+      onAction(sel.dataset.a, sel.dataset.a === 'dt' ? Number(sel.value) : sel.value);
       return;
     }
     const el = ev.target.closest('input[data-a]');

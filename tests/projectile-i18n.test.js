@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { STRINGS } from '../assets/projectile/i18n.js';
-import { MODES, SCALES } from '../assets/projectile/scales.js';
+import { MODES } from '../assets/projectile/scales.js';
 
 test('LV and EN have exactly the same keys', () => {
   assert.deepEqual(Object.keys(STRINGS.lv).sort(), Object.keys(STRINGS.en).sort());
@@ -22,11 +22,16 @@ test('typography: no straight quotes, no "...", no spaced hyphen', () => {
 test('dynamic key families exist', () => {
   const need = [];
   for (const m of MODES) need.push(`mode.${m}`, `mode.${m}.name`, `mode.${m}.hint`, `set.mode.${m}`, `notice.noFlight.${m}`);
-  need.push('notice.short', 'notice.short.minDt', 'fix.dt', 'fix.increase', 'fix.up', 'fix.upNone', 'fix.or', 'fix.none');
-  for (const k of Object.keys(SCALES)) need.push(`scale.${k}`, `set.scale.${k}`);
-  for (const k of ['mode', 'scale', 'second', 'grid']) need.push(`lock.${k}`);
-  for (const r of ['not_number', 'out_of_range', 'not_allowed', 'h_range', 'v0_clamped', 'dt_scale', 'rounded', 'none']) need.push(`url.${r}`);
+  need.push('fix.increase', 'fix.upNone', 'fix.or', 'fix.none');
+  for (const k of ['mode', 'second', 'grid']) need.push(`lock.${k}`);
+  for (const r of ['not_number', 'out_of_range', 'not_allowed', 'h_range', 'v0_clamped', 'scale_removed', 'rounded', 'none']) need.push(`url.${r}`);
   for (const key of need) assert.ok(key in STRINGS.lv, `missing ${key}`);
+});
+
+test('removed keys are gone', () => {
+  for (const k of ['scale.table', 'scale.tower', 'set.scale.table', 'set.scale.tower', 'notice.short', 'notice.short.minDt', 'fix.dt']) {
+    assert.ok(!(k in STRINGS.lv) && !(k in STRINGS.en), k);
+  }
 });
 
 test('every literal t(…) key in assets/projectile/*.js exists', () => {
