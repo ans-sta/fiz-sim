@@ -65,6 +65,8 @@ export function drawScene(ctx, lay, m) {
   const circleA = 1 - side;
   const transA = side * (1 - turned);
   const longA = side * turned;
+  const dimTrans = Math.max(0, (transA - 0.5) * 2); // izmēru līnijas — tikai galastāvokļa otrajā pusē
+  const dimLong = Math.max(0, (longA - 0.5) * 2);
   const W = ctx.canvas.clientWidth || lay.cx * 2;
   const H = ctx.canvas.clientHeight || lay.cy * 2;
   ctx.clearRect(0, 0, W, H);
@@ -123,40 +125,40 @@ export function drawScene(ctx, lay, m) {
         { font: fontLabel(m.legend), color: c.ink, align: 'center', alpha: circleA });
     }
     // ŠĶĒRSVILNIS: A līdz kalnam, λ starp kalniem
-    if (transA > 0.01 && settledEnough(pose, 1, 0)) {
+    if (dimTrans > 0.01) {
       const zc = phaseZ(phase, s.lambda, CREST);
-      dimLine(ctx, Z(zc), tip(zc), 'A', { x: 1, y: 0 }, m, transA);
+      dimLine(ctx, Z(zc), tip(zc), 'A', { x: 1, y: 0 }, m, dimTrans);
       const { z1, z2 } = lambdaSpan(phase, s.lambda, CREST);
       const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
-      strokeStyle(ctx, c.hairline, transA, 1, [3, 3]);
+      strokeStyle(ctx, c.hairline, dimTrans, 1, [3, 3]);
       const c1 = onWave(z1);
       const c2 = onWave(z2);
       path(ctx, [c1, { x: c1.x, y: yDim }]);
       ctx.stroke();
       path(ctx, [c2, { x: c2.x, y: yDim }]);
       ctx.stroke();
-      dimLine(ctx, { x: c1.x, y: yDim }, { x: c2.x, y: yDim }, 'λ', { x: 0, y: -1 }, m, transA);
+      dimLine(ctx, { x: c1.x, y: yDim }, { x: c2.x, y: yDim }, 'λ', { x: 0, y: -1 }, m, dimTrans);
     }
     // GARENVILNIS: A no pirmā punkta centra līdz tā galējam stāvoklim, λ starp sablīvējumiem
-    if (longA > 0.01 && settledEnough(pose, 1, 1)) {
+    if (dimLong > 0.01) {
       const yA = lay.cy + 14 + 6 * m.legend;
-      strokeStyle(ctx, c.hairline, longA, 1, [3, 3]);
+      strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
       path(ctx, [origin, { x: origin.x, y: yA }]);
       ctx.stroke();
       const xA = tip(0).x;
       path(ctx, [{ x: xA, y: origin.y }, { x: xA, y: yA }]);
       ctx.stroke();
-      dimLine(ctx, { x: origin.x, y: yA }, { x: xA, y: yA }, 'A', { x: 0, y: 1 }, m, longA);
+      dimLine(ctx, { x: origin.x, y: yA }, { x: xA, y: yA }, 'A', { x: 0, y: 1 }, m, dimLong);
       const { z1, z2 } = lambdaSpan(phase, s.lambda, COMPRESSION);
       const yL = lay.cy - 14 - 6 * m.legend;
-      strokeStyle(ctx, c.hairline, longA, 1, [3, 3]);
+      strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
       const k1 = Z(z1);
       const k2 = Z(z2);
       path(ctx, [k1, { x: k1.x, y: yL }]);
       ctx.stroke();
       path(ctx, [k2, { x: k2.x, y: yL }]);
       ctx.stroke();
-      dimLine(ctx, { x: k1.x, y: yL }, { x: k2.x, y: yL }, 'λ', { x: 0, y: -1 }, m, longA);
+      dimLine(ctx, { x: k1.x, y: yL }, { x: k2.x, y: yL }, 'λ', { x: 0, y: -1 }, m, dimLong);
     }
   }
 
@@ -164,9 +166,4 @@ export function drawScene(ctx, lay, m) {
   for (let i = pts.length - 1; i >= 1; i--) dot(ctx, S(pts[i]), R_POINT, c.ink, 0.9);
   dot(ctx, S(pts[0]), R_FIRST, c.accent, 1);
   ctx.restore();
-}
-
-// Izmēru līnijas rāda tikai, kad poza ir (gandrīz) galastāvoklī — pārejā tās izbāl kopā ar transA/longA.
-function settledEnough(pose, kappa, theta) {
-  return Math.abs(pose.kappa - kappa) < 0.999 + 1e-9 && Math.abs(pose.theta - theta) < 0.999 + 1e-9;
 }

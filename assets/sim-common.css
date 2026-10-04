@@ -531,7 +531,7 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .s01-rel .r-row.live .v { color: var(--accent); }
 .layout-hud .s01-views { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 3; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 120px); }
 .layout-hud .drawing.has-title .s01-views { max-width: calc(100% - 600px); } /* rakstlaukums (līdz ~272 px) labajā apakšas stūrī paliek brīvs */
-.layout-hud .s01-views .btn { background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(7px * var(--hud)) calc(12px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
+.layout-hud .s01-views .btn { flex: none; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(7px * var(--hud)) calc(12px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
 .layout-hud .s01-views .btn.pause { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; }
 .layout-hud .s01-hint { display: none; position: absolute; left: 12px; right: 12px; bottom: 2px; z-index: 3; margin: 0; text-align: center; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11px * var(--hud)); color: var(--ink-dim); }
 @media (orientation: portrait) and (max-width: 700px) {

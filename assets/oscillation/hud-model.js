@@ -26,13 +26,13 @@ export function phaseDeg(phase) {
   return Math.round((((phase % TAU) + TAU) % TAU) / TAU * 360) % 360;
 }
 
-export function relationsRows(s, phase, { lang }) {
+export function relationsRows(s, phase, { lang, t }) {
   const d = derived(s);
   const num = (v, dec) => formatNumber(v, dec, lang);
   return [
-    { key: 'f', k: 'f = 1/T', v: `${num(d.f, 2)} Hz`, live: false },
-    { key: 'omega', k: 'ω = 2π/T', v: `${num(d.omega, 2)} rad/s`, live: false },
-    { key: 'v', k: 'v = λ/T', v: `${num(d.v, 0)} cm/s`, live: false },
-    { key: 'phi', k: 'φ', v: `${phaseDeg(phase)}°`, live: true },
+    { key: 'f', k: t('rel.f'), v: `${num(d.f, 2)} Hz`, live: false },
+    { key: 'omega', k: t('rel.omega'), v: `${num(d.omega, 2)} rad/s`, live: false },
+    { key: 'v', k: t('rel.v'), v: `${num(d.v, Number.isInteger(d.v) ? 0 : 1)} cm/s`, live: false },
+    { key: 'phi', k: t('rel.phi'), v: `${phaseDeg(phase)}°`, live: true },
   ];
 }

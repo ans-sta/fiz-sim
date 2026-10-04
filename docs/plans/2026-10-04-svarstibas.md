@@ -157,3 +157,4 @@ LV / EN kā citās lapās. Angliski: *Oscillations and Waves*, CIRCLE · TRANSVE
 ## 12. Izmaiņas
 
 - 2026-10-04 — Pirmā versija pēc sarunas ar Ansi un ophysics.com/w0.html apleta izpētes (tur: punkti uz spirāles ap z asi, `SetViewDirection` pogas, slīdņi Spread / Number / Separation / Amplitude).
+- 2026-10-04 — Būvējot (plāns `2026-10-04-svarstibas-plan.md`): zīmējuma platumā rezervēti 200 + 2·A_max cm, lai garenvilnī galējie punkti neiziet aiz ekrāna (A mērogu nemaina); garenvilnī A izmēru līnija ir no pirmā punkta centra līdz tā galējam stāvoklim (fiksēts garums A); apļa skatā pievienots blāvs horizontālais diametrs kā φ atskaite; telefona padomam pievienots paskaidrojums; SAKARĪBĀS v ar vienu decimāli, ja nav vesels skaitlis.

@@ -67,7 +67,7 @@ hudRight.appendChild(relTitle);
 const relRows = new Map();
 function paintRelations() {
   setText(relTitle, t('rel.title'));
-  for (const r of relationsRows(state.settings, state.phase, { lang: i18n.lang() })) {
+  for (const r of relationsRows(state.settings, state.phase, { lang: i18n.lang(), t: i18n.t })) {
     let el = relRows.get(r.key);
     if (!el) {
       el = document.createElement('div');

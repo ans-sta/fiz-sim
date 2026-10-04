@@ -21,15 +21,22 @@ test('quantityRows: A, T, λ sliders and the helper-lines choice, Latvian number
 });
 
 test('relationsRows: f, ω, v with formulas and units; φ live in degrees', () => {
-  const rows = relationsRows(defaultSettings(), Math.PI / 2, { lang: 'lv' });
+  const rows = relationsRows(defaultSettings(), Math.PI / 2, { lang: 'lv', t: lv });
   assert.deepEqual(rows.map((r) => [r.key, r.k, r.v, r.live]), [
     ['f', 'f = 1/T', '0,25 Hz', false],
     ['omega', 'ω = 2π/T', '1,57 rad/s', false],
     ['v', 'v = λ/T', '25 cm/s', false],
     ['phi', 'φ', '90°', true],
   ]);
-  assert.equal(relationsRows(defaultSettings(), 0, { lang: 'en' })[0].v, '0.25 Hz');
+  assert.equal(relationsRows(defaultSettings(), 0, { lang: 'en', t: en })[0].v, '0.25 Hz');
   assert.equal(phaseDeg(0), 0);
   assert.equal(phaseDeg(2 * Math.PI - 1e-9), 0);
   assert.equal(phaseDeg(Math.PI), 180);
+});
+
+test('relationsRows: v keeps one decimal when λ/T is not a whole number', () => {
+  const v = (lambda) => relationsRows({ ...defaultSettings(), lambda }, 0, { lang: 'lv', t: lv })[2].v;
+  assert.equal(v(100), '25 cm/s');
+  assert.equal(v(50), '12,5 cm/s');
+  assert.equal(v(150), '37,5 cm/s');
 });
