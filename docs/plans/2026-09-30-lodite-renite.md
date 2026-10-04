@@ -40,7 +40,7 @@ Katrs rindas lielums ir arī URL parametrs (sk. 8.1).
 
 | Lielums | Kā maina | Diapazons (priekšlikums) | Piezīme |
 |---|---|---|---|
-| Renītes garums L | izmēru līnija | 40–200 cm | Iestatījums „mūsu renīte”: 80 cm, darba garums 70 cm |
+| Renītes garums L | izmēru līnija | 50–200 cm (līdz 04.10.2026: 40–200 cm) | Iestatījums „mūsu renīte”: 80 cm, darba garums 70 cm |
 | Pacēlums h vai leņķis α | izmēru līnija; skolēns izvēlas, kuru iestata | α līdz ~15° | otru aprēķina |
 | Lodīte | rasējuma specifikācijas tabula (poz., nosaukums, Ø, masa) | tērauds 10 / 16 / 25 mm; stikls 16 / 25 mm; koks 25 / 40 mm; plastmasa; doba bumbiņa (galda teniss, 40 mm) | Masa izriet no materiāla un Ø (m = ρV). Tā ir redzama, bet atsevišķi nav iestatāma |
 | Renītes profils | slēdzis | renīte (lodīte balstās uz divām malām) / plakana virsma | Profils nosaka, vai diametrs ietekmē a |

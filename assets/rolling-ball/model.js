@@ -4,7 +4,7 @@ import { ballById, ballMass, ballBeta, ballMu, ballFits, GROOVE_W, DEFAULT_BALL 
 import { roundTo } from '../measure/format.js';
 
 export const G_CM = G * 100; // cm/s²
-export const L_MIN = 40;
+export const L_MIN = 50;
 export const L_MAX = 200;
 export const ALPHA_MAX = 15; // ° — lodīte ripo bez slīdēšanas
 export const FINISH_OFFSET = 10; // cm — finišs 10 cm pirms renītes gala („mūsu renīte": 80 → 70)
@@ -219,13 +219,28 @@ export function changedLocked(prev, next, locked) {
   return Object.keys(FIELD_SAME).filter((k) => locked.has(k) && !FIELD_SAME[k](prev, next));
 }
 
-// Viss, kas ietekmē datus. Mērlente un palēninājums datus nemaina.
-export function settingsKey(s, { noise, traps }) {
+const SLOPE_PART = 1; // keyParts indekss, kurā ir slīpums
+
+function keyParts(s, { noise, traps }) {
   const parts = [
     `L${s.L}`, `h${s.h.toFixed(3)}`, s.ball, s.profile, `x${s.x0}`, `lv${s.level}`,
     `n${noise}`, `tr${[...traps].sort().join('+')}`,
   ];
   if (s.level === 2) parts.push(s.timer, `g${s.gates.join('/')}`);
   if (s.level === 3) parts.push(`dt${s.dt}`);
+  return parts;
+}
+
+// Viss, kas ietekmē datus. Mērlente un palēninājums datus nemaina.
+export function settingsKey(s, cfg) {
+  return keyParts(s, cfg).join(';');
+}
+
+// Tabulas atslēga (spec. izkārtojums 5): 1. līmenī viena tabula krāj sēriju — katram slīpumam sava rinda,
+// tāpēc slīpums atslēgā nav, bet ir tas, ar ko slīpumu iestata (h vai α — rindu galvene). 2. un 3. līmenī = settingsKey.
+export function seriesKey(s, cfg) {
+  if (s.level !== 1) return settingsKey(s, cfg);
+  const parts = keyParts(s, cfg);
+  parts[SLOPE_PART] = `by-${s.angleMode}`;
   return parts.join(';');
 }

@@ -62,14 +62,15 @@ test('sin α = h / L always holds', () => {
   }
 });
 
-test('clamping: L 40–200, h ≤ L·sin 15°, α ≤ 15°, steps', () => {
-  assert.equal(withL(defaultSettings(), 10).L, 40);
+test('clamping: L 50–200, h ≤ L·sin 15°, α ≤ 15°, steps', () => {
+  assert.equal(withL(defaultSettings(), 10).L, 50);
+  assert.equal(withL(defaultSettings(), 49.6).L, 50);
   assert.equal(withL(defaultSettings(), 500).L, 200);
   assert.equal(withL(defaultSettings(), 80.4).L, 80);
   assert.equal(withH(defaultSettings(), 30).h, 20.7);
   assert.equal(withH(defaultSettings(), 3.04).h, 3);
   assert.equal(withAlpha(defaultSettings(), 20).alphaDeg, 15);
-  assert.equal(withL(withH(defaultSettings(), 20.7), 40).h, 10.3);
+  assert.equal(withL(withH(defaultSettings(), 20.7), 50).h, 12.9);
 });
 
 test('switching the angle mode changes nothing but the mode', () => {
@@ -84,7 +85,7 @@ test('x0 is clamped and gates are re-spread when they no longer fit', () => {
   const s = withX0(defaultSettings(), 30);
   assert.deepEqual(s.gates, spreadGates(30, 70, 5));
   assert.deepEqual(s.gates, [38, 46, 54, 62, 70]);
-  assert.deepEqual(withL(defaultSettings(), 40).gates, [6, 12, 18, 24, 30]);
+  assert.deepEqual(withL(defaultSettings(), 50).gates, [8, 16, 24, 32, 40]);
 });
 
 test('a gate stays between its neighbours (at least 1 cm apart) and within the groove', () => {
@@ -144,7 +145,7 @@ test('at hMin every ball rolls within 60 s, one step lower it does not; α-mode 
   for (const b of BALLS) {
     for (const profile of ['groove', 'flat']) {
       if (!ballFits(b, profile)) continue;
-      for (let L = 40; L <= 200; L += 20) {
+      for (let L = 50; L <= 200; L += 25) {
         let s = withL({ ...defaultSettings(), ball: b.id, profile }, L);
         const low = derive(withH(s, 0));
         assert.equal(low.rolls, false);
@@ -171,8 +172,8 @@ test('changedLocked lists the locked fields that differ (I2)', () => {
   const locked5 = { ...s, gates: [10, 20, 30, 40, 50] };
   assert.deepEqual(changedLocked(locked5, withX0(locked5, 12), lockedGates), ['gates']);
   assert.deepEqual(changedLocked(locked5, withX0(locked5, 12), new Set(['x0'])), ['x0']);
-  const x30 = withX0(s, 30);
-  assert.deepEqual(changedLocked(x30, withL(x30, 40), new Set(['x0'])), ['x0']);
+  const x40 = withX0(s, 40);
+  assert.deepEqual(changedLocked(x40, withL(x40, 50), new Set(['x0'])), ['x0']);
   const h = withH(s, 20);
   assert.deepEqual(changedLocked(h, withL(h, 60), new Set(['h'])), ['h']);
   assert.deepEqual(changedLocked(s, withL(s, 40), new Set(['x0', 'gates', 'ball'])), ['gates']);

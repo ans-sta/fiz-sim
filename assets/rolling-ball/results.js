@@ -14,11 +14,13 @@ function settingsLine(table, { t, lang }) {
   const d = derive(s);
   const f = (v, dec) => formatNumber(v, dec, lang);
   const parts = [t('set.L', { v: f(s.L, 0) })];
-  parts.push(
-    s.angleMode === 'h'
-      ? t('set.hAlpha', { h: f(s.h, 1), a: f(d.alphaDeg, 1) })
-      : t('set.alphaH', { a: f(d.alphaDeg, 1), h: f(d.h, 1) }),
-  );
+  if (table.level !== 1) { // 1. līmenī slīpums ir rindās (sērija)
+    parts.push(
+      s.angleMode === 'h'
+        ? t('set.hAlpha', { h: f(s.h, 1), a: f(d.alphaDeg, 1) })
+        : t('set.alphaH', { a: f(d.alphaDeg, 1), h: f(d.h, 1) }),
+    );
+  }
   parts.push(t('set.ball', { name: t(`mat.${d.ball.material}`), d: f(d.ball.d * 10, 0), m: f(d.mass, 1) }));
   parts.push(t(`set.profile.${s.profile}`));
   parts.push(t('set.x0', { v: f(s.x0, 1) }));
@@ -41,9 +43,25 @@ export function tableModel(table, { t, lang }) {
   let rows;
   let title;
   if (table.level === 1) {
+    // Sērija (spec. izkārtojums 5): katram slīpumam sava rinda pirmās lietošanas secībā, katram atkārtojumam sava kolonna.
     title = t('table.l1Title', { n: table.index });
-    columns = range(n).map((k) => tCol(k, ERRORS.hand, DECIMALS.hand));
-    rows = [table.runs.map((r) => r.level1.t)];
+    const byAlpha = s.angleMode === 'alpha';
+    const series = [];
+    table.runs.forEach((r, i) => {
+      let row = series.find((x) => x.key === r.key);
+      if (!row) {
+        const rs = table.runSettings[i];
+        row = { key: r.key, slope: byAlpha ? rs.alphaDeg : rs.h, times: [] };
+        series.push(row);
+      }
+      row.times.push(r.level1.t);
+    });
+    const most = Math.max(...series.map((x) => x.times.length));
+    columns = [
+      { label: t(byAlpha ? 'col.alpha' : 'col.h'), decimals: 1 },
+      ...range(most).map((k) => tCol(k, ERRORS.hand, DECIMALS.hand)),
+    ];
+    rows = series.map((x) => [x.slope, ...range(most).map((k) => x.times[k - 1] ?? null)]);
   } else if (table.level === 2) {
     title = t('table.l2Title', { n: table.index });
     const gate = s.timer === 'gate';

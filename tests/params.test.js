@@ -61,6 +61,12 @@ test('L out of range is clamped', () => {
   assert.deepEqual([one(r).reason, one(r).used], ['out_of_range', 200]);
 });
 
+test('L below 50 cm is clamped to 50 with the range in the warning', () => {
+  const r = url('?L=45');
+  assert.equal(r.settings.L, 50);
+  assert.deepEqual([one(r).reason, one(r).min, one(r).max, one(r).used], ['out_of_range', 50, 200, 50]);
+});
+
 test('h too large for L is clamped with its own reason', () => {
   const r = url('?L=80&h=30');
   assert.equal(r.settings.h, 20.7);

@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createResults, tableModel } from '../assets/rolling-ball/results.js';
 import { simulateRun } from '../assets/rolling-ball/experiment.js';
-import { defaultSettings, withH, withLevel, withTimer, withAlpha, settingsKey } from '../assets/rolling-ball/model.js';
+import { defaultSettings, withH, withLevel, withTimer, withAlpha, withBall, withL, settingsKey, seriesKey } from '../assets/rolling-ball/model.js';
+import { toTSV, toCSV } from '../assets/measure/table-export.js';
 import { makeT } from '../assets/translate.js';
 import { STRINGS } from '../assets/rolling-ball/i18n.js';
 
@@ -75,15 +76,107 @@ test('α-mode puts α first in the settings line', () => {
   assert.ok(tableModel(t, lv).settingsLine.includes('α = 3,0° (h = 4,2 cm)'));
 });
 
-test('level 1 model: one row, t₁ t₂ columns with ±0,10 s', () => {
+test('level 1 model: one slope row, h column then t₁ t₂ columns with ±0,10 s', () => {
   const r = createResults();
   const t = runInto(r, withLevel(defaultSettings(), 1), 2);
   const m = tableModel(t, lv);
   assert.equal(m.title, '1. tabula. Laiks t, kurā lodīte noripo no starta līdz finišam');
-  assert.deepEqual(m.columns.map((c) => c.label), ['t₁, s (±0,10 s)', 't₂, s (±0,10 s)']);
-  assert.deepEqual(m.columns.map((c) => c.decimals), [2, 2]);
+  assert.deepEqual(m.columns.map((c) => c.label), ['h, cm', 't₁, s (±0,10 s)', 't₂, s (±0,10 s)']);
+  assert.deepEqual(m.columns.map((c) => c.decimals), [1, 2, 2]);
   assert.equal(m.rows.length, 1);
+  assert.equal(m.rows[0][0], 3);
   assert.ok(m.settingsLine.includes('finišs x = 70,0 cm'));
+  assert.ok(!m.settingsLine.includes('h ='), 'the slope is in the rows, not in the settings line');
+});
+
+// Sērija (spec. izkārtojums 5): 1. līmenī slīpumi krājas vienā tabulā, katram sava rinda.
+function runSeries(results, s, n = 1) {
+  const tableKey = seriesKey(s, cfg);
+  const runKey = settingsKey(s, cfg);
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const run = simulateRun(s, { ...cfg, repeat: results.nextRepeat(tableKey, runKey) });
+    results.add(s, run, cfg, { tableKey });
+    out.push(run);
+  }
+  return { table: results.byKey(tableKey), runs: out };
+}
+
+test('seriesKey: level 1 ignores the slope but not the slope mode; levels 2–3 = settingsKey', () => {
+  const l1 = withLevel(defaultSettings(), 1);
+  assert.equal(seriesKey(l1, cfg), seriesKey(withH(l1, 7), cfg));
+  assert.notEqual(seriesKey(l1, cfg), seriesKey(withAlpha(l1, 3), cfg));
+  assert.equal(seriesKey(withAlpha(l1, 3), cfg), seriesKey(withAlpha(l1, 9), cfg));
+  assert.notEqual(seriesKey(l1, cfg), seriesKey(withBall(l1, 'glass25'), cfg));
+  assert.notEqual(seriesKey(l1, cfg), seriesKey(withL(l1, 120), cfg));
+  assert.notEqual(seriesKey(l1, cfg), seriesKey(l1, { noise: 0, traps: [] }));
+  for (const level of [2, 3]) {
+    const s = withLevel(defaultSettings(), level);
+    assert.equal(seriesKey(s, cfg), settingsKey(s, cfg));
+  }
+});
+
+test('level 1 series: three slopes × 3 runs → one table, 3 rows × 3 t columns, rows in order of first use', () => {
+  const r = createResults();
+  const base = withLevel(defaultSettings(), 1);
+  for (const h of [5, 3, 8]) runSeries(r, withH(base, h), 3);
+  assert.equal(r.tables().length, 1);
+  const m = tableModel(r.tables()[0], lv);
+  assert.deepEqual(m.columns.map((c) => c.label), ['h, cm', 't₁, s (±0,10 s)', 't₂, s (±0,10 s)', 't₃, s (±0,10 s)']);
+  assert.deepEqual(m.rows.map((row) => row[0]), [5, 3, 8]);
+  for (const row of m.rows) {
+    assert.equal(row.length, 4);
+    for (const v of row.slice(1)) assert.equal(typeof v, 'number');
+  }
+  assert.ok(m.rows[0][1] < m.rows[1][1], 'a steeper slope gives a shorter time');
+});
+
+test('level 1 series: each slope numbers its own repeats, so a row has the same noise as its own table had', () => {
+  const r = createResults();
+  const base = withLevel(defaultSettings(), 1);
+  const a = runSeries(r, withH(base, 5), 2);
+  const b = runSeries(r, withH(base, 3), 1);
+  const a3 = runSeries(r, withH(base, 5), 1);
+  assert.deepEqual([...a.runs, ...a3.runs].map((x) => x.repeat), [1, 2, 3]);
+  assert.deepEqual(b.runs.map((x) => x.repeat), [1]);
+  const alone = createResults();
+  const solo = runSeries(alone, withH(base, 3), 1);
+  assert.equal(b.runs[0].level1.t, solo.runs[0].level1.t);
+  const m = tableModel(r.tables()[0], lv);
+  assert.deepEqual(m.rows.map((row) => row.length), [4, 4]);
+  assert.equal(m.rows[1][2], null, 'a shorter row is padded with blanks');
+  assert.equal(m.rows[1][3], null);
+});
+
+test('level 1 series: a ball change starts a new table; α-mode rows are α values', () => {
+  const r = createResults();
+  const base = withLevel(defaultSettings(), 1);
+  runSeries(r, withH(base, 5), 1);
+  runSeries(r, withBall(withH(base, 5), 'glass25'), 1);
+  assert.equal(r.tables().length, 2);
+  const al = withAlpha(base, 4);
+  runSeries(r, al, 1);
+  runSeries(r, withAlpha(base, 6.5), 1);
+  assert.equal(r.tables().length, 3);
+  const m = tableModel(r.tables()[2], en);
+  assert.equal(m.columns[0].label, 'α, °');
+  assert.deepEqual(m.rows.map((row) => row[0]), [4, 6.5]);
+});
+
+test('level 1 series exports: TSV and CSV have the slope column and blanks for missing repeats', () => {
+  const r = createResults();
+  const base = withLevel(defaultSettings(), 1);
+  runSeries(r, withH(base, 5), 2);
+  runSeries(r, withH(base, 3), 1);
+  const m = tableModel(r.tables()[0], lv);
+  const tsv = toTSV(m, 'lv').split('\n');
+  assert.equal(tsv[0], m.title);
+  assert.equal(tsv[2], 'h, cm\tt₁, s (±0,10 s)\tt₂, s (±0,10 s)');
+  assert.match(tsv[3], /^5,0\t\d+,\d\d\t\d+,\d\d$/);
+  assert.match(tsv[4], /^3,0\t\d+,\d\d\t$/);
+  const csv = toCSV(m, 'lv').split('\r\n');
+  assert.equal(csv[2], 'h, cm;t₁, s (±0,10 s);t₂, s (±0,10 s)');
+  assert.match(csv[4], /^3,0;\d+,\d\d;$/);
 });
 
 test('level 2 model: x column then t columns; photogates 3 decimals, stopwatches 2', () => {
@@ -98,10 +191,12 @@ test('level 2 model: x column then t columns; photogates 3 decimals, stopwatches
   assert.equal(h.title.startsWith('2. tabula.'), true);
 });
 
-test('student output has only t and x columns (spec 12.10)', () => {
+test('student output has only t and x columns (spec 12.10); level 1 also the slope it was set with', () => {
   const r = createResults();
   for (const level of [1, 2, 3]) {
     const m = tableModel(runInto(r, withLevel(defaultSettings(), level), 2), lv);
-    for (const c of m.columns) assert.ok(/^(t|x)[₀-₉]*, (s|cm)/.test(c.label), c.label);
+    const cols = level === 1 ? m.columns.slice(1) : m.columns;
+    if (level === 1) assert.equal(m.columns[0].label, 'h, cm');
+    for (const c of cols) assert.ok(/^(t|x)[₀-₉]*, (s|cm)/.test(c.label), c.label);
   }
 });

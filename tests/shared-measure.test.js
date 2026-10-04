@@ -59,3 +59,38 @@ test('warningText passes every warning field, formatted, to url.<reason>', () =>
   assert.equal(warningText(w, { t, lang: 'lv' }), 'h=120: m 2,5 [0,1; 0,2] → 1; 2');
   assert.equal(warningText({ param: 'g', raw: 'x', reason: 'bad_list', used: [] }, { t, lang: 'lv' }), 'H');
 });
+
+test('results store: optional table key collects runs of several run keys; runSettings parallel to runs', () => {
+  const r = createResults();
+  const meta = { seed: 1, noise: 1, traps: [] };
+  const s1 = { h: 1, list: [1] };
+  const s2 = { h: 2, list: [2] };
+  assert.equal(r.nextRepeat('T', 'a'), 1);
+  r.add(s1, { key: 'a' }, meta, { tableKey: 'T' });
+  r.add(s1, { key: 'a' }, meta, { tableKey: 'T' });
+  const t = r.add(s2, { key: 'b' }, meta, { tableKey: 'T' });
+  s2.list.push(9);
+  assert.equal(r.tables().length, 1);
+  assert.equal(t.key, 'T');
+  assert.equal(r.byKey('T'), t);
+  assert.equal(r.byKey('a'), undefined);
+  assert.deepEqual(t.runs.map((x) => x.key), ['a', 'a', 'b']);
+  assert.deepEqual(t.runSettings.map((x) => x.h), [1, 1, 2]);
+  assert.deepEqual(t.runSettings[2].list, [2]);
+  assert.equal(t.settings.h, 1);
+  assert.equal(r.nextRepeat('T', 'a'), 3);
+  assert.equal(r.nextRepeat('T', 'b'), 2);
+  assert.equal(r.nextRepeat('T', 'c'), 1);
+  assert.equal(r.nextRepeat('T'), 1);
+});
+
+test('results store without a table key behaves as before (K-02): table key = run key, nextRepeat(key)', () => {
+  const r = createResults();
+  const meta = { seed: 1, noise: 1, traps: [] };
+  r.add({ v: 1 }, { key: 'K' }, meta);
+  const t = r.add({ v: 2 }, { key: 'K' }, meta);
+  assert.equal(t.key, 'K');
+  assert.equal(r.nextRepeat('K'), 3);
+  assert.deepEqual(t.runSettings.map((x) => x.v), [1, 2]);
+  assert.equal(t.settings.v, 1);
+});

@@ -70,7 +70,7 @@ Without parameters a page opens its study cards.
 | --------- | ------- |
 | `study=<id>` | Opens one study (K-02: `free`, `vertical`, `horizontal`, `oblique`; K-01: `a`, `t`, `x`, `strobe`). Other parameters apply on top of the study; with `lock=1` they are fixed. |
 | `full=1` | Opens the full page with every control. Any other setting parameter also opens the full page. |
-| `L=<number>` | Groove length, cm (40–200) |
+| `L=<number>` | Groove length, cm (50–200) |
 | `h=<number>` | Height of the raised end, cm: 0 up to L·sin 15° (about 0.26·L, e.g. 20.7 cm when L = 80); larger values are clamped with a notice. If both `h` and `alpha` are given, `h` wins |
 | `alpha=<number>` | Slope angle, degrees (0–15) |
 | `ball=<id>` | Ball: `steel10`, `steel16`, `steel25`, `glass16`, `glass25`, `wood25`, `wood40`, `plastic25`, `pingpong40` |
