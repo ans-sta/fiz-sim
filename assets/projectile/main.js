@@ -205,8 +205,11 @@ function layout() {
 
 const editable = (key) => quantityState(key, access()) === 'editable';
 
+// Taisnstūris rasējuma pikseļos (ņem vērā transform un position: fixed).
 function rectOf(el) {
-  return { l: el.offsetLeft, r: el.offsetLeft + el.offsetWidth, t: el.offsetTop, b: el.offsetTop + el.offsetHeight };
+  const r = el.getBoundingClientRect();
+  const d = drawing.getBoundingClientRect();
+  return { l: r.left - d.left, r: r.right - d.left, t: r.top - d.top, b: r.bottom - d.top };
 }
 
 // Rasējumā tikai simboli (h, v₀, α); vērtības ir sarakstā LIELUMI.
@@ -313,7 +316,8 @@ function startRun() {
     return;
   }
   notices.clear('flight');
-  state.running = { run, simT: 0 };
+  const lay = layout(); // pirms MĒRĪJUMI sāk mainīties
+  state.running = { run, simT: 0, lay };
   state.lastRun = null;
   state.shownKey = null;
   stopLoop = startLoop(step);
@@ -470,17 +474,17 @@ function render() {
 
   const lay = layout();
   const pos = ballPositions();
-  const avoidRects = [hudLeft, hudRight, runSlot, document.getElementById('gear')].map(rectOf);
-  if (big) avoidRects.push(rectOf(titleSmall));
-  drawScene(view.ctx, lay, {
-    settings: s, derived: derive(s), colors: theme.colors(), t: i18n.t, lang, ball: pos.ball, ball2: pos.ball2, avoidRects,
-  });
-  gear.setDrawFit(lay.fill);
   // poga centrēta zem zemes, atstarpe — puse pogas augstuma; paziņojumi zem pogas
   const runTop = runSlotTop(lay.groundY, runSlot.offsetHeight);
   runSlot.style.top = `${runTop}px`;
   drawing.style.setProperty('--notices-top', `${runTop + runSlot.offsetHeight + 10}px`);
 
+  const avoidRects = [hudLeft, hudRight, runSlot, document.querySelector('#gear .gear-btn') ?? document.getElementById('gear')].map(rectOf);
+  if (big) avoidRects.push(rectOf(titleSmall));
+  drawScene(view.ctx, lay, {
+    settings: s, derived: derive(s), colors: theme.colors(), t: i18n.t, lang, ball: pos.ball, ball2: pos.ball2, avoidRects,
+  });
+  gear.setDrawFit(lay.fill);
   const items = handleItems(lay, s);
   handles.update(items);
   if (state.selected && !items.some((it) => it.id === state.selected)) {
