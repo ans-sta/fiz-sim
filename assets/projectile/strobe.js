@@ -199,6 +199,39 @@ function drawBall(ctx, ctr, rPx, o, fs, hollow) {
   ctx.stroke();
 }
 
+// Zibšņu numuru vietas (ekrāna px), secībā. Katram numuram pēc kārtas: pa labi virs bumbiņas (kā līdz šim), pa labi zem,
+// pa kreisi virs, pa kreisi zem, tad pa labi virs, pārbīdot par vienu un divām numura platībām; ņem pirmo, kas
+// neaizsedz ne citu numuru, ne nevienu bumbiņu. Ja brīvas nav — to, kas aizsedz vismazāk.
+// ctrs — bumbiņu centri {x, y}; widths — numuru teksta platumi; r — bumbiņas rādiuss; atgriež kreiso malu un pamatlīniju {x, y}.
+export function placeNumbers(ctrs, widths, r, fs = 1) {
+  const gap = 3 * fs;
+  const asc = 10 * fs;
+  const desc = 2 * fs;
+  const box = (x, y, w) => ({ x0: x - fs, x1: x + w + fs, y0: y - asc, y1: y + desc });
+  const overlap = (a, b) => Math.max(0, Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0)) * Math.max(0, Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0));
+  const balls = ctrs.map((c) => ({ x0: c.x - r, x1: c.x + r, y0: c.y - r, y1: c.y + r }));
+  const placed = [];
+  return ctrs.map((c, i) => {
+    const w = widths[i];
+    const right = c.x + r + gap;
+    const left = c.x - r - gap - w;
+    const above = c.y - r - gap;
+    const below = c.y + r + gap + asc;
+    const step = w + 2 * fs;
+    const cands = [[right, above], [right, below], [left, above], [left, below], [right + step, above], [right + 2 * step, above]];
+    let best = null;
+    let bestCost = Infinity;
+    for (const [x, y] of cands) {
+      const b = box(x, y, w);
+      const cost = placed.reduce((sum, q) => sum + overlap(b, q), 0) + balls.reduce((sum, q) => sum + overlap(b, q), 0);
+      if (cost < bestCost) { best = { x, y }; bestCost = cost; }
+      if (cost === 0) break;
+    }
+    placed.push(box(best.x, best.y, w));
+    return best;
+  });
+}
+
 export function drawStrobe(ctx, o) {
   const { tr, colors: c, width, height, points } = o;
   const fs = o.fontScale ?? 1;
@@ -230,19 +263,18 @@ export function drawStrobe(ctx, o) {
   for (const p of points.second) drawBall(ctx, toScreen(tr, p.x, p.y), rPx, o, fs, true);
   ctx.font = `${11 * fs}px ${MONO}`;
   ctx.textBaseline = 'alphabetic';
-  for (const p of points.main) {
-    const ctr = toScreen(tr, p.x, p.y);
-    drawBall(ctx, ctr, rPx, o, fs, false);
-    const str = String(p.n);
-    const tx = ctr.x + rPx + 3 * fs;
-    const ty = ctr.y - rPx - 3 * fs;
-    const w = ctx.measureText(str).width;
+  const ctrs = points.main.map((p) => toScreen(tr, p.x, p.y));
+  const strs = points.main.map((p) => String(p.n));
+  const spots = placeNumbers(ctrs, strs.map((str) => ctx.measureText(str).width), rPx, fs);
+  points.main.forEach((p, i) => {
+    drawBall(ctx, ctrs[i], rPx, o, fs, false);
+    const w = ctx.measureText(strs[i]).width;
     ctx.fillStyle = c.field;
-    ctx.fillRect(tx - fs, ty - 10 * fs, w + 2 * fs, 12 * fs);
+    ctx.fillRect(spots[i].x - fs, spots[i].y - 10 * fs, w + 2 * fs, 12 * fs);
     ctx.fillStyle = c.ink;
     ctx.textAlign = 'left';
-    ctx.fillText(str, tx, ty);
-  }
+    ctx.fillText(strs[i], spots[i].x, spots[i].y);
+  });
 
   // paraksts (ekrāna telpā)
   const lines = o.captionLines ?? [];

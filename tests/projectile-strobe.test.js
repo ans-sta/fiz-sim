@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { strobePoints, strobeWorldBox, exportOptions } from '../assets/projectile/strobe.js';
+import { strobePoints, strobeWorldBox, exportOptions, placeNumbers } from '../assets/projectile/strobe.js';
 import { simulateRun } from '../assets/projectile/experiment.js';
 import { defaultSettings, withMode, withH, withV0, withAlpha, withSecond } from '../assets/projectile/model.js';
 import { SCALE } from '../assets/projectile/scales.js';
@@ -89,4 +89,26 @@ test('world box holds both tapes: v0 > 0 but every flash falling', () => {
   const gap = pts.tapes.down;
   assert.ok(pts.main.slice(1).every((p) => p.x === gap));
   boxHoldsTapes(s, pts);
+});
+
+const boxOf = (spot, w, fs = 1) => ({ x0: spot.x - fs, x1: spot.x + w + fs, y0: spot.y - 10 * fs, y1: spot.y + 2 * fs });
+const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+
+test('placeNumbers: dense column of flashes — no number overlaps another number or any ball', () => {
+  const r = 4;
+  const ctrs = [0, 3, 6, 9, 12].map((d) => ({ x: 100, y: 200 + d }));
+  const widths = [6, 6, 6, 6, 12];
+  const spots = placeNumbers(ctrs, widths, r);
+  const boxes = spots.map((p, i) => boxOf(p, widths[i]));
+  boxes.forEach((a, i) => {
+    boxes.forEach((b, j) => { if (i < j) assert.ok(!hit(a, b), `numbers ${i} and ${j} overlap`); });
+    ctrs.forEach((c, j) => assert.ok(!hit(a, { x0: c.x - r, x1: c.x + r, y0: c.y - r, y1: c.y + r }), `number ${i} hides ball ${j}`));
+  });
+});
+
+test('placeNumbers: sparse flashes keep the right-above place', () => {
+  const r = 4;
+  const ctrs = [{ x: 50, y: 300 }, { x: 150, y: 250 }, { x: 250, y: 300 }];
+  const spots = placeNumbers(ctrs, [6, 6, 12], r);
+  spots.forEach((p, i) => { assert.equal(p.x, ctrs[i].x + r + 3); assert.equal(p.y, ctrs[i].y - r - 3); });
 });
