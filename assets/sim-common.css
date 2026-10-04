@@ -565,3 +565,6 @@ html.is-fullscreen body.layout-hud header { display: none; }
   .layout-hud .s01-views { bottom: calc(10px + 2.6 * 11px * var(--hud)); } /* pogas virs divām padoma rindām */
 }
 @media (max-width: 520px) { .layout-hud .s01-views { max-width: calc(100% - 64px); } }
+/* S-01: mazs pelēks “Ierobežojums” tieši virs skatu pogām (garenviļņa amplitūda ≤ λ/2π); klikšķis atver skaidrojumu (Ansis 04.10) */
+.layout-hud .s01-limit { position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; background: none; border: none; padding: calc(2px * var(--hud)) calc(6px * var(--hud)); color: var(--ink-dim); font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; cursor: pointer; white-space: nowrap; }
+.layout-hud .s01-limit:hover, .layout-hud .s01-limit[aria-expanded="true"] { color: var(--ink); }

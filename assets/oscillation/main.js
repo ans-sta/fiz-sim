@@ -43,6 +43,18 @@ const drawing = document.getElementById('drawing');
 const hudLeft = document.getElementById('hudLeft');
 const hudRight = document.getElementById('hudRight');
 const viewSlot = document.getElementById('viewSlot');
+const limitBtn = document.getElementById('limitBtn');
+function closeLimit() {
+  state.limitOpen = false;
+  notices.clear('longLimit');
+  limitBtn.setAttribute('aria-expanded', 'false');
+}
+limitBtn.addEventListener('click', () => {
+  if (state.limitOpen) return closeLimit();
+  state.limitOpen = true;
+  limitBtn.setAttribute('aria-expanded', 'true');
+  notices.show('longLimit', () => t('notice.longLimit', { a: formatNumber(longAmplitude(state.settings), 1, i18n.lang()) }));
+});
 
 const noticesEl = document.getElementById('notices');
 const notices = createNotices(noticesEl, { closeLabel: () => t('notice.close') });
@@ -166,12 +178,14 @@ function layout() {
 function step(dt) {
   if (!state.paused) state.phase = advancePhase(state.phase, dt, state.settings);
   // garenvilnī amplitūda ierobežota (λ/2π) — paziņojums ar iemeslu, kamēr skats ir GARENVILNIS un ierobežojums darbojas
+  // mazs pelēks “Ierobežojums” virs pogām; skaidrojums tikai uz klikšķa (Ansis 04.10)
   const limited = state.view === 'long' && state.pose.theta > 0.5 && longAmplitude(state.settings) < state.settings.A;
   if (limited !== state.limitShown) {
     state.limitShown = limited;
-    if (limited) notices.show('longLimit', () => t('notice.longLimit', { a: formatNumber(longAmplitude(state.settings), 1, i18n.lang()) }));
-    else notices.clear('longLimit');
-  } else if (limited) notices.refresh();
+    limitBtn.hidden = !limited;
+    if (!limited && state.limitOpen) closeLimit();
+  }
+  if (limited && state.limitOpen) notices.refresh();
   state.pose = advancePose(state.pose, state.view, dt);
   render();
 }
@@ -207,7 +221,10 @@ function render() {
   gear.setDrawFit(lay.fill);
   const { w, h } = view.size();
   // paziņojumi virs skatu pogām — pogas ir rasējuma apakšā, zem tām vietas nav
-  const noticesBottom = `${h - viewSlot.offsetTop + PANEL_GAP}px`;
+  const limitBottom = `${h - viewSlot.offsetTop + 2}px`;
+  if (limitBtn.style.bottom !== limitBottom) limitBtn.style.bottom = limitBottom;
+  setText(limitBtn, t('limit.label'));
+  const noticesBottom = `${h - viewSlot.offsetTop + PANEL_GAP + limitBtn.offsetHeight}px`;
   if (noticesEl.style.bottom !== noticesBottom) noticesEl.style.bottom = noticesBottom;
   const big = w >= 900 && h >= 560;
   if (titleSmall.hidden === big) titleSmall.hidden = !big;
