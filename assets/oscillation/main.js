@@ -2,7 +2,7 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, withA, withT, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, circleLayout,
+  VIEWS, VIEW_POSE, withA, withT, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, circleLayout, originX, panMax, PAN_MIN_SPEED,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
@@ -11,7 +11,7 @@ import { createNotices } from '../measure/notices.js';
 import { formatNumber } from '../measure/format.js';
 import { createQuantityList, createSettingsCorner, createFold } from '../measure/hud.js';
 import { legendScale } from '../measure/ui-scale.js';
-import { TOP_MARGIN, PANEL_GAP } from '../measure/hud-layout.js';
+import { TOP_MARGIN, PANEL_GAP, EDGE_PX } from '../measure/hud-layout.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
@@ -36,6 +36,7 @@ const state = {
   drawScale: 1,
   leftH: 0, // LIELUMI augstums un platums aizvērtā stāvoklī (atvērts slīdnis zīmējumu nebīda)
   leftW: 0,
+  pan: 0, // cm — cik tālu ass sānskatā aizbīdīta pa kreisi (vilnis aizpilda ekrānu)
 };
 const painted = { settings: null, lang: null }; // ko LIELUMI pēdējo reizi rādīja
 
@@ -169,7 +170,11 @@ function layout() {
   // Viens mērogs visiem skatiem: aplis ar A_max aizpilda joslu starp paneļiem (vai zem tiem); pagriezienā nav ne tuvinājuma, ne nobīdes —
   // aplis kļūst par pirmo svītru centrā, vilnis skrien no centra pa labi (Ansis 04.10, prezentācijai).
   const clearW = w - 2 * (Math.max(state.leftW, hudRight.offsetWidth) + 8 + PANEL_GAP);
-  return { ...circleLayout(w, h, { topFree: TOP_MARGIN, topBelow: top, bottom, clearW, drawScale: state.drawScale }), fill: 1 };
+  const lay = { ...circleLayout(w, h, { topFree: TOP_MARGIN, topBelow: top, bottom, clearW, drawScale: state.drawScale }), fill: 1 };
+  // u = 0: aplī centrā; griežoties — kreisā mala stāv; sānskatā + pan pa kreisi (Ansis 05.10)
+  lay.x0 = originX(lay.cx, state.settings.A, poseAngles(state.pose).kappaRad, state.pan, lay.scale);
+  lay.panMax = panMax(lay.cx, state.settings.A, lay.scale, EDGE_PX + 8);
+  return lay;
 }
 
 function step(dt) {
@@ -183,7 +188,14 @@ function step(dt) {
     if (!limited && state.limitOpen) closeLimit();
   }
   if (limited && state.limitOpen) notices.refresh();
-  state.pose = advancePose(state.pose, state.view, dt);
+  // Pagrieziens ap apļa kreiso malu, tad ass viļņa tempā aizslīd pa kreisi; atpakaļ uz apli — vispirms atslīd, tad griežas (Ansis 05.10)
+  const panSpeed = Math.max(Math.abs(state.settings.v), PAN_MIN_SPEED);
+  const wantSide = state.view !== 'circle';
+  if (!wantSide && state.pan > 0) state.pan = Math.max(0, state.pan - panSpeed * dt);
+  else {
+    state.pose = advancePose(state.pose, state.view, dt);
+    if (wantSide && state.pose.kappa === 1) state.pan = Math.min(layout().panMax, state.pan + panSpeed * dt);
+  }
   render();
 }
 startLoop(step);

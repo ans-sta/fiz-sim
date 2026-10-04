@@ -217,6 +217,17 @@ export function blendLayout(a, b, t) {
 }
 // Ekrānā u = 0 (pirmā punkta riņķis) vienmēr ir centrā: kamera tikai pagriežas, bez tuvinājuma un nobīdes (Ansis 04.10, prezentācijai);
 // sānskatā vilnis skrien no centra pa labi un drīkst aiziet aiz malas vai zem paneļa.
+// Ekrānā u = 0 ir pie lay.x0 (noklusēti centrā). Kamera griežas ap apļa kreiso malu, un sānskatā ass pati viļņa tempā aizslīd pa kreisi (pan),
+// līdz pirmais punkts ir pie ekrāna kreisās malas un vilnis aizpilda visu ekrānu (Ansis 05.10).
 export function toScreen(lay, pt) {
-  return { x: lay.cx + pt.u * lay.scale, y: lay.cy - pt.w * lay.scale };
+  return { x: (lay.x0 ?? lay.cx) + pt.u * lay.scale, y: lay.cy - pt.w * lay.scale };
 }
+// u = 0 vieta ekrānā: griežoties apļa kreisā mala (x = −A) stāv uz vietas; pan (cm) bīda asi pa kreisi.
+export function originX(cx, A, kappaRad, pan, scale) {
+  return cx - (A * (1 - Math.cos(kappaRad)) + pan) * scale;
+}
+// Cik tālu (cm) ass jāaizbīda, lai pirmais punkts nonāk pie kreisās malas (leftPx no ekrāna malas); 0, ja tas jau ir tur.
+export function panMax(cx, A, scale, leftPx) {
+  return Math.max(0, (cx - leftPx) / scale - A);
+}
+export const PAN_MIN_SPEED = 10; // cm/s — ja v = 0, ass tomēr aizslīd

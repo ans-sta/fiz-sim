@@ -4,7 +4,7 @@ import {
   AXIS_CM, N_POINTS, RANGES, VIEWS, VIEW_POSE, TURN_S, TAU, CREST, COMPRESSION,
   defaultSettings, withA, withT, withV, withLambda, withLines, derived, advancePhase, pointZ, phaseAt, isMarked,
   point3D, project, viewCenterU, smooth, poseAngles, advancePose, settled,
-  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM, longAmplitude, lambdaSpans, crestAlpha, fadeDistance, FADE_S,
+  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM, longAmplitude, lambdaSpans, crestAlpha, fadeDistance, FADE_S, originX, panMax, PAN_MIN_SPEED,
 } from '../assets/oscillation/model.js';
 
 const close = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
@@ -265,4 +265,14 @@ test('crestAlpha: the A measure fades in after a crest enters at z = 0 and fades
   close(crestAlpha(50, 100, v), 1);
   close(crestAlpha(92.5, 100, v), 0.5);
   close(crestAlpha(100, 100, v), 0);
+});
+
+test('originX and panMax: the circle turns about its left edge, then the axis slides left until the first point reaches the left margin', () => {
+  const scale = 8;
+  close(originX(800, 30, 0, 0, scale), 800); // circle: u = 0 at the centre
+  close(originX(800, 30, Math.PI / 2, 0, scale), 800 - 30 * scale); // side view: the first rod where the circle's left edge was
+  close(originX(800, 30, Math.PI / 2, 10, scale), 800 - 40 * scale); // pan 10 cm further left
+  close(panMax(800, 30, scale, 24), (800 - 24) / 8 - 30); // first point ends 24 px from the left edge
+  assert.equal(panMax(100, 30, scale, 24), 0); // already past the margin: no pan
+  assert.equal(PAN_MIN_SPEED, 10);
 });

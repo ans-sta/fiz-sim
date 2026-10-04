@@ -128,8 +128,17 @@ export function drawScene(ctx, lay, m) {
     // ŠĶĒRSVILNIS: A līdz kalnam, λ starp kalniem
     if (dimTrans > 0.01) {
       const zc = phaseZ(phase, s.lambda, CREST);
+      // līdzsvara līnija ir ass; +A pie kalna un −A pie ieplakas, ar blāvām līnijām +A / −A līmenī (Ansis 05.10)
+      strokeStyle(ctx, c.hairline, dimTrans * 0.6, 1, [2, 4]);
+      path(ctx, [S({ u: 0, w: s.A }), S({ u: AXIS_CM, w: s.A })]);
+      ctx.stroke();
+      path(ctx, [S({ u: 0, w: -s.A }), S({ u: AXIS_CM, w: -s.A })]);
+      ctx.stroke();
       const aA = dimTrans * crestAlpha(zc, s.lambda, s.v);
-      if (aA > 0.01) dimLine(ctx, Z(zc), tip(zc), 'A', { x: 1, y: 0 }, m, aA);
+      if (aA > 0.01) dimLine(ctx, Z(zc), tip(zc), '+A', { x: 1, y: 0 }, m, aA);
+      const zt = phaseZ(phase, s.lambda, -CREST); // ieplaka
+      const aT = dimTrans * crestAlpha(zt, s.lambda, s.v);
+      if (aT > 0.01) dimLine(ctx, Z(zt), S(project(point3D(-CREST, zt, s.A, angles.thetaRad, Az), κ)), '−A', { x: 1, y: 0 }, m, aT);
       const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
       for (const sp of lambdaSpans(phase, s.lambda, CREST, s.v)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
         const al = dimTrans * sp.alpha;
