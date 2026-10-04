@@ -15,10 +15,11 @@
 ## 2. Zīmējums
 
 1. Zeme zelta griezumā (kā K-01). **Izmešanas punkts augstumā h — bez galda, bez torņa, bez būves.** Rasējumā: zeme, h izmēru līnija ar rombiņu (pie tā tikai simbols h), v₀ bulta (velkama), slīpajā sviedienā leņķa loks α, bumba; horizontālajā sviedienā — arī otrā bumbiņa, kas krīt no tā paša punkta.
-2. **Zīmējums vienmēr precīzi ekrāna vidū.** Platums — no burta h kreisajā pusē līdz tālākajam punktam, kur bumba piezemējas (vertikālajā sviedienā — līdz pēdējai stroboskopa pozīcijai pa labi). Augstums — no zemes līdz augstākajam trajektorijas punktam un v₀ bultai. ⚙ ZĪMĒJUMS palielina un samazina ap vidu.
-3. **Rūtiņas fonā ir mērogs** (metros). Rūtiņu solis ir “apaļš” — 1, 2 vai 5 × 10ⁿ m (… 0,5; 1; 2; 5; 10 m …) — un mainās līdzi h, lidojuma tālumam un ⚙ ZĪMĒJUMS: tuvinot rūtiņas sadalās, attālinot saplūst, lai attālums starp līnijām ekrānā vienmēr būtu vidējs (ne biezāk par ~40 px, ne retāk par ~100 px; starp tām — smalkas, gaišas līnijas). Rūtiņu līnijas sakrīt ar pasaules koordinātām: x = 0 pie izmešanas vietas, y = 0 uz zemes. Pie līnijām — skaitļi ar vienību, tur, kur tos neaizsedz paneļi un poga.
-4. Rūtiņas zīmējumā ir vienmēr (tās ir mērogs). Ieslēdzams mērrežģis paliek tikai stroboskopa attēlā.
-5. Palaišanas poga, paziņojumi, ⚙ stūrī, rakstlaukums, vieta Safari joslu paslēpšanai — kā K-01.
+2. **Vertikālajā sviedienā — divas stroboskopa lentes blakus**: augšupejošā (pa kreisi, virs tās bultiņa ↑) un lejupejošā (pa labi, bultiņa ↓). Bumba kāpj kreisajā lentē, augšējā punktā pāriet labajā un krīt tajā; katra zibšņa pozīcija ir tajā lentē, kurā bumba tobrīd kustas (uz augšu — kreisajā, virsotnē un uz leju — labajā). Ja bumba uzreiz krīt (v₀ ≤ 0), ir tikai lejupejošā lente ↓. Lentes nobīde ir tikai attēlā (atstarpe — daži bumbas diametri): dati ir y(t), x = 0. Tāpat stroboskopa attēlā un PNG. Aizstāj “pozīcijas nobīda pa labi kā laika asi” (K-02 spec. 8.2).
+3. **Zīmējums vienmēr precīzi ekrāna vidū.** Platums — no burta h kreisajā pusē līdz tālākajam punktam, kur bumba piezemējas (vertikālajā sviedienā — līdz lejupejošajai lentei). Augstums — no zemes līdz augstākajam trajektorijas punktam un v₀ bultai. ⚙ ZĪMĒJUMS palielina un samazina ap vidu.
+4. **Rūtiņas fonā ir mērogs** (metros). Rūtiņu solis ir “apaļš” — 1, 2 vai 5 × 10ⁿ m (… 0,5; 1; 2; 5; 10 m …) — un mainās līdzi h, lidojuma tālumam un ⚙ ZĪMĒJUMS: tuvinot rūtiņas sadalās, attālinot saplūst, lai attālums starp līnijām ekrānā vienmēr būtu vidējs (ne biezāk par ~40 px, ne retāk par ~100 px; starp tām — smalkas, gaišas līnijas). Rūtiņu līnijas sakrīt ar pasaules koordinātām: x = 0 pie izmešanas vietas, y = 0 uz zemes. Pie līnijām — skaitļi ar vienību, tur, kur tos neaizsedz paneļi un poga.
+5. Rūtiņas zīmējumā ir vienmēr (tās ir mērogs). Ieslēdzams mērrežģis paliek tikai stroboskopa attēlā.
+6. Palaišanas poga, paziņojumi, ⚙ stūrī, rakstlaukums, vieta Safari joslu paslēpšanai — kā K-01.
 
 ## 3. LIELUMI (augšā pa kreisi)
 
@@ -52,3 +53,4 @@
 ## 7. Izmaiņas
 
 - 2026-10-04 — Pirmā versija no Anša 04.10 piezīmēm (metri, bez torņa; rūtiņas — mērogs).
+- 2026-10-04 — Ansis: vertikālajā sviedienā divas stroboskopa lentes blakus — ↑ un ↓ (2.2).

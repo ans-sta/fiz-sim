@@ -127,3 +127,4 @@ Ansis pieņēma visus Claude ieteikumus, izņemot vienu (6. punkts).
   - saites vērtība starp iestatāmajiem soļiem tiek noapaļota ar paziņojumu (piem., galdam h=2,5 → 3 cm);
   - CSV vienmēr latviešu formātā, tāpat kā lodītei.
 - 2026-10-04 — Ansis: galda mēroga vairs nav, tikai metri bez torņa; jaunais izkārtojums. Aizstāj 8.4 — sk. `docs/plans/2026-10-04-sviedieni-izkartojums.md`.
+- 2026-10-04 — Ansis: vertikālā sviediena stroboskopā divas lentes blakus (↑ un ↓) aizstāj 8.2 nobīdi pa labi — sk. `docs/plans/2026-10-04-sviedieni-izkartojums.md` 2.2.
