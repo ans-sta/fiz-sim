@@ -237,11 +237,11 @@ export function settingsKey(s, cfg) {
   return keyParts(s, cfg).join(';');
 }
 
-// Tabulas atslēga (spec. izkārtojums 5): 1. līmenī viena tabula krāj sēriju — katram slīpumam sava rinda,
-// tāpēc slīpums atslēgā nav, bet ir tas, ar ko slīpumu iestata (h vai α — rindu galvene). 2. un 3. līmenī = settingsKey.
+// Tabulas atslēga (spec. izkārtojums 5): 1. līmenī viena tabula krāj sēriju — katram slīpumam sava rinda (α un h),
+// tāpēc slīpums atslēgā nav, arī ne tas, ar ko slīpumu iestata (Ansis 04.10: t(α), t(h)). 2. un 3. līmenī = settingsKey.
 export function seriesKey(s, cfg) {
   if (s.level !== 1) return settingsKey(s, cfg);
   const parts = keyParts(s, cfg);
-  parts[SLOPE_PART] = `by-${s.angleMode}`;
+  parts[SLOPE_PART] = 'slope';
   return parts.join(';');
 }

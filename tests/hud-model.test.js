@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { quantityRows, quantityState, measureVM, LIVE_ROWS } from '../assets/rolling-ball/hud-model.js';
-import { defaultSettings, withLevel, withTimer, withProfile, withBall, withAlpha, settingsKey, seriesKey } from '../assets/rolling-ball/model.js';
+import { defaultSettings, withLevel, withTimer, withProfile, withBall, settingsKey, seriesKey } from '../assets/rolling-ball/model.js';
 import { STUDIES } from '../assets/rolling-ball/studies.js';
 import { LOCKABLE } from '../assets/rolling-ball/params.js';
 import { studyFixed } from '../assets/measure/studies.js';
@@ -206,7 +206,7 @@ test('table choices: one per table, with “—” first when the current settin
   const r = createResults();
   const k1 = seriesKey(s, cfg);
   r.add(s, run1(s), cfg, { tableKey: k1 });
-  const other = withAlpha(s, 5);
+  const other = withBall(s, 'glass25'); // cita lodīte — cita tabula (slīpums tabulu nemaina)
   const v = vmFor(other, { tables: r.tables(), shownKey: seriesKey(other, cfg) });
   assert.deepEqual(v.tableChoices, [{ key: '', label: '—' }, { key: k1, label: '1. tabula · mērījumi: 1' }]);
   assert.equal(v.shownKey, '');

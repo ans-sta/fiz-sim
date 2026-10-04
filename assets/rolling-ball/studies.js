@@ -15,7 +15,7 @@ export const STUDIES = [
   { id: 'strobe', no: '04', measure: true, angleMode: 'h', editable: [...SLOPE, 'dt', 'tape'], views: { table: false, strobe: true }, preset: (s) => withLevel(s, 3) },
 ];
 
-// Pētījumā slīpumu iestata ar pētījuma lielumu (a(α) — ar α), arī ja saitē ir h vai alpha;
+// Pētījumā slīpumu sākumā iestata ar pētījuma lielumu (t(α), t(h) — ar α), arī ja saitē ir h vai alpha;
 // saitē nofiksētu slīpumu neaiztiek.
 export function studyAngleMode(settings, study, urlLocked) {
   if (!study.angleMode || urlLocked.has('h') || urlLocked.has('alpha')) return settings;

@@ -43,25 +43,26 @@ export function tableModel(table, { t, lang }) {
   let rows;
   let title;
   if (table.level === 1) {
-    // Sērija (spec. izkārtojums 5): katram slīpumam sava rinda pirmās lietošanas secībā, katram atkārtojumam sava kolonna.
+    // Sērija (spec. izkārtojums 5): katram slīpumam sava rinda (α un h) pirmās lietošanas secībā,
+    // katram atkārtojumam sava kolonna.
     title = t('table.l1Title', { n: table.index });
-    const byAlpha = s.angleMode === 'alpha';
     const series = [];
     table.runs.forEach((r, i) => {
       let row = series.find((x) => x.key === r.key);
       if (!row) {
-        const rs = table.runSettings[i];
-        row = { key: r.key, slope: byAlpha ? rs.alphaDeg : rs.h, times: [] };
+        const d = derive(table.runSettings[i]);
+        row = { key: r.key, alpha: roundTo(d.alphaDeg, STEP.alpha), h: roundTo(d.h, STEP.h), times: [] };
         series.push(row);
       }
       row.times.push(r.level1.t);
     });
     const most = Math.max(...series.map((x) => x.times.length));
     columns = [
-      { label: t(byAlpha ? 'col.alpha' : 'col.h'), decimals: 1 },
+      { label: t('col.alpha'), decimals: decimalsOf(STEP.alpha) },
+      { label: t('col.h'), decimals: decimalsOf(STEP.h) },
       ...range(most).map((k) => tCol(k, ERRORS.hand, DECIMALS.hand)),
     ];
-    rows = series.map((x) => [x.slope, ...range(most).map((k) => x.times[k - 1] ?? null)]);
+    rows = series.map((x) => [x.alpha, x.h, ...range(most).map((k) => x.times[k - 1] ?? null)]);
   } else if (table.level === 2) {
     title = t('table.l2Title', { n: table.index });
     const gate = s.timer === 'gate';

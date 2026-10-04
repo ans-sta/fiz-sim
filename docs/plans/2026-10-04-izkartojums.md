@@ -36,7 +36,7 @@
 
 ## 5. Sērijas tabula
 
-- **K-01, 1. līmenis (hronometrs):** viena tabula krāj sēriju — **katram slīpumam sava rinda** (h vai α — tas, ar ko slīpumu iestata), **katram atkārtojumam sava kolonna** t₁, t₂, t₃ … Ja mainās kas cits (lodīte, L, virsma …), sākas jauna tabula.
+- **K-01, 1. līmenis (hronometrs):** viena tabula krāj sēriju — **katram slīpumam sava rinda** ar α un h (vienalga, ar ko slīpumu iestata), **katram atkārtojumam sava kolonna** t₁, t₂, t₃ … Ja mainās kas cits (lodīte, L, virsma …), sākas jauna tabula.
 - Pārējiem datu līmeņiem un K-02 paliek tabula katriem iestatījumiem, kā līdz šim; lielajā tabulā var pārslēgties starp tabulām.
 
 ## 6. Apakšā pa kreisi — ⚙
@@ -54,3 +54,4 @@
 ## 8. Izmaiņas
 
 - 2026-10-04 — Pirmā versija no Anša piezīmēm (04.10, telefona ekrānuzņēmumi `scr.mini/sim-*.PNG` un skices komentāri).
+- 2026-10-04 — Ansis: zīmējums (no burta h līdz noripojušajai lodītei) vienmēr precīzi ekrāna vidū, arī mainot ZĪMĒJUMS. Visos K-01 pētījumos maināmi α, h, L (un vārti / Δt, kur tie ir); Δt — slīdnis 0,1–2 s ik pa 0,1 s, bez brīdinājuma, ja lodīte noripo ātrāk par Δt. Kamēr slīdnis vaļā, LIELUMI ir platāks un virs MĒRĪJUMIEM. Pētījums a(α) → t(α), t(h); sērijas tabulā katrā rindā α un h.
