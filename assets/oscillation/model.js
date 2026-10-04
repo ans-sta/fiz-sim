@@ -55,9 +55,13 @@ export const isMarked = (i, lambda) => {
 };
 export const phaseAt = (phase0, z, lambda) => phase0 - TAU * z / lambda;
 
-export function point3D(phi, z, A, thetaRad) {
+// Garenvilnī (θ → 90°) nobīde gar asi nedrīkst pārsniegt λ/2π — citādi punkti apdzītu cits citu, kas vidē nav iespējams (Ansis 04.10).
+// Tāpēc ass virziena amplitūda Az = min(A, LONG_K·λ/2π): kaimiņu attālums nekad nesarūk vairāk par LONG_K daļu.
+export const LONG_K = 0.8;
+export const longAmplitude = (s) => Math.min(s.A, LONG_K * s.lambda / TAU);
+export function point3D(phi, z, A, thetaRad, Az = A) {
   const sn = Math.sin(phi);
-  return { x: A * Math.cos(phi), y: A * sn * Math.cos(thetaRad), z: z + A * sn * Math.sin(thetaRad) };
+  return { x: A * Math.cos(phi), y: A * sn * Math.cos(thetaRad), z: z + Az * sn * Math.sin(thetaRad) };
 }
 export function project(p, kappaRad) {
   return { u: p.x * Math.cos(kappaRad) + p.z * Math.sin(kappaRad), w: p.y };
@@ -86,24 +90,26 @@ export const settled = (pose, view) => pose.kappa === VIEW_POSE[view].kappa && p
 
 export function scenePoints(s, phase0, { kappaRad, thetaRad }) {
   const out = [];
+  const Az = longAmplitude(s);
   for (let i = 0; i < N_POINTS; i++) {
     const z = pointZ(i);
     const phi = phaseAt(phase0, z, s.lambda);
-    const { u, w } = project(point3D(phi, z, s.A, thetaRad), kappaRad);
+    const { u, w } = project(point3D(phi, z, s.A, thetaRad, Az), kappaRad);
     out.push({ i, z, phi, u, w });
   }
   return out;
 }
 
-export function circleOutline(z, A, { kappaRad, thetaRad }, n = 48) {
+export function circleOutline(z, A, { kappaRad, thetaRad }, n = 48, Az = A) {
   const out = [];
-  for (let k = 0; k <= n; k++) out.push(project(point3D(TAU * k / n, z, A, thetaRad), kappaRad));
+  for (let k = 0; k <= n; k++) out.push(project(point3D(TAU * k / n, z, A, thetaRad, Az), kappaRad));
   return out;
 }
 
 export function waveCurve(s, phase0, { kappaRad, thetaRad }, stepCm = 1) {
   const out = [];
-  for (let z = 0; z <= AXIS_CM + 1e-9; z += stepCm) out.push(project(point3D(phaseAt(phase0, z, s.lambda), z, s.A, thetaRad), kappaRad));
+  const Az = longAmplitude(s);
+  for (let z = 0; z <= AXIS_CM + 1e-9; z += stepCm) out.push(project(point3D(phaseAt(phase0, z, s.lambda), z, s.A, thetaRad, Az), kappaRad));
   return out;
 }
 

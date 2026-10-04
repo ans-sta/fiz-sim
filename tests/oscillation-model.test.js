@@ -4,7 +4,7 @@ import {
   AXIS_CM, N_POINTS, RANGES, VIEWS, VIEW_POSE, TURN_S, TAU, CREST, COMPRESSION,
   defaultSettings, withA, withV, withLambda, withLines, derived, advancePhase, pointZ, phaseAt, isMarked,
   point3D, project, viewCenterU, smooth, poseAngles, advancePose, settled,
-  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM,
+  scenePoints, circleOutline, waveCurve, phaseZ, lambdaSpan, sceneLayout, toScreen, circleLayout, blendLayout, CIRCLE_CM, longAmplitude,
 } from '../assets/oscillation/model.js';
 
 const close = (a, b, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} ≠ ${b}`);
@@ -201,4 +201,19 @@ test('blendLayout: κ = 0 gives the circle layout, κ = 1 the side layout, in be
   close(m.scale, 7.5);
   close(m.cy, 430);
   assert.deepEqual(blendLayout(a, b, 2), blendLayout(a, b, 1));
+});
+
+test('longAmplitude: the axial amplitude never exceeds 0,8·λ/2π, so neighbours never overtake each other', () => {
+  close(longAmplitude({ A: 30, lambda: 100 }), 0.8 * 100 / TAU);
+  close(longAmplitude({ A: 5, lambda: 100 }), 5);
+  const s = { A: 40, lambda: 50, v: 25, lines: true };
+  for (const phase0 of [0, 1, 2, 3]) {
+    const pts = scenePoints(s, phase0, angles(1, 1));
+    for (let i = 1; i < pts.length; i++) assert.ok(pts[i].u > pts[i - 1].u, `order kept at phase ${phase0}, i = ${i}`);
+  }
+  // the transverse view and the circle keep the full A
+  const side = scenePoints(s, 0.3, angles(1, 0));
+  close(Math.max(...side.map((p) => Math.abs(p.w))), 40, 0.05);
+  const circle = scenePoints(s, 0.3, angles(0, 0));
+  for (const p of circle) close(Math.hypot(p.u, p.w), 40);
 });

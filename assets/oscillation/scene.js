@@ -1,7 +1,7 @@
 // assets/oscillation/scene.js
 // Zīmē ainu: ass, riņķu kontūras (palīglīnijas), 41 punkts, oranžais pirmais; palīglīnijas pa stāvokļiem; izmēru līnijas A un λ.
 // Visas koordinātas nāk no model.js projekcijas; šeit tikai pikseļi un krāsas. Caurspīdīgums pārejās: no pozas (0…1).
-import { AXIS_CM, CREST, COMPRESSION, isMarked, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpan, toScreen, project, point3D } from './model.js';
+import { AXIS_CM, CREST, COMPRESSION, isMarked, longAmplitude, smooth, scenePoints, circleOutline, waveCurve, phaseZ, phaseAt, lambdaSpan, toScreen, project, point3D } from './model.js';
 
 const MONO = 'ui-monospace, monospace';
 const fontLabel = (k = 1) => `400 ${11 * k}px "IBM Plex Mono", ${MONO}`;
@@ -77,8 +77,9 @@ export function drawScene(ctx, lay, m) {
   const origin = S({ u: 0, w: 0 });
   // izmēru līniju enkuri caur to pašu projekciju kā punkti — pārejās tie seko kamerai un svītrām
   const Z = (z) => S(project({ x: 0, y: 0, z }, κ)); // punkts uz ass
-  const tip = (z) => S(project(point3D(CREST, z, s.A, angles.thetaRad), κ)); // svītras gals (kalns / galējais stāvoklis)
-  const onWave = (z) => S(project(point3D(phaseAt(phase, z, s.lambda), z, s.A, angles.thetaRad), κ)); // viļņa punkts pie z
+  const Az = longAmplitude(s); // garenvilnī amplitūda ierobežota (punkti neapdzen cits citu)
+  const tip = (z) => S(project(point3D(CREST, z, s.A, angles.thetaRad, Az), κ)); // svītras gals (kalns / galējais stāvoklis)
+  const onWave = (z) => S(project(point3D(phaseAt(phase, z, s.lambda), z, s.A, angles.thetaRad, Az), κ)); // viļņa punkts pie z
 
   // ass (sānskatā; no gala tā ir punkts)
   if (side > 0) {
@@ -91,7 +92,7 @@ export function drawScene(ctx, lay, m) {
     // riņķu kontūras: no gala — viens aplis; no sāna — svītras (vertikālas → gar asi)
     for (const p of pts) {
       strokeStyle(ctx, c.hairline, isMarked(p.i, s.lambda) ? 0.9 : 0.45);
-      path(ctx, circleOutline(p.z, s.A, angles).map(S));
+      path(ctx, circleOutline(p.z, s.A, angles, 48, Az).map(S));
       ctx.stroke();
     }
     // sinusoīda caur punktiem — tikai šķērsviļņa stāvoklī (iebāl/izbāl)
@@ -142,8 +143,8 @@ export function drawScene(ctx, lay, m) {
     // GARENVILNIS: ķemme — caur katru punktu vertikāla svītra ±A, lai sablīvējumi un retinājumi ir redzami (Ansis 04.10);
     // A no pirmā punkta centra līdz tā galējam stāvoklim, λ starp sablīvējumiem — abas ārpus ķemmes
     if (dimLong > 0.01) {
-      const combTop = S({ u: 0, w: s.A }).y;
-      const combBot = S({ u: 0, w: -s.A }).y;
+      const combTop = S({ u: 0, w: Az }).y;
+      const combBot = S({ u: 0, w: -Az }).y;
       for (const p of pts) {
         strokeStyle(ctx, isMarked(p.i, s.lambda) ? c.accent : c.hairline, dimLong * (isMarked(p.i, s.lambda) ? 0.9 : 0.7));
         const x = S(p).x;

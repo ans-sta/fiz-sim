@@ -40,6 +40,7 @@ export const STRINGS = {
     'scene.aria': 'Punkti telpā: viens aplis no gala, šķērsvilnis vai garenvilnis no sāna; oranžais punkts ir pirmais.',
 
     'notice.close': 'Aizvērt paziņojumu',
+    'notice.longLimit': 'Garenvilnī amplitūda ierobežota līdz {a} cm: ja A būtu lielāks par λ/2π, punkti apdzītu cits citu, kas vidē nav iespējams. Samazini A vai palielini λ.',
     'url.not_number': 'Saites parametrs {param}={raw} nav skaitlis. Izmantots {param} = {used}.',
     'url.out_of_range': 'Saites parametrs {param}={raw} ir ārpus robežām ({min}–{max}). Izmantots {param} = {used}.',
     'url.not_allowed': 'Saites parametra {param} vērtība “{raw}” nav atļauta. Atļautās vērtības: {allowed}. Izmantots {param} = {used}.',
@@ -102,6 +103,7 @@ export const STRINGS = {
     'scene.aria': 'Points in space: one circle from the end, a transverse or a longitudinal wave from the side; the orange point is the first one.',
 
     'notice.close': 'Close notice',
+    'notice.longLimit': 'In the longitudinal wave the amplitude is limited to {a} cm: with A above λ/2π the points would overtake each other, which a medium cannot do. Reduce A or increase λ.',
     'url.not_number': 'Link parameter {param}={raw} is not a number. Using {param} = {used}.',
     'url.out_of_range': 'Link parameter {param}={raw} is out of range ({min}–{max}). Using {param} = {used}.',
     'url.not_allowed': 'Link parameter {param} does not allow the value “{raw}”. Allowed values: {allowed}. Using {param} = {used}.',

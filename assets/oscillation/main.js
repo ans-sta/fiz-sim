@@ -2,12 +2,13 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withV, withLambda, withLines, advancePhase, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
+  VIEWS, VIEW_POSE, AXIS_CM, RANGES, withA, withV, withLambda, withLines, advancePhase, longAmplitude, advancePose, poseAngles, sceneLayout, circleLayout, blendLayout,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { quantityRows, relationsRows } from './hud-model.js';
 import { drawScene } from './scene.js';
 import { createNotices } from '../measure/notices.js';
+import { formatNumber } from '../measure/format.js';
 import { createQuantityList, createSettingsCorner, createFold } from '../measure/hud.js';
 import { legendScale } from '../measure/ui-scale.js';
 import { TOP_MARGIN, PANEL_GAP, EDGE_PX } from '../measure/hud-layout.js';
@@ -164,6 +165,13 @@ function layout() {
 
 function step(dt) {
   if (!state.paused) state.phase = advancePhase(state.phase, dt, state.settings);
+  // garenvilnī amplitūda ierobežota (λ/2π) — paziņojums ar iemeslu, kamēr skats ir GARENVILNIS un ierobežojums darbojas
+  const limited = state.view === 'long' && state.pose.theta > 0.5 && longAmplitude(state.settings) < state.settings.A;
+  if (limited !== state.limitShown) {
+    state.limitShown = limited;
+    if (limited) notices.show('longLimit', () => t('notice.longLimit', { a: formatNumber(longAmplitude(state.settings), 1, i18n.lang()) }));
+    else notices.clear('longLimit');
+  } else if (limited) notices.refresh();
   state.pose = advancePose(state.pose, state.view, dt);
   render();
 }
