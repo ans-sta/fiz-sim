@@ -390,6 +390,9 @@ html.is-fullscreen body.layout-hud header { display: none; }
 }
 @media (max-width: 520px) {
   .layout-hud h1 .sheet-no { display: none; } /* šaurā telefonā galvenē lapas numuram nav vietas (kā skicē) */
+  /* short-title (tikai K-02): atvērtam pētījumam telefonā galvenē paliek tikai tā nosaukums */
+  .layout-hud.short-title h1:has(.study-name) [data-i18n="page.heading"],
+  .layout-hud.short-title h1:has(.study-name) .study-sep { display: none; }
 }
 
 /* paneļi virs rasējuma */
@@ -447,6 +450,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .m-note { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11.5px * var(--hud)); line-height: 1.35; color: var(--ink-dim); padding: 0 calc(10px * var(--hud)); }
 .layout-hud .m-rows { font-size: calc(10px * var(--hud)); font-variant-numeric: tabular-nums; padding: calc(2px * var(--hud)) calc(10px * var(--hud)) 0; line-height: 1.4; }
 .layout-hud .m-row { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 0.5em; }
+/* K-02: koordinātu pāris (x; y) m ir garāks — lai rinda telefonā paliek vienā rindā, atstarpes ap bultu šaurākas */
+.layout-hud.short-title .m-row { gap: 0 0.25em; }
 .layout-hud .m-row .arr { color: var(--ink-dim); }
 .layout-hud .m-mini { border-collapse: collapse; margin: calc(4px * var(--hud)) calc(10px * var(--hud)) 0 auto; font-size: calc(9px * var(--hud)); font-variant-numeric: tabular-nums; color: var(--ink-dim); }
 .layout-hud .m-mini td { padding: 0 0 0 calc(6px * var(--hud)); border-bottom: 1px solid var(--hairline); text-align: right; }
