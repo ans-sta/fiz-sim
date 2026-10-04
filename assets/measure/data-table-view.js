@@ -9,6 +9,13 @@ export function splitLabel(label) {
 }
 
 const MIN_FONT_PX = 14;
+const BLOCK_MIN_PX = 480; // virsrakstam un iestatījumu rindai lasāms platums
+
+// Tabula, kas ietilpst, ir centrēta blokā tās platumā (≥ BLOCK_MIN_PX); ritināma tabula (telefons) — pa visu platumu (null).
+export function tableBlockWidth(tableW, availW, minW = BLOCK_MIN_PX) {
+  if (tableW > availW) return null;
+  return Math.min(availW, Math.max(tableW, minW));
+}
 
 // Tabula vispirms mazinās (līdz MIN_FONT_PX), tad ritinās ar izbalējumu pie malas, kur ir paslēptas kolonnas.
 function fitTable(wrap, table) {
@@ -97,12 +104,24 @@ export function openDataTable(model, { lang, labels, onClose }) {
   const wrap = document.createElement('div');
   wrap.className = 'data-scroll';
   wrap.appendChild(table);
+  const block = document.createElement('div');
+  block.className = 'data-block';
+  block.append(title, settings, wrap);
   overlay.root.classList.add('overlay-data');
-  overlay.body.append(title, settings, wrap);
-  const refit = () => fitTable(wrap, table);
+  overlay.body.append(block);
+  // vispirms pa visu platumu (mazina burtus / ritina kā līdz šim), tad, ja tabula ietilpst, — centrēts bloks
+  const refit = () => {
+    block.style.width = '';
+    fitTable(wrap, table);
+    const w = tableBlockWidth(table.offsetWidth, wrap.clientWidth);
+    if (w !== null) {
+      block.style.width = `${w}px`;
+      updateFades(wrap);
+    }
+  };
   wrap.addEventListener('scroll', () => updateFades(wrap), { passive: true });
   ro = new ResizeObserver(refit);
-  ro.observe(wrap);
+  ro.observe(overlay.body); // ne bloku: tā platumu maina pati refit
   refit();
   return { close: overlay.close };
 }

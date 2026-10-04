@@ -306,6 +306,7 @@ table.data.compact { font-size: 12px; }
 table.data.compact th { font-size: 10px; padding: 3px 6px; }
 table.data.compact td { padding: 2px 6px; }
 .col-err { display: block; font-size: 0.85em; color: var(--ink-dim); }
+.data-block { display: flex; flex-direction: column; max-width: 100%; margin: 0 auto; width: 100%; } /* centrēts, ja tabula ietilpst (data-table-view.js) */
 .data-scroll { overflow-x: auto; min-width: 0; flex: none; }
 .data-scroll.more-right { -webkit-mask-image: linear-gradient(to right, #000 90%, transparent); mask-image: linear-gradient(to right, #000 90%, transparent); }
 .data-scroll.more-left { -webkit-mask-image: linear-gradient(to left, #000 90%, transparent); mask-image: linear-gradient(to left, #000 90%, transparent); }
