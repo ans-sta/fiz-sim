@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>FIZ-SIM jaunais izkārtojums</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Izkārtojums: viena simulācijas lapa trīs ierīcēs; rasējums aizņem visu laukumu, virs tā — mērījumi (augšā pa kreisi), rezultāti (augšā pa labi), PALAIST zem slīpnes, slīdnis apakšā. */
+:root {
+  --sheet: #f2efe9; --ink: #26261f; --ink-dim: #7a776d; --hairline: #c9c4b8; --accent: #c75612; --field: #faf8f3; --note: #e7e2d6; --steel: #6b7178;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --sheet: #15171b; --ink: #e8e6e1; --ink-dim: #9a9891; --hairline: #3a3d42; --accent: #ff7a29; --field: #0c0e11; --note: #22252b; --steel: #8d949c; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --sheet: #15171b; --ink: #e8e6e1; --ink-dim: #9a9891; --hairline: #3a3d42; --accent: #ff7a29; --field: #0c0e11; --note: #22252b; --steel: #8d949c; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--sheet); color: var(--ink); font-family: var(--mono); font-size: 13px; padding-block: 16px; padding-inline: 16px; }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1320px; margin: 0 auto; display: grid; gap: 14px; }
+.sketchbar { display: grid; gap: 10px; padding: 12px 14px; background: var(--note); font-family: var(--sans); font-size: 13.5px; line-height: 1.5; }
+.sketchbar strong { font-family: var(--mono); font-weight: 600; letter-spacing: .08em; font-size: 11px; }
+.sketchbar ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: flex; flex-wrap: wrap; }
+.seg .btn + .btn { margin-left: -1px; }
+.btn { background: none; border: 1px solid var(--hairline); padding: 7px 10px; font-size: 11px; letter-spacing: .08em; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+/* ierīces rāmis */
+.stage { display: flex; justify-content: center; overflow-x: auto; padding: 6px 0 12px; }
+.device { flex: none; border: 1px solid var(--hairline); background: var(--sheet); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+.device.phone-p { width: 390px; height: 760px; border-radius: 0; }
+.device.phone-l { width: 800px; height: 370px; }
+.device.desk { width: 1180px; height: 700px; }
+.caption { text-align: center; font-family: var(--sans); color: var(--ink-dim); font-size: 12.5px; }
+
+/* galvene */
+.hd { display: flex; align-items: stretch; border-bottom: 1px solid var(--hairline); flex: none; }
+.hd a, .hd .t, .hd .no, .hd .tools { padding: 9px 12px; display: flex; align-items: center; gap: 6px; }
+.hd a { border-right: 1px solid var(--hairline); color: var(--ink-dim); font-size: 11px; letter-spacing: .08em; text-decoration: none; white-space: nowrap; }
+.hd .t { flex: 1; min-width: 0; font-weight: 600; letter-spacing: .12em; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hd .t span { color: var(--ink-dim); font-weight: 400; }
+.hd .no { color: var(--ink-dim); letter-spacing: .08em; font-size: 11px; white-space: nowrap; }
+.hd .tools { border-left: 1px solid var(--hairline); font-size: 11px; gap: 8px; }
+.hd .tools b { color: var(--accent); font-weight: 500; }
+.phone-p .hd .no { display: none; }
+
+/* rasējums ar slāņiem */
+.draw { position: relative; flex: 1; min-height: 0; background: var(--field); }
+.draw svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hud { position: absolute; background: color-mix(in srgb, var(--field) 88%, transparent); border: 1px solid var(--hairline); }
+.meas { top: 8px; left: 8px; }
+.meas .ttl, .res .ttl { font-size: 9.5px; letter-spacing: .14em; color: var(--ink-dim); padding: 6px 10px 2px; }
+.meas button.m { display: flex; justify-content: space-between; gap: 10px; width: 100%; padding: 3px 10px; background: none; border: none; border-left: 2px solid transparent; cursor: pointer; text-align: left; font-variant-numeric: tabular-nums; }
+.meas button.m .v { font-weight: 500; }
+.meas button.m.edit:hover, .meas button.m.edit[aria-pressed="true"] { border-left-color: var(--accent); }
+.meas button.m.edit[aria-pressed="true"] .v { color: var(--accent); }
+.meas button.m.fixed { cursor: default; color: var(--ink-dim); }
+.meas button.m.fixed .v { font-weight: 400; }
+.meas .more { display: block; width: 100%; text-align: left; background: none; border: none; border-top: 1px dashed var(--hairline); padding: 5px 10px; font-size: 10.5px; color: var(--ink-dim); letter-spacing: .08em; cursor: pointer; }
+.res { top: 8px; right: 8px; text-align: right; cursor: pointer; padding-bottom: 6px; }
+.res:hover { border-color: var(--accent); }
+.res .ttl { text-align: right; }
+.res .big1 { font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; padding: 0 10px; line-height: 1.15; }
+.res .big1 small { font-size: 12px; color: var(--ink-dim); font-weight: 400; margin-left: 3px; }
+.res .big1 small.sym { margin: 0 2px 0 0; }
+.res .big1.live { color: var(--accent); }
+.res .q { font-size: 9.5px; color: var(--ink-dim); padding: 0 10px; letter-spacing: .06em; }
+.res table.mini { border-collapse: collapse; margin: 6px 10px 0 auto; font-size: 9px; font-variant-numeric: tabular-nums; color: var(--ink-dim); }
+.res table.mini td { padding: 0 0 0 6px; border-bottom: 1px solid var(--hairline); text-align: right; }
+.res table.mini td.iv { color: var(--ink); }
+.res .open { font-size: 9px; letter-spacing: .1em; color: var(--ink-dim); padding: 4px 10px 0; }
+.runbtn { position: absolute; transform: translateX(-50%); display: flex; gap: 6px; }
+.runbtn .btn { background: var(--sheet); border-color: var(--ink); font-weight: 600; padding: 8px 14px; }
+.gear { position: absolute; left: 10px; bottom: 10px; width: 34px; height: 34px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 17px; line-height: 1; zoom: var(--text, 1); }
+.gear:hover, .gear[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.gearpop { position: absolute; left: 10px; bottom: 52px; width: 236px; background: var(--sheet); border: 1px solid var(--ink); padding: 10px; display: grid; gap: 10px; zoom: var(--text, 1); }
+.gearpop .gr { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.gearpop .gr.col { display: grid; gap: 4px; }
+.gearpop .k { font-size: 9.5px; letter-spacing: .14em; color: var(--ink-dim); }
+.gearpop .k b { color: var(--ink); font-weight: 500; letter-spacing: 0; margin-left: 4px; }
+.gearpop .btn { padding: 5px 7px; font-size: 10px; }
+.gearpop .ctl { display: flex; align-items: center; gap: 6px; }
+.gearpop .ctl button { min-width: 30px; height: 26px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; font-size: 11px; flex: none; }
+.hud, .runbtn { zoom: var(--text, 1); }
+.tb { position: absolute; right: 10px; bottom: 10px; display: grid; grid-template-columns: auto auto; border: 1px solid var(--hairline); background: var(--sheet); font-size: 10px; }
+.tb div { padding: 3px 8px; }
+.tb div:nth-child(odd) { border-right: 1px solid var(--hairline); }
+.tb div:nth-child(-n+2) { border-bottom: 1px solid var(--hairline); }
+.tb span { display: block; font-size: 8px; letter-spacing: .12em; color: var(--ink-dim); }
+.phone-p .tb, .phone-l .tb { display: none; }
+.device [hidden] { display: none !important; }
+
+/* apakšējais slīdnis */
+.slide { padding: 2px 10px 8px; display: grid; gap: 4px; width: 210px; max-width: calc(100vw - 60px); animation: open .16s ease-out; }
+@keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slide { animation: none; } }
+.slide .ctl { display: flex; align-items: center; gap: 6px; }
+.slide .ctl button { width: 26px; height: 26px; background: var(--sheet); border: 1px solid var(--hairline); cursor: pointer; flex: none; }
+.slide .ctl button:hover { background: var(--ink); color: var(--sheet); }
+.slide .choices { display: flex; flex-wrap: wrap; gap: 4px; }
+.slide .choices .btn { padding: 4px 6px; font-size: 10px; letter-spacing: .04em; }
+.slide .range { display: flex; justify-content: space-between; font-size: 9px; color: var(--ink-dim); }
+/* slīdnis kā izmēru līnija: tieva līnija ar atzīmēm galos, rokturis — rombiņš */
+input.dim-range { -webkit-appearance: none; appearance: none; flex: 1; min-width: 0; height: 26px; background: linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat; cursor: pointer; }
+input.dim-range::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; background: var(--sheet); border: 1px solid var(--ink); transform: rotate(45deg); }
+input.dim-range::-moz-range-thumb { width: 11px; height: 11px; background: var(--sheet); border: 1px solid var(--ink); border-radius: 0; transform: rotate(45deg); }
+input.dim-range:active::-webkit-slider-thumb, input.dim-range:focus-visible::-webkit-slider-thumb { background: var(--accent); border-color: var(--accent); }
+input.dim-range:active::-moz-range-thumb, input.dim-range:focus-visible::-moz-range-thumb { background: var(--accent); border-color: var(--accent); }
+input.dim-range:focus-visible { outline: none; }
+
+/* liela tabula */
+.big { position: absolute; inset: 0; background: var(--sheet); display: none; flex-direction: column; }
+.big.on { display: flex; }
+.big .bh { display: flex; border-bottom: 1px solid var(--hairline); }
+.big .bh .btn { border-width: 0 0 0 1px; flex: 1; }
+.big .bh .btn:first-child { border-left: 0; }
+.big .bb { padding: 14px 16px; overflow: auto; }
+.big .bt { font-weight: 600; margin-bottom: 4px; }
+.big .bs { font-family: var(--sans); font-size: 12px; color: var(--ink-dim); margin-bottom: 12px; }
+.big table { border-collapse: collapse; font-size: 22px; font-variant-numeric: tabular-nums; }
+.big th { font-size: 11px; font-weight: 500; text-align: right; padding: 4px 12px; border-bottom: 1px solid var(--ink); white-space: nowrap; }
+.big th small { display: block; color: var(--ink-dim); font-size: 10px; }
+.big td { text-align: right; padding: 3px 12px; border-bottom: 1px solid var(--hairline); }
+.big td.iv { color: var(--accent); font-weight: 500; }
+
+.ink { stroke: var(--ink); fill: none; }
+.dim { stroke: var(--ink-dim); fill: none; }
+.hair { stroke: var(--hairline); fill: none; }
+.fillsheet { fill: var(--sheet); stroke: var(--ink); }
+.ballf { fill: var(--steel); stroke: var(--ink); }
+.txt { fill: var(--ink-dim); font-family: var(--mono); font-size: 10px; }
+.notes { font-family: var(--sans); font-size: 13.5px; line-height: 1.55; display: grid; gap: 6px; max-width: 900px; }
+.notes b { font-family: var(--mono); font-weight: 500; }
+@media (max-width: 760px) { .sketchbar .seg { width: 100%; } }
+</style>
+
+<div class="wrap">
+  <div class="sketchbar">
+    <strong>SKICE · JAUNAIS IZKĀRTOJUMS (piemērs — lodīte, pētījums a(α))</strong>
+    <ol>
+      <li>Augšā pa kreisi — LIELUMI: īss saraksts (α, h, L; Δt vai Δx, ja tie ir). Uzklikšķini uz maināmā — tieši zem tā atveras slīdnis ar rombiņu un − / +, pārējās rindas noslīd uz leju; rasējums mainās uzreiz. Vēlreiz uzklikšķini — slīdnis aizveras. Nofiksētie ir pelēki.</li>
+      <li>Poga ir pašā rasējumā, zem slīpnes: pirmo reizi ▶ PALAIST, ▶ AIZIET vai ▶ STARTS (nejauši), tad ↻ ATKĀRTOT 2×, 3× …</li>
+      <li>Augšā pa labi — MĒRĪJUMI: viens liels cipars (palaišanas laikā hronometrs skaita). No 2. mērījuma zem tā parādās maza tabuliņa; uzklikšķini — atveras lielā tabula.</li>
+      <li>Lielā tabula krāj sēriju: katram α sava rinda, katram atkārtojumam sava kolonna (4. punkts).</li>
+    </ol>
+    <div class="row">
+      <div class="seg" role="group" aria-label="Ierīce">
+        <button type="button" class="btn" data-dev="phone-p" aria-pressed="true">TELEFONS · PORTRETS</button>
+        <button type="button" class="btn" data-dev="phone-l" aria-pressed="false">TELEFONS · AINAVA</button>
+        <button type="button" class="btn" data-dev="desk" aria-pressed="false">DATORS · PROJEKTORS</button>
+      </div>
+      <div class="seg" role="group" aria-label="Skats">
+        <button type="button" class="btn" data-mode="study" aria-pressed="true">PĒTĪJUMS a(α)</button>
+        <button type="button" class="btn" data-mode="full" aria-pressed="false">PILNĀ KONTROLE</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stage"><div class="device phone-p" id="device"></div></div>
+  <div class="caption" id="caption"></div>
+
+  <div class="notes">
+    <div><b>Kas paliek ārpus rasējuma:</b> tikai galvene (atpakaļ, nosaukums, LV/EN, ◐, ⛶). Datorā rakstlaukums ir rasējuma apakšējā labajā stūrī; telefonā tas saiet galvenē.</div>
+    <div><b>Lodīte</b> zīmējumā ir 2× lielāka nekā mērogā — lai to labi redz (koordinātas un dati tik un tā attiecas uz tās centru).</div>
+    <div><b>⚙ apakšā pa kreisi</b> (pilnekrānā galvenes nav — tas viss ir šeit): tēma, valoda, BURTI (80–200 %) un ZĪMĒJUMS (60–150 %) — abi mainās uzreiz, ierīce izvēli atceras; arī PILNEKRĀNS. Sākumā BURTI pielāgojas ekrāna izmēram pats (lielā ekrānā lielāki), slīdnis ļauj to pamainīt.</div>
+    <div><b>Pilnā kontrole:</b> zem lielumiem ir “citi…” — saraksts izvēršas uz leju, un tur var mainīt visu: x₀, lodīti, virsmu, ar ko mēra, mērlenti, palēninājumu. Izvēles lielumam zem tā parādās pogas (slīdņa vietā). Pētījumā “citi…” nav — tur viss jau iestatīts.</div>
+    <div><b>Renītes garums L:</b> 50–200 cm, maina ar to pašu slīdni.</div>
+  </div>
+</div>
+
+<script>
+const START = ['▶ PALAIST', '▶ AIZIET', '▶ STARTS'][Math.floor(Math.random() * 3)];
+const S = { dev: 'phone-p', mode: 'study', edit: null, alpha: 13.8, h: 19.1, L: 80, x0: 0, more: false, runs: [[]], alphas: [13.8], big: false, live: null, gear: false, fs: false, text: 1, drawScale: 1, lang: 'lv' };
+const $ = (s, el = document) => el.querySelector(s);
+const f1 = (v) => v.toFixed(1).replace('.', ',');
+const f2 = (v) => v.toFixed(2).replace('.', ',');
+const rad = (d) => (d * Math.PI) / 180;
+
+const PARAMS = {
+  alpha: { name: 'α — SLĪPUMA LEŅĶIS', min: 0, max: 15, step: 0.1, unit: '°', get: () => S.alpha, set: (v) => { S.alpha = v; S.h = S.L * Math.sin(rad(v)); } },
+  h: { name: 'h — PACĒLUMS', min: 0, max: 20.7, step: 0.1, unit: ' cm', get: () => S.h, set: (v) => { S.h = v; S.alpha = (Math.asin(v / S.L) * 180) / Math.PI; } },
+  L: { name: 'L — RENĪTES GARUMS', min: 50, max: 200, step: 1, unit: ' cm', get: () => S.L, set: (v) => { S.L = v; S.h = S.L * Math.sin(rad(S.alpha)); } },
+  x0: { name: 'x₀ — STARTS', min: 0, max: 65, step: 0.5, unit: ' cm', get: () => S.x0, set: (v) => { S.x0 = v; } },
+  ball: { name: 'LODĪTE', choices: ['tērauds Ø 10', 'tērauds Ø 16', 'tērauds Ø 25', 'stikls Ø 16', 'stikls Ø 25', 'koks Ø 25', 'koks Ø 40', 'plastm. Ø 25', 'tenisa Ø 40'] },
+  profile: { name: 'VIRSMA', choices: ['renīte', 'plakana'] },
+  level: { name: 'MĒRA', choices: ['hronometrs', 'fotovārti', 'video x(t)'] },
+  tape: { name: 'MĒRLENTE', choices: ['rāda', 'nerāda'] },
+  slow: { name: 'PALĒNINĀT', choices: ['×1', '×0,25'] },
+};
+const CHOICE = { ball: 'tērauds Ø 16', profile: 'renīte', level: 'hronometrs', tape: 'rāda', slow: '×1' };
+const OTHER_KEYS = ['x0', 'ball', 'profile', 'level', 'tape', 'slow'];
+const LABEL = { x0: 'x₀', ball: 'lodīte', profile: 'virsma', level: 'mēra', tape: 'mērlente', slow: 'ātrums' };
+
+function measRows() {
+  const study = S.mode === 'study';
+  const rows = [
+    { k: 'α', v: `${f1(S.alpha)}°`, p: 'alpha', edit: true },
+    { k: 'h', v: `${f1(S.h)} cm`, p: 'h', edit: !study },
+    { k: 'L', v: `${S.L} cm`, p: 'L', edit: !study },
+  ];
+  if (!study && S.more) {
+    for (const key of OTHER_KEYS) rows.push({ k: LABEL[key], v: key === 'x0' ? `${f1(S.x0)} cm` : CHOICE[key], p: key, edit: true });
+  }
+  const html = rows.map((r) => `<button type="button" class="m ${r.edit ? 'edit' : 'fixed'}" ${r.edit ? `data-edit="${r.p}" aria-pressed="${S.edit === r.p}"` : 'tabindex="-1"'}><span>${r.k}</span><span class="v">${r.v}</span></button>${S.edit === r.p ? (PARAMS[r.p].choices ? choices(r.p) : slider(r.p)) : ''}`).join('');
+  return html + (study ? '' : `<button type="button" class="more" data-more>${S.more ? 'mazāk ▴' : 'citi…'}</button>`);
+}
+
+function choices(key) {
+  return `<div class="slide"><div class="choices">${PARAMS[key].choices.map((c) => `<button type="button" class="btn" data-choice="${key}" data-v="${c}" aria-pressed="${c === CHOICE[key]}">${c}</button>`).join('')}</div></div>`;
+}
+
+function results() {
+  const cur = S.runs[S.runs.length - 1];
+  const prev = S.runs.length > 1 ? S.runs[S.runs.length - 2] : [];
+  const last = S.live !== null ? S.live : cur.length ? cur[cur.length - 1] : prev.length ? prev[prev.length - 1] : null;
+  const total = S.runs.reduce((n, r) => n + r.length, 0);
+  let mini = '';
+  if (total >= 2) {
+    const rows = S.runs.filter((r) => r.length).map((r, i) => `<tr><td class="iv">${f1(S.alphas[S.runs.indexOf(r)])}°</td>${r.map((t) => `<td>${f2(t)}</td>`).join('')}</tr>`).join('');
+    mini = `<table class="mini"><tbody>${rows}</tbody></table><div class="open">↗ VISA TABULA</div>`;
+  }
+  return `<div class="ttl">MĒRĪJUMI</div>
+    <div class="big1 ${S.live !== null ? 'live' : ''}"><small class="sym">t =</small> ${last === null ? '—' : f2(last)}<small>s</small></div>${mini}`;
+}
+
+function scene(w, h) {
+  // renīte: kreisais gals pacelts; mērogs pēc laukuma
+  const padL = 40, padR = 40, top = h * 0.32, groundY = h * 0.78;
+  const run = w - padL - padR;
+  const scale = Math.min(run / (S.L * Math.cos(rad(S.alpha))), 6) * S.drawScale;
+  const len = S.L * scale;
+  const x0 = padL + (run - len * Math.cos(rad(S.alpha))) / 2;
+  const lowX = x0 + len * Math.cos(rad(S.alpha));
+  const lowY = groundY - 10;
+  const highY = lowY - len * Math.sin(rad(S.alpha));
+  let grid = '';
+  for (let x = 0; x < w; x += 24) grid += `<line class="hair" x1="${x}" y1="0" x2="${x}" y2="${h}" opacity=".45"/>`;
+  for (let y = 0; y < h; y += 24) grid += `<line class="hair" x1="0" y1="${y}" x2="${w}" y2="${y}" opacity=".45"/>`;
+  const ticks = Array.from({ length: Math.floor(S.L / 10) + 1 }, (_, i) => { const f = (i * 10) / S.L; const x = x0 + f * (lowX - x0); const y = highY + f * (lowY - highY); return `<line class="ink" x1="${x}" y1="${y}" x2="${x}" y2="${y + 6}"/>`; }).join('');
+  const ball = { x: x0 + 16, y: highY - 13 }; // lodīte 2× lielāka nekā mērogā (Anša noteikums)
+  return { svg: `<svg class="scene" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${grid}
+    <line class="ink" x1="0" y1="${groundY}" x2="${w}" y2="${groundY}"/>
+    <rect class="fillsheet" x="${x0}" y="${highY + 10}" width="14" height="${groundY - highY - 10}"/>
+    <path class="fillsheet" d="M${x0} ${highY} L${lowX} ${lowY} L${lowX} ${lowY + 10} L${x0} ${highY + 10} Z"/>${ticks}
+    <path class="ink" d="M${lowX - 70} ${lowY + 5} A70 70 0 0 1 ${lowX - 70 * Math.cos(rad(S.alpha))} ${lowY + 5 - 70 * Math.sin(rad(S.alpha))}"/>
+    <line class="dim" x1="${lowX - 80}" y1="${lowY + 5}" x2="${lowX}" y2="${lowY + 5}" stroke-dasharray="4 4"/>
+    <rect x="${x0 - 28}" y="${highY - 6}" width="11" height="11" transform="rotate(45 ${x0 - 22} ${highY})" class="fillsheet"/>
+    <line class="dim" x1="${x0 - 22}" y1="${highY}" x2="${x0 - 22}" y2="${lowY + 5}"/>
+    <rect x="${lowX - 70 * Math.cos(rad(S.alpha)) - 5}" y="${lowY + 5 - 70 * Math.sin(rad(S.alpha)) - 5}" width="11" height="11" transform="rotate(45 ${lowX - 70 * Math.cos(rad(S.alpha))} ${lowY + 5 - 70 * Math.sin(rad(S.alpha))})" class="fillsheet"/>
+    <circle cx="${ball.x}" cy="${ball.y}" r="14" class="ballf"/>
+    <text class="txt" x="${lowX - 34}" y="${lowY - 14}">FINIŠS</text>
+  </svg>`, runAt: { x: (x0 + lowX) / 2, y: groundY + 12 } };
+}
+
+function slider(key) {
+  const p = PARAMS[key];
+  const v = p.get();
+  return `<div class="slide"><div class="ctl"><button type="button" data-step="-1" aria-label="Samazināt">−</button><input class="dim-range" type="range" id="rng" min="${p.min}" max="${p.max}" step="${p.step}" value="${v}" aria-label="${p.name}"><button type="button" data-step="1" aria-label="Palielināt">+</button></div>
+    <div class="range"><span>${p.min}${p.unit}</span><span>${p.max}${p.unit}</span></div></div>`;
+}
+
+function bigTable() {
+  const n = Math.max(...S.runs.map((r) => r.length));
+  const head = Array.from({ length: n }, (_, i) => `<th>t${'₁₂₃₄₅₆'[i]}, s<small>(±0,10 s)</small></th>`).join('');
+  const rows = S.runs.map((r, i) => `<tr><td class="iv">${f1(S.alphas[i])}</td>${Array.from({ length: n }, (_, k) => `<td>${r[k] === undefined ? '' : f2(r[k])}</td>`).join('')}</tr>`).join('');
+  return `<div class="big ${S.big ? 'on' : ''}"><div class="bh"><button type="button" class="btn">KOPĒT</button><button type="button" class="btn">CSV</button><button type="button" class="btn" data-bigclose>AIZVĒRT ✕</button></div>
+    <div class="bb"><div class="bt">1. tabula. Laiks t, kurā lodīte noripo no starta līdz finišam, atkarībā no α</div>
+    <div class="bs">Iestatījumi: L = ${S.L} cm; lodīte: tērauds, Ø 16 mm; renīte; finišs x = ${S.L - 10} cm</div>
+    <table><thead><tr><th>α, °<small>(±0,1°)</small></th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div>`;
+}
+
+const DIMS = { 'phone-p': [390, 760], 'phone-l': [800, 370], desk: [1180, 700] };
+const HEAD_H = 38;
+
+// Velkot slīdni: pārzīmē tikai rasējumu un skaitļus (slīdnis paliek zem pirksta)
+function gearPop() {
+  const pct = (v) => `${Math.round(v * 100)} %`;
+  return `<div class="gearpop" role="dialog" aria-label="Iestatījumi">
+    <div class="gr"><span class="k">TĒMA</span><div class="seg"><button type="button" class="btn" data-theme-set="light" aria-pressed="${document.documentElement.dataset.theme !== 'dark'}">☀ GAIŠA</button><button type="button" class="btn" data-theme-set="dark" aria-pressed="${document.documentElement.dataset.theme === 'dark'}">◐ TUMŠA</button></div></div>
+    <div class="gr"><span class="k">VALODA</span><div class="seg"><button type="button" class="btn" data-lang-set="lv" aria-pressed="${S.lang === 'lv'}">LV</button><button type="button" class="btn" data-lang-set="en" aria-pressed="${S.lang === 'en'}">EN</button></div></div>
+    <div class="gr col"><span class="k">BURTI <b>${pct(S.text)}</b></span><div class="ctl"><button type="button" data-size="text" data-d="-0.1" aria-label="Mazāki burti">A−</button><input class="dim-range" type="range" id="rngText" min="0.8" max="2" step="0.05" value="${S.text}" aria-label="Burtu izmērs"><button type="button" data-size="text" data-d="0.1" aria-label="Lielāki burti">A+</button></div></div>
+    <div class="gr col"><span class="k">ZĪMĒJUMS <b>${pct(S.drawScale)}</b></span><div class="ctl"><button type="button" data-size="draw" data-d="-0.1" aria-label="Mazāks zīmējums">−</button><input class="dim-range" type="range" id="rngDraw" min="0.6" max="1.5" step="0.05" value="${S.drawScale}" aria-label="Zīmējuma izmērs"><button type="button" data-size="draw" data-d="0.1" aria-label="Lielāks zīmējums">+</button></div></div>
+    <div class="gr"><span class="k">EKRĀNS</span><div class="seg"><button type="button" class="btn" data-fs aria-pressed="${S.fs}">⛶ PILNEKRĀNS</button></div></div>
+  </div>`;
+}
+
+function refreshLive() {
+  const d = $('#device');
+  const dims = DIMS[S.dev];
+  const sc = scene(dims[0], dims[1] - (S.fs ? 0 : HEAD_H));
+  d.querySelector('svg.scene').outerHTML = sc.svg;
+  const rb = d.querySelector('.runbtn');
+  rb.style.left = `${sc.runAt.x}px`;
+  rb.style.top = `${sc.runAt.y}px`;
+  const vals = [`${f1(S.alpha)}°`, `${f1(S.h)} cm`, `${S.L} cm`, ...(S.mode === 'full' && S.more ? OTHER_KEYS.map((k) => (k === 'x0' ? `${f1(S.x0)} cm` : CHOICE[k])) : [])];
+  d.querySelectorAll('.meas button.m .v').forEach((el, i) => { el.textContent = vals[i]; });
+  d.querySelector('.res').innerHTML = results();
+}
+
+function render() {
+  const d = $('#device');
+  d.className = `device ${S.dev}`;
+  const dims = DIMS[S.dev];
+  const sc = scene(dims[0], dims[1] - (S.fs ? 0 : HEAD_H));
+  const study = S.mode === 'study';
+  d.innerHTML = `
+    <div class="hd" ${S.fs ? 'hidden' : ''}><a href="#">← PĒTĪJUMI</a><div class="t">LODĪTE RENĪTĒ <span>· ${study ? 'a(α)' : 'PILNĀ KONTROLE'}</span></div><div class="no">K-01${study ? ' · 01' : ''}</div><div class="tools"><b>LV</b> EN ◐ ⛶</div></div>
+    <div class="draw">
+      ${sc.svg}
+      <div class="hud meas"><div class="ttl">LIELUMI</div>${measRows()}</div>
+      <div class="hud res" data-big>${results()}</div>
+      <div class="runbtn" style="left:${sc.runAt.x}px; top:${sc.runAt.y}px"><button type="button" class="btn" data-run>${S.runs[S.runs.length - 1].length ? `↻ ATKĀRTOT ${S.runs[S.runs.length - 1].length + 1}×` : START}</button></div>
+      <div class="tb"><div><span>KOMPLEKTS</span>FIZ-SIM</div><div><span>LAPA</span>K-01${study ? ' · 01' : ''}</div><div><span>TĒMA</span>KINEMĀTIKA</div><div><span>VALODA / TĒMA</span>LV EN ◐ ⛶</div></div>
+      <button type="button" class="gear" data-gear aria-label="Iestatījumi" aria-expanded="${S.gear}">⚙</button>
+      ${S.gear ? gearPop() : ''}
+      ${bigTable()}
+    </div>`;
+  d.style.setProperty('--text', S.text);
+  $('#caption').textContent = { 'phone-p': 'iPhone portretā, 390 × 760 (bez Safari joslām)', 'phone-l': 'iPhone ainavā, 800 × 370 (bez Safari joslām)', desk: 'Dators vai projektors, 1180 × 700 — uz lielāka ekrāna teksts aug līdzi' }[S.dev];
+  document.querySelectorAll('[data-dev]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dev === S.dev)));
+  document.querySelectorAll('[data-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === S.mode)));
+  const rt = $('#rngText');
+  if (rt) rt.addEventListener('input', () => { S.text = Number(rt.value); d.style.setProperty('--text', S.text); d.querySelector('.gearpop .gr.col .k b').textContent = `${Math.round(S.text * 100)} %`; });
+  const rd = $('#rngDraw');
+  if (rd) rd.addEventListener('input', () => { S.drawScale = Number(rd.value); d.querySelectorAll('.gearpop .gr.col .k b')[1].textContent = `${Math.round(S.drawScale * 100)} %`; refreshLive(); });
+  const r = $('#rng');
+  if (r) r.addEventListener('input', () => { PARAMS[S.edit].set(Number(r.value)); newSeriesRowIfNeeded(); refreshLive(); });
+}
+
+function newSeriesRowIfNeeded() {
+  const last = S.alphas[S.alphas.length - 1];
+  if (Math.abs(last - S.alpha) > 1e-9 && S.runs[S.runs.length - 1].length) { S.alphas.push(S.alpha); S.runs.push([]); }
+  else if (!S.runs[S.runs.length - 1].length) S.alphas[S.alphas.length - 1] = S.alpha;
+}
+
+document.addEventListener('click', (e) => {
+  const t = e.target;
+  const dev = t.closest('[data-dev]'); if (dev) { S.dev = dev.dataset.dev; S.edit = null; S.big = false; render(); return; }
+  const mode = t.closest('[data-mode]'); if (mode) { S.mode = mode.dataset.mode; S.edit = null; render(); return; }
+  const ed = t.closest('[data-edit]'); if (ed) { S.edit = S.edit === ed.dataset.edit ? null : ed.dataset.edit; render(); return; }
+  if (t.closest('[data-gear]')) { S.gear = !S.gear; render(); return; }
+  const th = t.closest('[data-theme-set]'); if (th) { document.documentElement.dataset.theme = th.dataset.themeSet; render(); return; }
+  const lg = t.closest('[data-lang-set]'); if (lg) { S.lang = lg.dataset.langSet; render(); return; }
+  if (t.closest('[data-fs]')) { S.fs = !S.fs; render(); return; }
+  const sz = t.closest('[data-size]');
+  if (sz) {
+    const key = sz.dataset.size === 'text' ? 'text' : 'drawScale';
+    const [lo, hi] = key === 'text' ? [0.8, 2] : [0.6, 1.5];
+    S[key] = Math.min(hi, Math.max(lo, Math.round((S[key] + Number(sz.dataset.d)) * 100) / 100));
+    render();
+    return;
+  }
+  if (t.closest('[data-more]')) { S.more = !S.more; if (!S.more && OTHER_KEYS.includes(S.edit)) S.edit = null; render(); return; }
+  const ch = t.closest('[data-choice]'); if (ch) { CHOICE[ch.dataset.choice] = ch.dataset.v; render(); return; }
+  const st = t.closest('[data-step]');
+  if (st && S.edit && !PARAMS[S.edit].choices) { const p = PARAMS[S.edit]; p.set(Math.min(p.max, Math.max(p.min, Math.round((p.get() + Number(st.dataset.step) * p.step) / p.step) * p.step))); newSeriesRowIfNeeded(); render(); return; }
+  if (t.closest('[data-run]')) {
+    if (S.live !== null) return;
+    const tt = Math.round((Math.sqrt((2 * (S.L - 10)) / (0.55 * 981 * Math.sin(rad(Math.max(S.alpha, 0.5))))) + (Math.random() - 0.5) * 0.08) * 100) / 100;
+    const t0 = performance.now();
+    const tick = (now) => {
+      const el = (now - t0) / 1000;
+      if (el < tt) { S.live = el; render(); requestAnimationFrame(tick); return; }
+      S.live = null; S.runs[S.runs.length - 1].push(tt); render();
+    };
+    requestAnimationFrame(tick);
+    return;
+  }
+  if (t.closest('[data-bigclose]')) { S.big = false; render(); return; }
+  if (t.closest('[data-big]')) { S.big = true; render(); }
+});
+render();
+</script>
+
+</html>
