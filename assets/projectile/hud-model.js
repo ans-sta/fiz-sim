@@ -85,7 +85,7 @@ export function measureVM({ settings: s, running, lastRun, shown, shownModel, ta
   const seen = run ? run.samples.filter((p) => p.t + run.truth.tau <= simT + 1e-9) : [];
   const dec = decimalsOf(SCALE.dt.step);
   const d1 = SCALE.read.decimals;
-  const pos = (p) => (vertical ? `y = ${f(p.y, d1)} ${SCALE.unit}` : `x = ${f(p.x, d1)} ${SCALE.unit}; y = ${f(p.y, d1)} ${SCALE.unit}`);
+  const pos = (p) => (vertical ? `y = ${f(p.y, d1)} ${SCALE.unit}` : t('hud.pair', { x: f(p.x, d1), y: f(p.y, d1), u: SCALE.unit }));
   vm.rows = seen.slice(-LIVE_ROWS).map((p) => ({ a: `t = ${f(p.t, dec)} s`, b: pos(p) }));
   if (seen.length) {
     const last = seen[seen.length - 1];

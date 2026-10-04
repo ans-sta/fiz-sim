@@ -52,7 +52,9 @@ test('MĒRĪJUMI: x of the latest flash while running, t | x; y rows; one-sample
   assert.equal(vm.symbol, 'x');
   assert.equal(vm.live, true);
   assert.equal(vm.rows.length, Math.min(LIVE_ROWS, 3)); // flashes at 0; 0,2; 0,4 s
-  assert.match(vm.rows[0].b, /^x = \d+,\d m; y = \d+,\d m$/);
+  assert.match(vm.rows[0].b, /^\(\d+,\d; \d+,\d\) m$/);
+  const en = measureVM({ settings: s, running: { run, simT: 0.45 }, lastRun: null, shown: null, shownModel: null, tables: [], shownKey: '', views: { table: true, strobe: true }, lang: 'en', t: makeT(STRINGS, () => 'en') });
+  assert.match(en.rows[0].b, /^\(\d+\.\d; \d+\.\d\) m$/);
   const one = { ...defaultSettings('vertical'), h: 1, v0: 0, dt: 2 };
   const r1 = simulateRun(one, { seed: 1, repeat: 1, noise: 0, traps: [] });
   const v1 = measureVM({ settings: one, running: null, lastRun: r1, shown: null, shownModel: null, tables: [], shownKey: '', views: { table: true, strobe: true }, lang: 'lv', t: lv });
