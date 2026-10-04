@@ -252,7 +252,7 @@ export function openProjectileStrobe(o) {
   const s = table.settings;
   const sc = SCALE;
   const perRun = table.runs.map((run) => strobePoints(run, s));
-  const box = strobeWorldBox(s, { main: perRun.flatMap((p) => p.main), second: perRun.flatMap((p) => p.second) });
+  const box = strobeWorldBox(s, { main: perRun.flatMap((p) => p.main), second: perRun.flatMap((p) => p.second), tapes: perRun[0].tapes });
   const settingsLine = tableModel(table, { t, lang }).settingsLine;
   const eo = exportOptions(sc);
   const probe = document.createElement('canvas').getContext('2d'); // teksta mērīšanai

@@ -67,3 +67,26 @@ test('largest throw still exports (Review Focus 5)', () => {
   assert.ok(size.scale >= SCALE.exportPx.min);
   assert.ok(size.w * size.h <= EXPORT_MAX_AREA);
 });
+
+const tapeXs = (pts) => [pts.tapes.up, pts.tapes.down].filter((x) => x !== null);
+const boxHoldsTapes = (s, pts) => {
+  const b = strobeWorldBox(s, pts);
+  for (const x of tapeXs(pts)) assert.ok(x >= b.x0 && x <= b.x1, `tape x ${x} in [${b.x0}, ${b.x1}]`);
+};
+
+test('world box holds both tapes: short flight, every flash rising', () => {
+  const s = { ...defaultSettings('vertical'), h: 0, v0: 5, dt: 2 };
+  const run = simulateRun(s, opts);
+  const pts = strobePoints(run, s);
+  assert.ok(pts.main.every((p) => p.x === 0));
+  boxHoldsTapes(s, pts);
+});
+
+test('world box holds both tapes: v0 > 0 but every flash falling', () => {
+  const s = { ...defaultSettings('vertical'), h: 20, v0: 1, dt: 2 };
+  const run = simulateRun(s, opts);
+  const pts = strobePoints(run, s);
+  const gap = pts.tapes.down;
+  assert.ok(pts.main.slice(1).every((p) => p.x === gap));
+  boxHoldsTapes(s, pts);
+});
