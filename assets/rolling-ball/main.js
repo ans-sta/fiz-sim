@@ -239,6 +239,9 @@ function currentKey() {
   return settingsKey(state.settings, { noise: state.noise, traps: state.traps });
 }
 
+// Pirmās palaišanas pogas vārds — nejauši viens no trim, vienreiz uz lapas atvēršanu (lai nemainās, velkot slīdni).
+const START_KEY = ['run.start1', 'run.start2', 'run.start3'][Math.floor(Math.random() * 3)];
+
 let stopLoop = () => {};
 
 function startRun() {
@@ -464,7 +467,8 @@ function render() {
   panel.render({
     settings: s, derived: d, locked: state.locked, hidden: state.hidden, running: state.running, lang,
     fixedText: study ? fixedSummary(s, state.hidden, { t: i18n.t, lang }) : '',
-    hasTableForSettings: !!state.results.byKey(currentKey()),
+    nextRun: state.results.nextRepeat(currentKey()),
+    startKey: START_KEY,
     results: resultsVM(lang),
   });
   const items = handleItems(layout(), s, d, lang);

@@ -133,7 +133,8 @@ export function createPanel(root, { t, onAction }) {
   }
 
   function runBlock(vm) {
-    const label = vm.running ? t('run.running') : vm.hasTableForSettings ? t('run.repeat') : t('run.start');
+    // pirmā palaišana — viens no trim vārdiem (izvēlēts, atverot lapu); pēc tam “↻ ATKĀRTOT 2×”, “3×” …
+    const label = vm.running ? t('run.running') : vm.nextRun > 1 ? t('run.repeatN', { n: vm.nextRun }) : t(vm.startKey);
     return `<button type="button" class="btn primary" style="width:100%" data-fid="run" data-a="run"${vm.running ? ' disabled' : ''}>${esc(label)}</button>`;
   }
 
