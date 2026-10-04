@@ -1,22 +1,67 @@
-export const MARGIN = { left: 120, right: 40, top: 96, bottom: 70 };
+export const MARGIN = { left: 48, right: 48 }; // vieta h izmēru līnijai pa kreisi un renītes galam pa labi
+export const GROUND = 0.618; // zemes (galda) līnija zelta griezumā no rasējuma augšas (spec. izkārtojums 2.1)
+export const ABOVE_PX = 34; // virs L izmēru līnijas: DIM_GAP + rombiņš
+export const PANEL_GAP = 12; // px starp paneli un konstrukciju
+const BALL_ROOM = { left: 34, right: 12 }; // px aiz zīmētās lodītes: pa kreisi vēl h līnija ar etiķeti
+
+// Vieta renītes galos: MARGIN vai, lielai zīmētai lodītei (rādiuss R px), R + BALL_ROOM.
+function sideRoom(R) {
+  return { left: Math.max(MARGIN.left, R + BALL_ROOM.left), right: Math.max(MARGIN.right, R + BALL_ROOM.right) };
+}
+
+// h izmēru līnija pa kreisi no renītes gala — tālāk par zīmēto lodīti, lai rokturis nav zem tās.
+function hDimGap(lay, derived) {
+  return Math.max(DIM_GAP, ballDraw(lay, derived).R + 10);
+}
 export const GROOVE_PX = 14; // renītes biezums zīmējumā
 export const DIM_GAP = 26; // px starp objektu un izmēru līniju
 export const ARC_R = 110; // px — α loka rādiuss
+// vārtu rokturis tieši zem renītes: rombiņš paliek virs palaišanas pogas (tā ir 14 px zem zemes)
+export const GATE_HANDLE = GROOVE_PX + 6;
 
-export function sceneLayout(width, height, geo, fit = geo) {
-  const availW = Math.max(50, width - MARGIN.left - MARGIN.right);
-  const availH = Math.max(50, height - MARGIN.top - MARGIN.bottom);
-  const s = Math.min(60, availW / (fit.L * Math.cos(fit.alphaRad)), availH / Math.max(fit.L * Math.sin(fit.alphaRad), 1));
+// Cik cm virs renītes vajag konstrukcijai (vārtu galotnes, lodīte): ≥ 5 cm, lielai lodītei, kas zīmēta 2× lielāka, — vairāk.
+export function headroomCm(derived) {
+  return Math.max(5, 2 * (derived.rEff + derived.r) + 0.8);
+}
+
+// Renīte: zeme zelta griezumā; renīte ietilpst platumā un starp augšējiem paneļiem un zemi, centrēta; tad × ⚙ ZĪMĒJUMS.
+// topReserve — konstrukcija zem šīs līnijas. panels — { left: { right, bottom }, right: { left, bottom } }:
+// konstrukcija iet zem abiem paneļiem vai blakus vienam no tiem — kur zīmējums sanāk lielāks (zems ekrāns).
+// fit — mērogs velkot nemainās.
+export function sceneLayout(width, height, geo, fit = geo, { topReserve = 0, drawScale = 1, panels = null } = {}) {
+  const tableY = Math.round(height * GROUND);
+  const lowY = tableY - GROOVE_PX;
+  const above = fit.above ?? 5;
+  const lc = fit.L * Math.cos(fit.alphaRad);
+  const a = fit.ballCm ?? 0; // zīmētās lodītes rādiuss, cm (2 r)
+  const fitIn = (x0, x1, top) => {
+    const w = Math.max(50 + MARGIN.left + MARGIN.right, x1 - x0);
+    const availH = Math.max(40, lowY - top - ABOVE_PX);
+    // platums: L·cos α·s + sideRoom(s) ≤ w (abi gali — lodīte un h izmēru līnija ar etiķeti)
+    const sw = Math.min((w - MARGIN.left - MARGIN.right) / lc, (w - MARGIN.right - BALL_ROOM.left) / (lc + a), (w - BALL_ROOM.left - BALL_ROOM.right) / (lc + 2 * a));
+    return { x0, w, s: Math.min(60, sw, availH / (fit.L * Math.sin(fit.alphaRad) + above)) };
+  };
+  let box = fitIn(0, width, topReserve);
+  if (panels) {
+    const { left: pl, right: pr } = panels;
+    box = [
+      fitIn(0, width, Math.max(pl.bottom, pr.bottom) + PANEL_GAP),
+      fitIn(pl.right + PANEL_GAP, width, pr.bottom + PANEL_GAP),
+      fitIn(0, pr.left - PANEL_GAP, pl.bottom + PANEL_GAP),
+    ].reduce((a, b) => (b.s > a.s + 1e-9 ? b : a));
+  }
+  const s = box.s * drawScale;
   const cos = Math.cos(geo.alphaRad);
   const sin = Math.sin(geo.alphaRad);
-  const lowY = Math.min(height - MARGIN.bottom, MARGIN.top + (availH + fit.L * Math.sin(fit.alphaRad) * s) / 2);
-  const low = { x: MARGIN.left + geo.L * cos * s, y: lowY };
-  const high = { x: MARGIN.left, y: low.y - geo.L * sin * s };
+  const room = sideRoom(a * s);
+  const left = box.x0 + room.left + (box.w - room.left - room.right - lc * s) / 2;
+  const low = { x: left + geo.L * cos * s, y: lowY };
+  const high = { x: left, y: low.y - geo.L * sin * s };
   const dir = { x: cos, y: sin };
   const up = { x: sin, y: -cos };
   return {
     s, width, height, high, low, dir, up,
-    tableY: low.y + GROOVE_PX,
+    tableY,
     at: (x) => ({ x: high.x + dir.x * x * s, y: high.y + dir.y * x * s }),
     along: (px, py) => ((px - high.x) * dir.x + (py - high.y) * dir.y) / s,
   };
@@ -27,23 +72,42 @@ export function ballCenter(lay, x, rEff) {
   return { x: p.x + lay.up.x * rEff * lay.s, y: p.y + lay.up.y * rEff * lay.s };
 }
 
-// Izmēru līnija L ir paralēla renītei, virs augstākās vārtu galotnes (≤ 4,8 cm).
-function dimOffsetL(lay) {
-  return 5 * lay.s + DIM_GAP;
+// Zīmētā lodīte (spec. izkārtojums 2.3): 2× lielāka nekā mērogā (vismaz 6 px), guļ renītē tāpat kā īstā.
+// Dati attiecas uz tās centru — tas ir tajā pašā x.
+export function ballDraw(lay, derived) {
+  const R = Math.max(6, 2 * derived.r * lay.s);
+  return { R, lift: derived.rEff * lay.s * (R / (derived.r * lay.s)) };
+}
+
+export function ballDrawCenter(lay, x, derived) {
+  const p = lay.at(x);
+  const { lift } = ballDraw(lay, derived);
+  return { x: p.x + lay.up.x * lift, y: p.y + lay.up.y * lift };
+}
+
+// Zīmētās lodītes augša virs renītes līnijas, px.
+function ballTop(lay, derived) {
+  const b = ballDraw(lay, derived);
+  return b.lift + b.R;
+}
+
+// Izmēru līnija L ir paralēla renītei, virs augstākās vārtu galotnes un zīmētās lodītes.
+function dimOffsetL(lay, derived) {
+  return Math.max(5 * lay.s, ballTop(lay, derived) + 0.8 * lay.s) + DIM_GAP;
 }
 
 export function handleAnchors(lay, settings, derived) {
-  const off = dimOffsetL(lay);
+  const off = dimOffsetL(lay, derived);
   const endL = lay.at(settings.L);
   const arcAngle = Math.PI + derived.alphaRad;
   return {
     L: { x: endL.x + lay.up.x * off, y: endL.y + lay.up.y * off },
-    h: { x: lay.high.x - DIM_GAP, y: lay.high.y },
+    h: { x: lay.high.x - hDimGap(lay, derived), y: lay.high.y },
     alpha: { x: lay.low.x + ARC_R * Math.cos(arcAngle), y: lay.low.y + ARC_R * Math.sin(arcAngle) },
-    x0: ballCenter(lay, settings.x0, derived.rEff),
+    x0: ballDrawCenter(lay, settings.x0, derived),
     gates: settings.gates.map((x) => {
       const p = lay.at(x);
-      return { x: p.x - lay.up.x * 30, y: p.y - lay.up.y * 30 };
+      return { x: p.x - lay.up.x * GATE_HANDLE, y: p.y - lay.up.y * GATE_HANDLE };
     }),
   };
 }
@@ -62,11 +126,9 @@ export function valueFromPointer(kind, lay, p) {
 // ── Zīmēšana ─────────────────────────────────────────────
 
 const MONO = 'ui-monospace, monospace';
-const FONT_VALUE = `500 12px "IBM Plex Mono", ${MONO}`;
 const FONT_LABEL = `400 10px "IBM Plex Mono", ${MONO}`;
 const FONT_TAPE = `400 9px "IBM Plex Mono", ${MONO}`;
 const TAPE_TEXT_Y = 13; // numuru pamatlīnija zem renītes augšējās malas
-const FONT_BIG = `500 26px "IBM Plex Mono", ${MONO}`;
 
 function line(ctx, x1, y1, x2, y2) {
   ctx.beginPath();
@@ -130,7 +192,7 @@ function drawGrid(ctx, lay, c) {
 
 function drawTable(ctx, lay, c) {
   const y = Math.round(lay.tableY) + 0.5;
-  const x1 = MARGIN.left - 40;
+  const x1 = lay.high.x - 40;
   const x2 = lay.width - 12;
   stroke(ctx, c.ink);
   line(ctx, x1, y, x2, y);
@@ -239,7 +301,7 @@ function drawTape(ctx, lay, m, c) {
 
 function drawDimL(ctx, lay, m, c) {
   const L = m.settings.L;
-  const off = dimOffsetL(lay);
+  const off = dimOffsetL(lay, m.derived);
   const { up } = lay;
   const a = lay.at(0);
   const b = lay.at(L);
@@ -254,7 +316,7 @@ function drawDimL(ctx, lay, m, c) {
 }
 
 function drawDimH(ctx, lay, m, c) {
-  const x = Math.round(lay.high.x - DIM_GAP) + 0.5;
+  const x = Math.round(lay.high.x - hDimGap(lay, m.derived)) + 0.5;
   const yTop = lay.high.y;
   const yLow = Math.round(lay.low.y) + 0.5;
   stroke(ctx, m.settings.angleMode === 'alpha' ? c.inkDim : c.ink);
@@ -280,7 +342,7 @@ function drawAngle(ctx, lay, m, c) {
 
 function drawLevel1(ctx, lay, m, c) {
   const { settings: s, derived: d } = m;
-  const flagH = Math.min(2 * d.r * lay.s + 36, dimOffsetL(lay) - 14);
+  const flagH = Math.min(ballTop(lay, d) + 28, dimOffsetL(lay, d) - 14);
   [[s.x0, 'scene.start'], [d.xf, 'scene.finish']].forEach(([x, key]) => {
     const p = lay.at(x);
     const tx = p.x + lay.up.x * flagH;
@@ -296,33 +358,21 @@ function drawLevel1(ctx, lay, m, c) {
     ctx.fillRect(tx + 3, ty - 2, w + 4, 13);
     text(ctx, str, tx + 5, ty + 8, { color: c.inkDim, spacing: '1px' });
   });
-
-  const bx = lay.width - 170;
-  stroke(ctx, c.ink);
-  ctx.strokeRect(bx + 0.5, 20.5, 150, 56);
-  text(ctx, m.t('scene.stopwatch'), bx + 10, 37, { color: c.inkDim, spacing: '1.5px' });
-  text(ctx, m.stopwatchText ?? '', bx + 10, 67, { font: FONT_BIG, color: c.ink });
+  // hronometra laiks ir MĒRĪJUMOS (spec. izkārtojums 4)
 }
 
 function drawLevel2(ctx, lay, m, c) {
   const { settings: s, derived: d } = m;
   const { up } = lay;
-  // Ja vārtu laiki uz rasējuma saplūstu, zīmē tikai pēdējo izietā vārtu laiku; pilns saraksts ir tabulā.
-  ctx.font = FONT_VALUE;
-  if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-  const need = ctx.measureText(s.timer === 'gate' ? '88,888 s' : '88,88 s').width + 8;
-  const pts = s.gates.map((x) => lay.at(x));
-  const crowded = pts.some((p, i) => i > 0 && Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y) < need);
-  let lastPassed = -1;
-  (m.gateTexts ?? []).forEach((g, i) => { if (typeof g === 'string') lastPassed = i; });
+  // vārtu laiki ir MĒRĪJUMOS (spec. izkārtojums 4); rasējumā — vārti un to numuri
   s.gates.forEach((x, i) => {
-    const p = pts[i];
+    const p = lay.at(x);
     const gate = s.timer === 'gate';
-    const top = gate ? (2 * d.r + 0.8) * lay.s : 16;
+    const top = gate ? ballTop(lay, d) + 0.8 * lay.s : 16;
     stroke(ctx, c.ink);
     const tx = p.x + up.x * top;
     const ty = p.y + up.y * top;
-    line(ctx, p.x - up.x * GROOVE_PX, p.y - up.y * GROOVE_PX, tx, ty);
+    line(ctx, p.x - up.x * GATE_HANDLE, p.y - up.y * GATE_HANDLE, tx, ty);
     if (gate) {
       ctx.strokeRect(Math.round(tx) - 2.5, Math.round(ty) - 2.5, 6, 6);
     } else {
@@ -336,17 +386,13 @@ function drawLevel2(ctx, lay, m, c) {
     const nx = tx + up.x * 12;
     const ny = ty + up.y * 12;
     text(ctx, String(i + 1), nx, ny + 3, { color: c.inkDim, align: 'center' });
-    const gt = m.gateTexts?.[i];
-    if (typeof gt === 'string' && (!crowded || i === lastPassed)) {
-      text(ctx, gt, tx + up.x * 28, ty + up.y * 28 + 4, { font: FONT_VALUE, color: c.ink, align: 'center' });
-    }
   });
 }
 
 function drawBall(ctx, lay, m, c) {
   const { derived: d } = m;
-  const ctr = ballCenter(lay, m.ballX, d.rEff);
-  const R = Math.max(3, d.r * lay.s);
+  const ctr = ballDrawCenter(lay, m.ballX, d);
+  const { R } = ballDraw(lay, d);
   ctx.beginPath();
   ctx.arc(ctr.x, ctr.y, R, 0, Math.PI * 2);
   ctx.fillStyle = d.ball.hollow ? c.field : c.mat[d.ball.material];

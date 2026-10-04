@@ -17,28 +17,25 @@
 <link rel="stylesheet" href="assets/sim-common.css">
 <script type="module" src="assets/rolling-ball/entry.js"></script>
 </head>
-<body>
+<body class="layout-hud">
 <div class="frame">
   <header>
     <a class="back" href="index.html" data-i18n="page.back">← SARAKSTS</a>
     <h1><span data-i18n="page.heading">LODĪTE RENĪTĒ</span> <span class="sheet-no">K-01</span></h1>
+    <div class="head-tools" id="headTools"></div>
   </header>
   <div class="work">
     <div class="drawing" id="drawing">
       <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
       <canvas id="scene" role="img" data-i18n-aria="scene.aria"></canvas>
       <div class="handles" id="handles"></div>
+      <div id="hudLeft"></div>
+      <div id="hudRight"></div>
+      <div class="run-slot" id="runSlot"></div>
       <div class="notices" id="notices" role="status" aria-live="polite"></div>
+      <div class="title-small" id="titleSmall" hidden></div>
+      <div id="gear"></div>
     </div>
-    <aside class="controls" id="controls">
-      <section class="block" id="blockLevel"></section>
-      <section class="block" id="blockRun"></section>
-      <section class="block" id="blockResults"></section>
-      <section class="block" id="blockDims"></section>
-      <section class="block" id="blockBall"></section>
-      <section class="block" id="blockFixed" hidden></section>
-      <div class="titleblock" id="titleblock"></div>
-    </aside>
   </div>
   <div class="picker" id="picker" hidden></div>
 </div>

@@ -1,13 +1,12 @@
-import { createI18n, createTheme, mountTitleBlock, setupCanvas, startLoop } from '../sim-core.js';
+import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  derive, settingsKey, withL, withH, withAlpha, withX0, withGate, withGateCount, withLevel, withTimer, withDt, withSlow,
-  withAngleMode, withTape, withProfile, withBall, changedLocked, defaultSettings, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
+  derive, settingsKey, seriesKey, withL, withH, withAlpha, withX0, withGate, withGateCount, withLevel, withTimer, withDt, withSlow,
+  withTape, withProfile, withBall, changedLocked, defaultSettings, L_MIN, L_MAX, ALPHA_MAX, STEP, hMax, x0Max,
 } from './model.js';
 import { ballById, ballFits, GROOVE_W } from './balls.js';
 import { settingsFromURL, warningText, LOCKABLE } from './params.js';
-import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballCenter, ARC_R } from './scene.js';
-import { createPanel } from './panel.js';
+import { sceneLayout, drawScene, handleAnchors, valueFromPointer, ballDraw, headroomCm } from './scene.js';
 import { createHandles } from './handles.js';
 import { createNotices } from '../measure/notices.js';
 import { formatNumber } from '../measure/format.js';
@@ -16,23 +15,25 @@ import { createResults, tableModel } from './results.js';
 import { openDataTable } from '../measure/data-table-view.js';
 import { openStrobe } from './strobe.js';
 import { resolveRoute, studyFixed, filterStudyParams } from '../measure/studies.js';
-import { STUDIES, SETTING_PARAMS, fixedSummary, studyAngleMode } from './studies.js';
+import { STUDIES, SETTING_PARAMS, studyAngleMode } from './studies.js';
+import { quantityRows, quantityState, measureVM } from './hud-model.js';
+import { createQuantityList, createMeasureBox, createSettingsCorner } from '../measure/hud.js';
 
 document.getElementById('bootMsg')?.remove();
 const i18n = createI18n(STRINGS);
 const theme = createTheme();
+const t = (key, vars) => i18n.t(key, vars);
 
 const route = resolveRoute(location.search, { studies: STUDIES, settingParams: SETTING_PARAMS });
 const study = route.kind === 'study' ? route.study : null;
-// Pētījumā nofiksētie lielumi: tiek atteikti tāpat kā `lock`, bet netiek rādīti kā vadība un bez FIKS.
+// Pētījumā nofiksētie lielumi: tiek atteikti tāpat kā `lock`, sarakstā ir pelēki un bez FIKS.
 const hidden = study ? studyFixed(study, LOCKABLE) : new Set();
 // Pētījumā saites parametri nofiksētajiem lielumiem netiek ņemti vērā (paziņojums zemāk).
 const linkParams = study ? filterStudyParams(location.search, hidden) : { search: location.search, ignored: [] };
 const url = settingsFromURL(linkParams.search, study ? { base: study.preset(defaultSettings()) } : {});
 const sheet = study ? `K-01 · ${study.no}` : 'K-01';
-mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, topicKey: 'tb.topicValue' });
 
-// Galvene: atpakaļ uz kartītēm; pētījuma nosaukums un numurs (spec. pētījumi 3)
+// Galvene: atpakaļ uz kartītēm; pētījuma nosaukums un numurs (spec. pētījumi 3); LV · EN · ◐ · ⛶ (spec. izkārtojums 7)
 {
   const back = document.querySelector('header .back');
   back.href = location.pathname.split('/').pop() || 'rolling-ball.html';
@@ -49,6 +50,9 @@ mountTitleBlock(document.getElementById('titleblock'), { i18n, theme, sheet, top
     h1.querySelector('[data-i18n="page.heading"]').after(sep, name);
   }
 }
+mountHeaderTools(document.getElementById('headTools'), { i18n, theme });
+const titleSmall = document.getElementById('titleSmall');
+mountTitleCells(titleSmall, { i18n, sheet, topicKey: 'tb.topicValue' });
 i18n.apply();
 
 const state = {
@@ -59,31 +63,87 @@ const state = {
   noise: url.noise,
   traps: url.traps,
   seed: url.seed,
-  running: null, // { run, simT }
+  running: null, // { run, simT, lay } — rasējums palaišanas laikā nemainās (lay), lai MĒRĪJUMI var augt
   results: createResults(),
   lastRun: null,
   shownKey: null,
   overlay: null, // { kind, key, close }
   selected: null,
-  drag: null, // { id, fit: { L, alphaRad } } — mērogs velkot nemainās
+  drag: null, // { id, fit, panels } — mērogs velkot nemainās
   ball: { x: null, angle: 0 }, // null → lodīte stāv kustības sākumpunktā
+  drawScale: 1,
 };
+const access = () => ({ locked: state.locked, hidden: state.hidden, study });
 
-const notices = createNotices(document.getElementById('notices'), { closeLabel: () => i18n.t('notice.close') });
+const drawing = document.getElementById('drawing');
+const hudLeft = document.getElementById('hudLeft');
+const hudRight = document.getElementById('hudRight');
+const runSlot = document.getElementById('runSlot');
+
+const notices = createNotices(document.getElementById('notices'), { closeLabel: () => t('notice.close') });
 url.warnings.forEach((w, i) => {
   notices.show(`url${i}`, () => warningText(w, { t: i18n.t, lang: i18n.lang() }));
 });
 linkParams.ignored.forEach((w, i) => {
-  notices.show(`study${i}`, () => i18n.t('studies.paramIgnored', { study: i18n.t(`study.${study.id}.title`), param: w.param, raw: w.raw }));
+  notices.show(`study${i}`, () => t('studies.paramIgnored', { study: t(`study.${study.id}.title`), param: w.param, raw: w.raw }));
 });
 
-const panel = createPanel(document.getElementById('controls'), { t: i18n.t, onAction });
+const quantities = createQuantityList(hudLeft, {
+  labels: () => ({
+    title: t('hud.quantities'), fixed: t('dims.fixed'), fixedTitle: t('dims.fixedTitle'), more: t('hud.more'), less: t('hud.less'),
+    decrease: (name) => t('dims.decrease', { name }), increase: (name) => t('dims.increase', { name }),
+  }),
+  onChange: onQuantity,
+});
+
+const measures = createMeasureBox(hudRight, {
+  labels: () => ({ title: t('hud.measurements'), open: t('hud.openTable'), strobe: t('results.strobe'), select: t('hud.tableSelect') }),
+  lang: () => i18n.lang(),
+  onOpen() {
+    const tb = shownTable();
+    if (tb && state.views.table) openTable(tb.key);
+  },
+  onStrobe() {
+    const tb = shownTable();
+    if (tb && state.views.strobe && tb.level === 3) openStrobeView(tb.key);
+  },
+  onSelect(key) {
+    state.shownKey = key || null;
+    render();
+  },
+});
+
+const gear = createSettingsCorner(document.getElementById('gear'), {
+  i18n,
+  theme,
+  labels: () => ({
+    open: t('gear.open'), theme: t('gear.theme'), light: t('gear.light'), dark: t('gear.dark'), lang: t('gear.lang'),
+    text: t('gear.text'), textDown: t('gear.textDown'), textUp: t('gear.textUp'),
+    draw: t('gear.draw'), drawDown: t('gear.drawDown'), drawUp: t('gear.drawUp'),
+    screen: t('gear.screen'), fullscreen: t('gear.fullscreen'),
+  }),
+  onDrawScale(v) {
+    state.drawScale = v;
+    if (state.running) state.running.lay = null;
+    render();
+  },
+  onTextScale() {
+    render();
+  },
+});
+state.drawScale = gear.drawScale();
+
+const runBtn = document.createElement('button');
+runBtn.type = 'button';
+runBtn.className = 'btn primary';
+runSlot.appendChild(runBtn);
+runBtn.addEventListener('click', () => startRun());
+
 const handles = createHandles(document.getElementById('handles'), {
   onChange: onHandleChange,
   onDragStart(id) {
     if (state.running) return false;
-    const d = derive(state.settings);
-    state.drag = { id, fit: { L: state.settings.L, alphaRad: d.alphaRad } };
+    state.drag = { id, fit: geometry(), panels: panels() };
   },
   onSelect(id) {
     if (state.selected === id) return;
@@ -95,83 +155,98 @@ const handles = createHandles(document.getElementById('handles'), {
     render();
   },
   labels: {
-    decrease: (name) => i18n.t('dims.decrease', { name }),
-    increase: (name) => i18n.t('dims.increase', { name }),
+    decrease: (name) => t('dims.decrease', { name }),
+    increase: (name) => t('dims.increase', { name }),
   },
 });
 
 const canvas = document.getElementById('scene');
 let view = null; // setupCanvas kaldina render jau pirms atgriešanās
-view = setupCanvas(canvas, () => render());
+view = setupCanvas(canvas, () => {
+  if (state.running) state.running.lay = null;
+  render();
+});
+
+// Paneļu augstums mainās (burti, mērījumi, tabuliņa) → renīte jāievieto no jauna.
+{
+  let queued = false;
+  const ro = new ResizeObserver(() => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {
+      queued = false;
+      render();
+    });
+  });
+  ro.observe(hudLeft);
+  ro.observe(hudRight);
+}
+
+function geometry() {
+  const d = derive(state.settings);
+  return { L: state.settings.L, alphaRad: d.alphaRad, above: headroomCm(d), ballCm: 2 * d.r };
+}
+
+// Augšējo paneļu malas rasējumā (spec. izkārtojums 2.1); atvērtais slīdnis un “citi…” uz brīdi pārklāj rasējumu.
+function panels() {
+  return {
+    left: { right: hudLeft.offsetLeft + hudLeft.offsetWidth, bottom: hudLeft.offsetTop + quantities.restHeight() },
+    right: { left: hudRight.offsetLeft, bottom: hudRight.offsetTop + hudRight.offsetHeight },
+  };
+}
 
 function layout() {
   if (!view) return null;
+  if (state.running?.lay) return state.running.lay;
   const { w, h } = view.size();
-  const d = derive(state.settings);
-  const geo = { L: state.settings.L, alphaRad: d.alphaRad };
-  return sceneLayout(w, h, geo, state.drag ? state.drag.fit : geo);
+  const geo = geometry();
+  const lay = sceneLayout(w, h, geo, state.drag ? state.drag.fit : geo, {
+    panels: state.drag ? state.drag.panels : panels(),
+    drawScale: state.drawScale,
+  });
+  if (state.running) state.running.lay = lay;
+  return lay;
 }
 
-function isLocked(kind) {
-  return state.locked.has(kind === 'gate' ? 'gates' : kind);
-}
-
-function isHidden(kind) {
-  return state.hidden.has(kind === 'gate' ? 'gates' : kind);
-}
+const editable = (key) => quantityState(key, access()) === 'editable';
 
 function handleItems(lay, s, d, lang) {
-  const t = i18n.t;
   const a = handleAnchors(lay, s, d);
   const num = (v, dec) => formatNumber(v, dec, lang);
-  const fixed = t('dims.fixed');
   const items = [];
-  const add = (kind, o) => {
-    const lockedQ = isLocked(kind === 'alpha' ? 'alpha' : kind);
-    const base = { labelAnchor: 'center', labelClass: '', ...o };
-    if (base.labelAnchor === 'center') base.labelX = Math.min(Math.max(base.labelX, 70), lay.width - 70); // etiķete nepazūd aiz malas
-    if (lockedQ) {
-      base.kind = 'none';
-      base.labelClass = 'locked';
-      base.labelText = o.labelText && !isHidden(kind) ? `${o.labelText} ${fixed}` : o.labelText; // pētījumā bez FIKS.
-    }
-    items.push(base);
+  // Rasējumā tikai rombiņi un lieluma simbols; vērtības ir sarakstā LIELUMI (spec. izkārtojums 2.4).
+  const add = (key, o) => {
+    const on = editable(key);
+    items.push({ labelAnchor: 'center', ...o, kind: on ? o.kind : 'none', labelClass: on ? 'sym' : 'sym locked' });
   };
   const up = lay.up;
   add('L', {
     id: 'L', kind: 'diamond', x: a.L.x, y: a.L.y,
-    labelText: `L = ${num(s.L, 0)} cm`, labelX: a.L.x + up.x * 16, labelY: a.L.y + up.y * 16,
+    labelText: 'L', labelX: a.L.x + up.x * 16, labelY: a.L.y + up.y * 16,
     ariaLabel: t('dims.L'), min: L_MIN, max: L_MAX, step: STEP.L, value: s.L, valueText: `${num(s.L, 0)} cm`,
   });
-  const hMode = s.angleMode === 'h';
   add('h', {
-    id: 'h', kind: hMode ? 'diamond' : 'none', x: a.h.x, y: a.h.y,
-    labelText: `h = ${num(d.h, 1)} cm`, labelX: Math.max(a.h.x - 8, 90), labelY: lay.low.y - lay.high.y >= 24 ? (lay.high.y + lay.low.y) / 2 : lay.high.y + 16, // kā x₀ etiķete augšā, tāpēc īsai līnijai — zem galotnes
-    labelAnchor: 'right', labelClass: hMode ? '' : 'derived',
+    id: 'h', kind: 'diamond', x: a.h.x, y: a.h.y,
+    labelText: 'h', labelX: a.h.x - 10, labelY: lay.low.y - lay.high.y >= 24 ? (lay.high.y + lay.low.y) / 2 : lay.high.y + 16,
+    labelAnchor: 'right',
     ariaLabel: t('dims.h'), min: 0, max: hMax(s.L), step: STEP.h, value: d.h, valueText: `${num(d.h, 1)} cm`,
   });
   add('alpha', {
-    id: 'alpha', kind: hMode ? 'none' : 'diamond', x: a.alpha.x, y: a.alpha.y,
-    labelText: `α = ${num(d.alphaDeg, 1)}°`, labelX: lay.low.x - ARC_R - 14, labelY: lay.tableY + 20, labelAnchor: 'right', // virs renītes tā aizsegtu renīti un lodīti
-    labelClass: hMode ? 'derived' : '',
+    id: 'alpha', kind: 'diamond', x: a.alpha.x, y: a.alpha.y,
+    labelText: 'α', labelX: a.alpha.x + up.x * 16, labelY: a.alpha.y + up.y * 16,
     ariaLabel: t('dims.alpha'), min: 0, max: ALPHA_MAX, step: STEP.alpha, value: d.alphaDeg, valueText: `${num(d.alphaDeg, 1)}°`,
   });
-  const bc = ballCenter(lay, s.x0, d.rEff);
-  const lift = d.r * lay.s + 16;
+  const lift = ballDraw(lay, d).R + 10;
   add('x0', {
-    id: 'x0', kind: 'ball', x: bc.x, y: bc.y,
-    labelText: `x₀ = ${num(s.x0, 1)} cm`, labelX: bc.x + up.x * lift, labelY: bc.y + up.y * lift,
+    id: 'x0', kind: 'ball', x: a.x0.x, y: a.x0.y,
+    labelText: 'x₀', labelX: a.x0.x + up.x * lift - 4, labelY: a.x0.y + up.y * lift, labelAnchor: 'right', // pa labi ir STARTS karogs
     ariaLabel: t('dims.x0'), min: 0, max: x0Max(s.L), step: STEP.x, value: s.x0, valueText: `${num(s.x0, 1)} cm`,
   });
   if (s.level === 2) {
-    const gatesLocked = isLocked('gate');
-    const minGap = gatesLocked ? 150 : 90; // nofiksētai etiķetei klāt nāk FIKS.
-    const tight = a.gates.some((g, i) => i > 0 && Math.hypot(g.x - a.gates[i - 1].x, g.y - a.gates[i - 1].y) < minGap);
     s.gates.forEach((x, i) => {
       add('gate', {
         id: `gate${i}`, kind: 'diamond', x: a.gates[i].x, y: a.gates[i].y,
-        labelText: tight && !gatesLocked && state.selected !== `gate${i}` ? '' : `x = ${num(x, 1)} cm`,
-        labelX: a.gates[i].x, labelY: a.gates[i].y + 18 + (tight && gatesLocked ? i * 18 : 0), // nofiksētiem vārtiem vērtība vienmēr redzama; tuvos — katrs savā rindā
+        labelText: '', labelX: a.gates[i].x, labelY: a.gates[i].y + 18, // numurs ir pie vārtu galotnes rasējumā
         ariaLabel: t(s.timer === 'gate' ? 'dims.gate' : 'dims.gateHand', { i: i + 1 }),
         min: 0, max: s.L, step: STEP.x, value: x, valueText: `${num(x, 1)} cm`,
       });
@@ -189,7 +264,7 @@ function onHandleChange(id, change) {
   if (state.running) return;
   const m = /^gate(\d+)$/.exec(id);
   const kind = m ? 'gate' : id;
-  if (isLocked(kind)) return;
+  if (!editable(kind)) return;
   const i = m ? Number(m[1]) : 0;
   const lay = layout();
   if (!lay) return;
@@ -209,16 +284,64 @@ function onHandleChange(id, change) {
   applySettings(next);
 }
 
+function showBallNoFit(ball) {
+  notices.show('ballNoFit', () => t('ball.noFit', {
+    d: formatNumber(ball.d * 10, 0, i18n.lang()),
+    w: formatNumber(GROOVE_W * 10, 1, i18n.lang()),
+  }));
+}
+
+// LIELUMI: lapa pati pielieto savu with* (noapaļo, ierobežo), pārbauda nofiksēto un pārzīmē.
+function onQuantity(key, v) {
+  if (state.running || !editable(key)) return;
+  const s = state.settings;
+  let next = s;
+  switch (key) {
+    case 'alpha': next = withAlpha(s, v); break;
+    case 'h': next = withH(s, v); break;
+    case 'L': next = withL(s, v); break;
+    case 'x0': next = withX0(s, v); break;
+    case 'gateCount': next = withGateCount(s, v); break;
+    case 'dt': next = withDt(s, v); break;
+    case 'level': next = withLevel(s, v); break;
+    case 'timer': next = withTimer(s, v); break;
+    case 'tape': next = withTape(s, v); break;
+    case 'slow': next = withSlow(s, v); break;
+    case 'profile': {
+      const ball = ballById(s.ball);
+      if (v === 'groove' && !ballFits(ball, 'groove')) {
+        showBallNoFit(ball);
+        return;
+      }
+      notices.clear('ballNoFit');
+      next = withProfile(s, v);
+      break;
+    }
+    case 'ball': {
+      const ball = ballById(v);
+      if (!ballFits(ball, s.profile)) {
+        showBallNoFit(ball);
+        return;
+      }
+      notices.clear('ballNoFit');
+      next = withBall(s, v);
+      break;
+    }
+    default: return;
+  }
+  if (JSON.stringify(next) === JSON.stringify(s) || !applySettings(next)) render(); // slīdnis atgriežas pie pieņemtās vērtības
+}
+
 const LOCK_SYMBOLS = { L: 'L', h: 'h', alpha: 'α', x0: 'x₀', dt: 'Δt' };
 function lockName(k) {
-  return LOCK_SYMBOLS[k] ?? i18n.t(`lock.${k}`);
+  return LOCK_SYMBOLS[k] ?? t(`lock.${k}`);
 }
 
 // Iestatījumu maiņa, kas izmainītu saitē nofiksētu lielumu, tiek noraidīta.
 function applySettings(next) {
   const bad = changedLocked(state.settings, next, state.locked);
   if (bad.length) {
-    notices.show('lockConflict', () => i18n.t('lockConflict', { names: bad.map(lockName).join(', ') }));
+    notices.show('lockConflict', () => t('lockConflict', { names: bad.map(lockName).join(', ') }));
     return false;
   }
   notices.clear('lockConflict');
@@ -235,9 +358,9 @@ function resetAfterChange() {
   notices.clear('noRoll');
 }
 
-function currentKey() {
-  return settingsKey(state.settings, { noise: state.noise, traps: state.traps });
-}
+const cfg = () => ({ noise: state.noise, traps: state.traps });
+const currentRunKey = () => settingsKey(state.settings, cfg());
+const currentTableKey = () => seriesKey(state.settings, cfg()); // 1. līmenī — sērija (spec. izkārtojums 5)
 
 // Pirmās palaišanas pogas vārds — nejauši viens no trim, vienreiz uz lapas atvēršanu (lai nemainās, velkot slīdni).
 const START_KEY = ['run.start1', 'run.start2', 'run.start3'][Math.floor(Math.random() * 3)];
@@ -246,19 +369,20 @@ let stopLoop = () => {};
 
 function startRun() {
   if (state.running) return;
-  const key = currentKey();
-  const run = simulateRun(state.settings, { seed: state.seed, repeat: state.results.nextRepeat(key), noise: state.noise, traps: state.traps });
+  const repeat = state.results.nextRepeat(currentTableKey(), currentRunKey());
+  const run = simulateRun(state.settings, { seed: state.seed, repeat, noise: state.noise, traps: state.traps });
   if (!run.rolls) {
     notices.show('noRoll', () => (run.hMin === null
-      ? i18n.t('notice.noRollMax')
-      : i18n.t('notice.noRoll', {
+      ? t('notice.noRollMax')
+      : t('notice.noRoll', {
         h: formatNumber(run.hMin, 1, i18n.lang()),
         a: formatNumber(run.alphaMinDeg, 1, i18n.lang()),
       })));
     return;
   }
   notices.clear('noRoll');
-  state.running = { run, simT: 0 };
+  const lay = layout(); // pirms MĒRĪJUMI sāk mainīties
+  state.running = { run, simT: 0, lay };
   state.lastRun = null;
   state.shownKey = null;
   state.ball = { x: run.x0, angle: 0 };
@@ -279,13 +403,13 @@ function step(dt) {
 
 function finishRun() {
   stopLoop();
-  state.results.add(state.settings, state.running.run, { seed: state.seed, noise: state.noise, traps: state.traps });
+  state.results.add(state.settings, state.running.run, { seed: state.seed, noise: state.noise, traps: state.traps }, { tableKey: currentTableKey() });
   state.lastRun = state.running.run;
   state.running = null;
 }
 
 function shownTable() {
-  return state.results.byKey(state.shownKey ?? currentKey());
+  return state.results.byKey(state.shownKey ?? currentTableKey());
 }
 
 function openTable(key) {
@@ -296,9 +420,8 @@ function openTable(key) {
     return;
   }
   state.overlay?.close();
-  const t = i18n.t;
   const lang = i18n.lang();
-  const handle = openDataTable(tableModel(table, { t, lang }), {
+  const handle = openDataTable(tableModel(table, { t: i18n.t, lang }), {
     lang,
     labels: {
       heading: t('results.table'), copy: t('data.copy'), csv: t('data.csv'), close: t('data.close'),
@@ -332,7 +455,7 @@ function openStrobeView(key, runIndex) {
       render();
     },
     onExportFailed({ w, h }) {
-      notices.show('export', () => i18n.t('strobe.exportFailed', { w, h }));
+      notices.show('export', () => t('strobe.exportFailed', { w, h }));
     },
     onClose() {
       if (state.overlay && state.overlay.close === handle.close) state.overlay = null;
@@ -348,111 +471,46 @@ function reopenOverlay() {
   else openTable(ov.key);
 }
 
-function onAction(type, value) {
-  if (type === 'selectTable') {
-    state.shownKey = value || null;
-    render();
-    return;
-  }
-  if (type === 'openTable') {
-    const tb = shownTable();
-    if (tb && state.views.table) openTable(tb.key);
-    return;
-  }
-  if (type === 'openStrobe') {
-    const tb = shownTable();
-    if (tb && state.views.strobe && tb.level === 3) openStrobeView(tb.key);
-    return;
-  }
-  if (state.running) return;
-  if (type === 'run') {
-    startRun();
-    return;
-  }
-  const s = state.settings;
-  const lk = (k) => state.locked.has(k);
-  let next = s;
-  switch (type) {
-    case 'level': if (!lk('level')) next = withLevel(s, value); break;
-    case 'timer': if (!lk('timer')) next = withTimer(s, value); break;
-    case 'gateCount': if (!lk('gates')) next = withGateCount(s, s.gates.length + value); break;
-    case 'dt': if (!lk('dt')) next = withDt(s, value); break;
-    case 'slow': next = withSlow(s, value); break;
-    case 'tape': if (!lk('tape')) next = withTape(s, value); break;
-    case 'profile':
-      if (!lk('profile')) {
-        next = withProfile(s, value);
-        notices.clear('ballNoFit');
-      }
-      break;
-    case 'angleMode': if (!lk('h') && !lk('alpha')) next = withAngleMode(s, value); break;
-    case 'ball': {
-      if (lk('ball')) return;
-      const ball = ballById(value);
-      if (!ballFits(ball, s.profile)) {
-        notices.show('ballNoFit', () => i18n.t('ball.noFit', {
-          d: formatNumber(ball.d * 10, 0, i18n.lang()),
-          w: formatNumber(GROOVE_W * 10, 1, i18n.lang()),
-        }));
-        return;
-      }
-      notices.clear('ballNoFit');
-      next = withBall(s, value);
-      break;
-    }
-    default: return;
-  }
-  applySettings(next);
-}
-
-function stopwatchValue() {
-  if (state.settings.level !== 1) return 0;
-  const r = state.running;
-  if (r) return r.simT < r.run.timeTo(r.run.xf) ? r.simT : r.run.level1.t;
-  return state.lastRun?.level1 ? state.lastRun.level1.t : 0;
-}
-
-function gateText(i, lang) {
-  const s = state.settings;
-  const r = state.running;
-  const run = r ? (r.simT >= r.run.timeTo(s.gates[i]) ? r.run : null) : state.lastRun;
-  const g = run?.level2?.gates[i];
-  if (!g) return null;
-  return `${formatNumber(g.t, s.timer === 'gate' ? 3 : 2, lang)} s`;
-}
-
-let compactCache = { id: null, model: null };
-function compactModelFor(shown, lang) {
+let modelCache = { id: null, model: null };
+function modelFor(shown, lang) {
   const id = `${shown.key}|${shown.runs.length}|${lang}`;
-  if (compactCache.id !== id) compactCache = { id, model: tableModel(shown, { t: i18n.t, lang }) };
-  return compactCache.model;
+  if (modelCache.id !== id) modelCache = { id, model: tableModel(shown, { t: i18n.t, lang }) };
+  return modelCache.model;
 }
 
-function resultsVM(lang) {
-  const t = i18n.t;
-  const tables = state.results.tables();
-  const cur = currentKey();
-  const shown = shownTable();
-  const shownKey = state.shownKey ?? cur;
-  return {
-    tables: tables.map((tb) => ({ key: tb.key, label: t('results.option', { n: tb.index, m: tb.runs.length }) })),
-    shownKey,
-    shownIsOther: !!shown && shownKey !== cur,
-    otherText: shown ? t('results.other', { n: shown.index }) : '',
-    showCompact: state.views.table, // view=strobe&lock=1: x vērtībām jābūt lasāmām tikai attēlā
-    compactModel: shown ? compactModelFor(shown, lang) : null,
-    canTable: state.views.table && !!shown,
-    canStrobe: state.views.strobe && !!shown && shown.level === 3,
-  };
+function runLabel() {
+  if (state.running) return t('run.running');
+  const n = state.results.nextRepeat(currentTableKey(), currentRunKey());
+  return n > 1 ? t('run.repeatN', { n }) : t(START_KEY); // pirmo reizi — viens no trim vārdiem, tad “↻ ATKĀRTOT 2×” …
 }
 
 function render() {
   if (!view) return;
-  document.getElementById('drawing').classList.toggle('running', !!state.running);
+  drawing.classList.toggle('running', !!state.running);
   const s = state.settings;
   const d = derive(s);
   const lang = i18n.lang();
-  drawScene(view.ctx, layout(), {
+  const shown = shownTable();
+
+  quantities.update(quantityRows(s, { ...access(), lang, t: i18n.t }), { disabled: !!state.running });
+  measures.update(measureVM({
+    settings: s,
+    running: state.running,
+    lastRun: state.lastRun,
+    shown,
+    shownModel: shown ? modelFor(shown, lang) : null,
+    tables: state.results.tables(),
+    shownKey: state.shownKey ?? currentTableKey(),
+    views: state.views,
+    lang,
+    t: i18n.t,
+  }));
+  const label = runLabel();
+  if (runBtn.textContent !== label) runBtn.textContent = label;
+  runBtn.disabled = !!state.running;
+
+  const lay = layout();
+  drawScene(view.ctx, lay, {
     settings: s,
     derived: d,
     colors: theme.colors(),
@@ -460,23 +518,24 @@ function render() {
     lang,
     ballX: state.ball.x ?? s.x0,
     ballAngle: state.ball.angle,
-    stopwatchText: `${formatNumber(stopwatchValue(), 2, lang)} s`,
-    gateTexts: s.gates.map((_, i) => (s.level === 2 ? gateText(i, lang) : null)),
     showTape: s.tape,
   });
-  panel.render({
-    settings: s, derived: d, locked: state.locked, hidden: state.hidden, running: state.running, lang,
-    fixedText: study ? fixedSummary(s, state.hidden, { t: i18n.t, lang }) : '',
-    nextRun: state.results.nextRepeat(currentKey()),
-    startKey: START_KEY,
-    results: resultsVM(lang),
-  });
-  const items = handleItems(layout(), s, d, lang);
+  // poga centrēta, mazliet zem zemes; paziņojumi zem pogas (spec. izkārtojums 2.5–2.6)
+  const runTop = Math.round(lay.tableY + 14);
+  runSlot.style.top = `${runTop}px`;
+  drawing.style.setProperty('--notices-top', `${runTop + runSlot.offsetHeight + 10}px`);
+
+  const items = handleItems(lay, s, d, lang);
   handles.update(items);
   if (state.selected && !items.some((it) => it.id === state.selected)) {
     state.selected = null;
     handles.setSelected(null);
   }
+  // rakstlaukums tikai lielā rasējumā (datorā), telefonā tā nav
+  const { w, h } = view.size();
+  const big = w >= 900 && h >= 560;
+  titleSmall.hidden = !big;
+  drawing.classList.toggle('has-title', big);
 }
 
 theme.onChange(() => {
@@ -498,6 +557,7 @@ window.__rb = {
   get study() {
     return study;
   },
+  layout: () => layout(),
   setSettings(next) {
     state.settings = next;
     resetAfterChange();
