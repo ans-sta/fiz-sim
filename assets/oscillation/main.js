@@ -173,7 +173,7 @@ function layout() {
   const lay = { ...circleLayout(w, h, { topFree: TOP_MARGIN, topBelow: top, bottom, clearW, drawScale: state.drawScale }), fill: 1 };
   // u = 0: aplī centrā; griežoties — kreisā mala stāv; sānskatā + pan pa kreisi (Ansis 05.10)
   lay.x0 = originX(lay.cx, state.settings.A, poseAngles(state.pose).kappaRad, state.pan, lay.scale);
-  lay.panMax = panMax(lay.cx, state.settings.A, lay.scale, EDGE_PX + 8);
+  lay.panMax = panMax(lay.cx, state.settings.A, lay.scale, EDGE_PX + 8 + longAmplitude(state.settings) * lay.scale); // pirmais punkts par Az no malas — tā −A mērs ietilpst
   return lay;
 }
 

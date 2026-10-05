@@ -140,11 +140,6 @@ export function drawScene(ctx, lay, m) {
       const zt = phaseZ(phase, s.lambda, -CREST); // ieplaka
       const aT = dimTrans * crestAlpha(zt, s.lambda, s.v);
       if (aT > 0.01) dimLine(ctx, Z(zt), S(project(point3D(-CREST, zt, s.A, angles.thetaRad, Az), κ)), '−A', { x: 1, y: 0 }, m, aT);
-      // nekustīgs mērs uz abām pusēm pie vidējā oranžā punkta (z = λ) — tas neslīd un neizbāl (Ansis 05.10)
-      if (s.lambda < AXIS_CM) {
-        dimLine(ctx, Z(s.lambda), S({ u: s.lambda, w: s.A }), '+A', { x: 1, y: 0 }, m, dimTrans);
-        dimLine(ctx, Z(s.lambda), S({ u: s.lambda, w: -s.A }), '−A', { x: 1, y: 0 }, m, dimTrans);
-      }
       const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
       for (const sp of lambdaSpans(phase, s.lambda, CREST, s.v, visibleEnd)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
         const al = dimTrans * sp.alpha;
@@ -169,14 +164,18 @@ export function drawScene(ctx, lay, m) {
         path(ctx, [{ x, y: combTop }, { x, y: combBot }]);
         ctx.stroke();
       }
+      // zem KATRA oranžā punkta nekustīgs horizontāls mērs −A … +A ap tā līdzsvara vietu (centra atzīme) — Ansis 05.10
       const yA = combBot + 14 + 6 * m.legend;
-      strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
-      path(ctx, [origin, { x: origin.x, y: yA }]);
-      ctx.stroke();
-      const xA = tip(0).x;
-      path(ctx, [{ x: xA, y: origin.y }, { x: xA, y: yA }]);
-      ctx.stroke();
-      dimLine(ctx, { x: origin.x, y: yA }, { x: xA, y: yA }, 'A', { x: 0, y: 1 }, m, dimLong);
+      for (let i = 0; i < pts.length; i++) {
+        if (!isMarked(i, s.lambda)) continue;
+        const zc = pts[i].z;
+        const mid = { x: Z(zc).x, y: yA };
+        strokeStyle(ctx, c.hairline, dimLong, 1, [3, 3]);
+        path(ctx, [Z(zc), mid]);
+        ctx.stroke();
+        dimLine(ctx, { x: S({ u: zc - Az, w: 0 }).x, y: yA }, mid, '−A', { x: 0, y: 1 }, m, dimLong);
+        dimLine(ctx, mid, { x: S({ u: zc + Az, w: 0 }).x, y: yA }, '+A', { x: 0, y: 1 }, m, dimLong);
+      }
       const yL = combTop - 14 - 6 * m.legend;
       for (const sp of lambdaSpans(phase, s.lambda, COMPRESSION, s.v, visibleEnd)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
         const al = dimLong * sp.alpha;
