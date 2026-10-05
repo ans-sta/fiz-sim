@@ -31,20 +31,20 @@
         --negative: #3388ff;
         --negative-glow: #3388ff66;
         --test-charge: #00ff88;
-        --test-charge-glow: #00ff8866;
         --text: #c8d6e8;
         --text-dim: #5a6d88;
         --text-muted: #354050;
-        --radius: 8px;
       }
 
+      html, body { height: 100%; }
       body {
         background: var(--bg);
         color: var(--text);
         font-family: "Exo 2", sans-serif;
         overflow: hidden;
         height: 100vh;
-        width: 100vw;
+        height: 100dvh; /* telefonā pārlūka joslas nenogriež lauka apakšu */
+        width: 100%;
         display: flex;
         flex-direction: column;
         user-select: none;
@@ -52,17 +52,17 @@
       }
 
       /* ═══════════════════════════════════════════
-         HEADER - Navigation bar
+         HEADER
          ═══════════════════════════════════════════ */
       header {
         display: flex;
         align-items: center;
-        gap: 16px;
-        padding: 8px 16px;
+        gap: 12px;
+        padding: 6px 12px;
         background: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
         border-bottom: 1px solid var(--panel-border);
         flex-shrink: 0;
-        min-height: 44px;
+        min-height: 42px;
       }
       .back-btn {
         background: none;
@@ -76,15 +76,31 @@
       .back-btn:hover { color: var(--accent); }
       header h1 {
         font-family: "Orbitron", monospace;
-        font-size: 16px;
+        font-size: 15px;
         font-weight: 700;
         letter-spacing: 2px;
         background: linear-gradient(135deg, var(--accent), #66eeff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
       }
       .header-spacer { flex: 1; }
+      .link-btn {
+        background: none;
+        border: 1px solid var(--accent-dim);
+        color: var(--text-dim);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        font-family: "Orbitron", monospace;
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+      .link-btn:hover { border-color: var(--accent); color: var(--accent); background: none; }
       .lang-switch {
         font-family: "Orbitron", monospace;
         font-size: 11px;
@@ -102,114 +118,94 @@
         font-family: inherit;
         font-size: inherit;
       }
-      .lang-switch button:hover { color: var(--text-dim); }
+      .lang-switch button:hover { color: var(--text-dim); background: none; border: none; }
       .lang-switch button.active { color: var(--accent); }
       .lang-switch .lang-sep { color: var(--text-muted); }
 
       /* ═══════════════════════════════════════════
-         CONTROL BAR - Horizontal controls (Desktop)
+         TOOLBAR — viena josla visām ierīcēm, grupas pārlūst rindās
          ═══════════════════════════════════════════ */
-      .control-bar {
+      .toolbar {
         display: flex;
-        justify-content: center;
+        flex-wrap: wrap;
         align-items: stretch;
-        gap: 12px;
-        padding: 12px 20px;
+        padding: 4px 10px;
         background: var(--panel);
         border-bottom: 1px solid var(--panel-border);
         flex-shrink: 0;
-        overflow-x: auto;
       }
-      /* Auto margins center the content but collapse to 0 on overflow,
-         keeping the left edge reachable when scrolling */
-      .control-bar > :first-child { margin-left: auto; }
-      .control-bar > :last-child { margin-right: auto; }
-      .control-panel {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid var(--panel-border);
-        border-radius: var(--radius);
-        padding: 12px 16px;
+      .group {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 3px;
+        padding: 4px 14px;
+        border-right: 1px solid var(--panel-border);
       }
-      .control-panel h3 {
+      .group-end { border-right: none; margin-left: auto; }
+      .group-label {
         font-family: "Orbitron", monospace;
-        font-size: 11px;
+        font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         color: var(--accent);
-        margin: 0;
         white-space: nowrap;
       }
-      .control-panel .btn-group {
+      .group-row {
         display: flex;
+        align-items: center;
         gap: 6px;
-      }
-      .control-panel .btn-group button {
-        padding: 8px 14px;
-        font-size: 14px;
-      }
-      .slider-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-      .slider-row input[type="range"] {
-        width: 100px;
-        accent-color: var(--accent);
-        height: 6px;
-      }
-      .slider-row .slider-val {
-        font-family: "Orbitron", monospace;
-        font-size: 14px;
-        min-width: 28px;
-        text-align: right;
-        color: var(--accent);
-      }
-      .checkbox-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: var(--text-dim);
-        cursor: pointer;
-        white-space: nowrap;
-      }
-      .checkbox-row:hover { color: var(--text); }
-      .checkbox-row input[type="checkbox"] {
-        accent-color: var(--accent);
-        width: 16px;
-        height: 16px;
+        flex-wrap: wrap;
+        min-height: 34px;
       }
       .charge-count {
         font-size: 13px;
         color: var(--text-dim);
         white-space: nowrap;
+        padding-left: 4px;
       }
       .charge-count span { color: var(--accent); }
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .slider-row[hidden] { display: none; }
+      .slider-row .slider-sym { font-style: italic; color: var(--test-charge); font-size: 14px; }
+      .slider-row input[type="range"] {
+        width: 110px;
+        accent-color: var(--test-charge);
+        height: 6px;
+      }
+      .slider-row .slider-val {
+        font-family: "Orbitron", monospace;
+        font-size: 13px;
+        min-width: 28px;
+        text-align: right;
+        color: var(--test-charge);
+      }
+      .hint {
+        flex-basis: 100%;
+        font-size: 12px;
+        color: var(--text-dim);
+        padding: 2px 14px 4px;
+      }
 
-      /* Buttons */
+      /* Pogas */
       button {
         background: rgba(255, 255, 255, 0.04);
         color: var(--text);
         border: 1px solid var(--panel-border);
         border-radius: 6px;
-        padding: 8px 14px;
+        padding: 7px 12px;
         font-family: "Exo 2", sans-serif;
         font-size: 14px;
         cursor: pointer;
-        transition: all 0.15s;
+        transition: background 0.15s, border-color 0.15s, color 0.15s;
         white-space: nowrap;
       }
       button:hover {
         background: rgba(255, 255, 255, 0.08);
         border-color: var(--accent);
-      }
-      button.active {
-        background: var(--accent-dim);
-        border-color: var(--accent);
-        color: #fff;
       }
       button.active-pos {
         background: var(--positive-glow);
@@ -227,9 +223,7 @@
         color: #fff;
         font-weight: 600;
       }
-      button.primary:hover {
-        background: rgba(0, 204, 255, 0.3);
-      }
+      button.primary:hover { background: rgba(0, 204, 255, 0.3); }
       button.danger {
         border-color: #ff4466;
         color: #ff6688;
@@ -238,427 +232,64 @@
         background: rgba(255, 68, 102, 0.2);
         border-color: #ff6688;
       }
-
-      /* ═══════════════════════════════════════════
-         MOBILE HEADER - Compact icons
-         ═══════════════════════════════════════════ */
-      .mobile-control-bar {
-        display: none;
-        justify-content: center;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 10px;
-        background: var(--panel);
-        border-bottom: 1px solid var(--panel-border);
-        flex-shrink: 0;
-      }
-      .mobile-control-bar .icon-btn {
-        width: 38px;
-        height: 38px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        padding: 0;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid var(--panel-border);
-        transition: all 0.2s;
-      }
-      .mobile-control-bar .icon-btn.active {
+      button.small { font-size: 12px; padding: 4px 8px; }
+      button.toggle { color: var(--text-dim); }
+      button.toggle[aria-pressed="true"] {
         background: var(--accent-dim);
         border-color: var(--accent);
-        box-shadow: 0 0 12px var(--accent-dim);
-      }
-
-      /* Charge buttons - glowing orb style */
-      .mobile-control-bar .charge-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        position: relative;
-        border: none;
-        background: transparent;
-      }
-      .mobile-control-bar .charge-icon::before {
-        content: '';
-        position: absolute;
-        inset: 4px;
-        border-radius: 50%;
-        transition: all 0.2s;
-      }
-      .mobile-control-bar .charge-icon::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        opacity: 0.3;
-        transition: all 0.2s;
-      }
-      .mobile-control-bar .charge-icon .charge-symbol {
-        position: relative;
-        z-index: 1;
-        font-weight: bold;
-        font-size: 18px;
-        text-shadow: 0 0 6px currentColor;
-      }
-
-      /* Positive charge icon */
-      .mobile-control-bar .charge-icon.pos-icon {
-        color: var(--positive);
-      }
-      .mobile-control-bar .charge-icon.pos-icon::before {
-        background: radial-gradient(circle at 35% 35%, rgba(255,150,170,0.6) 0%, rgba(255,51,85,0.3) 50%, transparent 70%);
-        border: 2px solid var(--positive);
-        opacity: 0.5;
-      }
-      .mobile-control-bar .charge-icon.pos-icon::after {
-        box-shadow: 0 0 15px var(--positive), inset 0 0 10px rgba(255,51,85,0.2);
-        opacity: 0.3;
-      }
-      .mobile-control-bar .charge-icon.pos-icon.active-pos::before {
-        opacity: 1;
-        box-shadow: 0 0 8px var(--positive);
-      }
-      .mobile-control-bar .charge-icon.pos-icon.active-pos::after {
-        opacity: 0.6;
-        box-shadow: 0 0 20px var(--positive), 0 0 30px var(--positive-glow);
-      }
-
-      /* Negative charge icon */
-      .mobile-control-bar .charge-icon.neg-icon {
-        color: var(--negative);
-      }
-      .mobile-control-bar .charge-icon.neg-icon::before {
-        background: radial-gradient(circle at 35% 35%, rgba(150,180,255,0.6) 0%, rgba(51,136,255,0.3) 50%, transparent 70%);
-        border: 2px solid var(--negative);
-        opacity: 0.5;
-      }
-      .mobile-control-bar .charge-icon.neg-icon::after {
-        box-shadow: 0 0 15px var(--negative), inset 0 0 10px rgba(51,136,255,0.2);
-        opacity: 0.3;
-      }
-      .mobile-control-bar .charge-icon.neg-icon.active-neg::before {
-        opacity: 1;
-        box-shadow: 0 0 8px var(--negative);
-      }
-      .mobile-control-bar .charge-icon.neg-icon.active-neg::after {
-        opacity: 0.6;
-        box-shadow: 0 0 20px var(--negative), 0 0 30px var(--negative-glow);
-      }
-
-      /* Test charge icon - yellow, bigger */
-      .mobile-control-bar .test-icon {
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        background: transparent;
-        border: none;
-        color: var(--test-charge);
-        position: relative;
-      }
-      .mobile-control-bar .test-icon::before {
-        content: '';
-        position: absolute;
-        inset: 4px;
-        border-radius: 50%;
-        background: radial-gradient(circle at 35% 35%, rgba(0,255,136,0.5) 0%, rgba(0,255,136,0.2) 50%, transparent 70%);
-        border: 2px solid var(--test-charge);
-        opacity: 0.4;
-        transition: all 0.2s;
-      }
-      .mobile-control-bar .test-icon::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        opacity: 0.2;
-        transition: all 0.2s;
-      }
-      .mobile-control-bar .test-icon .test-symbol {
-        position: relative;
-        z-index: 1;
-        font-family: "Orbitron", monospace;
-        font-weight: bold;
-        font-size: 16px;
-        text-shadow: 0 0 8px var(--test-charge);
-      }
-      .mobile-control-bar .test-icon.active-test::before {
-        opacity: 1;
-        box-shadow: 0 0 10px var(--test-charge);
-      }
-      .mobile-control-bar .test-icon.active-test::after {
-        opacity: 0.5;
-        box-shadow: 0 0 25px var(--test-charge), 0 0 35px var(--test-charge-glow);
-      }
-
-      .mobile-control-bar .separator {
-        width: 1px;
-        height: 28px;
-        background: var(--panel-border);
-        margin: 0 4px;
-        flex-shrink: 0;
-      }
-      .mobile-control-bar .back-icon {
-        font-size: 18px;
-        color: var(--text-dim);
-        width: 36px;
-      }
-      .mobile-control-bar .back-icon:hover {
-        color: var(--accent);
-      }
-
-      /* Header groups - for alignment with drawer */
-      .mobile-control-bar .header-group {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-      }
-
-      /* Value displays - clickable numbers */
-      .mobile-control-bar .value-display {
-        font-family: "Orbitron", monospace;
-        font-size: 12px;
-        color: var(--accent);
-        padding: 4px 8px;
-        background: rgba(0, 204, 255, 0.1);
-        border: 1px solid var(--panel-border);
-        border-radius: 4px;
-        cursor: pointer;
-        min-width: 28px;
-        text-align: center;
-        transition: all 0.15s;
-      }
-      .mobile-control-bar .value-display:hover {
-        border-color: var(--accent);
-        background: rgba(0, 204, 255, 0.2);
-      }
-      .mobile-control-bar .value-display.test-value {
-        color: var(--test-charge);
-        background: rgba(0, 255, 136, 0.1);
-      }
-      .mobile-control-bar .value-display.test-value:hover {
-        border-color: var(--test-charge);
-        background: rgba(0, 255, 136, 0.2);
-      }
-
-      /* Mobile language switch */
-      .mobile-lang-switch {
-        display: flex;
-        align-items: center;
-        font-family: "Orbitron", monospace;
-        font-size: 10px;
-        letter-spacing: 0.5px;
-      }
-      .mobile-lang-switch button {
-        background: none;
-        border: none;
-        color: var(--text-muted);
-        cursor: pointer;
-        padding: 4px 4px;
-        font-family: inherit;
-        font-size: inherit;
-        transition: color 0.2s;
-      }
-      .mobile-lang-switch button:hover { color: var(--text-dim); }
-      .mobile-lang-switch button.active { color: var(--accent); }
-      .mobile-lang-switch .lang-sep { color: var(--text-muted); font-size: 9px; }
-      .drawer-toggle { margin-left: 4px; }
-
-      /* Custom SVG icons - improved */
-      .icon-field, .icon-lines, .icon-equip {
-        width: 22px;
-        height: 22px;
+        color: #fff;
       }
 
       /* ═══════════════════════════════════════════
-         MOBILE DRAWER - Aligned with header groups
+         LAUKS — viss, kas paliek zem joslas, no malas līdz malai
          ═══════════════════════════════════════════ */
-      .mobile-drawer {
-        display: none;
-        justify-content: center;
-        align-items: stretch;
-        gap: 0;
-        padding: 8px 10px;
-        background: var(--panel);
-        border-bottom: 1px solid var(--panel-border);
-        flex-shrink: 0;
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
-      }
-      .mobile-drawer.open {
-        max-height: 200px;
-        opacity: 1;
-      }
-
-      /* Drawer spacers - match header items with no drawer content */
-      .drawer-spacer {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-      }
-      .drawer-spacer.back-spacer { width: 38px; }
-      .drawer-spacer.lang-spacer { width: 76px; }
-
-      /* Drawer sections - aligned below header groups */
-      .drawer-section {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 3px;
-        padding: 4px 6px;
-        min-height: 50px;
-        flex-shrink: 0;
-      }
-      .drawer-section .section-label {
-        font-family: "Orbitron", monospace;
-        font-size: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: var(--accent);
-        white-space: nowrap;
-        opacity: 0.8;
-      }
-      .drawer-section .section-value {
-        font-family: "Orbitron", monospace;
-        font-size: 12px;
-        color: var(--text);
-        font-weight: bold;
-      }
-
-      /* Charges section - matches header: 2 orbs (42px each) + value (40px) + gaps */
-      .drawer-section.charges-section {
-        width: 128px;
-        cursor: pointer;
-      }
-      .drawer-section.charges-section:hover {
-        background: rgba(0, 204, 255, 0.05);
-      }
-
-      /* Test charge section - matches header: T icon (46px) + value (48px) + gap */
-      .drawer-section.test-section {
-        width: 100px;
-        gap: 4px;
-      }
-      .drawer-section.test-section .slider-compact {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-      }
-      .drawer-section.test-section input[type="range"] {
-        width: 70px;
-        accent-color: var(--test-charge);
-        height: 4px;
-      }
-
-      /* Display labels section - 2x2 grid, matches header: 4 icons (38px each) + gaps */
-      .drawer-section.display-section {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 3px;
-        width: 160px;
-        min-height: auto;
-        padding: 6px;
-      }
-      .drawer-section.display-section .display-label {
-        font-size: 8px;
-        color: var(--text-dim);
-        padding: 4px 6px;
-        border-radius: 3px;
-        background: transparent;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: all 0.15s;
-        text-align: center;
-      }
-      .drawer-section.display-section .display-label:hover {
-        color: var(--text);
-      }
-      .drawer-section.display-section .display-label.active {
-        color: var(--accent);
-        background: var(--accent-dim);
-      }
-
-      /* Clear section - sizes to its label, at least as wide as the header clear button (38px) */
-      .drawer-section.clear-section {
-        width: auto;
-        min-width: 38px;
-        cursor: pointer;
-      }
-      .drawer-section.clear-section .section-label {
-        color: #ff6688;
-        font-size: 7px;
-      }
-      .drawer-section.clear-section:hover {
-        background: rgba(255, 68, 102, 0.1);
-      }
-
-      /* Separator in drawer - same spacing as header */
-      .drawer-separator {
-        width: 1px;
-        background: var(--panel-border);
-        align-self: stretch;
-        margin: 0 4px;
-        flex-shrink: 0;
-      }
-      /* Match header separator spacing */
-      .mobile-control-bar .separator {
-        margin: 0 4px;
-      }
-
-      /* ═══════════════════════════════════════════
-         CANVAS AREA
-         ═══════════════════════════════════════════ */
-      #main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        position: relative;
-      }
       #canvas-wrap {
         flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 12px;
         position: relative;
+        min-height: 0;
         overflow: hidden;
       }
       canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         display: block;
-        border-radius: 6px;
-        box-shadow:
-          0 0 40px rgba(0, 204, 255, 0.05),
-          0 0 1px rgba(0, 204, 255, 0.3);
         cursor: crosshair;
+        touch-action: none;
       }
 
       /* ═══════════════════════════════════════════
-         RESPONSIVE - Mobile
+         Telefons — tās pašas pogas ar vārdiem, grupas pa rindām
          ═══════════════════════════════════════════ */
-      @media (max-width: 900px) {
-        header { display: none; }
-        .control-bar { display: none; }
-        .mobile-control-bar { display: flex; }
-        .mobile-drawer { display: flex; }
-        #canvas-wrap { padding: 6px; }
+      @media (max-width: 700px) {
+        header { padding: 4px 8px; gap: 8px; min-height: 38px; }
+        header h1 { font-size: 13px; letter-spacing: 1px; }
+        .link-btn { display: none; }
+        .toolbar { padding: 2px 4px; }
+        .group { padding: 3px 6px; border-right: none; }
+        .group-label { display: none; }
+        .group-row { min-height: 30px; gap: 4px; }
+        .group-charges { order: 0; }
+        .group-end { order: 1; }
+        .group-test { order: 2; flex-basis: 100%; }
+        .group-display { order: 3; flex-basis: 100%; }
+        button { padding: 6px 8px; font-size: 13px; }
+        .charge-count { padding-left: 0; }
+        .slider-row input[type="range"] { width: 90px; }
+        .hint { display: none; }
+      }
+      @media (max-height: 500px) {
+        .hint { display: none; }
       }
     </style>
   </head>
   <body>
-    <!-- Header Navigation -->
     <header>
       <button class="back-btn" onclick="location.href='index.html'" data-i18n-title="back" title="Back">←</button>
       <h1 data-i18n="heading">⚡ ELECTRIC FIELD</h1>
       <span class="header-spacer"></span>
-      <button style="background: none; border: 1px solid var(--accent-dim); color: var(--text-dim); padding: 4px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 1px; transition: all 0.2s; margin-right: 8px;" onclick="location.href='newtons-cannon.html'" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--accent-dim)'; this.style.color='var(--text-dim)'" data-i18n-title="tryCannon" title="Try Newton’s Cannon simulation">→ CANNON</button>
+      <button class="link-btn" onclick="location.href='newtons-cannon.html'" data-i18n-title="tryCannon" title="Try Newton’s Cannon simulation">→ CANNON</button>
       <div class="lang-switch">
         <button data-lang="lv">LV</button>
         <span class="lang-sep">|</span>
@@ -666,167 +297,50 @@
       </div>
     </header>
 
-    <!-- Desktop Control Bar (horizontal, full controls) -->
-    <div class="control-bar">
-      <!-- Field Charges -->
-      <div class="control-panel">
-        <h3 data-i18n="fieldCharges">Field Charges</h3>
-        <div class="btn-group" id="chargeBtns">
+    <!-- Viena vadības josla: datorā vienā rindā, šaurāk — grupas pārlūst, telefonā pa rindām -->
+    <div class="toolbar" id="toolbar">
+      <div class="group group-charges">
+        <span class="group-label" data-i18n="fieldCharges">Field Charges</span>
+        <div class="group-row" id="chargeBtns">
           <button class="active-pos" data-charge="+1" data-i18n="positive">⊕ Positive</button>
           <button data-charge="-1" data-i18n="negative">⊖ Negative</button>
-        </div>
-        <div class="charge-count">
-          <span data-i18n="chargesPlaced">Charges:</span>
-          <span id="chargeCount">0</span>
+          <span class="charge-count"><span data-i18n="chargesPlaced">Charges:</span> <span id="chargeCount">0</span></span>
         </div>
       </div>
 
-      <!-- Test Charge -->
-      <div class="control-panel">
-        <h3 data-i18n="testCharge">Test Charge</h3>
-        <button class="primary" id="btnAddTest" data-i18n="addTestCharge">+ Add Test Charge</button>
-        <div id="testChargeControls" style="display: none">
-          <div class="slider-row">
-            <input type="range" id="chargeSlider" min="-10" max="10" value="1" />
+      <div class="group group-test">
+        <span class="group-label" data-i18n="testCharge">Test Charge</span>
+        <div class="group-row">
+          <button class="primary" id="btnAddTest" data-i18n="addTestCharge">+ Add Test Charge</button>
+          <div class="slider-row" id="testChargeControls" hidden>
+            <span class="slider-sym">q</span>
+            <input type="range" id="chargeSlider" min="-10" max="10" value="1" data-i18n-aria="testValueTitle" aria-label="Test charge value" />
             <span class="slider-val" id="chargeVal">+1</span>
+            <button class="danger small" id="btnRemoveTest" data-i18n="removeTestCharge">✕ Remove</button>
           </div>
-          <button class="danger" id="btnRemoveTest" data-i18n="removeTestCharge" style="font-size: 10px; padding: 4px 8px; margin-top: 4px">✕ Remove</button>
         </div>
       </div>
 
-      <!-- Display Options -->
-      <div class="control-panel">
-        <h3 data-i18n="display">Display</h3>
-        <label class="checkbox-row"><input type="checkbox" id="chkField" checked /><span data-i18n="fieldVectors">Field Vectors</span></label>
-        <label class="checkbox-row"><input type="checkbox" id="chkFieldLines" /><span data-i18n="fieldLines">Field Lines</span></label>
-        <label class="checkbox-row"><input type="checkbox" id="chkEquipotential" /><span data-i18n="equipotential">Equipotential</span></label>
-        <label class="checkbox-row"><input type="checkbox" id="chkForce" checked /><span data-i18n="forceArrow">Force Arrow</span></label>
-      </div>
-
-      <!-- Clear -->
-      <div class="control-panel">
-        <h3 data-i18n="controls">Controls</h3>
-        <button class="danger" id="btnClear" data-i18n="clearAll">✕ Clear All</button>
-      </div>
-    </div>
-
-    <!-- Mobile Control Bar - Single header with all controls -->
-    <div class="mobile-control-bar" id="mobileControlBar">
-      <!-- Back button -->
-      <button class="icon-btn back-icon" onclick="location.href='index.html'" data-i18n-title="back" title="Back">←</button>
-      <!-- Newton's Cannon link -->
-      <button class="icon-btn back-icon" style="color: var(--accent);" onclick="location.href='newtons-cannon.html'" data-i18n-title="tryCannon" title="Try Newton’s Cannon simulation">→</button>
-      <span class="separator"></span>
-      <!-- Charge selection - glowing orb style -->
-      <div class="header-group" id="headerCharges">
-        <button class="charge-icon pos-icon active-pos" id="mChargePos" data-i18n-title="positiveTitle" title="Positive">
-          <span class="charge-symbol">+</span>
-        </button>
-        <button class="charge-icon neg-icon" id="mChargeNeg" data-i18n-title="negativeTitle" title="Negative">
-          <span class="charge-symbol">−</span>
-        </button>
-        <span class="value-display" id="mChargeCountBtn" data-i18n-title="chargesPlacedTitle" title="Charges placed">0</span>
-      </div>
-      <span class="separator"></span>
-      <!-- Test charge - yellow, bigger -->
-      <div class="header-group" id="headerTest">
-        <button class="test-icon" id="mTestCharge" data-i18n-title="testCharge" title="Test Charge">
-          <span class="test-symbol">T</span>
-        </button>
-        <span class="value-display test-value" id="mTestValueBtn" data-i18n-title="testValueTitle" title="Test charge value">+1</span>
-      </div>
-      <span class="separator"></span>
-      <!-- Display toggles - improved icons -->
-      <div class="header-group" id="headerDisplay">
-        <button class="icon-btn active" id="mField" data-i18n-title="fieldVectors" title="Field Vectors">
-          <svg class="icon-field" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M4 12h12" stroke-linecap="round"/>
-            <path d="M12 8l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 6h9" stroke-linecap="round" opacity="0.6"/>
-            <path d="M10 3l3 3-3 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
-            <path d="M4 18h9" stroke-linecap="round" opacity="0.6"/>
-            <path d="M10 15l3 3-3 3" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
-          </svg>
-        </button>
-        <button class="icon-btn" id="mLines" data-i18n-title="fieldLines" title="Field Lines">
-          <svg class="icon-lines" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M4 12 Q12 2, 20 12" stroke-linecap="round"/>
-            <path d="M4 12 Q12 22, 20 12" stroke-linecap="round"/>
-            <circle cx="4" cy="12" r="2" fill="#ff3355" stroke="#ff3355" stroke-width="0.5"/>
-            <circle cx="20" cy="12" r="2" fill="#3388ff" stroke="#3388ff" stroke-width="0.5"/>
-          </svg>
-        </button>
-        <button class="icon-btn" id="mEquip" data-i18n-title="equipotential" title="Equipotential">
-          <svg class="icon-equip" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <ellipse cx="12" cy="12" rx="4" ry="8" opacity="0.7"/>
-            <ellipse cx="12" cy="12" rx="8" ry="4" opacity="0.7"/>
-            <circle cx="12" cy="12" r="2" fill="currentColor" opacity="0.5"/>
-          </svg>
-        </button>
-        <button class="icon-btn active" id="mForce" data-i18n-title="forceTitle" title="Force">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffcc00" stroke-width="2.5">
-            <path d="M6 12h10" stroke-linecap="round"/>
-            <path d="M12 7l5 5-5 5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-      <span class="separator"></span>
-      <!-- Clear -->
-      <div class="header-group" id="headerClear">
-        <button class="icon-btn" id="mClear" data-i18n-title="clearTitle" title="Clear">✕</button>
-      </div>
-      <span class="separator"></span>
-      <!-- Language switch -->
-      <div class="mobile-lang-switch">
-        <button data-lang="lv">LV</button>
-        <span class="lang-sep">|</span>
-        <button data-lang="en">EN</button>
-      </div>
-      <!-- Drawer toggle -->
-      <button class="icon-btn drawer-toggle" id="drawerToggle" data-i18n-title="settingsTitle" title="Settings">▼</button>
-    </div>
-
-    <!-- Mobile Drawer - sections aligned exactly below header groups -->
-    <div class="mobile-drawer" id="mobileDrawer">
-      <!-- Spacer for back button -->
-      <div class="drawer-spacer back-spacer"></div>
-      <span class="drawer-separator"></span>
-      <!-- Charges section -->
-      <div class="drawer-section charges-section" id="drawerCharges">
-        <span class="section-label" data-i18n="fieldCharges">Lādiņi</span>
-        <span class="section-value" id="mChargeCount">0</span>
-      </div>
-      <span class="drawer-separator"></span>
-      <!-- Test charge slider section -->
-      <div class="drawer-section test-section" id="drawerTest">
-        <span class="section-label" data-i18n="testCharge">Testa lādiņš</span>
-        <div class="slider-compact">
-          <input type="range" id="mChargeSlider" min="-10" max="10" value="1" />
+      <div class="group group-display">
+        <span class="group-label" data-i18n="display">Display</span>
+        <div class="group-row" id="displayBtns">
+          <button class="toggle" data-show="field" aria-pressed="true" data-i18n="fieldVectors">Field Vectors</button>
+          <button class="toggle" data-show="lines" aria-pressed="false" data-i18n="fieldLines">Field Lines</button>
+          <button class="toggle" data-show="equip" aria-pressed="false" data-i18n="equipotential">Equipotential</button>
+          <button class="toggle" data-show="force" aria-pressed="true" data-i18n="forceArrow">Force Arrow</button>
         </div>
       </div>
-      <span class="drawer-separator"></span>
-      <!-- Display labels section -->
-      <div class="drawer-section display-section" id="drawerDisplay">
-        <span class="display-label active" id="mLabelField" data-i18n="vectorsShort">Vektori</span>
-        <span class="display-label" id="mLabelLines" data-i18n="linesShort">Līnijas</span>
-        <span class="display-label" id="mLabelEquip" data-i18n="equipShort">Ekvipot.</span>
-        <span class="display-label active" id="mLabelForce" data-i18n="forceShort">Spēks</span>
+
+      <div class="group group-end">
+        <span class="group-label">&nbsp;</span>
+        <div class="group-row"><button class="danger" id="btnClear" data-i18n="clearAll">✕ Clear All</button></div>
       </div>
-      <span class="drawer-separator"></span>
-      <!-- Clear section -->
-      <div class="drawer-section clear-section" id="drawerClear">
-        <span class="section-label" data-i18n="clearAll">Notīrīt</span>
-      </div>
-      <span class="drawer-separator"></span>
-      <!-- Spacer for lang/toggle -->
-      <div class="drawer-spacer lang-spacer"></div>
+
+      <p class="hint" data-i18n="hint">Click on the field to place a charge, drag to move it, right-click (or long-press) to remove it.</p>
     </div>
 
-    <div id="main">
-
-      <div id="canvas-wrap">
-        <canvas id="fieldCanvas"></canvas>
-      </div>
+    <div id="canvas-wrap">
+      <canvas id="fieldCanvas"></canvas>
     </div>
 
     <script>
@@ -837,78 +351,44 @@
         en: {
           title: "Electric Field Visualizer",
           heading: "⚡ ELECTRIC FIELD",
-          subtitle: "Place charges and explore the electric field",
           fieldCharges: "Field Charges",
           testCharge: "Test Charge",
           addTestCharge: "+ Add Test Charge",
           removeTestCharge: "✕ Remove",
           display: "Display",
-          howToUse: "How to Use",
           positive: "⊕ Positive",
           negative: "⊖ Negative",
-          chargesPlaced: "Charges placed:",
-          dragToMove: "Drag to move around field",
+          chargesPlaced: "Charges:",
           fieldVectors: "Field Vectors",
           fieldLines: "Field Lines",
           equipotential: "Equipotential",
           forceArrow: "Force Arrow",
-          clearAll: "✕ Clear All",
-          controls: "Controls",
-          vectorsShort: "Vectors",
-          linesShort: "Lines",
-          equipShort: "Equipot.",
-          forceShort: "Force",
+          clearAll: "✕ Clear",
           back: "Back",
           tryCannon: "Try Newton’s Cannon simulation",
-          positiveTitle: "Positive",
-          negativeTitle: "Negative",
-          chargesPlacedTitle: "Charges placed",
           testValueTitle: "Test charge value",
-          forceTitle: "Force",
-          clearTitle: "Clear",
-          settingsTitle: "Settings",
-          helpClick: "Click on the field to place charges.",
-          helpDrag: "Drag charges to move them.",
-          helpRemove: "Right-click a charge to remove it.",
-          helpTest: "Add a test charge to explore forces.",
+          hint: "Click on the field to place a charge, drag to move it, right-click (or long-press) to remove it. Keys: F — field vectors, C — clear.",
         },
         lv: {
           title: "Elektriskā lauka vizualizētājs",
           heading: "⚡ ELEKTRISKAIS LAUKS",
-          subtitle: "Novieto lādiņus un izpēti elektrisko lauku",
           fieldCharges: "Lauka lādiņi",
           testCharge: "Testa lādiņš",
           addTestCharge: "+ Pievienot testa lādiņu",
           removeTestCharge: "✕ Noņemt",
           display: "Rādīt",
-          howToUse: "Kā lietot",
           positive: "⊕ Pozitīvs",
           negative: "⊖ Negatīvs",
-          chargesPlaced: "Lādiņu skaits:",
-          dragToMove: "Velc, lai pārvietotu pa lauku",
+          chargesPlaced: "Lādiņi:",
           fieldVectors: "Lauka vektori",
           fieldLines: "Lauka līnijas",
           equipotential: "Ekvipotenciāles",
           forceArrow: "Spēka vektors",
-          clearAll: "✕ Notīrīt visu",
-          controls: "Vadība",
-          vectorsShort: "Vektori",
-          linesShort: "Līnijas",
-          equipShort: "Ekvipot.",
-          forceShort: "Spēks",
+          clearAll: "✕ Notīrīt",
           back: "Atpakaļ",
           tryCannon: "Izmēģini Ņūtona lielgabala simulāciju",
-          positiveTitle: "Pozitīvs",
-          negativeTitle: "Negatīvs",
-          chargesPlacedTitle: "Lādiņu skaits",
           testValueTitle: "Testa lādiņa vērtība",
-          forceTitle: "Spēks",
-          clearTitle: "Notīrīt",
-          settingsTitle: "Iestatījumi",
-          helpClick: "Noklikšķini uz lauka, lai novietotu lādiņus.",
-          helpDrag: "Velc lādiņus, lai tos pārvietotu.",
-          helpRemove: "Ar labo klikšķi noņem lādiņu.",
-          helpTest: "Pievieno testa lādiņu, lai izpētītu spēkus.",
+          hint: "Klikšķis uz lauka liek lādiņu, vilkšana to pārvieto, labais klikšķis (vai ilgs pieskāriens) noņem. Taustiņi: F — lauka vektori, C — notīrīt.",
         },
       };
 
@@ -931,7 +411,7 @@
         document.querySelectorAll("[data-i18n]").forEach((el) => {
           const key = el.dataset.i18n;
           if (TRANSLATIONS[lang][key]) {
-            el.innerHTML = TRANSLATIONS[lang][key];
+            el.textContent = TRANSLATIONS[lang][key];
           }
         });
 
@@ -941,12 +421,18 @@
             el.title = TRANSLATIONS[lang][key];
           }
         });
+        document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+          const key = el.dataset.i18nAria;
+          if (TRANSLATIONS[lang][key]) {
+            el.setAttribute("aria-label", TRANSLATIONS[lang][key]);
+          }
+        });
 
         if (TRANSLATIONS[lang].title) {
           document.title = TRANSLATIONS[lang].title;
         }
 
-        document.querySelectorAll(".lang-switch button, .mobile-lang-switch button").forEach((btn) => {
+        document.querySelectorAll(".lang-switch button").forEach((btn) => {
           btn.classList.toggle("active", btn.dataset.lang === lang);
         });
 
@@ -963,8 +449,9 @@
       // ═══════════════════════════════════════════
       //  CONFIGURATION
       // ═══════════════════════════════════════════
-      const FIELD_W = 880;
-      const FIELD_H = 560;
+      // Lauks ir viss laukums zem joslas: izmērs CSS pikseļos seko kanvai (resizeCanvas), ne otrādi (Ansis 05.10)
+      let FIELD_W = 0;
+      let FIELD_H = 0;
       const TEST_CHARGE_R = 14;
       const CHARGE_R = 16;
 
@@ -998,10 +485,6 @@
       const canvas = document.getElementById("fieldCanvas");
       const ctx = canvas.getContext("2d");
 
-      let scale = 1;
-      let offsetX = 0,
-        offsetY = 0;
-
       // State
       let selectedCharge = +1;
       let showField = true;
@@ -1020,6 +503,12 @@
       let dragTarget = null; // { type:'charge'|'test', index } or null
       let mouseField = { x: -1, y: -1 };
       let mouseOnField = false;
+
+      // Zīmē tikai, kad kaut kas mainījies (lādiņš, slēdzis, pele uz lauka, izmērs); cilpa pa tukšo neko nedara
+      let dirty = true;
+      function markDirty() {
+        dirty = true;
+      }
 
       // ═══════════════════════════════════════════
       //  INITIALIZATION
@@ -1041,36 +530,42 @@
 
       function resizeCanvas() {
         const wrap = document.getElementById("canvas-wrap");
-        // clientWidth/Height include padding - subtract the actual computed padding
-        const wrapStyle = getComputedStyle(wrap);
-        const padX = parseFloat(wrapStyle.paddingLeft) + parseFloat(wrapStyle.paddingRight);
-        const padY = parseFloat(wrapStyle.paddingTop) + parseFloat(wrapStyle.paddingBottom);
-        const maxW = wrap.clientWidth - padX;
-        const maxH = wrap.clientHeight - padY;
-        const aspect = FIELD_W / FIELD_H;
+        const w = Math.max(1, Math.round(wrap.clientWidth));
+        const h = Math.max(1, Math.round(wrap.clientHeight));
+        const dpr = window.devicePixelRatio || 1;
+        if (w === FIELD_W && h === FIELD_H && canvas.width === Math.round(w * dpr)) return;
 
-        let w, h;
-        if (maxW / maxH > aspect) {
-          h = maxH;
-          w = h * aspect;
-        } else {
-          w = maxW;
-          h = w / aspect;
+        // Lādiņi paliek proporcionāli savās vietās, kad logs maina izmēru
+        if (FIELD_W > 0 && FIELD_H > 0) {
+          const kx = w / FIELD_W;
+          const ky = h / FIELD_H;
+          for (const c of charges) {
+            c.x *= kx;
+            c.y *= ky;
+          }
+          if (testCharge) {
+            testCharge.x *= kx;
+            testCharge.y *= ky;
+          }
+        }
+        FIELD_W = w;
+        FIELD_H = h;
+        for (const c of charges) {
+          c.x = Math.max(CHARGE_R, Math.min(FIELD_W - CHARGE_R, c.x));
+          c.y = Math.max(CHARGE_R, Math.min(FIELD_H - CHARGE_R, c.y));
+        }
+        if (testCharge) {
+          testCharge.x = Math.max(TEST_CHARGE_R, Math.min(FIELD_W - TEST_CHARGE_R, testCharge.x));
+          testCharge.y = Math.max(TEST_CHARGE_R, Math.min(FIELD_H - TEST_CHARGE_R, testCharge.y));
         }
 
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = w * dpr;
-        canvas.height = h * dpr;
-        canvas.style.width = w + "px";
-        canvas.style.height = h + "px";
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        scale = w / FIELD_W;
-        offsetX = 0;
-        offsetY = 0;
-
-        ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
-
-        fieldLinesCacheDirty = true;
+        fieldCacheDirty = true;
+        invalidatePotentialCache();
+        markDirty();
       }
 
       // ═══════════════════════════════════════════
@@ -1183,10 +678,6 @@
           ctx.stroke();
         }
 
-        // Border
-        ctx.strokeStyle = COL.border;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(0, 0, FIELD_W, FIELD_H);
       }
 
       function drawCharges() {
@@ -1198,9 +689,7 @@
           const glow = isPos ? COL.posGlow : COL.negGlow;
           const core = isPos ? COL.posCore : COL.negCore;
 
-          // Animated pulse
-          const pulsePhase = ((Date.now() + i * 200) % 1500) / 1500;
-          const pulseScale = 1 + Math.sin(pulsePhase * Math.PI * 2) * 0.08;
+          const pulseScale = 1;
 
           ctx.save();
 
@@ -1583,7 +1072,10 @@
       let potentialGridCache = null;
       let potentialCacheDirty = true;
       let potentialGridGeneration = 0;
-      const POTENTIAL_GRID_SPACING = 6;
+      // Režģa solis seko laukuma izmēram: 6 px pie 880 × 560 (kā līdz šim), lielākā laukā retāks, lai pārrēķins paliek ātrs
+      function potentialGridSpacing() {
+        return Math.max(6, Math.round(Math.sqrt((FIELD_W * FIELD_H) / 13700)));
+      }
 
       // Every charge mutation goes through here - also invalidates traced field lines
       function invalidatePotentialCache() {
@@ -1596,15 +1088,16 @@
         potentialCacheDirty = false;
         potentialGridGeneration++;
 
-        const cols = Math.ceil(FIELD_W / POTENTIAL_GRID_SPACING) + 1;
-        const rows = Math.ceil(FIELD_H / POTENTIAL_GRID_SPACING) + 1;
+        const spacing = potentialGridSpacing();
+        const cols = Math.ceil(FIELD_W / spacing) + 1;
+        const rows = Math.ceil(FIELD_H / spacing) + 1;
         const grid = [];
 
         for (let r = 0; r < rows; r++) {
           const row = [];
           for (let c = 0; c < cols; c++) {
-            const x = c * POTENTIAL_GRID_SPACING;
-            const y = r * POTENTIAL_GRID_SPACING;
+            const x = c * spacing;
+            const y = r * spacing;
 
             // Calculate potential at this point
             let v = 0;
@@ -1625,7 +1118,7 @@
           grid.push(row);
         }
 
-        potentialGridCache = { grid, cols, rows };
+        potentialGridCache = { grid, cols, rows, spacing };
         return potentialGridCache;
       }
 
@@ -1661,9 +1154,8 @@
       }
 
       function traceContourSegments(gridData, level) {
-        const { grid, cols, rows } = gridData;
+        const { grid, cols, rows, spacing } = gridData;
         const segments = [];
-        const spacing = POTENTIAL_GRID_SPACING;
 
         // Marching squares: for each cell, find contour crossings
         for (let r = 0; r < rows - 1; r++) {
@@ -2025,9 +1517,7 @@
       // ═══════════════════════════════════════════
       function canvasToField(clientX, clientY) {
         const rect = canvas.getBoundingClientRect();
-        const x = (clientX - rect.left) / scale - offsetX;
-        const y = (clientY - rect.top) / scale - offsetY;
-        return { x, y };
+        return { x: clientX - rect.left, y: clientY - rect.top };
       }
 
       function findChargeAt(fx, fy) {
@@ -2198,6 +1688,7 @@
               dragTarget = null;
               longPressTimer = null;
               longPressStart = null;
+              markDirty();
             }, 500);
           } else if (x > 0 && x < FIELD_W && y > 0 && y < FIELD_H) {
             // Empty field: place new charge, no delete timer
@@ -2274,21 +1765,19 @@
 
       // Keyboard shortcuts
       document.addEventListener("keydown", (e) => {
+        if (e.target && e.target.tagName === "INPUT") return;
         if (e.code === "KeyF") {
-          // Same update path as the pointer toggles - keeps mobile UI in sync
-          setFieldVectorsShown(!showField);
+          setShown("field", !showField);
         } else if (e.code === "KeyC") {
           doClear();
         }
       });
 
       // ═══════════════════════════════════════════
-      //  UI CONTROLS
+      //  UI CONTROLS — viens pogu komplekts visām ierīcēm
       // ═══════════════════════════════════════════
       function updateChargeCount() {
         document.getElementById("chargeCount").textContent = charges.length;
-        document.getElementById("mChargeCount").textContent = charges.length;
-        document.getElementById("mChargeCountBtn").textContent = charges.length;
       }
 
       function doClear() {
@@ -2298,201 +1787,86 @@
         invalidatePotentialCache();
         updateChargeCount();
         updateTestChargeUI();
+        markDirty();
       }
 
-      // Charge type buttons (desktop)
       document.getElementById("chargeBtns").addEventListener("click", (e) => {
-        const btn = e.target.closest("button");
+        const btn = e.target.closest("button[data-charge]");
         if (!btn) return;
         selectChargeType(parseFloat(btn.dataset.charge));
       });
 
-      // Charge type buttons (mobile)
-      document.getElementById("mChargePos").addEventListener("click", () => selectChargeType(1));
-      document.getElementById("mChargeNeg").addEventListener("click", () => selectChargeType(-1));
-
       function selectChargeType(val) {
         selectedCharge = val;
-        // Desktop
-        document.querySelectorAll("#chargeBtns button").forEach((b) => {
-          b.classList.remove("active-pos", "active-neg");
+        document.querySelectorAll("#chargeBtns button[data-charge]").forEach((b) => {
+          const mine = (parseFloat(b.dataset.charge) > 0) === (val > 0);
+          b.classList.toggle("active-pos", mine && val > 0);
+          b.classList.toggle("active-neg", mine && val < 0);
         });
-        document.querySelector(`#chargeBtns button[data-charge="${val > 0 ? '+1' : '-1'}"]`)
-          .classList.add(val > 0 ? "active-pos" : "active-neg");
-        // Mobile - glowing orb buttons
-        const posBtn = document.getElementById("mChargePos");
-        const negBtn = document.getElementById("mChargeNeg");
-        posBtn.classList.toggle("active-pos", val > 0);
-        negBtn.classList.toggle("active-neg", val < 0);
+        markDirty();
       }
 
-      // Clear buttons
       document.getElementById("btnClear").addEventListener("click", doClear);
-      document.getElementById("mClear").addEventListener("click", doClear);
 
-      // Test charge UI updates
       function updateTestChargeUI() {
-        const addBtn = document.getElementById("btnAddTest");
-        const controls = document.getElementById("testChargeControls");
-        const mTestBtn = document.getElementById("mTestCharge");
-        const mTestValue = document.getElementById("mTestValueBtn");
-
-        if (testCharge) {
-          addBtn.style.display = "none";
-          controls.style.display = "block";
-          mTestBtn.classList.add("active-test");
-          mTestValue.style.opacity = "1";
-        } else {
-          addBtn.style.display = "block";
-          controls.style.display = "none";
-          mTestBtn.classList.remove("active-test");
-          mTestValue.style.opacity = "0.4";
-        }
+        document.getElementById("btnAddTest").hidden = Boolean(testCharge);
+        document.getElementById("testChargeControls").hidden = !testCharge;
+        markDirty();
       }
 
-      // Add test charge buttons
       document.getElementById("btnAddTest").addEventListener("click", addTestCharge);
-      document.getElementById("mTestCharge").addEventListener("click", () => {
-        if (testCharge) {
-          removeTestCharge();
-        } else {
-          addTestCharge();
-        }
-      });
-
-      // Remove test charge button (desktop only)
       document.getElementById("btnRemoveTest").addEventListener("click", removeTestCharge);
 
-      // Test charge slider sync
       function syncTestChargeSlider(value) {
-        const val = parseInt(value);
-        if (testCharge) {
-          testCharge.charge = val;
-        }
-        const displayVal = val > 0 ? "+" + val : String(val);
+        const val = parseInt(value, 10);
+        if (testCharge) testCharge.charge = val;
         document.getElementById("chargeSlider").value = val;
-        document.getElementById("chargeVal").textContent = displayVal;
-        document.getElementById("mChargeSlider").value = val;
-        document.getElementById("mTestValueBtn").textContent = displayVal;
+        document.getElementById("chargeVal").textContent = val > 0 ? "+" + val : String(val);
+        markDirty();
       }
-
       document.getElementById("chargeSlider").addEventListener("input", (e) => syncTestChargeSlider(e.target.value));
-      document.getElementById("mChargeSlider").addEventListener("input", (e) => syncTestChargeSlider(e.target.value));
 
-      // Display checkboxes/buttons sync (desktop checkbox + mobile button + mobile label)
-      function setupDisplayToggle(checkboxId, mobileBtn, mobileLabel, stateGetter, stateSetter) {
-        const checkbox = document.getElementById(checkboxId);
-        const btn = document.getElementById(mobileBtn);
-        const label = document.getElementById(mobileLabel);
-
-        function updateUI(checked) {
-          checkbox.checked = checked;
-          btn.classList.toggle("active", checked);
-          label.classList.toggle("active", checked);
-          stateSetter(checked);
-        }
-
-        checkbox.addEventListener("change", (e) => updateUI(e.target.checked));
-        btn.addEventListener("click", () => updateUI(!stateGetter()));
-
-        return updateUI;
+      // RĀDĪT — ieslēdzamas pogas; viena funkcija arī tastatūrai (F)
+      const SHOW = {
+        field: { get: () => showField, set: (v) => (showField = v) },
+        lines: { get: () => showFieldLines, set: (v) => (showFieldLines = v) },
+        equip: { get: () => showEquipotential, set: (v) => (showEquipotential = v) },
+        force: { get: () => showForce, set: (v) => (showForce = v) },
+      };
+      function setShown(key, on) {
+        SHOW[key].set(on);
+        const btn = document.querySelector(`#displayBtns button[data-show="${key}"]`);
+        if (btn) btn.setAttribute("aria-pressed", String(on));
+        markDirty();
       }
-
-      const setFieldVectorsShown = setupDisplayToggle("chkField", "mField", "mLabelField", () => showField, (v) => showField = v);
-      setupDisplayToggle("chkFieldLines", "mLines", "mLabelLines", () => showFieldLines, (v) => showFieldLines = v);
-      setupDisplayToggle("chkEquipotential", "mEquip", "mLabelEquip", () => showEquipotential, (v) => showEquipotential = v);
-      setupDisplayToggle("chkForce", "mForce", "mLabelForce", () => showForce, (v) => showForce = v);
-
-      // Mobile drawer toggle - multiple triggers
-      const mobileDrawer = document.getElementById("mobileDrawer");
-
-      // Drawer height changes the canvas area - resize once the transition settles
-      mobileDrawer.addEventListener("transitionend", (e) => {
-        if (e.target === mobileDrawer && e.propertyName === "max-height") resizeCanvas();
+      document.getElementById("displayBtns").addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-show]");
+        if (!btn) return;
+        setShown(btn.dataset.show, !SHOW[btn.dataset.show].get());
       });
+      Object.keys(SHOW).forEach((key) => setShown(key, SHOW[key].get()));
 
-      function toggleDrawer() {
-        mobileDrawer.classList.toggle("open");
-        const toggle = document.getElementById("drawerToggle");
-        toggle.textContent = mobileDrawer.classList.contains("open") ? "▲" : "▼";
-        resizeCanvas();
-      }
-
-      function openDrawer() {
-        mobileDrawer.classList.add("open");
-        document.getElementById("drawerToggle").textContent = "▲";
-        resizeCanvas();
-      }
-
-      document.getElementById("drawerToggle").addEventListener("click", toggleDrawer);
-      document.getElementById("mChargeCountBtn").addEventListener("click", openDrawer);
-      document.getElementById("mTestValueBtn").addEventListener("click", openDrawer);
-      document.getElementById("drawerCharges").addEventListener("click", openDrawer);
-      document.getElementById("drawerTest").addEventListener("click", openDrawer);
-
-      // Close drawer when clicking on canvas
-      canvas.addEventListener("click", () => {
-        if (mobileDrawer.classList.contains("open")) {
-          mobileDrawer.classList.remove("open");
-          document.getElementById("drawerToggle").textContent = "▼";
-          resizeCanvas();
-        }
-      }, true);
-
-      // Close drawer when clicking clear
-      document.getElementById("drawerClear").addEventListener("click", () => {
-        doClear();
-        mobileDrawer.classList.remove("open");
-        document.getElementById("drawerToggle").textContent = "▼";
-        resizeCanvas();
-      });
-
-      // Mobile language switch
-      document.querySelectorAll(".mobile-lang-switch button").forEach((btn) => {
-        btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
-      });
-
-      // Display labels in drawer - wire to same toggles
-      document.getElementById("mLabelField").addEventListener("click", () => {
-        const newVal = !showField;
-        document.getElementById("chkField").checked = newVal;
-        document.getElementById("mField").classList.toggle("active", newVal);
-        document.getElementById("mLabelField").classList.toggle("active", newVal);
-        showField = newVal;
-      });
-      document.getElementById("mLabelLines").addEventListener("click", () => {
-        const newVal = !showFieldLines;
-        document.getElementById("chkFieldLines").checked = newVal;
-        document.getElementById("mLines").classList.toggle("active", newVal);
-        document.getElementById("mLabelLines").classList.toggle("active", newVal);
-        showFieldLines = newVal;
-      });
-      document.getElementById("mLabelEquip").addEventListener("click", () => {
-        const newVal = !showEquipotential;
-        document.getElementById("chkEquipotential").checked = newVal;
-        document.getElementById("mEquip").classList.toggle("active", newVal);
-        document.getElementById("mLabelEquip").classList.toggle("active", newVal);
-        showEquipotential = newVal;
-      });
-      document.getElementById("mLabelForce").addEventListener("click", () => {
-        const newVal = !showForce;
-        document.getElementById("chkForce").checked = newVal;
-        document.getElementById("mForce").classList.toggle("active", newVal);
-        document.getElementById("mLabelForce").classList.toggle("active", newVal);
-        showForce = newVal;
-      });
+      // Pele un pirksts uz lauka: pēc katra notikuma pārzīmē (spoku lādiņš seko kursoram, vilkšana kustina)
+      ["mousedown", "mousemove", "mouseup", "mouseleave", "touchstart", "touchmove", "touchend", "touchcancel"].forEach((type) =>
+        canvas.addEventListener(type, markDirty)
+      );
 
       // ═══════════════════════════════════════════
       //  RENDER LOOP
       // ═══════════════════════════════════════════
       function loop() {
-        render();
+        if (dirty) {
+          dirty = false;
+          render();
+        }
         requestAnimationFrame(loop);
       }
 
       // ═══════════════════════════════════════════
       //  START
       // ═══════════════════════════════════════════
+      // Lauka izmēru nosaka tā laukums (arī kad josla pārlūst citā rindu skaitā), ne tikai logs
+      new ResizeObserver(resizeCanvas).observe(document.getElementById("canvas-wrap"));
       window.addEventListener("resize", resizeCanvas);
       resizeCanvas();
       initLanguage();
