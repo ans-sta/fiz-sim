@@ -173,9 +173,10 @@ export function phaseZ(phase0, lambda, target) {
 export const FADE_S = 1.5; // s
 export const fadeDistance = (v, lambda) => Math.min(lambda / 4, Math.max(5, Math.abs(v) * FADE_S)); // cm, ko vilnis noskrien FADE_S laikā
 // Kalnu (vai sablīvējumu) mērs {z1, z1+λ} izbāl, kad tā gals tuvojas ass galam; rezerves mērs {0, λ} tikmēr iebāl.
-export function lambdaSpans(phase0, lambda, target, v) {
+// `end` — līdz kurienei (cm) mērs drīkst sniegties: ass gals vai, ja ass garāka par ekrānu, ekrāna labā mala (izgaišana acu priekšā).
+export function lambdaSpans(phase0, lambda, target, v, end = AXIS_CM) {
   const z1 = phaseZ(phase0, lambda, target);
-  const d = z1 + lambda - AXIS_CM; // > 0: kalnu mērs vairs neietilpst
+  const d = z1 + lambda - end; // > 0: kalnu mērs vairs neietilpst
   const a = Math.min(1, Math.max(0, -d / fadeDistance(v, lambda)));
   const out = [];
   if (a > 0.01) out.push({ z1, z2: z1 + lambda, alpha: a });

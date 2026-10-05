@@ -276,3 +276,12 @@ test('originX and panMax: the circle turns about its left edge, then the axis sl
   assert.equal(panMax(100, 30, scale, 24), 0); // already past the margin: no pan
   assert.equal(PAN_MIN_SPEED, 10);
 });
+
+test('lambdaSpans with a visible end: the measure fades at the screen edge when the axis is longer than the screen', () => {
+  const sp = lambdaSpans(CREST + TAU * 50 / 100, 100, CREST, 10, 150); // crest at 50, end 150 → exactly at the limit → fallback only
+  assert.equal(sp.length, 1);
+  assert.deepEqual([sp[0].z1, sp[0].z2], [0, 100]);
+  const mid = lambdaSpans(CREST + TAU * 42.5 / 100, 100, CREST, 10, 150); // 7,5 cm before the limit: half-way
+  assert.equal(mid.length, 2);
+  close(mid[0].alpha, 0.5);
+});

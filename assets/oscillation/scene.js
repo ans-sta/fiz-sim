@@ -75,6 +75,7 @@ export function drawScene(ctx, lay, m) {
 
   const pts = scenePoints(s, phase, angles);
   const origin = S({ u: 0, w: 0 });
+  const visibleEnd = Math.min(AXIS_CM, (W - 8 - origin.x) / lay.scale); // cm līdz ekrāna labajai malai — λ mērs izgaist acu priekšā
   // izmēru līniju enkuri caur to pašu projekciju kā punkti — pārejās tie seko kamerai un svītrām
   const Z = (z) => S(project({ x: 0, y: 0, z }, κ)); // punkts uz ass
   const Az = longAmplitude(s); // garenvilnī amplitūda ierobežota (punkti neapdzen cits citu)
@@ -140,7 +141,7 @@ export function drawScene(ctx, lay, m) {
       const aT = dimTrans * crestAlpha(zt, s.lambda, s.v);
       if (aT > 0.01) dimLine(ctx, Z(zt), S(project(point3D(-CREST, zt, s.A, angles.thetaRad, Az), κ)), '−A', { x: 1, y: 0 }, m, aT);
       const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
-      for (const sp of lambdaSpans(phase, s.lambda, CREST, s.v)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
+      for (const sp of lambdaSpans(phase, s.lambda, CREST, s.v, visibleEnd)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
         const al = dimTrans * sp.alpha;
         strokeStyle(ctx, c.hairline, al, 1, [3, 3]);
         const c1 = onWave(sp.z1);
@@ -172,7 +173,7 @@ export function drawScene(ctx, lay, m) {
       ctx.stroke();
       dimLine(ctx, { x: origin.x, y: yA }, { x: xA, y: yA }, 'A', { x: 0, y: 1 }, m, dimLong);
       const yL = combTop - 14 - 6 * m.legend;
-      for (const sp of lambdaSpans(phase, s.lambda, COMPRESSION, s.v)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
+      for (const sp of lambdaSpans(phase, s.lambda, COMPRESSION, s.v, visibleEnd)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
         const al = dimLong * sp.alpha;
         strokeStyle(ctx, c.hairline, al, 1, [3, 3]);
         const k1 = Z(sp.z1);
