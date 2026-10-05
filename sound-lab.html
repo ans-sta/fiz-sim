@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Skaņas laboratorija</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: instrument console. Transport on top, one shared pitch strip, then a "screen + controls" stage per tab. */
+:root{
+  --bg:#e8ecf1; --panel:#f6f8fa; --screen:#ffffff; --ink:#121b2e; --muted:#5b677b;
+  --line:#cdd5df; --grid:#e6ebf1;
+  --a:#2351e0; --b:#dd4f26; --accent:#2351e0; --on-accent:#ffffff;
+  --h-l:0.58; --h-c:0.17;
+  --key-w:#ffffff; --key-w-ink:#121b2e; --key-b:#1a2438; --key-b-ink:#e9eef6;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d121b; --panel:#161d2a; --screen:#090d14; --ink:#e9eef6; --muted:#94a1b6;
+    --line:#2b3547; --grid:#182130;
+    --a:#7598ff; --b:#ff8b5e; --accent:#7598ff; --on-accent:#0b1020;
+    --h-l:0.78; --h-c:0.14; --key-w:#d9e0ea; --key-w-ink:#121b2e; --key-b:#05080d; --key-b-ink:#c8d1de; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d121b; --panel:#161d2a; --screen:#090d14; --ink:#e9eef6; --muted:#94a1b6;
+  --line:#2b3547; --grid:#182130;
+  --a:#7598ff; --b:#ff8b5e; --accent:#7598ff; --on-accent:#0b1020;
+  --h-l:0.78; --h-c:0.14; --key-w:#d9e0ea; --key-w-ink:#121b2e; --key-b:#05080d; --key-b-ink:#c8d1de; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--body);padding-inline:16px;padding-block:20px 40px}
+.app{max-width:1120px;margin-inline:auto;display:flex;flex-direction:column;gap:18px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,p{margin:0}
+.label{font:500 11px/1.2 var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* transport */
+.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between}
+.top h1{font:700 30px/1.05 var(--display);letter-spacing:-.01em;text-wrap:balance}
+.top p{color:var(--muted);margin-top:4px}
+.transport{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center}
+.play{display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px 0 18px;border-radius:24px;border:0;background:var(--accent);color:var(--on-accent);font-weight:600;font-size:16px;min-width:150px}
+.play svg{width:16px;height:16px;fill:currentColor}
+.play .i-stop{display:none}
+.play[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.play[aria-pressed="true"] .i-play{display:none}
+.play[aria-pressed="true"] .i-stop{display:block}
+.vol{display:flex;align-items:center;gap:10px;min-width:190px}
+.vol input{width:130px}
+
+/* sliders */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;--c:var(--accent);--p:50%;cursor:pointer;margin:0;min-width:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:linear-gradient(to right,var(--c) var(--p),var(--line) var(--p))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--c);border:3px solid var(--panel);box-shadow:0 0 0 1px var(--c);margin-top:-7px}
+input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--line)}
+input[type=range]::-moz-range-progress{height:4px;border-radius:2px;background:var(--c)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--c);border:3px solid var(--panel);box-shadow:0 0 0 1px var(--c)}
+
+/* pitch strip */
+.pitch{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:grid;grid-template-columns:372px minmax(0,1fr);gap:16px 32px;align-items:start}
+.freq{display:flex;align-items:baseline;gap:8px}
+.freq input{font:500 46px/1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em;width:6.1ch;padding:2px 0 4px;margin:0;border:0;border-bottom:2px dashed var(--line);border-radius:0;background:transparent;color:var(--ink);cursor:text}
+.freq input:hover{border-bottom-color:var(--muted)}
+.freq input:focus{outline:0;border-bottom:2px solid var(--accent)}
+.freq span{font:500 18px var(--mono);color:var(--muted)}
+.facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 14px;margin-top:12px;color:var(--muted);font-size:13px;align-items:baseline}
+.facts span{white-space:nowrap}
+.facts b{color:var(--ink);font:500 13px var(--mono);font-variant-numeric:tabular-nums}
+.pitch-right{display:flex;flex-direction:column;gap:10px;min-width:0}
+.scale{display:flex;justify-content:space-between;font:400 11px var(--mono);color:var(--muted);margin-top:-6px}
+.keysrow{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.keys{position:relative;display:flex;gap:2px;flex:1 1 360px;min-width:0;height:92px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pk{font:600 13px/1.1 var(--body);margin:0}
+.pk.w{flex:1 1 0;min-width:0;background:var(--key-w);color:var(--key-w-ink);border:1px solid var(--line);border-radius:0 0 7px 7px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:2px;padding:0 0 6px}
+.pk.b{position:absolute;top:0;width:6.4%;height:56%;transform:translateX(-50%);background:var(--key-b);color:var(--key-b-ink);border:1px solid var(--key-b);border-radius:0 0 5px 5px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 5px;z-index:1}
+.pk small{font:500 10px var(--mono);opacity:.65}
+.pk[aria-pressed="true"],.pk.down{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.oct{display:flex;align-items:center;gap:6px}
+.oct button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--screen);font-size:18px;line-height:1;padding:0}
+.oct button:disabled{opacity:.35;cursor:default}
+.oct span{min-width:104px;text-align:center;font-size:13px;font-weight:500}
+
+/* tabs */
+.tabs{display:flex;gap:4px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;align-self:flex-start;max-width:100%}
+.tab{border:0;background:transparent;padding:9px 18px;border-radius:8px;font-weight:600;color:var(--muted);min-width:0}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+
+/* stage */
+.stage{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:22px;align-items:start}
+.screen{background:var(--screen);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.screen-head{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:space-between;padding:12px 16px 2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;background:var(--c);vertical-align:middle;margin-right:6px}
+canvas{display:block;width:100%}
+.cv-main{height:280px}
+.cv-ab{height:190px}
+.cv-sum{height:230px}
+.split-line{border-top:1px solid var(--line)}
+.side{display:flex;flex-direction:column;gap:20px;min-width:0}
+.side h2{font:700 22px/1.15 var(--display);text-wrap:balance}
+.side p{color:var(--muted);max-width:60ch}
+.group{display:flex;flex-direction:column;gap:8px}
+
+.waves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.wave{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);background:var(--panel);border-radius:10px;font-weight:500;text-align:left;min-width:0}
+.wave svg{width:44px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.wave[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:var(--on-accent)}
+.bars{display:flex;gap:4px;align-items:flex-end;height:72px;padding-top:4px}
+.bars div{flex:1 1 0;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;font:400 10px var(--mono);color:var(--muted)}
+.bars span{display:block;width:100%;background:var(--c);border-radius:2px 2px 0 0;min-height:2px}
+.bars span.zero{background:var(--line)}
+.link{align-self:flex-start;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:500}
+
+/* two sources */
+.src{border-left:3px solid var(--c);padding-left:14px;display:flex;flex-direction:column;gap:4px}
+.src-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.src-head b{font:700 17px var(--display)}
+.switch{border:1px solid var(--line);background:var(--panel);border-radius:14px;height:28px;padding:0 12px;font-size:13px;font-weight:500;color:var(--muted)}
+.switch[aria-pressed="true"]{background:var(--c,var(--accent));border-color:var(--c,var(--accent));color:var(--on-accent)}
+.row{display:grid;grid-template-columns:86px minmax(0,1fr) 52px;gap:10px;align-items:center;font-size:13px;color:var(--muted)}
+.row output{font:500 13px var(--mono);color:var(--ink);text-align:right;font-variant-numeric:tabular-nums}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding-left:96px}
+.phi-rad{padding-left:96px;color:var(--ink)}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:4px 10px;font:500 12px var(--mono)}
+.result{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:14px;align-items:center}
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin-block:8px}
+.meter div{height:100%;background:var(--ink);border-radius:5px;width:0}
+.big{font:500 30px/1 var(--mono);font-variant-numeric:tabular-nums}
+.state{font-weight:600}
+.phasor{width:150px;height:150px}
+.seg{display:flex;gap:4px;padding:3px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.seg button{flex:1 1 0;border:0;background:transparent;border-radius:7px;padding:8px 10px;font-size:13px;font-weight:500;color:var(--muted);min-width:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.note{font-size:13px;color:var(--muted)}
+
+/* harmonics */
+.stage.harm{grid-template-columns:minmax(0,1fr) minmax(0,1.05fr)}
+.stage.harm .screen{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:2}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.check{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:8px 16px 12px}
+.check input{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.hlist{display:flex;flex-direction:column}
+.hrow{display:grid;grid-template-columns:36px 108px minmax(0,1fr) 36px 112px;grid-template-areas:"tog lab sl val cv";gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+.htog{grid-area:tog;width:36px;height:36px;border-radius:50%;border:2px solid var(--c);background:transparent;color:var(--c);font:500 14px var(--mono);padding:0}
+.htog[aria-pressed="true"]{background:var(--c);color:var(--screen)}
+.hlab{grid-area:lab;display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.hlab b{font-size:13px;font-weight:600}
+.hlab span{font:400 12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.hrow input{grid-area:sl}
+.hval{grid-area:val;font:500 12px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.hcv{grid-area:cv;height:32px}
+.hrow.off .hlab,.hrow.off .hval,.hrow.off input{opacity:.5}
+.hint{font-size:13px;color:var(--muted)}
+kbd{font:500 12px var(--mono);border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--panel)}
+
+@media (max-width:860px){
+  .stage,.stage.harm{grid-template-columns:minmax(0,1fr)}
+  .pitch{grid-template-columns:minmax(0,1fr)}
+  .cv-main{height:220px}.cv-ab{height:150px}.cv-sum{height:180px}
+}
+@media (max-width:560px){
+  .top h1{font-size:25px}
+  .freq input{font-size:38px}
+  .tabs{align-self:stretch}.tab{flex:1 1 0;padding:9px 6px;font-size:14px}
+  .play{flex:1 1 auto}
+  .hrow{grid-template-columns:36px minmax(0,1fr) 96px;grid-template-areas:"tog lab cv" "sl sl val";gap:2px 10px}
+  .stage.harm .cv-main{height:170px}
+  .chips,.phi-rad{padding-left:0}
+  .facts b:last-child{min-height:3em}
+  .result{grid-template-columns:minmax(0,1fr) 120px}.phasor{width:120px;height:120px}
+  .oct span{min-width:88px}
+}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>Skaņas laboratorija</h1>
+      <p>Klausies un skaties, kā no svārstībām veidojas skaņa.</p>
+    </div>
+    <div class="transport">
+      <button class="play" id="play" aria-pressed="false">
+        <svg class="i-play" viewBox="0 0 16 16"><path d="M3 1.5v13l11-6.5z"/></svg>
+        <svg class="i-stop" viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5"/></svg>
+        <span id="play-text">Atskaņot</span>
+      </button>
+      <label class="vol"><span class="label">Skaļums</span><input type="range" id="volume" min="0" max="100" value="60"></label>
+    </div>
+  </header>
+
+  <section class="pitch" aria-label="Frekvence">
+    <div>
+      <div class="label">Frekvence</div>
+      <div class="freq"><input type="text" id="f-num" inputmode="decimal" autocomplete="off" spellcheck="false" value="220,0" aria-label="Frekvence hercos, ieraksti skaitli no 40 līdz 2000" title="Ieraksti frekvenci un nospied Enter"><span>Hz</span></div>
+      <div class="facts">
+        <span>periods T</span><b id="f-T"></b>
+        <span>viļņa garums gaisā λ</span><b id="f-lam"></b>
+        <span>tuvākā nots</span><b id="f-note"></b>
+      </div>
+    </div>
+    <div class="pitch-right">
+      <input type="range" id="freq" min="0" max="1000" step="1" value="436" aria-label="Frekvence hercos">
+      <div class="scale"><span>40 Hz</span><span>100</span><span>300</span><span>1000</span><span>2000 Hz</span></div>
+      <div class="keysrow">
+        <div class="keys" id="keys"></div>
+        <div class="oct">
+          <button id="oct-dn" aria-label="Oktāvu zemāk">−</button>
+          <span id="oct-name">mazā oktāva</span>
+          <button id="oct-up" aria-label="Oktāvu augstāk">+</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab-forma" data-tab="forma" aria-selected="true">Viļņa forma</button>
+    <button class="tab" role="tab" id="tab-faze" data-tab="faze" aria-selected="false">Divi avoti</button>
+    <button class="tab" role="tab" id="tab-harmonikas" data-tab="harmonikas" aria-selected="false">Harmonikas</button>
+  </div>
+
+  <!-- 1: waveform -->
+  <section class="stage" id="p-forma" role="tabpanel" aria-labelledby="tab-forma">
+    <div class="screen">
+      <div class="screen-head"><span class="label">Svārstība 20 ms laikā</span>
+        <span class="legend"><span style="--c:var(--a)"><i></i><span id="wave-name">Sinusoīda</span></span></span></div>
+      <canvas class="cv-main" id="cv-forma"></canvas>
+    </div>
+    <div class="side">
+      <div class="group">
+        <h2>Viļņa forma</h2>
+        <p>Frekvence nosaka toņa augstumu, viļņa forma nosaka tembru. Pārslēdz formu: tonis paliek tas pats, bet skaņas krāsa mainās.</p>
+      </div>
+      <div class="waves" id="waves">
+        <button class="wave" data-wave="sine" id="w-sine"><svg viewBox="0 0 44 24"><path d="M2 12 C7 -2 15 -2 22 12 S37 26 42 12"/></svg>Sinusoīda</button>
+        <button class="wave" data-wave="triangle" id="w-triangle"><svg viewBox="0 0 44 24"><path d="M2 12 L12 3 L32 21 L42 12"/></svg>Trijstūris</button>
+        <button class="wave" data-wave="sawtooth" id="w-sawtooth"><svg viewBox="0 0 44 24"><path d="M2 12 L22 3 V21 L42 12"/></svg>Zāģis</button>
+        <button class="wave" data-wave="square" id="w-square"><svg viewBox="0 0 44 24"><path d="M2 12 V4 H22 V20 H42 V12"/></svg>Taisnstūris</button>
+      </div>
+      <div class="group">
+        <div class="label">Šīs formas harmonikas</div>
+        <div class="bars" id="bars"></div>
+        <button class="link" id="to-harm">Salikt šo formu no harmonikām</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2: two sources -->
+  <section class="stage" id="p-faze" role="tabpanel" aria-labelledby="tab-faze" hidden>
+    <div class="screen">
+      <div class="screen-head"><span class="label">Avoti, divi periodi</span>
+        <span class="legend"><span style="--c:var(--a)"><i></i>A</span><span style="--c:var(--b)"><i></i>B</span></span></div>
+      <canvas class="cv-ab" id="cv-ab"></canvas>
+      <div class="screen-head split-line"><span class="label">Summa A + B</span>
+        <span class="legend"><span style="--c:var(--ink)"><i></i>tas, ko dzird</span></span></div>
+      <canvas class="cv-sum" id="cv-sum"></canvas>
+    </div>
+    <div class="side">
+      <div class="group">
+        <h2>Divi avoti ar vienādu frekvenci</h2>
+        <p>Bīdi avota B fāzi. Pie 0° viļņi sakrīt un skaņa kļūst skaļāka, pie 180° tie dzēš viens otru.</p>
+      </div>
+      <div class="src" style="--c:var(--a)">
+        <div class="src-head"><b>Avots A</b><button class="switch" id="a-on" aria-pressed="true">Ieslēgts</button></div>
+        <label class="row"><span>Amplitūda</span><input type="range" id="a-amp" min="0" max="100" value="100" style="--c:var(--a)"><output id="a-val">1,00</output></label>
+      </div>
+      <div class="src" style="--c:var(--b)">
+        <div class="src-head"><b>Avots B</b><button class="switch" id="b-on" aria-pressed="true">Ieslēgts</button></div>
+        <label class="row"><span>Amplitūda</span><input type="range" id="b-amp" min="0" max="100" value="100" style="--c:var(--b)"><output id="b-val">1,00</output></label>
+        <label class="row"><span>Fāzu nobīde</span><input type="range" id="phi" min="0" max="360" step="1" value="60" style="--c:var(--b)"><output id="phi-val">60°</output></label>
+        <div class="chips">
+          <button class="chip" data-phi="0">0°</button><button class="chip" data-phi="90">90° · π/2</button>
+          <button class="chip" data-phi="180">180° · π</button><button class="chip" data-phi="270">270° · 3π/2</button>
+        </div>
+        <div class="note phi-rad mono" id="phi-rad"></div>
+      </div>
+      <div class="result">
+        <div>
+          <div class="label">Summas amplitūda</div>
+          <div class="big" id="r-val">1,73</div>
+          <div class="meter" aria-hidden="true"><div id="r-bar"></div></div>
+          <div class="state" id="r-state"></div>
+          <div class="note" id="r-shift"></div>
+        </div>
+        <canvas class="phasor" id="cv-phasor" aria-label="Vektoru diagramma: A, B un to summa"></canvas>
+      </div>
+      <div class="group">
+        <div class="label">Skaņas izvade</div>
+        <div class="seg">
+          <button id="mix-both" aria-pressed="true">Abi avoti kopā</button>
+          <button id="mix-split" aria-pressed="false">A pa kreisi, B pa labi</button>
+        </div>
+        <div class="note" id="mix-note"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3: harmonics -->
+  <section class="stage harm" id="p-harmonikas" role="tabpanel" aria-labelledby="tab-harmonikas" hidden>
+    <div class="screen">
+      <div class="screen-head"><span class="label">Summa, divi periodi</span>
+        <span class="legend"><span style="--c:var(--ink)"><i></i>summa</span><span id="h-count"></span></span></div>
+      <canvas class="cv-main" id="cv-harm"></canvas>
+      <label class="check"><input type="checkbox" id="overlay" checked>Rādīt arī atsevišķās harmonikas</label>
+    </div>
+    <div class="side">
+      <div class="group">
+        <h2>Harmonikas</h2>
+        <p>Muzikāls tonis sastāv no pamattoņa un virstoņiem, kuru frekvences ir 2, 3, 4… reizes lielākas. Ieslēdz tos pa vienam un vēro, kā mainās summa.</p>
+      </div>
+      <div class="group">
+        <div class="label">Gatavas formas</div>
+        <div class="presets">
+          <button class="chip" data-preset="sine">Tikai pamattonis</button>
+          <button class="chip" data-preset="sawtooth">Zāģis</button>
+          <button class="chip" data-preset="square">Taisnstūris</button>
+          <button class="chip" data-preset="triangle">Trijstūris</button>
+          <button class="chip" data-preset="all">Visas vienādi</button>
+        </div>
+      </div>
+      <div class="group">
+        <div class="label">Instrumenti (tuvinājumi)</div>
+        <div class="presets">
+          <button class="chip" data-preset="flute">Flauta</button>
+          <button class="chip" data-preset="clarinet">Klarnete</button>
+          <button class="chip" data-preset="violin">Vijole</button>
+          <button class="chip" data-preset="trumpet">Trompete</button>
+        </div>
+        <div class="note" id="instr-note">Aptuveni harmoniku sadalījumi vidējam reģistram. Īsts instruments skan dzīvāk, jo tā harmonikas mainās nots laikā un atšķiras katrai notij.</div>
+      </div>
+      <div class="hlist" id="hlist"></div>
+    </div>
+  </section>
+
+  <p class="hint">Tastatūra: <kbd>atstarpe</kbd> ieslēdz un izslēdz skaņu, burtu rindas ir klavieres: <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> ir baltie taustiņi do–do, <kbd>W</kbd> <kbd>E</kbd> <kbd>T</kbd> <kbd>Y</kbd> <kbd>U</kbd> melnie, <kbd>Z</kbd> un <kbd>X</kbd> maina oktāvu. Taustiņš skan, kamēr to tur. Frekvences skaitli var ierakstīt ar roku (Enter apstiprina, bultiņas ↑↓ maina pa 1 Hz). Sāc ar nelielu skaļumu.</p>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const FMIN=40, FMAX=2000, NH=12, C_AIR=343, TAU=2*Math.PI;
+const fmt=(x,d)=>x.toFixed(d).replace('.',',');
+const hue=n=>(20+(n-1)*28)%360;
+
+const WAVES={
+  sine:{name:'Sinusoīda',fn:p=>Math.sin(TAU*p),h:n=>n===1?1:0,sign:()=>1},
+  triangle:{name:'Trijstūris',fn:p=>2/Math.PI*Math.asin(Math.sin(TAU*p)),h:n=>n%2?1/(n*n):0,sign:n=>((n-1)/2)%2?-1:1},
+  sawtooth:{name:'Zāģis',fn:p=>2*((((p+.5)%1)+1)%1)-1,h:n=>1/n,sign:n=>n%2?1:-1},
+  square:{name:'Taisnstūris',fn:p=>(((p%1)+1)%1)<.5?1:-1,h:n=>n%2?1/n:0,sign:()=>1}
+};
+const PCODES=['KeyA','KeyW','KeyS','KeyE','KeyD','KeyF','KeyT','KeyG','KeyY','KeyH','KeyU','KeyJ','KeyK','KeyO','KeyL','KeyP','Semicolon'];
+const PLET='AWSEDFTGYHUJKOLP;';
+const ISBLACK=s=>[1,3,6,8,10].includes(s%12);
+const NN=['do','do♯','re','re♯','mi','fa','fa♯','sol','sol♯','la','la♯','si'];
+const ON={0:'subkontroktāva',1:'kontroktāva',2:'lielā oktāva',3:'mazā oktāva',4:'1. oktāva',5:'2. oktāva',6:'3. oktāva',7:'4. oktāva'};
+
+const held=[];
+const S={tab:'forma',playing:false,moment:false,f:220,oct:3,vol:.6,wave:'sine',
+  a:{on:true,amp:1},b:{on:true,amp:1},phi:60,split:false,overlay:true,
+  H:Array.from({length:NH},(_,i)=>({on:i<3,amp:1/(i+1),sign:1}))};
+
+const noteFreq=s=>440*Math.pow(2,(12*(S.oct+1)+s-69)/12);
+const clampF=f=>Math.min(FMAX,Math.max(FMIN,f));
+
+/* ---------- build static DOM ---------- */
+{let wi=0; const SOL=['do','','re','','mi','fa','','sol','','la','','si'];
+  $('#keys').innerHTML=PCODES.map((c,sm)=>{
+    if(ISBLACK(sm)) return `<button class="pk b" id="pk-${sm}" data-s="${sm}" tabindex="-1" aria-pressed="false" style="left:${wi*10}%"><small>${PLET[sm]}</small></button>`;
+    wi++; return `<button class="pk w" id="pk-${sm}" data-s="${sm}" tabindex="-1" aria-pressed="false">${SOL[sm%12]}<small>${PLET[sm]}</small></button>`}).join('')}
+$('#hlist').innerHTML=S.H.map((h,i)=>{const n=i+1;return `
+  <div class="hrow" data-n="${n}" style="--c:oklch(var(--h-l) var(--h-c) ${hue(n)})">
+    <button class="htog" id="h-on-${n}" aria-pressed="false" aria-label="${n===1?'Pamattonis':n+'. harmonika'}: ieslēgt vai izslēgt">${n}</button>
+    <div class="hlab"><b>${n===1?'pamattonis':n+'. harmonika'}</b><span class="hf"></span></div>
+    <input type="range" id="h-amp-${n}" min="0" max="100" value="0" aria-label="${n===1?'Pamattoņa':n+'. harmonikas'} amplitūda">
+    <output class="hval"></output>
+    <canvas class="hcv"></canvas>
+  </div>`}).join('');
+$('#bars').innerHTML=Array.from({length:NH},(_,i)=>`<div style="--c:oklch(var(--h-l) var(--h-c) ${hue(i+1)})"><span></span>${i+1}</div>`).join('');
+
+/* ---------- audio ---------- */
+let ctx=null, master=null, nodes=null;
+function ensureCtx(){
+  if(!ctx){
+    const AC=window.AudioContext||window.webkitAudioContext;
+    ctx=new AC(); master=ctx.createGain(); master.gain.value=S.vol*S.vol; master.connect(ctx.destination);
+  }
+  if(ctx.state==='suspended') ctx.resume();
+}
+function stopNodes(){
+  if(!nodes) return;
+  const n=nodes, t=ctx.currentTime; nodes=null;
+  n.bus.gain.cancelScheduledValues(t); n.bus.gain.setValueAtTime(n.bus.gain.value,t); n.bus.gain.linearRampToValueAtTime(0,t+.03);
+  n.oscs.forEach(o=>{try{o.stop(t+.06)}catch(e){}});
+  setTimeout(()=>{try{n.bus.disconnect()}catch(e){}},200);
+}
+function harmGains(){
+  const sum=S.H.reduce((s,h)=>s+(h.on?h.amp:0),0), k=.6/Math.max(3,sum);
+  return S.H.map((h,i)=>(h.on&&(i+1)*S.f<20000)?h.sign*h.amp*k:0);
+}
+function duoGains(){
+  const k=.4, ph=S.phi*Math.PI/180, b=S.b.on?S.b.amp*k:0;
+  return {a:S.a.on?S.a.amp*k:0, bs:b*Math.cos(ph), bc:b*Math.sin(ph)};
+}
+function build(){
+  stopNodes();
+  const t=ctx.currentTime, bus=ctx.createGain();
+  bus.gain.setValueAtTime(0,t); bus.gain.linearRampToValueAtTime(1,t+.04); bus.connect(master);
+  const N={tab:S.tab,bus,oscs:[]};
+  const osc=(f,wave)=>{const o=ctx.createOscillator(); if(wave) o.setPeriodicWave(wave); o.frequency.value=f; N.oscs.push(o); return o};
+  const gain=v=>{const g=ctx.createGain(); g.gain.value=v; return g};
+  if(S.tab==='forma'){
+    const o=osc(S.f); o.type=S.wave; N.wave=S.wave; o.connect(gain(.35)).connect(bus);
+  }else if(S.tab==='faze'){
+    // B = b·sin(ωt+φ) = b·cosφ·sin(ωt) + b·sinφ·cos(ωt): exact phase shift from two locked oscillators
+    const sinW=ctx.createPeriodicWave(new Float32Array([0,0]),new Float32Array([0,1]),{disableNormalization:true});
+    const cosW=ctx.createPeriodicWave(new Float32Array([0,1]),new Float32Array([0,0]),{disableNormalization:true});
+    const os=osc(S.f,sinW), oc=osc(S.f,cosW), g=duoGains();
+    N.gA=gain(g.a); N.gBs=gain(g.bs); N.gBc=gain(g.bc);
+    const pan=v=>{if(!ctx.createStereoPanner) return null; const p=ctx.createStereoPanner(); p.pan.value=v; return p};
+    N.pA=pan(S.split?-1:0); N.pB=pan(S.split?1:0);
+    os.connect(N.gA); os.connect(N.gBs); oc.connect(N.gBc);
+    if(N.pA){N.gA.connect(N.pA).connect(bus); N.gBs.connect(N.pB); N.gBc.connect(N.pB); N.pB.connect(bus)}
+    else{N.gA.connect(bus); N.gBs.connect(bus); N.gBc.connect(bus)}
+  }else{
+    const g=harmGains();
+    N.hg=S.H.map((h,i)=>{const o=osc(Math.min(S.f*(i+1),20000)); o.type='sine'; const gn=gain(g[i]); o.connect(gn).connect(bus); return gn});
+  }
+  N.oscs.forEach(o=>o.start(t+.01));
+  nodes=N;
+}
+function audio(){
+  if(!S.playing){ if(ctx) stopNodes(); return; }
+  ensureCtx();
+  if(!nodes||nodes.tab!==S.tab) build();
+  const t=ctx.currentTime, set=(p,v)=>p.setTargetAtTime(v,t,.012), N=nodes;
+  set(master.gain,S.vol*S.vol);
+  if(N.tab==='forma'){
+    if(N.wave!==S.wave){N.oscs[0].type=S.wave; N.wave=S.wave}
+    set(N.oscs[0].frequency,S.f);
+  }else if(N.tab==='faze'){
+    N.oscs.forEach(o=>set(o.frequency,S.f));
+    const g=duoGains(); set(N.gA.gain,g.a); set(N.gBs.gain,g.bs); set(N.gBc.gain,g.bc);
+    if(N.pA){set(N.pA.pan,S.split?-1:0); set(N.pB.pan,S.split?1:0)}
+  }else{
+    const g=harmGains();
+    N.oscs.forEach((o,i)=>set(o.frequency,Math.min(S.f*(i+1),20000)));
+    N.hg.forEach((gn,i)=>set(gn.gain,g[i]));
+  }
+}
+
+/* ---------- drawing ---------- */
+let T={};
+function tokens(){
+  const cs=getComputedStyle(document.documentElement), g=n=>cs.getPropertyValue(n).trim();
+  T={ink:g('--ink'),muted:g('--muted'),line:g('--line'),grid:g('--grid'),a:g('--a'),b:g('--b'),hl:g('--h-l'),hc:g('--h-c')};
+}
+const hcol=n=>`oklch(${T.hl} ${T.hc} ${hue(n)})`;
+function prep(cv){
+  const r=cv.getBoundingClientRect(); if(r.width<2) return null;
+  const d=window.devicePixelRatio||1, W=Math.round(r.width*d), H=Math.round(r.height*d);
+  if(cv.width!==W||cv.height!==H){cv.width=W; cv.height=H}
+  const c=cv.getContext('2d'); c.setTransform(d,0,0,d,0,0); c.clearRect(0,0,r.width,r.height);
+  return {c,w:r.width,h:r.height};
+}
+function scope(cv,o){
+  const p=prep(cv); if(!p) return; const {c}=p;
+  const pl=o.bare?1:40, pr=o.bare?1:12, pt=o.bare?2:12, pb=o.bare?2:26;
+  const w=p.w-pl-pr, h=p.h-pt-pb, y0=pt+h/2, ym=o.yMax||1.25, Y=v=>y0-v/ym*(h/2);
+  if(!o.bare){
+    c.font='11px "JetBrains Mono",ui-monospace,monospace'; c.lineWidth=1;
+    c.strokeStyle=T.grid; c.fillStyle=T.muted; c.textBaseline='middle'; c.textAlign='right';
+    (o.yt||[-1,0,1]).forEach(v=>{const y=Math.round(Y(v))+.5; c.beginPath(); c.moveTo(pl,y); c.lineTo(pl+w,y); c.stroke(); c.fillText((v>0?'+':v<0?'−':'')+Math.abs(v),pl-8,y)});
+    c.textBaseline='top';
+    (o.xt||[]).forEach((tk,i,arr)=>{const x=Math.round(pl+tk.x*w)+.5; c.beginPath(); c.moveTo(x,pt); c.lineTo(x,pt+h); c.stroke();
+      c.textAlign=i===0?'left':i===arr.length-1?'right':'center'; c.fillText(tk.l,x,pt+h+8)});
+  }
+  c.strokeStyle=T.line; c.lineWidth=1; c.beginPath(); c.moveTo(pl,Math.round(y0)+.5); c.lineTo(pl+w,Math.round(y0)+.5); c.stroke();
+  c.save(); c.beginPath(); c.rect(pl,pt-1,w,h+2); c.clip(); c.lineJoin='round'; c.lineCap='round';
+  const N=Math.max(240,Math.ceil(w*2.5));
+  o.traces.forEach(tr=>{
+    c.beginPath(); c.strokeStyle=tr.color; c.lineWidth=tr.w||2; c.globalAlpha=tr.alpha==null?1:tr.alpha;
+    for(let i=0;i<=N;i++){const x=i/N, y=Y(tr.fn(x)); i?c.lineTo(pl+x*w,y):c.moveTo(pl+x*w,y)}
+    c.stroke();
+  });
+  c.restore(); c.globalAlpha=1;
+}
+const XT2=[{x:0,l:'0'},{x:.25,l:'½T'},{x:.5,l:'T'},{x:.75,l:'1½T'},{x:1,l:'2T'}];
+
+function drawForma(){
+  const wv=WAVES[S.wave];
+  scope($('#cv-forma'),{yMax:1.3,xt:[0,5,10,15,20].map(m=>({x:m/20,l:m+' ms'})),
+    traces:[{fn:x=>wv.fn(x*.02*S.f),color:T.a,w:2.25}]});
+}
+function drawFaze(){
+  const ph=S.phi*Math.PI/180, a=S.a.on?S.a.amp:0, b=S.b.on?S.b.amp:0;
+  const fa=x=>a*Math.sin(TAU*2*x), fb=x=>b*Math.sin(TAU*2*x+ph), opt={yMax:2.3,yt:[-2,-1,0,1,2],xt:XT2};
+  const tr=[]; if(S.a.on) tr.push({fn:fa,color:T.a,w:2.25}); if(S.b.on) tr.push({fn:fb,color:T.b,w:2.25});
+  scope($('#cv-ab'),{...opt,traces:tr});
+  scope($('#cv-sum'),{...opt,traces:[{fn:x=>fa(x)+fb(x),color:T.ink,w:2.75}]});
+  // vector diagram
+  const p=prep($('#cv-phasor')); if(!p) return; const {c}=p, cx=p.w/2, cy=p.h/2, u=Math.min(p.w,p.h)/2/2.25;
+  c.lineWidth=1; c.strokeStyle=T.grid; [1,2].forEach(r=>{c.beginPath(); c.arc(cx,cy,r*u,0,TAU); c.stroke()});
+  c.strokeStyle=T.line; c.beginPath(); c.moveTo(cx-2.1*u,cy); c.lineTo(cx+2.1*u,cy); c.moveTo(cx,cy-2.1*u); c.lineTo(cx,cy+2.1*u); c.stroke();
+  const arrow=(x1,y1,x2,y2,col,lw)=>{const L=Math.hypot(x2-x1,y2-y1); if(L<1.5) return; const an=Math.atan2(y2-y1,x2-x1), hd=Math.min(8,L*.6);
+    c.strokeStyle=col; c.fillStyle=col; c.lineWidth=lw; c.lineCap='round'; c.beginPath(); c.moveTo(x1,y1); c.lineTo(x2-Math.cos(an)*hd*.7,y2-Math.sin(an)*hd*.7); c.stroke();
+    c.beginPath(); c.moveTo(x2,y2); c.lineTo(x2-hd*Math.cos(an-.45),y2-hd*Math.sin(an-.45)); c.lineTo(x2-hd*Math.cos(an+.45),y2-hd*Math.sin(an+.45)); c.closePath(); c.fill()};
+  const ax=cx+a*u, ay=cy, bx=ax+b*u*Math.cos(ph), by=ay-b*u*Math.sin(ph);
+  arrow(cx,cy,bx,by,T.ink,3); arrow(cx,cy,ax,ay,T.a,2); arrow(ax,ay,bx,by,T.b,2);
+}
+function drawHarm(){
+  const act=S.H.map((h,i)=>({n:i+1,v:h.on?h.sign*h.amp:0})).filter(h=>h.v!==0);
+  const sum=x=>{let s=0; for(const h of act) s+=h.v*Math.sin(TAU*2*h.n*x); return s};
+  let peak=0; for(let i=0;i<800;i++) peak=Math.max(peak,Math.abs(sum(i/800)));
+  const ym=Math.max(1.3,peak*1.12), step=ym<2.6?1:ym<5.2?2:ym<10?4:6, yt=[0];
+  for(let v=step;v<ym;v+=step) yt.push(v,-v);
+  const tr=[]; if(S.overlay) act.forEach(h=>tr.push({fn:x=>h.v*Math.sin(TAU*2*h.n*x),color:hcol(h.n),w:1.25,alpha:.9}));
+  tr.push({fn:sum,color:T.ink,w:2.75});
+  scope($('#cv-harm'),{yMax:ym,yt,xt:XT2,traces:tr});
+  $$('.hrow').forEach((row,i)=>{const h=S.H[i], n=i+1;
+    scope(row.querySelector('.hcv'),{bare:true,yMax:1.1,traces:[{fn:x=>h.sign*h.amp*Math.sin(TAU*2*n*x),color:h.on?hcol(n):T.muted,w:1.5,alpha:h.on?1:.45}]})});
+}
+
+/* ---------- render ---------- */
+function piFrac(d){ if(d===0) return '0';
+  if(d%15===0){let n=d/15, m=12; const g=(a,b)=>b?g(b,a%b):a, k=g(n,m); n/=k; m/=k; return (n===1?'':n)+'π'+(m===1?'':'/'+m)}
+  return fmt(d/180,2)+'π'}
+function nearest(f){const m=69+12*Math.log2(f/440), r=Math.round(m), c=Math.round((m-r)*100);
+  return NN[((r%12)+12)%12]+', '+(ON[Math.floor(r/12)-1]||'')+(c?` ${c>0?'+':'−'}${Math.abs(c)} centi`:'')}
+function render(){
+  tokens();
+  // transport + pitch
+  $('#play').setAttribute('aria-pressed',S.playing); $('#play-text').textContent=S.playing?'Apturēt':'Atskaņot';
+  if(document.activeElement!==$('#f-num')) $('#f-num').value=fmt(S.f,1);
+  $('#f-T').textContent=fmt(1000/S.f,2)+' ms';
+  $('#f-lam').textContent=C_AIR/S.f>=1?fmt(C_AIR/S.f,2)+' m':fmt(C_AIR/S.f*100,1)+' cm';
+  $('#f-note').textContent=nearest(S.f);
+  $('#freq').value=Math.round(1000*Math.log(S.f/FMIN)/Math.log(FMAX/FMIN));
+  PCODES.forEach((c,sm)=>{const k=$('#pk-'+sm); k.setAttribute('aria-pressed',Math.abs(S.f-noteFreq(sm))<.06); k.classList.toggle('down',held.includes(sm))});
+  $('#oct-name').textContent=ON[S.oct]; $('#oct-dn').disabled=S.oct<=2; $('#oct-up').disabled=S.oct>=5;
+  // tabs
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===S.tab));
+  ['forma','faze','harmonikas'].forEach(t=>$('#p-'+t).hidden=t!==S.tab);
+
+  if(S.tab==='forma'){
+    $$('.wave').forEach(b=>b.setAttribute('aria-pressed',b.dataset.wave===S.wave));
+    $('#wave-name').textContent=WAVES[S.wave].name;
+    $$('#bars span').forEach((s,i)=>{const v=WAVES[S.wave].h(i+1); s.style.height=(v*100)+'%'; s.classList.toggle('zero',v===0)});
+    drawForma();
+  }else if(S.tab==='faze'){
+    const sw=(id,on)=>{const b=$(id); b.setAttribute('aria-pressed',on); b.textContent=on?'Ieslēgts':'Izslēgts'};
+    sw('#a-on',S.a.on); sw('#b-on',S.b.on);
+    $('#a-amp').value=S.a.amp*100; $('#b-amp').value=S.b.amp*100; $('#phi').value=S.phi;
+    $('#a-val').textContent=fmt(S.a.amp,2); $('#b-val').textContent=fmt(S.b.amp,2); $('#phi-val').textContent=S.phi+'°';
+    const a=S.a.on?S.a.amp:0, b=S.b.on?S.b.amp:0, cs=Math.cos(S.phi*Math.PI/180), R=Math.sqrt(Math.max(0,a*a+b*b+2*a*b*cs));
+    $('#r-val').textContent=fmt(R,2); $('#r-bar').style.width=(R/2*100)+'%';
+    $('#r-state').textContent=!(a&&b)?'Skan tikai viens avots':cs>.85?'Viļņi pastiprina viens otru':cs<-.85?'Viļņi dzēš viens otru':'Daļēja pastiprināšanās';
+    $('#phi-rad').textContent='φ = '+S.phi+'° = '+piFrac(S.phi)+' rad ≈ '+fmt(S.phi*Math.PI/180,2)+' rad';
+    $('#r-shift').textContent='Nobīde laikā: '+fmt(S.phi/360,2)+' T = '+fmt(S.phi/360*1000/S.f,2)+' ms';
+    $('#mix-both').setAttribute('aria-pressed',!S.split); $('#mix-split').setAttribute('aria-pressed',S.split);
+    $('#mix-note').textContent=S.split
+      ?'Tagad viļņi saskaitās gaisā, nevis datorā. Pakusties telpā: vietām skaņa ir skaļāka, vietām klusāka.'
+      :'Abi signāli tiek saskaitīti pirms skaļruņa, tāpēc dzirdi tieši apakšējo līkni.';
+    drawFaze();
+  }else{
+    $('#overlay').checked=S.overlay;
+    const on=S.H.filter(h=>h.on).length;
+    $('#h-count').textContent=on+' no '+NH+' ieslēgtas';
+    $$('.hrow').forEach((row,i)=>{const h=S.H[i], n=i+1, f=S.f*n;
+      row.classList.toggle('off',!h.on);
+      row.querySelector('.htog').setAttribute('aria-pressed',h.on);
+      row.querySelector('.hf').textContent=(f>=1000?fmt(f/1000,2)+' kHz':fmt(f,0)+' Hz');
+      row.querySelector('input').value=Math.round(h.amp*100);
+      row.querySelector('.hval').textContent=fmt(h.amp,2)});
+    drawHarm();
+  }
+  $$('input[type=range]').forEach(r=>r.style.setProperty('--p',((r.value-r.min)/(r.max-r.min)*100)+'%'));
+  audio();
+}
+
+/* ---------- actions ---------- */
+// Approximate steady-state spectra (typical shape, not a measurement of one specific instrument)
+const INSTR={
+  flute:   {a:[1,.40,.15,.07,.03,.015,0,0,0,0,0,0], t:'Flauta: stiprs pamattonis un tikai daži vāji virstoņi, tāpēc vilnis ir gandrīz sinusoīda.'},
+  clarinet:{a:[1,.04,.75,.06,.50,.07,.30,.10,.20,.08,.12,.05], t:'Klarnete: dominē nepāra harmonikas (1, 3, 5…), jo caurule vienā galā ir slēgta. Vilnis līdzinās taisnstūrim.'},
+  violin:  {a:[1,.60,.45,.50,.25,.30,.15,.18,.10,.08,.06,.05], t:'Vijole: visas harmonikas kā zāģim, bet korpusa rezonanses dažas pastiprina un citas vājina.'},
+  trumpet: {a:[.60,.90,1,.90,.75,.60,.45,.35,.25,.18,.12,.08], t:'Trompete: spēcīgākās ir 2.–5. harmonika, pamattonis ir vājāks par tām. Tāpēc skaņa ir spilgta.'}
+};
+const NOTE0=$('#instr-note').textContent;
+function preset(name){
+  $('#instr-note').textContent=INSTR[name]?INSTR[name].t+' Tuvinājums vidējam reģistram.':NOTE0;
+  if(INSTR[name]){S.H.forEach((h,i)=>{const v=INSTR[name].a[i]; h.on=v>0; h.amp=v>0?v:.05; h.sign=1}); return}
+  S.H.forEach((h,i)=>{const n=i+1;
+    if(name==='all'){h.on=true; h.amp=1; h.sign=1; return}
+    const w=WAVES[name], v=w.h(n); h.on=v>0; h.amp=v>0?v:1/n; h.sign=w.sign(n)});
+}
+function setTab(t){S.tab=t; render()}
+
+$('#play').onclick=()=>{S.playing=!S.playing; S.moment=false; render()};
+$('#volume').oninput=e=>{S.vol=e.target.value/100; render()};
+$('#freq').oninput=e=>{S.f=Math.round(FMIN*Math.pow(FMAX/FMIN,e.target.value/1000)*10)/10; render()};
+const fnum=$('#f-num');
+const commitF=()=>{const v=parseFloat(fnum.value.replace(',','.').replace(/[^0-9.]/g,'')); if(isFinite(v)&&v>0) S.f=Math.round(clampF(v)*10)/10; fnum.value=fmt(S.f,1); render()};
+fnum.addEventListener('focus',()=>fnum.select());
+fnum.addEventListener('blur',commitF);
+fnum.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){commitF(); fnum.select(); e.preventDefault()}
+  else if(e.key==='Escape'){fnum.value=fmt(S.f,1); fnum.blur()}
+  else if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault(); commitF(); S.f=Math.round(clampF(S.f+(e.key==='ArrowUp'?1:-1)*(e.shiftKey?10:1))*10)/10; fnum.value=fmt(S.f,1); render()}
+});
+// piano: monophonic, last key wins; sounds only while held unless continuous play is on
+function noteOn(sm){const i=held.indexOf(sm); if(i>=0) held.splice(i,1); held.push(sm);
+  S.f=Math.round(noteFreq(sm)*100)/100; if(!S.playing){S.playing=true; S.moment=true} render()}
+function noteOff(sm){const i=held.indexOf(sm); if(i<0) return; held.splice(i,1);
+  if(held.length) S.f=Math.round(noteFreq(held[held.length-1])*100)/100; else if(S.moment){S.playing=false; S.moment=false} render()}
+const allOff=()=>{[...held].forEach(noteOff); ptr.clear()};
+const ptr=new Map();
+$('#keys').addEventListener('pointerdown',e=>{const b=e.target.closest('.pk'); if(!b) return; e.preventDefault(); ptr.set(e.pointerId,+b.dataset.s); noteOn(+b.dataset.s)});
+const pUp=e=>{if(ptr.has(e.pointerId)){const sm=ptr.get(e.pointerId); ptr.delete(e.pointerId); noteOff(sm)}};
+document.addEventListener('pointerup',pUp); document.addEventListener('pointercancel',pUp);
+window.addEventListener('blur',allOff);
+document.addEventListener('keyup',e=>{const sm=PCODES.indexOf(e.code); if(sm>=0) noteOff(sm)});
+const octave=d=>{const o=S.oct+d; if(o<2||o>5) return; S.oct=o; S.f=Math.round(clampF(S.f*Math.pow(2,d))*100)/100; render()};
+$('#oct-dn').onclick=()=>octave(-1); $('#oct-up').onclick=()=>octave(1);
+$$('.tab').forEach(t=>t.onclick=()=>setTab(t.dataset.tab));
+$('#waves').onclick=e=>{const b=e.target.closest('.wave'); if(b){S.wave=b.dataset.wave; render()}};
+$('#to-harm').onclick=()=>{preset(S.wave); setTab('harmonikas')};
+$('#a-on').onclick=()=>{S.a.on=!S.a.on; render()};
+$('#b-on').onclick=()=>{S.b.on=!S.b.on; render()};
+$('#a-amp').oninput=e=>{S.a.amp=e.target.value/100; render()};
+$('#b-amp').oninput=e=>{S.b.amp=e.target.value/100; render()};
+$('#phi').oninput=e=>{S.phi=+e.target.value; render()};
+$$('[data-phi]').forEach(b=>b.onclick=()=>{S.phi=+b.dataset.phi; render()});
+$('#mix-both').onclick=()=>{S.split=false; render()};
+$('#mix-split').onclick=()=>{S.split=true; render()};
+$('#overlay').onchange=e=>{S.overlay=e.target.checked; render()};
+$$('[data-preset]').forEach(b=>b.onclick=()=>{preset(b.dataset.preset); render()});
+$('#hlist').addEventListener('click',e=>{const b=e.target.closest('.htog'); if(!b) return; const h=S.H[b.parentNode.dataset.n-1]; h.on=!h.on; render()});
+$('#hlist').addEventListener('input',e=>{if(e.target.type!=='range') return; const h=S.H[e.target.parentNode.dataset.n-1]; h.amp=e.target.value/100; render()});
+
+document.addEventListener('keydown',e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const tag=e.target.tagName;
+  if(e.code==='Space'&&tag!=='BUTTON'&&tag!=='INPUT'){e.preventDefault(); S.playing=!S.playing; S.moment=false; render(); return}
+  if(e.target===fnum) return;
+  if(e.code==='KeyZ'){octave(-1); return} if(e.code==='KeyX'){octave(1); return}
+  const sm=PCODES.indexOf(e.code); if(sm>=0){e.preventDefault(); if(!e.repeat) noteOn(sm)}
+});
+
+const h0=location.hash.slice(1); if(['forma','faze','harmonikas'].includes(h0)) S.tab=h0;
+let raf=0; const redraw=()=>{cancelAnimationFrame(raf); raf=requestAnimationFrame(render)};
+if(window.ResizeObserver) new ResizeObserver(redraw).observe(document.querySelector('.app')); else window.addEventListener('resize',redraw);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redraw);
+new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(redraw);
+render();
+})();
+</script>
+
+</body>
+</html>

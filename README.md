@@ -17,6 +17,8 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | 🚀 Newton's Cannon       | Orbital mechanics / gravity    | ✅ Live |
 | 🟠 Ball in a Groove (K-01) | Kinematics / rolling on an incline | ✅ Live |
 | 〜 Oscillations and Waves (S-01) | Oscillations / transverse and longitudinal waves | ✅ Live |
+| 🔊 Sound Lab               | Sound / waveform, phase, harmonics | ✅ Live |
+| 🔊 Sound Lab v2 (S-02)     | The same in the technical-drawing design (review copy) | 🟡 Review |
 
 ## Structure
 
@@ -29,8 +31,10 @@ fiz-sim/
 ├── newtons-cannon.html             ← Orbital mechanics
 ├── rolling-ball.html               ← Ball in a Groove (K-01)
 ├── harmonic-motion.html            ← Oscillations and Waves (S-01)
+├── sound-lab.html                  ← Sound Lab (single file, Web Audio; Latvian only)
+├── sound-lab-v2.html               ← Sound Lab (S-02) in the technical-drawing design: assets/sound/
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -136,3 +140,18 @@ Parameters of `harmonic-motion.html`, given in the URL. They are starting values
 Example (longitudinal wave, long period):
 
     harmonic-motion.html?view=long&v=10&lambda=80
+
+## Teacher links (S-02)
+
+Parameters of `sound-lab-v2.html`, given in the URL. Starting values only; unknown parameters are ignored, values outside the range are clamped with a notice. No `lock`.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `view=wave\|two\|harmonics` | Starting view: waveform, two sources, harmonics. Default `wave` |
+| `f=<number>` | Frequency, Hz, 40–2000 |
+| `wave=sine\|triangle\|sawtooth\|square` | Waveform in the waveform view |
+| `phi=<number>` | Phase shift of source B, degrees, 0–360 (step 5) |
+
+Example (two sources in antiphase):
+
+    sound-lab-v2.html?view=two&phi=180

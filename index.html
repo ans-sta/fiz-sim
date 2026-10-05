@@ -699,6 +699,40 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 8: Sound lab ══════ -->
+    <a href="sound-lab.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- Scope frame and zero line -->
+          <rect x="18" y="16" width="164" height="70" fill="none" stroke="#1a2540" stroke-width="1.5"/>
+          <line x1="18" y1="51" x2="182" y2="51" stroke="#5a6d88" stroke-width="0.8"/>
+          <!-- Two sources: sine and its shifted copy -->
+          <path d="M 18 51 C 28 21 38 21 48 51 S 68 81 78 51 S 98 21 108 51 S 128 81 138 51 S 158 21 168 51 S 178 66 182 72" fill="none" stroke="#5a6d88" stroke-width="1" stroke-dasharray="3 2"/>
+          <path d="M 18 36 C 24 22 34 22 40 36 S 54 66 60 66 S 74 36 80 36 S 94 66 100 66 S 114 36 120 36 S 134 66 140 66 S 154 36 160 36 S 174 66 180 66" fill="none" stroke="#c8d6e8" stroke-width="1.4"/>
+          <circle cx="18" cy="36" r="3.5" fill="#ff7a29"/>
+          <!-- Piano keys -->
+          <g stroke="#5a6d88" stroke-width="1" fill="#0f1a30">
+            <rect x="18" y="98" width="20.5" height="30"/><rect x="38.5" y="98" width="20.5" height="30"/><rect x="59" y="98" width="20.5" height="30"/><rect x="79.5" y="98" width="20.5" height="30"/>
+            <rect x="100" y="98" width="20.5" height="30"/><rect x="120.5" y="98" width="20.5" height="30"/><rect x="141" y="98" width="20.5" height="30"/><rect x="161.5" y="98" width="20.5" height="30"/>
+          </g>
+          <g fill="#c8d6e8">
+            <rect x="32" y="98" width="12" height="18"/><rect x="53" y="98" width="12" height="18"/><rect x="94" y="98" width="12" height="18"/><rect x="114" y="98" width="12" height="18"/><rect x="135" y="98" width="12" height="18"/>
+          </g>
+          <rect x="120.5" y="98" width="20.5" height="30" fill="#ff7a2933" stroke="#ff7a29" stroke-width="1"/>
+          <text x="131" y="123" text-anchor="middle" font-family="'Orbitron', monospace" font-size="6" fill="#ff7a29">la</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-waves" data-i18n="tagSound">Sound</div>
+        <div class="card-title" data-i18n="soundTitle">Sound Lab</div>
+        <p class="card-desc" data-i18n="soundDesc">Hear and see how sound is made of oscillations: waveform and timbre, two sources with a phase shift, a tone built from harmonics. Play it on the keyboard.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -718,6 +752,9 @@ const TRANSLATIONS = {
     tagQuantization: "Charge quantization",
     tagMechanics: "Mechanics",
     tagWaves: "Oscillations & waves",
+    tagSound: "Sound",
+    soundTitle: "Sound Lab",
+    soundDesc: "Hear and see how sound is made of oscillations: waveform and timbre, two sources with a phase shift, a tone built from harmonics. Play it on the keyboard.",
     shmTitle: "Oscillations and Waves",
     shmDesc: "One motion seen three ways: points circling from the end, a transverse wave from the side, and the same rods turned into a longitudinal wave.",
     hockeyTitle: "Electric Field Hockey",
@@ -747,6 +784,9 @@ const TRANSLATIONS = {
     tagQuantization: "Lādiņa kvantēšana",
     tagMechanics: "Mehānika",
     tagWaves: "Svārstības un viļņi",
+    tagSound: "Skaņa",
+    soundTitle: "Skaņas laboratorija",
+    soundDesc: "Klausies un skaties, kā no svārstībām veidojas skaņa: viļņa forma un tembrs, divi avoti ar fāzu nobīdi, tonis no harmonikām. Spēlē uz klaviatūras.",
     shmTitle: "Svārstības un viļņi",
     shmDesc: "Viena kustība no trim pusēm: punkti riņķo, skatoties no gala; šķērsvilnis no sāna; tās pašas svītras pagrieztas — garenvilnis.",
     hockeyTitle: "Elektriskā lauka hokejs",
