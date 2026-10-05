@@ -200,7 +200,7 @@ kbd{font:500 12px var(--mono);border:1px solid var(--line);border-radius:4px;pad
   <section class="pitch" aria-label="Frekvence">
     <div>
       <div class="label">Frekvence</div>
-      <div class="freq"><input type="text" id="f-num" inputmode="decimal" autocomplete="off" spellcheck="false" value="220,0" aria-label="Frekvence hercos, ieraksti skaitli no 40 līdz 2000" title="Ieraksti frekvenci un nospied Enter"><span>Hz</span></div>
+      <div class="freq"><input type="text" id="f-num" inputmode="decimal" autocomplete="off" spellcheck="false" value="220,0" aria-label="Frekvence hercos, ieraksti skaitli no 40 līdz 20000" title="Ieraksti frekvenci un nospied Enter"><span>Hz</span></div>
       <div class="facts">
         <span>periods T</span><b id="f-T"></b>
         <span>viļņa garums gaisā λ</span><b id="f-lam"></b>
@@ -208,8 +208,8 @@ kbd{font:500 12px var(--mono);border:1px solid var(--line);border-radius:4px;pad
       </div>
     </div>
     <div class="pitch-right">
-      <input type="range" id="freq" min="0" max="1000" step="1" value="436" aria-label="Frekvence hercos">
-      <div class="scale"><span>40 Hz</span><span>100</span><span>300</span><span>1000</span><span>2000 Hz</span></div>
+      <input type="range" id="freq" min="0" max="1000" step="1" value="274" aria-label="Frekvence hercos">
+      <div class="scale"><span>40 Hz</span><span>100</span><span>300</span><span>1000</span><span>3000</span><span>10 000</span><span>20 kHz</span></div>
       <div class="keysrow">
         <div class="keys" id="keys"></div>
         <div class="oct">
@@ -346,7 +346,8 @@ kbd{font:500 12px var(--mono);border:1px solid var(--line);border-radius:4px;pad
 <script>
 (()=>{
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const FMIN=40, FMAX=2000, NH=12, C_AIR=343, TAU=2*Math.PI;
+const FMIN=40, FMAX=20000, NH=12, C_AIR=343, TAU=2*Math.PI; // līdz dzirdes robežai (Ansis 05.10)
+const MIN_PX_PERIOD=8; // zem tik pikseļiem uz periodu 20 ms logā līkne vairs nav lasāma — pelēks pārklājums
 const fmt=(x,d)=>x.toFixed(d).replace('.',',');
 const hue=n=>(20+(n-1)*28)%360;
 
@@ -360,7 +361,7 @@ const PCODES=['KeyA','KeyW','KeyS','KeyE','KeyD','KeyF','KeyT','KeyG','KeyY','Ke
 const PLET='AWSEDFTGYHUJKOLP;';
 const ISBLACK=s=>[1,3,6,8,10].includes(s%12);
 const NN=['do','do♯','re','re♯','mi','fa','fa♯','sol','sol♯','la','la♯','si'];
-const ON={0:'subkontroktāva',1:'kontroktāva',2:'lielā oktāva',3:'mazā oktāva',4:'1. oktāva',5:'2. oktāva',6:'3. oktāva',7:'4. oktāva'};
+const ON={0:'subkontroktāva',1:'kontroktāva',2:'lielā oktāva',3:'mazā oktāva',4:'1. oktāva',5:'2. oktāva',6:'3. oktāva',7:'4. oktāva',8:'5. oktāva',9:'6. oktāva',10:'7. oktāva'};
 
 const held=[];
 const S={tab:'forma',playing:false,moment:false,f:220,oct:3,vol:.6,wave:'sine',
@@ -460,7 +461,7 @@ function audio(){
 let T={};
 function tokens(){
   const cs=getComputedStyle(document.documentElement), g=n=>cs.getPropertyValue(n).trim();
-  T={ink:g('--ink'),muted:g('--muted'),line:g('--line'),grid:g('--grid'),a:g('--a'),b:g('--b'),hl:g('--h-l'),hc:g('--h-c')};
+  T={ink:g('--ink'),muted:g('--muted'),line:g('--line'),grid:g('--grid'),screen:g('--screen'),a:g('--a'),b:g('--b'),hl:g('--h-l'),hc:g('--h-c')};
 }
 const hcol=n=>`oklch(${T.hl} ${T.hc} ${hue(n)})`;
 function prep(cv){
@@ -491,13 +492,20 @@ function scope(cv,o){
     c.stroke();
   });
   c.restore(); c.globalAlpha=1;
+  if(o.overlay){ // līkne šajā frekvencē nav zīmējama — pelēks lauks ar šī ekrāna robežu
+    c.fillStyle=T.screen; c.globalAlpha=.78; c.fillRect(pl,pt,w,h); c.globalAlpha=1;
+    c.font='13px "Instrument Sans",system-ui,sans-serif'; c.fillStyle=T.ink; c.textAlign='center'; c.textBaseline='middle';
+    const ls=o.overlay.split('\n'); ls.forEach((ln,i)=>c.fillText(ln,pl+w/2,y0+(i-(ls.length-1)/2)*19));
+  }
 }
 const XT2=[{x:0,l:'0'},{x:.25,l:'½T'},{x:.5,l:'T'},{x:.75,l:'1½T'},{x:1,l:'2T'}];
 
 function drawForma(){
-  const wv=WAVES[S.wave];
-  scope($('#cv-forma'),{yMax:1.3,xt:[0,5,10,15,20].map(m=>({x:m/20,l:m+' ms'})),
-    traces:[{fn:x=>wv.fn(x*.02*S.f),color:T.a,w:2.25}]});
+  const wv=WAVES[S.wave], cv=$('#cv-forma');
+  const plotW=cv.getBoundingClientRect().width-52, limit=Math.max(FMIN,Math.floor(plotW/(.02*MIN_PX_PERIOD)/100)*100), ok=S.f<=limit;
+  scope(cv,{yMax:1.3,xt:[0,5,10,15,20].map(m=>({x:m/20,l:m+' ms'})),
+    traces:ok?[{fn:x=>wv.fn(x*.02*S.f),color:T.a,w:2.25}]:[],
+    overlay:ok?null:`Līkne šajā frekvencē nav zīmējama: 20 ms logā periods ir īsāks par ${MIN_PX_PERIOD} px.\nŠajā ekrānā līkne ir redzama līdz ≈ ${String(limit).replace(/\B(?=(\d{3})+(?!\d))/g,'\u202f')} Hz. Skaņa skan.`});
 }
 function drawFaze(){
   const ph=S.phi*Math.PI/180, a=S.a.on?S.a.amp:0, b=S.b.on?S.b.amp:0;

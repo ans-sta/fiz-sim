@@ -31,7 +31,7 @@ fiz-sim/
 ├── newtons-cannon.html             ← Orbital mechanics
 ├── rolling-ball.html               ← Ball in a Groove (K-01)
 ├── harmonic-motion.html            ← Oscillations and Waves (S-01)
-├── sound-lab.html                  ← Sound Lab (single file, Web Audio; Latvian only)
+├── sound-lab.html                  ← Sound Lab (single file, Web Audio; Latvian only; 40 Hz – 20 kHz)
 ├── sound-lab-v2.html               ← Sound Lab (S-02) in the technical-drawing design: assets/sound/
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
 │                                     physics/, measure/, rolling-ball/, oscillation/, sound/
