@@ -432,6 +432,7 @@ html.is-fullscreen body.layout-hud header { display: none; }
   .layout-hud .hud-fold { display: block; }
   .layout-hud .hud.folded > :not(.hud-title):not(.hud-fold) { display: none; }
   .layout-hud .hud.folded .hud-title { padding-bottom: calc(5px * var(--hud)); }
+  .layout-hud .hud.folded { padding-bottom: 0; } /* salocīti paneļi vienā augstumā (SAKARĪBĀM citādi paliek apakšējā atkāpe) */
 }
 .layout-hud .q-more { display: flex; align-items: center; width: 100%; height: calc(24px * var(--hud)); background: none; border: none; border-top: 1px dashed var(--hairline); padding: 0 calc(10px * var(--hud)); font-size: calc(10.5px * var(--hud)); color: var(--ink-dim); letter-spacing: 0.08em; cursor: pointer; text-align: left; }
 .layout-hud .q-more:hover { color: var(--ink); }
