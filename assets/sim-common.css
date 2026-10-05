@@ -569,3 +569,42 @@ html.is-fullscreen body.layout-hud header { display: none; }
 /* S-01: mazs pelēks “Ierobežojums” tieši virs skatu pogām (garenviļņa amplitūda ≤ λ/2π); klikšķis atver skaidrojumu (Ansis 04.10) */
 .layout-hud .s01-limit { position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; background: none; border: none; padding: calc(2px * var(--hud)) calc(6px * var(--hud)); color: var(--ink-dim); font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; cursor: pointer; white-space: nowrap; }
 .layout-hud .s01-limit:hover, .layout-hud .s01-limit[aria-expanded="true"] { color: var(--ink); }
+
+/* ══ S-02 Skaņas laboratorija: SAKARĪBAS lauciņš ar piezīmi, klaviatūra, skatu pogas ar skaņas pogu, saite virs spektra ══ */
+.layout-hud .s02-rel { right: 8px; text-align: right; padding-bottom: calc(6px * var(--hud)); min-width: min(calc(170px * var(--hud)), calc(50% - 12px)); }
+.layout-hud .s02-rel .r-row { display: flex; justify-content: flex-end; gap: 0.6em; padding: 0 calc(10px * var(--hud)); font-size: calc(11px * var(--hud)); line-height: 1.5; font-variant-numeric: tabular-nums; color: var(--ink-dim); }
+.layout-hud .s02-rel .r-row .v { color: var(--ink-dim); font-weight: 500; min-width: 5.5em; text-align: right; } /* aprēķināti, ne iestatāmi — pelēki */
+.layout-hud .s02-rel .r-row.live .v { color: var(--accent); }
+.layout-hud .s02-rel .r-note { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11px * var(--hud)); line-height: 1.35; color: var(--ink-dim); padding: calc(4px * var(--hud)) calc(10px * var(--hud)) 0; max-width: calc(260px * var(--hud)); }
+.layout-hud .s02-views { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 3; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 120px); }
+.layout-hud .drawing.has-title .s02-views { max-width: calc(100% - 600px); }
+.layout-hud .s02-views .btn { flex: none; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(7px * var(--hud)) calc(12px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
+.layout-hud .s02-views .btn.play { border-color: var(--ink); }
+.layout-hud .s02-views .btn.play[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+@media (max-width: 520px) { .layout-hud .s02-views { max-width: calc(100% - 64px); } .layout-hud .s02-views .btn { padding: calc(6px * var(--hud)) calc(8px * var(--hud)); font-size: calc(10px * var(--hud)); letter-spacing: 0.05em; } }
+/* klaviatūra: zīmējuma daļa — neaug līdzi burtiem; taustiņi matu līnijās, melnie tintē, skanošais akcentā */
+.layout-hud .s02-keys { position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%); z-index: 3; width: min(640px, calc(100% - 2 * 56px)); display: grid; gap: 3px; justify-items: center; }
+.layout-hud .s02-keyrow { display: flex; align-items: stretch; gap: 6px; width: 100%; height: 64px; }
+.layout-hud .s02-oct { flex: none; width: 30px; padding: 0; font-size: 15px; background: var(--sheet); }
+.layout-hud .s02-keyboard { position: relative; flex: 1; min-width: 0; display: flex; gap: 2px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.layout-hud .pk { margin: 0; padding: 0; border: 1px solid var(--hairline); cursor: pointer; font-family: inherit; }
+.layout-hud .pk.w { flex: 1 1 0; min-width: 0; background: var(--sheet); color: var(--ink); display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 1px; padding-bottom: 4px; font-size: 11px; font-weight: 500; }
+.layout-hud .pk.b { position: absolute; top: 0; width: 6.4%; height: 58%; transform: translateX(-50%); background: var(--ink); color: var(--sheet); border-color: var(--ink); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 3px; z-index: 1; }
+.layout-hud .pk small { font-size: 8.5px; font-weight: 400; opacity: 0.6; }
+.layout-hud .pk.w small { color: var(--ink-dim); opacity: 1; }
+.layout-hud .pk[aria-pressed="true"], .layout-hud .pk.down { background: var(--accent); border-color: var(--accent); color: var(--sheet); }
+.layout-hud .pk.b[aria-pressed="true"] small, .layout-hud .pk.b.down small { opacity: 0.9; }
+.layout-hud .s02-octname { font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); text-transform: uppercase; }
+.layout-hud .s02-keyhint { font-size: 9.5px; letter-spacing: 0.04em; color: var(--ink-dim); text-align: center; }
+@media (hover: none) and (pointer: coarse) { .layout-hud .s02-keyhint { display: none; } }
+@media (max-width: 700px) {
+  .layout-hud .s02-keys { width: calc(100% - 16px); }
+  .layout-hud .s02-keyrow { height: 50px; }
+  .layout-hud .pk.w { font-size: 10px; }
+  .layout-hud .pk small { display: none; }
+}
+@media (max-height: 480px) and (orientation: landscape) { .layout-hud .s02-keyrow { height: 44px; } .layout-hud .pk small { display: none; } }
+/* “SALIKT NO HARMONIKĀM →” — poga virs spektra laukuma VIĻŅA FORMAS skatā */
+.layout-hud .s02-link { position: absolute; z-index: 3; background: none; border: none; padding: 2px 4px; cursor: pointer; color: var(--ink-dim); font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; white-space: nowrap; }
+.layout-hud .s02-link:hover { color: var(--accent); }
+.layout-hud canvas.grab { cursor: crosshair; touch-action: none; }
