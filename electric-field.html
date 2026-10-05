@@ -279,8 +279,16 @@
         .slider-row input[type="range"] { width: 90px; }
         .hint { display: none; }
       }
+      /* Zems ekrāns (telefons guļus): josla bez grupu virsrakstiem un ar mazākām pogām, lai laukumam paliek vieta */
       @media (max-height: 500px) {
         .hint { display: none; }
+        header { min-height: 34px; padding: 2px 8px; }
+        header h1 { font-size: 12px; letter-spacing: 1px; }
+        .toolbar { padding: 2px 6px; }
+        .group { padding: 2px 8px; }
+        .group-label { display: none; }
+        .group-row { min-height: 28px; gap: 4px; }
+        button { padding: 4px 8px; font-size: 12px; }
       }
     </style>
   </head>
