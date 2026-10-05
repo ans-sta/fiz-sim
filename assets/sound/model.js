@@ -4,11 +4,11 @@
 import { roundTo } from '../measure/format.js';
 
 export const FMIN = 40;
-export const FMAX = 2000;
+export const FMAX = 20000; // līdz dzirdes robežai (Ansis 05.10) — audio skan; VIĻŅA FORMAS 20 ms logs zīmējams tikai līdz waveDrawLimit()
 export const NH = 12; // harmoniku skaits
 export const C_AIR = 343; // m/s — skaņas ātrums gaisā
 export const TAU = 2 * Math.PI;
-export const POS_MAX = 1000; // frekvences slīdnis ir logaritmisks: stāvoklis 0…1000 ↔ 40…2000 Hz
+export const POS_MAX = 1000; // frekvences slīdnis ir logaritmisks: stāvoklis 0…1000 ↔ 40…20 000 Hz
 export const VIEWS = ['wave', 'two', 'harmonics'];
 export const WAVES = ['sine', 'triangle', 'sawtooth', 'square'];
 export const PRESETS = ['sine', 'sawtooth', 'square', 'triangle', 'all'];
@@ -16,7 +16,7 @@ export const INSTRUMENTS = ['flute', 'clarinet', 'violin', 'trumpet'];
 export const OCTAVES = { min: 2, max: 5 }; // lielā … 2. oktāva (tastatūra: 17 taustiņi no do)
 export const N_KEYS = 17;
 export const RANGES = {
-  pos: { min: 0, max: POS_MAX, step: 5 }, // ≈ 2 % frekvences solis (trešdaļa pustoņa)
+  pos: { min: 0, max: POS_MAX, step: 2 }, // ≈ 1,25 % frekvences solis (piektdaļa pustoņa)
   amp: { min: 0, max: 1, step: 0.05 },
   phi: { min: 0, max: 360, step: 5 },
   vol: { min: 0, max: 100, step: 5 },
@@ -54,6 +54,12 @@ export function posFromF(f) {
 export function fFromPos(pos) {
   const p = Math.min(POS_MAX, Math.max(0, pos));
   return roundTo(FMIN * Math.pow(FMAX / FMIN, p / POS_MAX), 0.1);
+}
+export const WAVE_WINDOW_S = 0.02; // VIĻŅA FORMAS logs — 20 ms
+export const MIN_PX_PERIOD = 8; // zem tik pikseļiem uz periodu līkne vairs nav lasāma — pārklājums ar robežu
+// Līdz kādai frekvencei 20 ms logs plotW pikseļu platumā ir zīmējams (noapaļots uz leju līdz 100 Hz)
+export function waveDrawLimit(plotW) {
+  return Math.max(FMIN, Math.floor(plotW / (WAVE_WINDOW_S * MIN_PX_PERIOD) / 100) * 100);
 }
 // Tastatūra: oktāva oct (2 — lielā, 3 — mazā, 4 — pirmā, 5 — otrā), pustonis s no do (0…16)
 export function noteFreq(oct, s) {

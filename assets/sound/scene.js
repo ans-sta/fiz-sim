@@ -1,7 +1,7 @@
 // assets/sound/scene.js
 // Zīmē osciloskopu rasējuma stilā: tīkls matu līnijās, nulles līnija, līknes tintē (A — nepārtraukta, B — raustīta, summa — biezāka),
 // spektrs kā stabiņi (aktīvais — akcenta krāsā), vektoru diagramma. Krāsas — no tēmas; akcents tikai tam, ko pašlaik aiztiek.
-import { WAVE_FN, TAU, NH, harmonicOf, harmonicTerms, sumSeries, peakOf, spectrumLayout } from './model.js';
+import { WAVE_FN, TAU, NH, WAVE_WINDOW_S, MIN_PX_PERIOD, waveDrawLimit, harmonicOf, harmonicTerms, sumSeries, peakOf, spectrumLayout } from './model.js';
 
 const MONO = '"IBM Plex Mono", ui-monospace, monospace';
 const font = (px, k = 1, w = 400) => `${w} ${px * k}px ${MONO}`;
@@ -68,7 +68,7 @@ function scope(ctx, box, o, c, k) {
   ctx.clip();
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
-  const N = Math.max(240, Math.ceil(w)); // viens punkts uz pikseli pietiek
+  const N = Math.max(240, Math.ceil(w * 1.5));
   o.traces.forEach((tr) => {
     ctx.beginPath();
     ctx.strokeStyle = tr.color;
@@ -85,6 +85,16 @@ function scope(ctx, box, o, c, k) {
   ctx.restore();
   ctx.setLineDash([]);
   ctx.globalAlpha = 1;
+  // pārklājums: līkne šajā frekvencē nav zīmējama — pelēks lauks ar robežu (Ansis 05.10)
+  if (o.overlay) {
+    ctx.fillStyle = c.sheet;
+    ctx.globalAlpha = 0.72;
+    ctx.fillRect(pl, pt, w, h);
+    ctx.globalAlpha = 1;
+    const lines = o.overlay.split('\n');
+    ctx.font = `400 ${12.5 * k}px "IBM Plex Sans", system-ui, sans-serif`;
+    lines.forEach((ln, i) => text(ctx, ln, pl + w / 2, y0 + (i - (lines.length - 1) / 2) * 18 * k, { f: ctx.font, color: c.ink, align: 'center', base: 'middle' }));
+  }
 }
 const XT2 = [{ x: 0, l: '0' }, { x: 0.25, l: '½T' }, { x: 0.5, l: 'T' }, { x: 0.75, l: '1½T' }, { x: 1, l: '2T' }];
 
@@ -182,11 +192,17 @@ export function drawScene(ctx, lay, m) {
     const top = { x: box.x, y: box.y, w: box.w, h: box.h - specH - GAP };
     const bottom = { x: box.x, y: box.y + box.h - specH, w: box.w, h: specH };
     const fn = WAVE_FN[s.wave];
+    const plotW = top.w - PAD_L * k - PAD_R;
+    const limit = waveDrawLimit(plotW);
+    const drawable = s.f <= limit;
+    const fmt = (v) => (m.lang === 'lv' ? String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f') : String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
     scope(ctx, top, {
       title: t('scene.window'), legend: t(`wave.${s.wave}`), yMax: 1.3,
       xt: [0, 5, 10, 15, 20].map((ms) => ({ x: ms / 20, l: `${ms} ms` })),
-      traces: [{ fn: (x) => fn(x * 0.02 * s.f), color: c.ink, w: 2 }],
+      traces: drawable ? [{ fn: (x) => fn(x * WAVE_WINDOW_S * s.f), color: c.ink, w: 2 }] : [],
+      overlay: drawable ? null : t('scene.limit', { f: fmt(limit), px: MIN_PX_PERIOD }),
     }, c, k);
+    res.limit = limit;
     const amps = Array.from({ length: NH }, (_, i) => Math.abs(harmonicOf(s.wave, i + 1)));
     spectrum(ctx, bottom, { amps, on: amps.map((a) => a > 0), active: null, title: t('scene.spectrum'), interactive: false }, c, k);
     res.toHarm = bottom;

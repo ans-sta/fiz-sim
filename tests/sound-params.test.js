@@ -21,9 +21,9 @@ test('all params given', () => {
 });
 
 test('out of range is clamped with a notice; unknown view or wave gives a notice with the used value', () => {
-  const r = settingsFromURL('?f=5000');
-  assert.equal(r.settings.f, 2000);
-  assert.equal(warningText(r.warnings[0], { t: lv, lang: 'lv' }), 'Saites parametrs f=5000 ir ārpus robežām (40–2000). Izmantots f = 2000.');
+  const r = settingsFromURL('?f=50000');
+  assert.equal(r.settings.f, 20000);
+  assert.equal(warningText(r.warnings[0], { t: lv, lang: 'lv' }), 'Saites parametrs f=50000 ir ārpus robežām (40–20000). Izmantots f = 20000.');
   const v = settingsFromURL('?view=sound&wave=noise');
   assert.deepEqual([v.settings.view, v.settings.wave], ['wave', 'sine']);
   assert.deepEqual(v.warnings.map((w) => [w.param, w.reason, w.used]), [['view', 'not_allowed', 'wave'], ['wave', 'not_allowed', 'sine']]);

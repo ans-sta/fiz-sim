@@ -148,7 +148,7 @@ Parameters of `sound-lab-v2.html`, given in the URL. Starting values only; unkno
 | Parameter | Meaning |
 | --------- | ------- |
 | `view=wave\|two\|harmonics` | Starting view: waveform, two sources, harmonics. Default `wave` |
-| `f=<number>` | Frequency, Hz, 40–2000 |
+| `f=<number>` | Frequency, Hz, 40–20000 (the waveform view draws the curve only while a period is at least 8 px wide in the 20 ms window; above that a grey overlay names the limit for that screen) |
 | `wave=sine\|triangle\|sawtooth\|square` | Waveform in the waveform view |
 | `phi=<number>` | Phase shift of source B, degrees, 0–360 (step 5) |
 

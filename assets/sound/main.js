@@ -329,6 +329,8 @@ function render() {
   const keysBottom = `${h - viewSlot.offsetTop + PANEL_GAP}px`;
   if (keysSlot.style.bottom !== keysBottom) keysSlot.style.bottom = keysBottom;
   const lay = layout();
+  // virs 8 kHz — vienreiz par lapas atvēršanu brīdinājums par skaļumu (dzirdes robežu pārbaudei; Ansis 05.10)
+  if (s.f >= 8000 && !state.loudWarned) { state.loudWarned = true; notices.show('loud', () => t('notice.loud')); }
   canvas.classList.toggle('grab', s.view === 'harmonics');
   state.hits = drawScene(view.ctx, lay, { settings: s, colors: theme.colors(), legend: legendScale(gear.textScale()), lang: i18n.lang(), t: i18n.t, active: state.active });
   // VIĻŅA FORMĀ virs spektra — DOM poga “SALIKT NO HARMONIKĀM →” (pieejama arī ar tastatūru)

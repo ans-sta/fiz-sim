@@ -12,8 +12,9 @@ test('waveform view: f (log slider position), shape choice, volume under the sep
   const rows = quantityRows(defaultSettings(), { lang: 'lv', t: lv });
   assert.deepEqual(rows.map((r) => [r.key, r.kind, r.group]), [['f', 'range', 'main'], ['wave', 'choice', 'main'], ['vol', 'range', 'aside']]);
   const [f, wave, vol] = rows;
-  assert.deepEqual([f.symbol, f.valueText, f.min, f.max, f.step, f.minText, f.maxText], ['f', '220,0 Hz', 0, 1000, 5, '40 Hz', '2000 Hz']);
-  assert.ok(Math.abs(f.value - 435.7) < 0.5); // log position of 220 Hz
+  assert.deepEqual([f.symbol, f.valueText, f.min, f.max, f.step, f.minText, f.maxText], ['f', '220,0 Hz', 0, 1000, 2, '40 Hz', '20 kHz']);
+  assert.ok(Math.abs(f.value - 274.3) < 0.5); // log position of 220 Hz on 40…20 000
+  assert.equal(quantityRows(withF(defaultSettings(), 12345), { lang: 'lv', t: lv })[0].valueText, '12345 Hz'); // above 1 kHz without decimals
   assert.deepEqual([wave.value, wave.valueText, wave.choices.length], ['sine', 'SINUSOĪDA', 4]);
   assert.deepEqual([vol.valueText, vol.value], ['60 %', 60]);
   assert.equal(quantityRows(defaultSettings(), { lang: 'en', t: en })[0].valueText, '220.0 Hz');
@@ -42,6 +43,7 @@ test('note text: 440 → la, 1. ; 445 → +20 c; English letters', () => {
   assert.equal(noteText(440, { lang: 'lv', t: lv }), 'la, 1.');
   assert.equal(noteText(445, { lang: 'lv', t: lv }), 'la, 1. +20 c');
   assert.equal(noteText(220, { lang: 'en', t: en }), 'A, small');
+  assert.equal(noteText(20000, { lang: 'lv', t: lv }), 're♯, 7. +8 c'); // 20 kHz is just above C10 = 16 744 Hz — the octave name must exist
 });
 
 test('relations: T and λ in every view; two sources add φ in π, Δt and R (live) with a state note', () => {

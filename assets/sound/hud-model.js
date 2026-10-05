@@ -23,7 +23,7 @@ export function quantityRows(s, { lang, t }) {
   });
   const check = (key, symbol, value, on, off) => ({ key, symbol, name: symbol, valueText: value ? on : off, state: 'editable', kind: 'check', group: 'aside', value });
 
-  const f = range('f', 'f', t('q.f'), `${num(s.f, 1)} Hz`, RANGES.pos, posFromF(s.f), '40 Hz', '2000 Hz');
+  const f = range('f', 'f', t('q.f'), `${num(s.f, s.f >= 1000 ? 0 : 1)} Hz`, RANGES.pos, posFromF(s.f), '40 Hz', '20 kHz');
   const vol = range('vol', t('q.vol'), t('q.vol.name'), `${num(s.vol, 0)} %`, RANGES.vol, s.vol, '0', '100 %', 'aside');
   if (s.view === 'wave') {
     return [

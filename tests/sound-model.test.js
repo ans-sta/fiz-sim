@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   FMIN, FMAX, NH, posFromF, fFromPos, noteFreq, nearestNote, isBlack, defaultSettings, withF, withPos, withWave, withAmp, withSourceOn,
   withPhi, withVol, withOctave, withPreset, withHarmonic, withView, duoResult, piFrac, harmonicOf, harmonicTerms, sumSeries, peakOf,
-  harmonicGains, duoGains, spectrumLayout, barAt, ampFromY, period, wavelength,
+  harmonicGains, duoGains, spectrumLayout, barAt, ampFromY, period, wavelength, waveDrawLimit,
 } from '../assets/sound/model.js';
 
 test('frequency slider is logarithmic: 0 → 40 Hz, 1000 → 2000 Hz, round trip', () => {
@@ -34,7 +34,7 @@ test('defaults and clamped setters', () => {
   assert.deepEqual([s.view, s.f, s.oct, s.vol, s.wave, s.phi, s.split, s.overlay, s.preset], ['wave', 220, 3, 60, 'sine', 60, false, true, null]);
   assert.equal(s.H.length, NH);
   assert.deepEqual(s.H.slice(0, 4).map((h) => [h.on, h.amp]), [[true, 1], [true, 0.5], [true, 0.33], [false, 0.25]]);
-  assert.equal(withF(s, 5000).f, FMAX);
+  assert.equal(withF(s, 50000).f, FMAX);
   assert.equal(withF(s, 1).f, FMIN);
   assert.equal(withF(s, 220), s); // unchanged — same object
   assert.equal(withPos(s, 1000).f, FMAX);
@@ -57,7 +57,7 @@ test('octave shift moves the keyboard and the sounding frequency; stays within 2
   assert.deepEqual([withOctave(up, 1).oct, withOctave(withOctave(up, 1), 1).oct], [5, 5]); // 5 is the top
   const dn = withOctave(s, -1);
   assert.equal(withOctave(dn, -1), dn); // 2 is the bottom — same object
-  assert.equal(withOctave(withF(s, 1500), 1).f, FMAX); // clamped
+  assert.equal(withOctave(withF(s, 15000), 1).f, FMAX); // clamped
 });
 
 test('presets: square has odd harmonics 1/n, triangle alternates sign, instruments copy their spectra, hand edit clears the preset', () => {
@@ -107,6 +107,12 @@ test('harmonic sum, peak and audio gains', () => {
   assert.ok(Math.abs(d.a - 0.4) < 1e-9 && Math.abs(d.bs) < 1e-9 && Math.abs(d.bc - 0.4) < 1e-9);
   assert.ok(Math.abs(period(200) - 0.005) < 1e-12);
   assert.ok(Math.abs(wavelength(343) - 1) < 1e-12);
+});
+
+test('waveform draw limit: 8 px per period in a 20 ms window, rounded down to 100 Hz, never below 40 Hz', () => {
+  assert.equal(waveDrawLimit(1180), 7300); // 1180 / (0,02 · 8) = 7375
+  assert.equal(waveDrawLimit(344), 2100);
+  assert.equal(waveDrawLimit(5), FMIN);
 });
 
 test('spectrum bars: 12 columns, hit test by bar or label, amplitude from height', () => {
