@@ -170,3 +170,4 @@ LV / EN kā citās lapās. Angliski: *Oscillations and Waves*, CIRCLE · TRANSVE
 - 2026-10-04 — Ansis (prezentācijai): lapa atveras ar A = 30 cm, T = 7 s, λ = 70 cm, v = 10 cm/s.
 - 2026-10-05 — Ansis (datorā “neder — paliek tikai puse sinusoīdas”): kamera griežas ap apļa kreiso malu, pēc tam ass viļņa tempā (|v|, vismaz 10 cm/s) aizslīd pa kreisi, līdz pirmais punkts ir pie ekrāna kreisās malas un vilnis aizpilda visu ekrānu; atpakaļ uz apli — vispirms atslīd, tad griežas. Šķērsvilnī: līdzsvara līnija (ass), blāvas līnijas +A un −A līmenī, mēri “+A” pie kalna un “−A” pie ieplakas.
 - 2026-10-05 — Ansis (“vai λ mēram ir izgaišana?”): izgaišana piesieta ekrāna labajai malai (ne ass galam), lai tā notiek acu priekšā, kad ass garāka par ekrānu.
+- 2026-10-05 — Ansis: šķērsvilnī pie vidējā oranžā punkta (z = λ) nekustīgs mērs uz abām pusēm (+A un −A).

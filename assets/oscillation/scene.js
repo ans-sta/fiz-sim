@@ -140,6 +140,11 @@ export function drawScene(ctx, lay, m) {
       const zt = phaseZ(phase, s.lambda, -CREST); // ieplaka
       const aT = dimTrans * crestAlpha(zt, s.lambda, s.v);
       if (aT > 0.01) dimLine(ctx, Z(zt), S(project(point3D(-CREST, zt, s.A, angles.thetaRad, Az), κ)), '−A', { x: 1, y: 0 }, m, aT);
+      // nekustīgs mērs uz abām pusēm pie vidējā oranžā punkta (z = λ) — tas neslīd un neizbāl (Ansis 05.10)
+      if (s.lambda < AXIS_CM) {
+        dimLine(ctx, Z(s.lambda), S({ u: s.lambda, w: s.A }), '+A', { x: 1, y: 0 }, m, dimTrans);
+        dimLine(ctx, Z(s.lambda), S({ u: s.lambda, w: -s.A }), '−A', { x: 1, y: 0 }, m, dimTrans);
+      }
       const yDim = S({ u: 0, w: s.A }).y - DIM_GAP;
       for (const sp of lambdaSpans(phase, s.lambda, CREST, s.v, visibleEnd)) { // slīdošais mērs un rezerves mērs krusteniski izbāl
         const al = dimTrans * sp.alpha;
