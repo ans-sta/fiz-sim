@@ -8,9 +8,20 @@
     />
     <title>Electric Field Visualizer</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400&display=swap"
       rel="stylesheet"
     />
+    <script>
+      // Āda (neons / rasējums) un rasējuma tēma pirms pirmā zīmējuma, lai nemirgo; tās pašas atslēgas kā jaunajās lapās (tēma)
+      (function () {
+        try {
+          var s = localStorage.getItem("fiz-sim-skin") === "draw" ? "draw" : "neon";
+          var t = localStorage.getItem("fiz-sim-theme") || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+          document.documentElement.dataset.skin = s;
+          document.documentElement.dataset.theme = s === "draw" ? t : "dark";
+        } catch (e) {}
+      })();
+    </script>
     <style>
       *,
       *::before,
@@ -34,13 +45,53 @@
         --text: #c8d6e8;
         --text-dim: #5a6d88;
         --text-muted: #354050;
+        --font-display: "Orbitron", monospace;
+        --font-body: "Exo 2", sans-serif;
+        --radius: 6px;
+        --header-bg: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
+      }
+      /* ── Rasējuma āda: tie paši marķieri kā assets/sim-common.css (grafīts / papīrs), bez spīdumiem un noapaļojumiem ── */
+      :root[data-skin="draw"] {
+        --sheet: #15171b;
+        --ink: #e8e6e1;
+        --ink-dim: #9a9891;
+        --hairline: #3a3d42;
+        --field: #0c0e11;
+        --accent: #ff7a29;
+        --accent-dim: transparent;
+        --bg: var(--sheet);
+        --panel: var(--sheet);
+        --panel-border: var(--hairline);
+        --text: var(--ink);
+        --text-dim: var(--ink-dim);
+        --text-muted: var(--ink-dim);
+        --positive: #ff3355;
+        --positive-glow: transparent;
+        --negative: #3388ff;
+        --negative-glow: transparent;
+        --test-charge: #00ff88;
+        --font-display: "IBM Plex Mono", monospace;
+        --font-body: "IBM Plex Mono", monospace;
+        --radius: 0;
+        --header-bg: var(--sheet);
+      }
+      :root[data-skin="draw"][data-theme="light"] {
+        --sheet: #f2efe9;
+        --ink: #26261f;
+        --ink-dim: #7a776d;
+        --hairline: #c9c4b8;
+        --field: #faf8f3;
+        --accent: #c75612;
+        --positive: #c8203f;
+        --negative: #1f5fc4;
+        --test-charge: #118a4f;
       }
 
       html, body { height: 100%; }
       body {
         background: var(--bg);
         color: var(--text);
-        font-family: "Exo 2", sans-serif;
+        font-family: var(--font-body);
         overflow: hidden;
         height: 100vh;
         height: 100dvh; /* telefonā pārlūka joslas nenogriež lauka apakšu */
@@ -59,7 +110,7 @@
         align-items: center;
         gap: 12px;
         padding: 6px 12px;
-        background: linear-gradient(180deg, #0d1525 0%, var(--bg) 100%);
+        background: var(--header-bg);
         border-bottom: 1px solid var(--panel-border);
         flex-shrink: 0;
         min-height: 42px;
@@ -75,7 +126,7 @@
       }
       .back-btn:hover { color: var(--accent); }
       header h1 {
-        font-family: "Orbitron", monospace;
+        font-family: var(--font-display);
         font-size: 15px;
         font-weight: 700;
         letter-spacing: 2px;
@@ -88,26 +139,26 @@
         min-width: 0;
       }
       .header-spacer { flex: 1; }
+      .sheet-no { display: none; }
+      .skin-switch, .lang-switch { font-family: var(--font-display); font-size: 11px; letter-spacing: 1px; display: flex; align-items: center; }
+      .skin-switch button, .theme-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 6px; font-family: inherit; font-size: inherit; letter-spacing: inherit; }
+      .skin-switch button:hover, .theme-btn:hover { color: var(--text-dim); background: none; border: none; }
+      .skin-switch button[aria-pressed="true"] { color: var(--accent); }
+      .skin-switch .lang-sep { color: var(--text-muted); }
+      .theme-btn, .skin-btn { display: none; font-size: 15px; line-height: 1; }
       .link-btn {
         background: none;
         border: 1px solid var(--accent-dim);
         color: var(--text-dim);
         padding: 4px 10px;
-        border-radius: 4px;
+        border-radius: var(--radius);
         font-size: 11px;
         cursor: pointer;
-        font-family: "Orbitron", monospace;
+        font-family: var(--font-display);
         letter-spacing: 1px;
         white-space: nowrap;
       }
       .link-btn:hover { border-color: var(--accent); color: var(--accent); background: none; }
-      .lang-switch {
-        font-family: "Orbitron", monospace;
-        font-size: 11px;
-        letter-spacing: 1px;
-        display: flex;
-        align-items: center;
-      }
       .lang-switch button {
         background: none;
         border: none;
@@ -143,7 +194,7 @@
       }
       .group-end { border-right: none; margin-left: auto; }
       .group-label {
-        font-family: "Orbitron", monospace;
+        font-family: var(--font-display);
         font-size: 10px;
         text-transform: uppercase;
         letter-spacing: 1.5px;
@@ -177,7 +228,7 @@
         height: 6px;
       }
       .slider-row .slider-val {
-        font-family: "Orbitron", monospace;
+        font-family: var(--font-display);
         font-size: 13px;
         min-width: 28px;
         text-align: right;
@@ -195,9 +246,9 @@
         background: rgba(255, 255, 255, 0.04);
         color: var(--text);
         border: 1px solid var(--panel-border);
-        border-radius: 6px;
+        border-radius: var(--radius);
         padding: 7px 12px;
-        font-family: "Exo 2", sans-serif;
+        font-family: var(--font-body);
         font-size: 14px;
         cursor: pointer;
         transition: background 0.15s, border-color 0.15s, color 0.15s;
@@ -266,6 +317,10 @@
         header { padding: 4px 8px; gap: 8px; min-height: 38px; }
         header h1 { font-size: 13px; letter-spacing: 1px; }
         .link-btn { display: none; }
+        /* telefonā āda — viena ikona ◧ (pārslēdz), lapas numurs paslēpts; rasējuma pogas bez platā atstatuma */
+        .skin-switch button[data-skin], .skin-switch .lang-sep { display: none; }
+        .skin-btn { display: inline-block; }
+
         .toolbar { padding: 2px 4px; }
         .group { padding: 3px 6px; border-right: none; }
         .group-label { display: none; }
@@ -290,14 +345,75 @@
         .group-row { min-height: 28px; gap: 4px; }
         button { padding: 4px 8px; font-size: 12px; }
       }
+
+      /* ═══════════════════════════════════════════
+         RASĒJUMA ĀDA — komponentes: galvene kā rasējuma lapās, pogas tintes inversijā, slīdņi kā izmēru līnijas
+         ═══════════════════════════════════════════ */
+      [data-skin="draw"] body { font-size: 13px; }
+      [data-skin="draw"] header { padding: 0; gap: 0; min-height: 0; align-items: stretch; }
+      [data-skin="draw"] .back-btn { font-size: 11px; letter-spacing: 0.08em; padding: 0 16px; border-right: 1px solid var(--hairline); color: var(--ink-dim); display: flex; align-items: center; }
+      [data-skin="draw"] .back-btn:hover { background: var(--ink); color: var(--sheet); }
+      [data-skin="draw"] header h1 { background: none; -webkit-text-fill-color: currentColor; color: var(--ink); font-size: 14px; font-weight: 600; letter-spacing: 0.14em; padding: 10px 16px; }
+      [data-skin="draw"] .bolt { display: none; } /* rasējuma lapās zibens nav */
+      [data-skin="draw"] .sheet-no { display: block; align-self: center; color: var(--ink-dim); font-family: var(--font-display); font-size: 14px; letter-spacing: 0.14em; padding-right: 16px; }
+      [data-skin="draw"] .link-btn { border: none; border-left: 1px solid var(--hairline); border-radius: 0; padding: 0 12px; letter-spacing: 0.08em; color: var(--ink-dim); }
+      [data-skin="draw"] .link-btn:hover { background: var(--ink); color: var(--sheet); }
+      [data-skin="draw"] .skin-switch, [data-skin="draw"] .lang-switch { border-left: 1px solid var(--hairline); padding: 0 6px; letter-spacing: 0.04em; }
+      [data-skin="draw"] .theme-btn { display: inline-block; }
+      [data-skin="draw"] .toolbar { padding: 0 6px; }
+      [data-skin="draw"] .group { padding: 7px 14px 8px; }
+      [data-skin="draw"] .group-label { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-dim); font-weight: 400; }
+      [data-skin="draw"] button { background: none; border: 1px solid var(--hairline); font-size: 11px; letter-spacing: 0.1em; padding: 7px 10px; transition: none; }
+      [data-skin="draw"] button:hover { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+      [data-skin="draw"] button.toggle[aria-pressed="true"],
+      [data-skin="draw"] button.active-pos,
+      [data-skin="draw"] button.active-neg { background: none; border-color: var(--accent); color: var(--accent); }
+      [data-skin="draw"] button.active-pos { border-color: var(--positive); color: var(--positive); }
+      [data-skin="draw"] button.active-neg { border-color: var(--negative); color: var(--negative); }
+      [data-skin="draw"] button.primary { background: none; border-color: var(--ink); color: var(--ink); font-weight: 600; }
+      [data-skin="draw"] button.danger { border-color: var(--hairline); color: var(--ink-dim); }
+      [data-skin="draw"] button.danger:hover, [data-skin="draw"] button.primary:hover { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+      [data-skin="draw"] .charge-count { font-size: 11px; letter-spacing: 0.06em; }
+      [data-skin="draw"] .charge-count span { color: var(--ink); font-weight: 500; }
+      [data-skin="draw"] .slider-row .slider-sym { font-style: italic; color: var(--ink); font-family: "IBM Plex Sans", sans-serif; }
+      [data-skin="draw"] .slider-row .slider-val { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+      [data-skin="draw"] input[type="range"] { -webkit-appearance: none; appearance: none; height: 26px; margin: 0; background:
+        linear-gradient(var(--ink), var(--ink)) center / 100% 1px no-repeat,
+        linear-gradient(var(--ink), var(--ink)) left center / 1px 9px no-repeat,
+        linear-gradient(var(--ink), var(--ink)) right center / 1px 9px no-repeat; cursor: pointer; }
+      [data-skin="draw"] input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; background: var(--sheet); border: 1px solid var(--ink); transform: rotate(45deg); }
+      [data-skin="draw"] input[type="range"]::-moz-range-thumb { width: 11px; height: 11px; background: var(--sheet); border: 1px solid var(--ink); border-radius: 0; transform: rotate(45deg); }
+      [data-skin="draw"] input[type="range"]:active::-webkit-slider-thumb { background: var(--accent); border-color: var(--accent); }
+      [data-skin="draw"] .hint { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12px; color: var(--ink-dim); }
+      [data-skin="draw"] canvas { cursor: crosshair; }
+      /* rasējuma āda telefonā — pēc komponentēm, lai pārspēj to atstarpes */
+      @media (max-width: 700px) {
+        [data-skin="draw"] .sheet-no { display: none; }
+        [data-skin="draw"] header h1 { font-size: 12px; letter-spacing: 0.08em; padding: 8px 8px; }
+        [data-skin="draw"] .back-btn { padding: 0 10px; }
+        [data-skin="draw"] button { letter-spacing: 0.04em; padding: 6px 8px; }
+        [data-skin="draw"] .group { padding: 3px 6px; }
+      }
+      @media (max-height: 500px) {
+        [data-skin="draw"] button { letter-spacing: 0.04em; padding: 4px 8px; }
+        [data-skin="draw"] .group { padding: 2px 8px; }
+      }
     </style>
   </head>
   <body>
     <header>
       <button class="back-btn" onclick="location.href='index.html'" data-i18n-title="back" title="Back">←</button>
-      <h1 data-i18n="heading">⚡ ELECTRIC FIELD</h1>
+      <h1><span class="bolt">⚡ </span><span data-i18n="heading">ELECTRIC FIELD</span></h1>
       <span class="header-spacer"></span>
+      <span class="sheet-no">E-01</span>
       <button class="link-btn" onclick="location.href='newtons-cannon.html'" data-i18n-title="tryCannon" title="Try Newton’s Cannon simulation">→ CANNON</button>
+      <div class="skin-switch" id="skinSwitch">
+        <button data-skin="neon" data-i18n="skinNeon">NEON</button>
+        <span class="lang-sep">|</span>
+        <button data-skin="draw" data-i18n="skinDraw">DRAWING</button>
+        <button class="skin-btn" id="skinBtn" data-i18n-title="titleSkin" title="Neon / drawing">◧</button>
+        <button class="theme-btn" id="themeBtn" data-i18n-title="titleTheme" title="Light / dark">◐</button>
+      </div>
       <div class="lang-switch">
         <button data-lang="lv">LV</button>
         <span class="lang-sep">|</span>
@@ -358,7 +474,7 @@
       const TRANSLATIONS = {
         en: {
           title: "Electric Field Visualizer",
-          heading: "⚡ ELECTRIC FIELD",
+          heading: "ELECTRIC FIELD",
           fieldCharges: "Field Charges",
           testCharge: "Test Charge",
           addTestCharge: "+ Add Test Charge",
@@ -375,11 +491,15 @@
           back: "Back",
           tryCannon: "Try Newton’s Cannon simulation",
           testValueTitle: "Test charge value",
+          skinNeon: "NEON",
+          skinDraw: "DRAWING",
+          titleSkin: "Neon / drawing",
+          titleTheme: "Light / dark (drawing skin)",
           hint: "Click on the field to place a charge, drag to move it, right-click (or long-press) to remove it. Keys: F — field vectors, C — clear.",
         },
         lv: {
           title: "Elektriskā lauka vizualizētājs",
-          heading: "⚡ ELEKTRISKAIS LAUKS",
+          heading: "ELEKTRISKAIS LAUKS",
           fieldCharges: "Lauka lādiņi",
           testCharge: "Testa lādiņš",
           addTestCharge: "+ Pievienot testa lādiņu",
@@ -396,6 +516,10 @@
           back: "Atpakaļ",
           tryCannon: "Izmēģini Ņūtona lielgabala simulāciju",
           testValueTitle: "Testa lādiņa vērtība",
+          skinNeon: "NEONS",
+          skinDraw: "RASĒJUMS",
+          titleSkin: "Neons / rasējums",
+          titleTheme: "Gaišs / tumšs (rasējuma āda)",
           hint: "Klikšķis uz lauka liek lādiņu, vilkšana to pārvieto, labais klikšķis (vai ilgs pieskāriens) noņem. Taustiņi: F — lauka vektori, C — notīrīt.",
         },
       };
@@ -468,24 +592,94 @@
       const MIN_DIST = 22;
 
       // Colors
-      const COL = {
-        bg: "#080d18",
-        grid: "rgba(100,160,255,0.04)",
-        border: "#6878a0",
-        positive: "#ff3355",
-        posBright: "#ff6b8a",
-        posGlow: "rgba(255,51,85,0.35)",
-        posCore: "rgba(255,150,170,0.8)",
-        negative: "#3388ff",
-        negBright: "#6ba3ff",
-        negGlow: "rgba(51,136,255,0.35)",
-        negCore: "rgba(150,180,255,0.8)",
-        testCharge: "#00ff88",
-        testChargeGlow: "rgba(0,255,136,0.4)",
-        forceArrow: "#ffcc00",
-        fieldLine: "rgba(255,170,100,0.6)",
-        equipotential: "rgba(100,255,200,0.5)",
+      // Kanvas krāsas: trīs komplekti — neons (kā līdz šim), rasējums tumšs, rasējums gaišs. COL vienmēr ir aktīvais (applySkin).
+      const PALETTES = {
+        neon: {
+          glow: true,
+          font: "Orbitron, monospace",
+          bg: "#080d18",
+          field: "#0a1020",
+          grid: "rgba(100,160,255,0.04)",
+          positive: "#ff3355",
+          posBright: "#ff6b8a",
+          posGlow: "rgba(255,51,85,0.35)",
+          posCore: "rgba(255,150,170,0.8)",
+          negative: "#3388ff",
+          negBright: "#6ba3ff",
+          negGlow: "rgba(51,136,255,0.35)",
+          negCore: "rgba(150,180,255,0.8)",
+          testCharge: "#00ff88",
+          testNeg: "#ff6688",
+          forceArrow: "#ffcc00",
+          fieldLine: "rgba(255,170,100,0.6)",
+          vector: null, // gradients pēc stipruma
+          equipPos: "rgba(255,140,140,0.6)",
+          equipNeg: "rgba(140,180,255,0.6)",
+        },
+        "draw-dark": {
+          glow: false,
+          font: '"IBM Plex Mono", monospace',
+          bg: "#0c0e11",
+          field: "#0c0e11",
+          grid: "rgba(232,230,225,0.06)",
+          positive: "#ff3355",
+          posBright: "#ff3355",
+          negative: "#3388ff",
+          negBright: "#3388ff",
+          testCharge: "#00ff88",
+          testNeg: "#ff6688",
+          forceArrow: "#ffcc00",
+          fieldLine: "rgba(154,152,145,0.85)",
+          vector: "232,230,225",
+          equipPos: "rgba(255,51,85,0.55)",
+          equipNeg: "rgba(51,136,255,0.55)",
+        },
+        "draw-light": {
+          glow: false,
+          font: '"IBM Plex Mono", monospace',
+          bg: "#faf8f3",
+          field: "#faf8f3",
+          grid: "rgba(38,38,31,0.07)",
+          positive: "#c8203f",
+          posBright: "#c8203f",
+          negative: "#1f5fc4",
+          negBright: "#1f5fc4",
+          testCharge: "#118a4f",
+          testNeg: "#c8203f",
+          forceArrow: "#8a6a00",
+          fieldLine: "rgba(122,119,109,0.9)",
+          vector: "38,38,31",
+          equipPos: "rgba(200,32,63,0.55)",
+          equipNeg: "rgba(31,95,196,0.55)",
+        },
       };
+      const COL = {};
+
+      // Zīmē tikai, kad kaut kas mainījies (lādiņš, slēdzis, pele uz lauka, izmērs, āda); cilpa pa tukšo neko nedara
+      let dirty = true;
+      function markDirty() {
+        dirty = true;
+      }
+
+      // ═══════════════════════════════════════════
+      //  ĀDA (neons / rasējums) UN TĒMA — izvēle paliek ierīcē; tēmas atslēga kopīga ar jaunajām lapām
+      // ═══════════════════════════════════════════
+      const SKIN_KEY = "fiz-sim-skin";
+      const THEME_KEY = "fiz-sim-theme";
+      const load = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+      const save = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* privātais režīms */ } };
+      let skin = load(SKIN_KEY) === "draw" ? "draw" : "neon";
+      let theme = load(THEME_KEY) || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      const isDraw = () => skin === "draw";
+      function applySkin() {
+        document.documentElement.dataset.skin = skin;
+        document.documentElement.dataset.theme = isDraw() ? theme : "dark";
+        for (const k of Object.keys(COL)) delete COL[k];
+        Object.assign(COL, PALETTES[isDraw() ? `draw-${theme}` : "neon"]);
+        document.querySelectorAll("#skinSwitch button[data-skin]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.skin === skin)));
+        markDirty();
+      }
+      applySkin();
 
       // ═══════════════════════════════════════════
       //  STATE
@@ -512,11 +706,6 @@
       let mouseField = { x: -1, y: -1 };
       let mouseOnField = false;
 
-      // Zīmē tikai, kad kaut kas mainījies (lādiņš, slēdzis, pele uz lauka, izmērs); cilpa pa tukšo neko nedara
-      let dirty = true;
-      function markDirty() {
-        dirty = true;
-      }
 
       // ═══════════════════════════════════════════
       //  INITIALIZATION
@@ -666,7 +855,7 @@
 
       function drawFieldBackground() {
         // Field area
-        ctx.fillStyle = "#0a1020";
+        ctx.fillStyle = COL.field;
         ctx.fillRect(0, 0, FIELD_W, FIELD_H);
 
         // Subtle grid
@@ -698,6 +887,34 @@
           const core = isPos ? COL.posCore : COL.negCore;
 
           const pulseScale = 1;
+
+          if (!COL.glow) {
+            // Rasējums: aplītis lādiņa krāsā, viegls pildījums, zīme iekšā (Ansis 05.10)
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, CHARGE_R, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.globalAlpha = 0.14;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.lineCap = "round";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(c.x - 7, c.y);
+            ctx.lineTo(c.x + 7, c.y);
+            ctx.stroke();
+            if (isPos) {
+              ctx.beginPath();
+              ctx.moveTo(c.x, c.y - 7);
+              ctx.lineTo(c.x, c.y + 7);
+              ctx.stroke();
+            }
+            ctx.restore();
+            continue;
+          }
 
           ctx.save();
 
@@ -779,14 +996,16 @@
         if (!testCharge) return;
 
         const isPositive = testCharge.charge >= 0;
-        const tcColor = isPositive ? COL.testCharge : "#ff6688";
+        const tcColor = isPositive ? COL.testCharge : COL.testNeg;
         const tcFill = isPositive
           ? "rgba(0,255,136,0.2)"
           : "rgba(255,102,136,0.2)";
 
         ctx.save();
-        ctx.shadowColor = tcColor;
-        ctx.shadowBlur = 20;
+        if (COL.glow) {
+          ctx.shadowColor = tcColor;
+          ctx.shadowBlur = 20;
+        }
 
         ctx.beginPath();
         ctx.arc(testCharge.x, testCharge.y, TEST_CHARGE_R, 0, Math.PI * 2);
@@ -815,7 +1034,7 @@
 
         // Label
         ctx.save();
-        ctx.font = "bold 9px Orbitron, monospace";
+        ctx.font = `bold 9px ${COL.font}`;
         ctx.fillStyle = tcColor;
         ctx.textAlign = "center";
         ctx.globalAlpha = 0.7;
@@ -1346,11 +1565,7 @@
           const chains = contourCache.chainsByLevel[li];
 
           // Color based on potential sign
-          if (level > 0) {
-            ctx.strokeStyle = "rgba(255,140,140,0.6)";
-          } else {
-            ctx.strokeStyle = "rgba(140,180,255,0.6)";
-          }
+          ctx.strokeStyle = level > 0 ? COL.equipPos : COL.equipNeg;
 
           // Draw continuous chains
           for (const chain of chains) {
@@ -1390,22 +1605,23 @@
 
           ctx.save();
 
-          if (strength > 0.5) {
-            ctx.shadowColor = `hsla(${hue}, 100%, ${lightness}%, 0.4)`;
-            ctx.shadowBlur = 4;
+          let headFill;
+          if (COL.vector) {
+            // Rasējums: tinte, caurspīdīgums pēc stipruma, bez gradienta un spīduma
+            const inkA = 0.3 + strength * 0.6;
+            ctx.strokeStyle = `rgba(${COL.vector},${inkA.toFixed(3)})`;
+            headFill = ctx.strokeStyle;
+          } else {
+            if (strength > 0.5) {
+              ctx.shadowColor = `hsla(${hue}, 100%, ${lightness}%, 0.4)`;
+              ctx.shadowBlur = 4;
+            }
+            const arrowGradient = ctx.createLinearGradient(pt.x, pt.y, endX, endY);
+            arrowGradient.addColorStop(0, `hsla(${hue}, 80%, ${lightness}%, ${alpha * 0.3})`);
+            arrowGradient.addColorStop(1, `hsla(${hue}, 100%, ${lightness}%, ${alpha})`);
+            ctx.strokeStyle = arrowGradient;
+            headFill = `hsla(${hue}, 100%, ${lightness}%, ${alpha})`;
           }
-
-          const arrowGradient = ctx.createLinearGradient(pt.x, pt.y, endX, endY);
-          arrowGradient.addColorStop(
-            0,
-            `hsla(${hue}, 80%, ${lightness}%, ${alpha * 0.3})`
-          );
-          arrowGradient.addColorStop(
-            1,
-            `hsla(${hue}, 100%, ${lightness}%, ${alpha})`
-          );
-
-          ctx.strokeStyle = arrowGradient;
           ctx.lineWidth = 0.8 + strength * 0.8;
           ctx.lineCap = "round";
 
@@ -1416,7 +1632,7 @@
 
           const headLen = 4 + strength * 3;
           const headAngle = 0.5;
-          ctx.fillStyle = `hsla(${hue}, 100%, ${lightness}%, ${alpha})`;
+          ctx.fillStyle = headFill;
           ctx.beginPath();
           ctx.moveTo(endX, endY);
           ctx.lineTo(
@@ -1461,8 +1677,10 @@
         ctx.fillStyle = COL.forceArrow;
         ctx.lineWidth = lineWidth;
         ctx.lineCap = "round";
-        ctx.shadowColor = COL.forceArrow;
-        ctx.shadowBlur = 6 + lineWidth;
+        if (COL.glow) {
+          ctx.shadowColor = COL.forceArrow;
+          ctx.shadowBlur = 6 + lineWidth;
+        }
 
         ctx.beginPath();
         ctx.moveTo(testCharge.x, testCharge.y);
@@ -1815,6 +2033,24 @@
       }
 
       document.getElementById("btnClear").addEventListener("click", doClear);
+
+      document.getElementById("skinSwitch").addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-skin]");
+        if (!b || b.dataset.skin === skin) return;
+        skin = b.dataset.skin;
+        save(SKIN_KEY, skin);
+        applySkin();
+      });
+      document.getElementById("skinBtn").addEventListener("click", () => {
+        skin = isDraw() ? "neon" : "draw";
+        save(SKIN_KEY, skin);
+        applySkin();
+      });
+      document.getElementById("themeBtn").addEventListener("click", () => {
+        theme = theme === "dark" ? "light" : "dark";
+        save(THEME_KEY, theme);
+        applySkin();
+      });
 
       function updateTestChargeUI() {
         document.getElementById("btnAddTest").hidden = Boolean(testCharge);
