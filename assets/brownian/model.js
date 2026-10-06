@@ -20,8 +20,12 @@ export const TRAIL_MAX = 2400; // punkti (~40 s pie 60 kadriem)
 export const SUB_STEPS = 4;
 export const MAX_DT = 0.05;
 
+export const LENS_MAG = 3; // lupas palielinājums
+export const LENS_R_FACTOR = 5; // lupas rādiuss = 5 × palielinātā putekļa rādiuss (Ansis 06.10)
+export const LENS_TAU = 0.4; // s — lupa seko puteklim maigi, ar šādu laika konstanti
+
 export function defaultSettings() {
-  return { T: 300, trail: false, molecules: false }; // noklusēti tikai oranžs punkts (Ansis 06.10)
+  return { T: 300, trail: false, molecules: false, lens: false }; // noklusēti tikai oranžs punkts (Ansis 06.10)
 }
 export function withT(s, v) {
   if (!Number.isFinite(v)) return s;
@@ -30,6 +34,13 @@ export function withT(s, v) {
 }
 export const withTrail = (s, on) => (Boolean(on) === s.trail ? s : { ...s, trail: Boolean(on) });
 export const withMolecules = (s, on) => (Boolean(on) === s.molecules ? s : { ...s, molecules: Boolean(on) });
+export const withLens = (s, on) => (Boolean(on) === s.lens ? s : { ...s, lens: Boolean(on) });
+
+// Lupas centrs tuvojas puteklim eksponenciāli: pēc τ sekundēm atlikusī novirze ir 1/e
+export function followLens(lens, target, dt, tau = LENS_TAU) {
+  const k = 1 - Math.exp(-dt / tau);
+  return { x: lens.x + (target.x - lens.x) * k, y: lens.y + (target.y - lens.y) * k };
+}
 
 export const vRms = (T) => V_REF * Math.sqrt(T / T_REF);
 export const moleculeCount = (w, h) => Math.max(50, Math.round(DENSITY * w * h));

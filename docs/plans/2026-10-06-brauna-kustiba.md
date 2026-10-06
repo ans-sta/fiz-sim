@@ -26,6 +26,10 @@ Trauks ar daudzām mazām molekulām un vienu lielu putekli. Molekulas lido tais
 - Galvene “← SARAKSTS · BRAUNA KUSTĪBA · M-01”, rakstlaukums TĒMA: MOLEKULĀRĀ FIZIKA. LV/EN, abas tēmas, ⚙.
 - Saite: `T=`, `trail=0`, `molecules=0` (README).
 
+### 3.1 Lupa (Ansis 06.10)
+
+Poga LUPA (ikona + vārds) RĀDĪT grupā. Ieslēgta: aplis ar 3× palielinājumu, rādiuss = 5 × palielinātais puteklis (≈ 165 px datorā), ietvars tintē ar rokturi 45°. Lupas centrs seko puteklim maigi (eksponenciāli, τ = 0,4 s), puteklis tajā lēkā līdzi grūdieniem un novirzās no centra. Lupā molekulas redzamas vienmēr, arī kad vispārējais rādījums izslēgts; trajektorija — ja ieslēgta. Ieslēdzot vai ↺ — lupa sāk tieši virs putekļa. Saite `lens=1`.
+
 ## 4. Moduļi un testi
 
 `assets/brownian/` — `model.js` (pasaule, sadursme, solis, izkārtojums), `i18n.js`, `hud-model.js`, `params.js`, `scene.js`, `main.js`; lapa `brownian-motion.html`; CSS `.m01-*` `sim-common.css` beigās; testi `tests/brownian-*.test.js`.

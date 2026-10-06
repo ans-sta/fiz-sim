@@ -9,9 +9,9 @@ const lv = makeT(STRINGS, () => 'lv');
 
 test('no params: defaults; all params; clamping with a notice; unknown ignored', () => {
   assert.deepEqual(settingsFromURL('').settings, defaultSettings());
-  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['T', 'molecules', 'trail']);
-  const r = settingsFromURL('?T=600&trail=1&molecules=1&fbclid=x');
-  assert.deepEqual(r.settings, { T: 600, trail: true, molecules: true });
+  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['T', 'lens', 'molecules', 'trail']);
+  const r = settingsFromURL('?T=600&trail=1&molecules=1&lens=1&fbclid=x');
+  assert.deepEqual(r.settings, { T: 600, trail: true, molecules: true, lens: true });
   assert.deepEqual(r.warnings, []);
   const c = settingsFromURL('?T=5000');
   assert.equal(c.settings.T, 1000);

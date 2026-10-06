@@ -620,6 +620,7 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .m01-row .btn { flex: none; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(6px * var(--hud)) calc(10px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
 .layout-hud .m01-row .btn[aria-pressed="false"] { color: var(--ink-dim); border-color: var(--hairline); }
 .layout-hud .m01-row .btn.pause { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; }
+.layout-hud .m01-row .btn svg { width: calc(12px * var(--hud)); height: calc(12px * var(--hud)); vertical-align: -2px; margin-right: calc(5px * var(--hud)); fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
 @media (max-width: 700px) {
   .layout-hud .m01-group { padding: calc(4px * var(--hud)) calc(8px * var(--hud)); border-right: none; }
   .layout-hud .m01-label { display: none; }

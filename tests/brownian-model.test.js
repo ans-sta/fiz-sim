@@ -1,19 +1,27 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  defaultSettings, withT, withTrail, withMolecules, createWorld, setTemperature, resizeWorld, resetDust, step, collide, kineticEnergy,
+  defaultSettings, withT, withTrail, withMolecules, withLens, followLens, createWorld, setTemperature, resizeWorld, resetDust, step, collide, kineticEnergy,
   vRms, moleculeCount, boxLayout, DUST_M, DUST_R, MOL_R, BOX_H, T_REF, V_REF,
 } from '../assets/brownian/model.js';
 
 test('settings: T clamped to 50…1000 in steps of 25; toggles', () => {
   const s = defaultSettings();
-  assert.deepEqual(s, { T: 300, trail: false, molecules: false });
+  assert.deepEqual(s, { T: 300, trail: false, molecules: false, lens: false });
   assert.equal(withT(s, 2000).T, 1000);
   assert.equal(withT(s, 10).T, 50);
   assert.equal(withT(s, 312).T, 300);
   assert.equal(withT(s, 300), s);
   assert.equal(withTrail(s, true).trail, true);
   assert.equal(withMolecules(s, true).molecules, true);
+  assert.equal(withLens(s, true).lens, true);
+});
+
+test('followLens: after τ the remaining offset is 1/e; after a long time it sits on the target', () => {
+  const a = followLens({ x: 0, y: 0 }, { x: 10, y: 0 }, 0.4, 0.4);
+  assert.ok(Math.abs(a.x - 10 * (1 - 1 / Math.E)) < 1e-9);
+  const b = followLens({ x: 0, y: 5 }, { x: 10, y: 5 }, 10, 0.4);
+  assert.ok(Math.abs(b.x - 10) < 1e-6 && b.y === 5);
 });
 
 test('speed scales with √T; molecule count follows the area', () => {

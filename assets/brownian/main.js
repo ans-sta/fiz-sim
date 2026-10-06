@@ -2,7 +2,7 @@
 // ⏸/▶, ↺), pasaule — viss laukums zem tās, bez rāmja. Tikai vizualizācija, bez mērījumiem (Ansis 06.10).
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
-import { RANGES, withT, withTrail, withMolecules, createWorld, setTemperature, resizeWorld, resetDust, step, boxLayout } from './model.js';
+import { RANGES, withT, withTrail, withMolecules, withLens, followLens, createWorld, setTemperature, resizeWorld, resetDust, step, boxLayout } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { drawScene } from './scene.js';
 import { createNotices } from '../measure/notices.js';
@@ -22,7 +22,7 @@ mountTitleCells(titleSmall, { i18n, sheet: 'M-01', topicKey: 'tb.topicValue' });
 i18n.apply();
 
 const url = settingsFromURL(location.search);
-const state = { settings: url.settings, paused: false, drawScale: 1, world: null };
+const state = { settings: url.settings, paused: false, drawScale: 1, world: null, lens: null }; // lens — lupas centrs pasaules vienībās
 
 const drawing = document.getElementById('drawing');
 const noticesEl = document.getElementById('notices');
@@ -51,8 +51,9 @@ tMinus.addEventListener('click', () => update(withT(state.settings, state.settin
 tPlus.addEventListener('click', () => update(withT(state.settings, state.settings.T + RANGES.T.step)));
 el('trailBtn').addEventListener('click', () => update(withTrail(state.settings, !state.settings.trail)));
 el('molBtn').addEventListener('click', () => update(withMolecules(state.settings, !state.settings.molecules)));
+el('lensBtn').addEventListener('click', () => { state.lens = null; update(withLens(state.settings, !state.settings.lens)); }); // ieslēdzot — lupa sāk tieši virs putekļa
 el('pauseBtn').addEventListener('click', () => { state.paused = !state.paused; render(); });
-el('resetBtn').addEventListener('click', () => { if (state.world) resetDust(state.world); render(); });
+el('resetBtn').addEventListener('click', () => { if (state.world) { resetDust(state.world); state.lens = null; } render(); });
 el('bar').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) b.blur(); }); // atstarpe paliek pauzei
 
 document.addEventListener('keydown', (ev) => {
@@ -93,6 +94,10 @@ function layout() {
 
 startLoop((dt) => {
   if (!state.paused && state.world) step(state.world, dt);
+  if (state.world && state.settings.lens) {
+    const d = state.world.dust;
+    state.lens = state.lens ? followLens(state.lens, d, dt) : { x: d.x, y: d.y };
+  }
   render();
 });
 
@@ -115,12 +120,15 @@ function render() {
   setAttr(el('trailBtn'), 'aria-pressed', s.trail);
   setText(el('molBtn'), t('bar.molecules'));
   setAttr(el('molBtn'), 'aria-pressed', s.molecules);
+  setText(el('lensText'), t('bar.lens'));
+  setAttr(el('lensBtn'), 'aria-pressed', s.lens);
+  setAttr(el('lensBtn'), 'aria-label', t('bar.lensAria'));
   setText(el('pauseBtn'), state.paused ? '▶︎' : '⏸︎');
   setAttr(el('pauseBtn'), 'aria-label', state.paused ? t('run.play') : t('run.pause'));
   setText(el('resetBtn'), t('run.reset'));
   setAttr(el('resetBtn'), 'aria-label', t('run.resetAria'));
   const lay = layout();
-  drawScene(view.ctx, lay, { world: state.world, settings: s, colors: theme.colors() });
+  drawScene(view.ctx, lay, { world: state.world, settings: s, colors: theme.colors(), lens: state.lens });
   gear.setDrawFit(lay.fill);
   const { w, h } = view.size();
   const big = w >= 900 && h >= 560;
