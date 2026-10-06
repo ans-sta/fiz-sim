@@ -893,6 +893,8 @@
             ctx.save();
             ctx.beginPath();
             ctx.arc(c.x, c.y, CHARGE_R, 0, Math.PI * 2);
+            ctx.fillStyle = COL.field; // necaurspīdīgs: lādiņš nosedz vektorus un līnijas zem tā (Ansis 06.10)
+            ctx.fill();
             ctx.fillStyle = color;
             ctx.globalAlpha = 0.14;
             ctx.fill();
@@ -1009,6 +1011,10 @@
 
         ctx.beginPath();
         ctx.arc(testCharge.x, testCharge.y, TEST_CHARGE_R, 0, Math.PI * 2);
+        if (!COL.glow) {
+          ctx.fillStyle = COL.field;
+          ctx.fill();
+        }
         ctx.fillStyle = tcFill;
         ctx.fill();
         ctx.strokeStyle = tcColor;
