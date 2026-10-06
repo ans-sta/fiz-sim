@@ -10,11 +10,11 @@ export const BOX_W_DEFAULT = 400;
 export const BOX_W_MIN = 100; // telefons stāvus: pasaule aizpilda visu laukumu arī šaurā ekrānā
 export const BOX_W_MAX = 900;
 export const DENSITY = 600 / (BOX_W_DEFAULT * BOX_H); // molekulas uz laukuma vienību (600 noklusējuma traukā)
-export const DUST_R = 8;
+export const DUST_R = 4; // 2× mazāks (Ansis 06.10)
 export const DUST_M = 40; // molekulas masa = 1
 export const MOL_R = 1.2;
 export const T_REF = 300; // K
-export const V_REF = 220; // vienības/s — molekulu vidējais kvadrātiskais ātrums pie T_REF
+export const V_REF = 450; // vienības/s — molekulu v_rms pie T_REF (Ansis 06.10: 300 K ātrums kā agrāk pie ~1000 K; 50 K vēl dzīvs, ≈ 184)
 export const RANGES = { T: { min: 50, max: 1000, step: 25 } };
 export const TRAIL_MAX = 2400; // punkti (~40 s pie 60 kadriem)
 export const SUB_STEPS = 4;
