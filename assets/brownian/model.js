@@ -14,7 +14,7 @@ export const DUST_R = 4; // 2× mazāks (Ansis 06.10)
 export const DUST_M = 40; // molekulas masa = 1
 export const MOL_R = 1.2;
 export const T_REF = 300; // K
-export const V_REF = 450; // vienības/s — molekulu v_rms pie T_REF (Ansis 06.10: 300 K ātrums kā agrāk pie ~1000 K; 50 K vēl dzīvs, ≈ 184)
+export const V_REF = 75; // vienības/s — molekulu v_rms pie T_REF (Ansis 06.10: pie 50 K 1–2 grūdieni/s, pie 300 K kā pirmajā versijā pie 50 K); 50 K ≈ 31, 1000 K ≈ 137
 export const RANGES = { T: { min: 50, max: 1000, step: 25 } };
 export const TRAIL_MAX = 2400; // punkti (~40 s pie 60 kadriem)
 export const SUB_STEPS = 4;

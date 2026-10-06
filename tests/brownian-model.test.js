@@ -66,13 +66,13 @@ test('collide: elastic, conserves momentum and energy, only when approaching', (
 test('step: everything stays in the box, the dust starts moving, trail grows, energy roughly conserved', () => {
   const w = createWorld(400, 250, 600, 11);
   const e0 = kineticEnergy(w);
-  for (let i = 0; i < 120; i++) step(w, 1 / 60);
+  for (let i = 0; i < 600; i++) step(w, 1 / 60); // 10 s
   for (const p of w.mol) assert.ok(p.x >= MOL_R - 1e-6 && p.x <= 400 - MOL_R + 1e-6 && p.y >= MOL_R - 1e-6 && p.y <= 250 - MOL_R + 1e-6);
   assert.ok(w.dust.x >= DUST_R && w.dust.x <= 400 - DUST_R);
   assert.ok(w.hits > 20, `hits ${w.hits}`);
   assert.ok(Math.hypot(w.dust.vx, w.dust.vy) > 0);
   assert.ok(w.trail.length > 10);
-  assert.ok(Math.abs(w.t - 2) < 1e-9);
+  assert.ok(Math.abs(w.t - 10) < 1e-9);
   assert.ok(Math.abs(kineticEnergy(w) / e0 - 1) < 0.02);
   resetDust(w);
   assert.deepEqual([w.dust.x, w.dust.y, w.trail.length, w.t], [200, 125, 1, 0]);
