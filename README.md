@@ -167,7 +167,7 @@ Parameters of `brownian-motion.html`. Starting values only; unknown parameters a
 | `T=<number>` | Temperature, K, 50–1000 (step 25); molecule speeds scale with √T |
 | `trail=1` | Trajectory shown at start (hidden by default) |
 | `molecules=1` | Molecules shown at start (hidden by default; they move either way) |
-| `lens=1` | Magnifier over the dust particle on at start (3× zoom, follows the particle gently) |
+| `lens=1` | Magnifier over the dust particle on at start (3× zoom, follows the particle gently; shows molecules only when `molecules=1`) |
 
 Example (hot, molecules shown):
 

@@ -58,7 +58,7 @@ export function drawScene(ctx, lay, m) {
 }
 
 // Lupa: aplis ap m.lens (pasaules koordinātas, seko puteklim maigi); iekšā tas pats laukums LENS_MAG reizes lielāks —
-// molekulas vienmēr redzamas (arī tad, ja vispārējais rādījums izslēgts), puteklis novirzās no centra ar katru grūdienu.
+// molekulas tikai, ja MOLEKULAS ieslēgtas (viena poga, neatkarīgi no lupas; Ansis 06.10), puteklis novirzās no centra ar katru grūdienu.
 function drawLens(ctx, lay, m, k) {
   const { world, settings: s, colors: c } = m;
   const mag = LENS_MAG;
@@ -90,17 +90,19 @@ function drawLens(ctx, lay, m, k) {
     ctx.globalAlpha = 1;
   }
 
-  const r = Math.max(1.5, MOL_R * lay.scale * k) * mag;
-  ctx.fillStyle = c.inkDim;
-  ctx.globalAlpha = 0.9;
-  ctx.beginPath();
-  for (const p of world.mol) {
-    if (Math.abs(p.x - m.lens.x) > reach || Math.abs(p.y - m.lens.y) > reach) continue;
-    ctx.moveTo(LX(p.x) + r, LY(p.y));
-    ctx.arc(LX(p.x), LY(p.y), r, 0, Math.PI * 2);
+  if (s.molecules) {
+    const r = Math.max(1.5, MOL_R * lay.scale * k) * mag;
+    ctx.fillStyle = c.inkDim;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    for (const p of world.mol) {
+      if (Math.abs(p.x - m.lens.x) > reach || Math.abs(p.y - m.lens.y) > reach) continue;
+      ctx.moveTo(LX(p.x) + r, LY(p.y));
+      ctx.arc(LX(p.x), LY(p.y), r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.globalAlpha = 1;
   }
-  ctx.fill();
-  ctx.globalAlpha = 1;
 
   const d = world.dust;
   ctx.fillStyle = c.accent;
@@ -109,14 +111,14 @@ function drawLens(ctx, lay, m, k) {
   ctx.fill();
   ctx.restore();
 
-  // ietvars un rokturis
+  // ietvars un rokturis — resnāki, pelēki (Ansis 06.10)
   ctx.save();
-  ctx.strokeStyle = c.ink;
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = c.inkDim;
+  ctx.lineWidth = 4;
   ctx.beginPath();
   ctx.arc(cx, cy, R, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 9;
   ctx.lineCap = 'round';
   const a = Math.PI / 4;
   ctx.beginPath();

@@ -28,7 +28,7 @@ Trauks ar daudzām mazām molekulām un vienu lielu putekli. Molekulas lido tais
 
 ### 3.1 Lupa (Ansis 06.10)
 
-Poga LUPA (ikona + vārds) RĀDĪT grupā. Ieslēgta: aplis ar 3× palielinājumu, rādiuss = 5 × palielinātais puteklis (≈ 165 px datorā), ietvars tintē ar rokturi 45°. Lupas centrs seko puteklim maigi (eksponenciāli, τ = 0,4 s), puteklis tajā lēkā līdzi grūdieniem un novirzās no centra. Lupā molekulas redzamas vienmēr, arī kad vispārējais rādījums izslēgts; trajektorija — ja ieslēgta. Ieslēdzot vai ↺ — lupa sāk tieši virs putekļa. Saite `lens=1`.
+Poga LUPA (ikona + vārds) RĀDĪT grupā. Ieslēgta: aplis ar 3× palielinājumu, rādiuss = 5 × palielinātais puteklis (≈ 165 px datorā), ietvars un rokturis resni, blāvā tintē (pelēki), rokturis 45°. Lupas centrs seko puteklim maigi (eksponenciāli, τ = 0,4 s), puteklis tajā lēkā līdzi grūdieniem un novirzās no centra. Lupā molekulas tikai tad, ja MOLEKULAS ieslēgtas (viena poga, neatkarīgi no lupas); trajektorija — ja ieslēgta. Ieslēdzot vai ↺ — lupa sāk tieši virs putekļa. Saite `lens=1`.
 
 ## 4. Moduļi un testi
 
