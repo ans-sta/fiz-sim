@@ -9,12 +9,12 @@ export const BOX_H = 250; // pasaules vienības; platums seko ekrāna proporcija
 export const BOX_W_DEFAULT = 400;
 export const BOX_W_MIN = 100; // telefons stāvus: pasaule aizpilda visu laukumu arī šaurā ekrānā
 export const BOX_W_MAX = 900;
-export const DENSITY = 600 / (BOX_W_DEFAULT * BOX_H); // molekulas uz laukuma vienību (600 noklusējuma traukā)
+export const DENSITY = 900 / (BOX_W_DEFAULT * BOX_H); // molekulas uz laukuma vienību (900 uz 400 × 250; 06.10 blīvāk, jo lēnāk)
 export const DUST_R = 4; // 2× mazāks (Ansis 06.10)
-export const DUST_M = 40; // molekulas masa = 1
+export const DUST_M = 15; // molekulas masa = 1 (06.10: vieglāks, lai lēnie grūdieni ir redzami)
 export const MOL_R = 1.2;
 export const T_REF = 300; // K
-export const V_REF = 75; // vienības/s — molekulu v_rms pie T_REF (Ansis 06.10: pie 50 K 1–2 grūdieni/s, pie 300 K kā pirmajā versijā pie 50 K); 50 K ≈ 31, 1000 K ≈ 137
+export const V_REF = 25; // vienības/s — molekulu v_rms pie T_REF (Ansis 06.10: pie 300 K atsevišķai molekulai var izsekot ar aci, pie 50 K puteklis knapi kustas); 50 K ≈ 10, 1000 K ≈ 46
 export const RANGES = { T: { min: 50, max: 1000, step: 25 } };
 export const TRAIL_MAX = 2400; // punkti (~40 s pie 60 kadriem)
 export const SUB_STEPS = 4;

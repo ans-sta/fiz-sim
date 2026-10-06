@@ -9,9 +9,9 @@ Trauks ar daudzām mazām molekulām un vienu lielu putekli. Molekulas lido tais
 
 ## 2. Modelis (Claude lēmumi)
 
-- Pasaules vienības: trauka augstums 250, platums seko ekrāna proporcijai (150–900); blīvums 600 molekulas uz 400 × 250. Pie izmēra maiņas pozīcijas proporcionāli, molekulu skaits pēc blīvuma.
-- Molekula: masa 1, rādiuss 1,2; puteklis: masa 40, rādiuss 4 (06.10: 2× mazāks), sākumā centrā miera stāvoklī.
-- Ātrumi pēc Maksvela (Gausa komponentes), vidējais kvadrātiskais 75 vien./s pie 300 K (06.10: bija 220; Ansis: pie 50 K putekli grūž 1–2 reizes sekundē, pie 300 K tas kustas kā pirmajā versijā pie 50 K); **v ∝ √T**: 50 K ≈ 31, 1000 K ≈ 137. Mainot T, molekulu ātrumus mērogo uzreiz; puteklis termalizējas pats caur sadursmēm (ekvipartīcija: putekļa v ≈ 220/√40 ≈ 35).
+- Pasaules vienības: trauka augstums 250, platums seko ekrāna proporcijai (100–900); blīvums 900 molekulas uz 400 × 250 (06.10: bija 600). Pie izmēra maiņas pozīcijas proporcionāli, molekulu skaits pēc blīvuma.
+- Molekula: masa 1, rādiuss 1,2; puteklis: masa 15 (06.10: bija 40 — vieglāks, lai lēnie grūdieni ir redzami), rādiuss 4 (2× mazāks), sākumā centrā miera stāvoklī.
+- Ātrumi pēc Maksvela (Gausa komponentes), vidējais kvadrātiskais 25 vien./s pie 300 K (06.10 trīs kārtās: 220 → 450 (pārpratums) → 75 → 25; Ansis: pie 300 K atsevišķai molekulai jāvar izsekot ar aci, pie 50 K puteklis knapi kustas); **v ∝ √T**: 50 K ≈ 10, 1000 K ≈ 46. Mainot T, molekulu ātrumus mērogo uzreiz; puteklis termalizējas pats caur sadursmēm (ekvipartīcija: putekļa v ≈ 220/√40 ≈ 35).
 - Molekulas cita ar citu nesaduras (ideāla gāze), ar putekli — elastīga sadursme pa normāli (impulss un enerģija saglabājas, testēts). 4 apakšsoļi uz kadru, solis ≤ 50 ms. Datorā ~24 grūdieni sekundē pie 300 K.
 - Trajektorija: līdz 2400 punktiem (~40 s), punkts, kad puteklis pavirzījies > 0,3 vienības.
 
