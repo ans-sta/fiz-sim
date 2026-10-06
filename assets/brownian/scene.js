@@ -118,7 +118,7 @@ function drawLens(ctx, lay, m, k) {
 // Lupas ķermenis rasējuma manierē (Ansis 06.10): štrihota ēna uz papīra, ietvars ar mainīgu līnijas resnumu (gaisma no augšas
 // kreisās puses), radiāls štrihs uz slīpuma, apaļš rokturis ar garenisku štrihu kā cilindrs, uzmava pie ietvara, stikla atspīdums.
 const TAU = Math.PI * 2;
-const LIGHT = -3 * Math.PI / 4; // gaismas virziens (uz augšu pa kreisi) — ēna un biezākās līnijas pretējā pusē
+const LIGHT = -Math.PI / 4; // gaismas virziens (uz augšu pa labi): ēna krīt uz leju pa kreisi, rokturis — uz leju pa labi (Ansis 06.10)
 function hatch(ctx, x, y, w, h, spacing, angle) {
   // paralēlas līnijas leņķī `angle` taisnstūrī (x, y, w, h); saucējs jau ir uzlicis clip
   const d = Math.hypot(w, h);
@@ -150,7 +150,7 @@ function handlePath(ctx, R) {
   ctx.closePath();
 }
 function drawLensShadow(ctx, cx, cy, R, c) {
-  const dx = 0.07 * R;
+  const dx = -0.07 * R; // ēna uz leju pa kreisi
   const dy = 0.09 * R;
   ctx.save();
   ctx.strokeStyle = c.inkDim;
@@ -162,7 +162,7 @@ function drawLensShadow(ctx, cx, cy, R, c) {
   ctx.arc(cx + dx, cy + dy, R + 2, 0, TAU);
   ctx.arc(cx, cy, R + 1, 0, TAU, true);
   ctx.clip('evenodd');
-  hatch(ctx, cx - R - 20, cy - R - 20, 2 * R + 40, 2 * R + 40, 5, Math.PI / 4);
+  hatch(ctx, cx - R - 20, cy - R - 20, 2 * R + 40, 2 * R + 40, 5, -Math.PI / 4);
   ctx.restore();
   // roktura ēna — nobīdīts rokturis; pats rokturis vēlāk to pārklāj ar necaurspīdīgu ķermeni
   ctx.save();
@@ -170,7 +170,7 @@ function drawLensShadow(ctx, cx, cy, R, c) {
   ctx.rotate(HANDLE_ANG);
   handlePath(ctx, R);
   ctx.clip();
-  hatch(ctx, -10, -R, handleLen(R) + R, 2 * R, 5, 0); // štrihs lokāli horizontāls = 45° ekrānā
+  hatch(ctx, -10, -R, handleLen(R) + R, 2 * R, 5, Math.PI / 2); // štrihs lokāli vertikāls = −45° ekrānā (kā lupas ēnai)
   ctx.restore();
   ctx.restore();
 }
