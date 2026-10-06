@@ -184,6 +184,7 @@ Parameters of `ideal-gas.html`. Starting values only; unknown parameters are ign
 | `V=<number>` | Volume, L, 1–5 (step 0.1) |
 | `T=<number>` | Temperature, K, 100–600 (step 10) |
 | `p=<number>` | Pressure, kPa, 20–500 (step 10) |
+| `lock=p\|V\|T` | Locks one quantity at start: it stays constant and the other two change together |
 
 Example (hot gas, then pressure set — the volume adapts):
 

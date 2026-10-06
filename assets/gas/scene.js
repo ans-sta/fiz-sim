@@ -118,14 +118,15 @@ export function drawScene(ctx, lay, m) {
 
 // Izkārtojums: cilindrs ietilpst dotajā laukumā (px); virs cilindra vieta kātam un rokturim
 export function cylinderLayout(avail, { drawScale = 1 } = {}) {
-  const headroom = 36; // px — rokturis virs cilindra
+  const headroom = Math.max(70, 0.12 * avail.h); // px — brīva vieta virs cilindra (rokturis un gaiss; Ansis 06.10: tālāk no malām)
+  const footroom = Math.max(50, 0.09 * avail.h);
   const k = Math.min(1, drawScale);
-  const usableH = (avail.h - headroom - 24) * k;
+  const usableH = (avail.h - headroom - footroom) * k;
   const usableW = (avail.w - 60) * k;
   const scale = Math.min(usableH / H_MAX, usableW / BOX_W);
   const pxW = BOX_W * scale;
   const pxH = H_MAX * scale;
   const x0 = avail.x + (avail.w - pxW) / 2 + 12; // mazliet pa labi — izmēru līnijai vieta pa kreisi
-  const y0 = avail.y + headroom + (avail.h - headroom - pxH) / 2;
-  return { x0, y0, scale, pxW, pxH, rodTop: y0 - headroom + 10, fill: 1 };
+  const y0 = avail.y + headroom + (avail.h - headroom - footroom - pxH) / 2;
+  return { x0, y0, scale, pxW, pxH, rodTop: y0 - Math.min(headroom - 10, 0.2 * pxH + 30), fill: 1 };
 }

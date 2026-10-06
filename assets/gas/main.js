@@ -2,7 +2,7 @@
 // kas vienmēr redzami; pV/T vērtība zem tiem. Tikai vizualizācija (Ansis 06.10).
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
-import { RANGES, withQuantity, constOf, createGas, setGasTemperature, setPistonTarget, stepGas, volumeOf, H_MAX } from './model.js';
+import { RANGES, withQuantity, withLock, constOf, createGas, setGasTemperature, setPistonTarget, stepGas, volumeOf, H_MAX } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
 import { drawScene, cylinderLayout } from './scene.js';
 import { createNotices } from '../measure/notices.js';
@@ -48,7 +48,7 @@ const rows = {};
 for (const key of ['V', 'T', 'p']) {
   const row = document.createElement('div');
   row.className = 'g01-row';
-  row.innerHTML = `<div class="g01-head"><span class="g01-sym"></span><span class="g01-name"></span><span class="g01-val"></span></div>
+  row.innerHTML = `<div class="g01-head"><button class="g01-lock" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect class="body" x="3" y="7" width="10" height="7"/><path class="shackle" d="M5 7V5a3 3 0 0 1 6 0v2"/><path class="shackle-open" d="M5 7V5a3 3 0 0 1 6 0"/></svg></button><span class="g01-sym"></span><span class="g01-name"></span><span class="g01-val"></span></div>
     <div class="g01-ctl"><button class="q-step" type="button">−</button><input class="dim-range" type="range"><button class="q-step" type="button">+</button></div>
     <div class="q-ends"><span></span><span></span></div>`;
   panel.appendChild(row);
@@ -59,7 +59,9 @@ for (const key of ['V', 'T', 'p']) {
   input.addEventListener('input', () => update(withQuantity(state.settings, key, Number(input.value))));
   minus.addEventListener('click', () => update(withQuantity(state.settings, key, state.settings[key] - RANGES[key].step)));
   plus.addEventListener('click', () => update(withQuantity(state.settings, key, state.settings[key] + RANGES[key].step)));
-  rows[key] = { row, minus, input, plus, sym: row.querySelector('.g01-sym'), name: row.querySelector('.g01-name'), val: row.querySelector('.g01-val'), ends: row.querySelectorAll('.q-ends span') };
+  const lock = row.querySelector('.g01-lock');
+  lock.addEventListener('click', () => update(withLock(state.settings, key)));
+  rows[key] = { row, minus, input, plus, lock, sym: row.querySelector('.g01-sym'), name: row.querySelector('.g01-name'), val: row.querySelector('.g01-val'), ends: row.querySelectorAll('.q-ends span') };
 }
 const constRow = document.createElement('div');
 constRow.className = 'g01-const';
@@ -68,6 +70,57 @@ panel.appendChild(constRow);
 const hintRow = document.createElement('div');
 hintRow.className = 'g01-hint';
 panel.appendChild(hintRow);
+
+// ── panelis velkams aiz virsraksta; vieta paliek ierīcē; dubultklikšķis — atpakaļ (Ansis 06.10) ──
+const PANEL_KEY = 'fiz-sim-gas-panel';
+const panelTitle = document.getElementById('panelTitle');
+let panelPos = null; // { x, y } px no rasējuma augšējā kreisā stūra vai null (sākotnējā vieta)
+try { const raw = localStorage.getItem(PANEL_KEY); if (raw) panelPos = JSON.parse(raw); } catch (e) { panelPos = null; }
+function placePanel() {
+  if (!panelPos) {
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.style.right = '';
+    panel.style.bottom = '';
+    panel.classList.remove('moved');
+    return;
+  }
+  const { w, h } = view ? view.size() : { w: drawing.clientWidth, h: drawing.clientHeight };
+  const x = Math.max(0, Math.min(w - panel.offsetWidth, panelPos.x));
+  const y = Math.max(0, Math.min(h - panel.offsetHeight, panelPos.y));
+  panel.style.left = `${x}px`;
+  panel.style.top = `${y}px`;
+  panel.style.right = 'auto';
+  panel.style.bottom = 'auto';
+  panel.classList.add('moved');
+}
+let panelDrag = null;
+panelTitle.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  panelTitle.setPointerCapture(e.pointerId);
+  const r = panel.getBoundingClientRect();
+  const d = drawing.getBoundingClientRect();
+  panelDrag = { dx: e.clientX - r.left, dy: e.clientY - r.top, ox: d.left, oy: d.top };
+});
+panelTitle.addEventListener('pointermove', (e) => {
+  if (!panelDrag) return;
+  panelPos = { x: e.clientX - panelDrag.ox - panelDrag.dx, y: e.clientY - panelDrag.oy - panelDrag.dy };
+  placePanel();
+  render();
+});
+const endPanelDrag = () => {
+  if (!panelDrag) return;
+  panelDrag = null;
+  try { localStorage.setItem(PANEL_KEY, JSON.stringify(panelPos)); } catch (e) { /* privātais režīms */ }
+};
+panelTitle.addEventListener('pointerup', endPanelDrag);
+panelTitle.addEventListener('pointercancel', endPanelDrag);
+panelTitle.addEventListener('dblclick', () => {
+  panelPos = null;
+  try { localStorage.removeItem(PANEL_KEY); } catch (e) { /* privātais režīms */ }
+  placePanel();
+  render();
+});
 
 const gear = createSettingsCorner(document.getElementById('gear'), {
   i18n,
@@ -118,7 +171,9 @@ canvas.addEventListener('pointercancel', endDrag);
 
 function layout() {
   const { w, h } = view.size();
-  const avail = MOBILE.matches
+  placePanel();
+  // pārbīdīts panelis vietu nerezervē — cilindrs izmanto visu laukumu (Ansis izvēlas, kur panelim būt)
+  const avail = panelPos ? { x: EDGE_PX, y: TOP_MARGIN, w: w - 2 * EDGE_PX, h: h - 2 * TOP_MARGIN } : MOBILE.matches
     ? { x: EDGE_PX, y: TOP_MARGIN, w: w - 2 * EDGE_PX, h: h - panel.offsetHeight - 2 * PANEL_GAP - TOP_MARGIN }
     : { x: EDGE_PX, y: TOP_MARGIN, w: w - panel.offsetWidth - 2 * EDGE_PX - PANEL_GAP, h: h - 2 * TOP_MARGIN };
   return cylinderLayout(avail, { drawScale: state.drawScale });
@@ -130,7 +185,8 @@ function render() {
   if (!view) return;
   const s = state.settings;
   const lang = i18n.lang();
-  setText(document.getElementById('panelTitle'), t('panel.title'));
+  setText(panelTitle, t('panel.title'));
+  setAttr(panelTitle, 'title', t('panel.move'));
   for (const key of ['V', 'T', 'p']) {
     const r = rows[key];
     setText(r.sym, key);
@@ -145,8 +201,14 @@ function render() {
     r.plus.disabled = s[key] >= RANGES[key].max;
     setText(r.ends[0], `${formatNumber(RANGES[key].min, 0, lang)} ${UNITS[key]}`);
     setText(r.ends[1], `${formatNumber(RANGES[key].max, 0, lang)} ${UNITS[key]}`);
-    // visagrāk mainītais (tas, kurš pieskaņosies nākamajā maiņā) — pelēks
-    r.row.classList.toggle('adapts', s.order[0] === key);
+    const locked = s.lock === key;
+    setAttr(r.lock, 'aria-pressed', locked);
+    setAttr(r.lock, 'aria-label', t(locked ? 'panel.unlock' : 'panel.lock', { name: t(`q.${key}`) }));
+    r.row.classList.toggle('locked', locked);
+    r.input.disabled = locked;
+    if (locked) { r.minus.disabled = true; r.plus.disabled = true; }
+    // pieskaņosies nākamajā maiņā: ar atslēgu — nekad aizslēgtais; bez — visagrāk mainītais
+    r.row.classList.toggle('adapts', !locked && !s.lock && s.order[0] === key);
   }
   setText(constRow.firstChild, `${t('panel.const')} =`);
   setText(constRow.lastChild, `${formatNumber(constOf(s), 2, lang)} kPa·L/K`);

@@ -21,6 +21,12 @@ Vertikāls cilindrs ar virzuli augšā; zem virzuļa gāze — 300 molekulas, ka
 - Galvene “← SARAKSTS · GĀZES LIKUMS · M-02”, rakstlaukums TĒMA: MOLEKULĀRĀ FIZIKA. LV/EN, abas tēmas, ⚙.
 - Saite: `V=`, `T=`, `p=` (pielieto saites secībā; README).
 
+### 3.1 Otrā kārta (Ansis 06.10 pēc demonstrācijas)
+
+- **Atstarpes:** cilindrs tālāk no augšējās un apakšējās malas — virs tā ≥ 70 px (12 % laukuma), zem tā ≥ 50 px (9 %).
+- **Peldošs panelis:** paneli var pārvilkt aiz virsraksta (pele, pirksts) jebkur rasējumā; vieta paliek ierīcē (`fiz-sim-gas-panel`); dubultklikšķis uz virsraksta atgriež sākotnējo vietu. Pārbīdīts panelis vietu nerezervē — cilindrs izmanto visu laukumu.
+- **Atslēdziņas:** katram lielumam atslēgas poga. Aizslēgtais nemainās (slīdnis neaktīvs, vērtība akcentā), bīdot vienu no pārējiem diviem, pieskaņojas trešais: T aizslēgta — izotermisks process, p — izobārisks, V — izohorisks. Aizslēgt var tikai vienu: aizslēdzot otru, pirmais atslēdzas; klikšķis uz aizslēgtā — atslēdz. Bez atslēgas kā līdz šim pieskaņojas visagrāk mainītais. Saite `lock=p|V|T`.
+
 ## 4. Moduļi un testi
 
 `assets/gas/` — `model.js` (saistītie lielumi, gāze, solis), `i18n.js`, `params.js`, `scene.js` (zīmējums, izkārtojums), `main.js`; lapa `ideal-gas.html`; CSS `.g01-*`; testi `tests/gas-*.test.js`.

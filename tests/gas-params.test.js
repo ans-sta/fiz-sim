@@ -9,7 +9,9 @@ const lv = makeT(STRINGS, () => 'lv');
 
 test('no params: defaults; unknown ignored', () => {
   assert.deepEqual(settingsFromURL('?fbclid=x').settings, defaultSettings());
-  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['T', 'V', 'p']);
+  assert.equal(settingsFromURL('?lock=T').settings.lock, 'T');
+  assert.equal(settingsFromURL('?lock=x').settings.lock, null);
+  assert.deepEqual(Object.keys(PARAM_SCHEMA).sort(), ['T', 'V', 'lock', 'p']);
 });
 
 test('params apply in link order, the one given earliest adapts: V then T → p adapts twice; T then p → V adapts', () => {

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { RANGES, NR, defaultSettings, withV, withT, withP, constOf, heightOf, volumeOf, vRms, createGas, setGasTemperature, setPistonTarget, stepGas, BOX_W, MOL_R, N_MOL, V_REF, T_REF } from '../assets/gas/model.js';
+import { RANGES, NR, defaultSettings, withV, withT, withP, withLock, constOf, heightOf, volumeOf, vRms, createGas, setGasTemperature, setPistonTarget, stepGas, BOX_W, MOL_R, N_MOL, V_REF, T_REF } from '../assets/gas/model.js';
 
 const close = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
 
@@ -39,6 +39,24 @@ test('the changed value is clamped so the adapting one stays in range', () => {
   assert.equal(withV(s, Number.NaN), s);
   const e = withV(s, 2.04); // between steps → rounded to 2
   assert.equal(e, s);
+});
+
+test('lock: the locked quantity stays, the other two move together; one lock at a time; the locked slider is inert', () => {
+  const s = withLock(defaultSettings(), 'T'); // isothermal
+  assert.equal(s.lock, 'T');
+  const a = withV(s, 1);
+  assert.deepEqual([a.V, a.T, a.p], [1, 300, 200]);
+  const b = withP(a, 100); // V adapts (T locked)
+  assert.deepEqual([b.V, b.T, b.p], [2, 300, 100]);
+  assert.equal(withT(b, 500), b); // locked slider does nothing
+  const c = withLock(b, 'p'); // locking p unlocks T
+  assert.equal(c.lock, 'p');
+  const d = withT(c, 600); // isobaric: V adapts
+  assert.deepEqual([d.V, d.T, d.p], [4, 600, 100]);
+  const e = withV(d, 2); // isobaric: T adapts
+  assert.deepEqual([e.V, e.T, e.p], [2, 300, 100]);
+  assert.equal(withLock(e, 'p').lock, null); // again on the locked one → unlocked
+  assert.equal(withLock(e, 'x'), e);
 });
 
 test('geometry and speeds', () => {

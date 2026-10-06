@@ -26,8 +26,16 @@ export const volumeOf = (h) => (h / H_MAX) * RANGES.V.max;
 export const vRms = (T) => V_REF * Math.sqrt(T / T_REF);
 export const constOf = (s) => (s.p * s.V) / s.T;
 
+export const KEYS = ['p', 'V', 'T'];
 export function defaultSettings() {
-  return { V: 2, T: 300, p: 100, order: ['p', 'V', 'T'] }; // order — no visagrāk mainītā uz jaunāko
+  return { V: 2, T: 300, p: 100, order: ['p', 'V', 'T'], lock: null }; // order — no visagrāk mainītā uz jaunāko; lock — aizslēgtais lielums (nemainās) vai null
+}
+
+// Atslēdziņa: aizslēgt var vienu; aizslēdzot otru, pirmais atslēdzas; vēlreiz uz aizslēgtā — atslēdz (Ansis 06.10)
+export function withLock(s, key) {
+  if (!(key in RANGES)) return s;
+  const lock = s.lock === key ? null : key;
+  return lock === s.lock ? s : { ...s, lock };
 }
 
 const clampTo = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
@@ -69,8 +77,9 @@ function solve(s, key, raw, adapt) {
 }
 
 export function withQuantity(s, key, raw) {
-  if (!Number.isFinite(raw) || !(key in RANGES)) return s;
-  const adapt = s.order.find((k) => k !== key);
+  if (!Number.isFinite(raw) || !(key in RANGES) || key === s.lock) return s;
+  // aizslēgts lielums nemainās: pieskaņojas trešais; bez atslēgas — tas, kurš mainīts visagrāk
+  const adapt = s.lock ? KEYS.find((k) => k !== key && k !== s.lock) : s.order.find((k) => k !== key);
   const next = solve(s, key, raw, adapt);
   if (next.p === s.p && next.V === s.V && next.T === s.T) return s;
   return next;
