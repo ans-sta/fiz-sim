@@ -19,6 +19,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | 〜 Oscillations and Waves (S-01) | Oscillations / transverse and longitudinal waves | ✅ Live |
 | 🔊 Sound Lab               | Sound / waveform, phase, harmonics | ✅ Live |
 | 🔊 Sound Lab v2 (S-02)     | The same in the technical-drawing design (review copy) | 🟡 Review |
+| ∿ Brownian Motion (M-01)   | Molecular physics / a dust particle among molecules | ✅ Live |
 
 ## Structure
 
@@ -33,8 +34,9 @@ fiz-sim/
 ├── harmonic-motion.html            ← Oscillations and Waves (S-01)
 ├── sound-lab.html                  ← Sound Lab (single file, Web Audio; Latvian only; 40 Hz – 20 kHz)
 ├── sound-lab-v2.html               ← Sound Lab (S-02) in the technical-drawing design: assets/sound/
+├── brownian-motion.html            ← Brownian Motion (M-01): assets/brownian/
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/, sound/
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -155,3 +157,17 @@ Parameters of `sound-lab-v2.html`, given in the URL. Starting values only; unkno
 Example (two sources in antiphase):
 
     sound-lab-v2.html?view=two&phi=180
+
+## Teacher links (M-01)
+
+Parameters of `brownian-motion.html`. Starting values only; unknown parameters are ignored, values outside the range are clamped with a notice. A visualisation, no measurements.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `T=<number>` | Temperature, K, 50–1000 (step 25); molecule speeds scale with √T |
+| `trail=0` | Trajectory (line with an arrow) hidden at start |
+| `molecules=0` | Molecules hidden at start (they keep moving) |
+
+Example (hot, molecules hidden):
+
+    brownian-motion.html?T=800&molecules=0
