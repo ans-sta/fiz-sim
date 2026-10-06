@@ -168,5 +168,5 @@ export function kineticEnergy(world) {
 export function boxLayout(availW, availH) {
   const w = Math.min(BOX_W_MAX, Math.max(BOX_W_MIN, Math.round((BOX_H * availW) / Math.max(1, availH))));
   const scale = Math.min(availH / BOX_H, availW / w);
-  return { w, h: BOX_H, scale, pxW: w * scale, pxH: BOX_H * scale, fill: 1 };
+  return { w, h: BOX_H, scale, pxW: w * scale, pxH: BOX_H * scale, fill: 1.5 }; // ZĪMĒJUMS šeit maina tikai daļiņu izmēru — ietilpst līdz galam, sliede bez pelēkās daļas
 }
