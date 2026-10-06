@@ -165,9 +165,9 @@ Parameters of `brownian-motion.html`. Starting values only; unknown parameters a
 | Parameter | Meaning |
 | --------- | ------- |
 | `T=<number>` | Temperature, K, 50–1000 (step 25); molecule speeds scale with √T |
-| `trail=0` | Trajectory (line with an arrow) hidden at start |
-| `molecules=0` | Molecules hidden at start (they keep moving) |
+| `trail=1` | Trajectory shown at start (hidden by default) |
+| `molecules=1` | Molecules shown at start (hidden by default; they move either way) |
 
-Example (hot, molecules hidden):
+Example (hot, molecules shown):
 
-    brownian-motion.html?T=800&molecules=0
+    brownian-motion.html?T=800&molecules=1

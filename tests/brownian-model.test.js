@@ -7,13 +7,13 @@ import {
 
 test('settings: T clamped to 50…1000 in steps of 25; toggles', () => {
   const s = defaultSettings();
-  assert.deepEqual(s, { T: 300, trail: true, molecules: true });
+  assert.deepEqual(s, { T: 300, trail: false, molecules: false });
   assert.equal(withT(s, 2000).T, 1000);
   assert.equal(withT(s, 10).T, 50);
   assert.equal(withT(s, 312).T, 300);
   assert.equal(withT(s, 300), s);
-  assert.equal(withTrail(s, false).trail, false);
-  assert.equal(withMolecules(s, false).molecules, false);
+  assert.equal(withTrail(s, true).trail, true);
+  assert.equal(withMolecules(s, true).molecules, true);
 });
 
 test('speed scales with √T; molecule count follows the area', () => {
@@ -90,9 +90,10 @@ test('resizeWorld keeps proportions and density', () => {
 test('boxLayout: height is BOX_H world units, width follows the aspect, clamped', () => {
   const l = boxLayout(1000, 500);
   assert.deepEqual([l.h, l.w, l.scale], [BOX_H, 500, 2]);
-  const n = boxLayout(300, 600); // narrow phone → minimum width, scale limited by the width
-  assert.deepEqual([n.w, n.scale, n.pxW, n.pxH], [150, 2, 300, 500]);
+  const n = boxLayout(300, 600); // narrow phone: the world keeps the screen's aspect and fills it
+  assert.deepEqual([n.w, n.scale, n.pxW, n.pxH], [125, 2.4, 300, 600]);
+  const vn = boxLayout(100, 600); // extremely narrow → minimum width, scale limited by the width
+  assert.deepEqual([vn.w, vn.scale, vn.pxW], [100, 1, 100]);
   const wide = boxLayout(4000, 500);
   assert.deepEqual([wide.w, wide.scale, wide.pxW], [900, 2, 1800]);
-  assert.equal(boxLayout(1000, 500, { drawScale: 0.5 }).scale, 1);
 });

@@ -17,6 +17,8 @@ Trauks ar daudzām mazām molekulām un vienu lielu putekli. Molekulas lido tais
 
 ## 3. Lapa
 
+> 06.10 otrā kārta (Ansis): visas kontroles vienā rindā zem galvenes (kā el. laukam), bez bultiņas, bez padoma, pasaule bez rāmja pa visu laukumu, ⏸/↺ tajā pašā rindā, bez sākuma krustiņa; noklusēti molekulas un trajektorija izslēgtas — tikai oranžs punkts.
+
 - `layout-hud`: trauks aizpilda laukumu starp MAINĪGAJIEM LIELUMIEM un pogām (ZĪMĒJUMS ≤ 100 % to sarauj); matu līnijas rāmis, fons `--field`.
 - MAINĪGIE LIELUMI: **T** 50–1000 K ik pa 25 (slīdnis); zem līnijas rūtiņas **trajektorija** un **molekulas**. Telefonā panelis salocīts.
 - Zīmējums: molekulas — blāvas tintes punkti; puteklis — akcenta disks; trajektorija — tinte, kas izbāl uz vēsturi (24 posmi), sākumā krustiņš; **bultiņa** no putekļa kustības virzienā, garums pēc ātruma. Kad molekulas nerāda, zem trauka viena rinda: “Molekulas kustas arī tad, kad tās nerāda…”.

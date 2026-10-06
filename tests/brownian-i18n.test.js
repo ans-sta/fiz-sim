@@ -8,11 +8,11 @@ test('LV and EN have exactly the same keys', () => {
 
 test('the keys the shared modules and the page need are there', () => {
   for (const k of ['page.title', 'page.heading', 'page.back', 'tb.set', 'tb.sheet', 'tb.topic', 'tb.topicValue', 'tb.themeToggle', 'tb.fullscreen',
-    'hud.quantities', 'hud.more', 'hud.less', 'hud.fold', 'hud.unfold', 'dims.decrease', 'dims.increase', 'notice.close',
+    'bar.T', 'bar.Tname', 'bar.show', 'bar.trail', 'bar.molecules', 'bar.run', 'dims.decrease', 'dims.increase', 'notice.close',
     'url.not_number', 'url.out_of_range', 'url.not_allowed', 'url.bad_list', 'url.none', 'url.listHint',
     'gear.open', 'gear.theme', 'gear.light', 'gear.dark', 'gear.lang', 'gear.text', 'gear.textDown', 'gear.textUp',
     'gear.draw', 'gear.drawDown', 'gear.drawUp', 'gear.screen', 'gear.fullscreen',
-    'q.T', 'q.trail', 'q.molecules', 'q.on', 'q.off', 'run.pause', 'run.play', 'run.reset', 'hint.molecules', 'scene.aria']) {
+    'run.pause', 'run.play', 'run.reset', 'run.resetAria', 'scene.aria']) {
     assert.ok(k in STRINGS.lv, `missing ${k}`);
   }
   assert.equal(STRINGS.lv['page.heading'], 'BRAUNA KUSTĪBA');

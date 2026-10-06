@@ -609,11 +609,20 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .s02-link:hover { color: var(--accent); }
 .layout-hud canvas.grab { cursor: crosshair; touch-action: none; }
 
-/* ══ M-01 Brauna kustība: pogas apakšā centrā (⏸/▶, ↺), padoms virs tām, kad molekulas nerāda ══ */
-.layout-hud .m01-views { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 3; display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; max-width: calc(100% - 120px); }
-.layout-hud .drawing.has-title .m01-views { max-width: calc(100% - 600px); }
-.layout-hud .m01-views .btn { flex: none; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(7px * var(--hud)) calc(12px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
-.layout-hud .m01-views .btn.pause { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; }
-.layout-hud .m01-hint { position: absolute; left: 56px; right: 56px; bottom: calc(18px + 34px * var(--hud) + 10px); z-index: 3; margin: 0; text-align: center; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11.5px * var(--hud)); color: var(--ink-dim); }
-.layout-hud .m01-hint[hidden] { display: none; }
-@media (max-width: 520px) { .layout-hud .m01-views { max-width: calc(100% - 64px); } .layout-hud .m01-hint { left: 50px; right: 8px; } }
+/* ══ M-01 Brauna kustība: vadības rinda zem galvenes (Ansis 06.10: visas kontroles vienā rindā, pasaule — viss laukums zem tās) ══ */
+.layout-hud .m01-bar { display: flex; flex-wrap: wrap; align-items: stretch; border-bottom: 1px solid var(--hairline); flex: none; padding: 0 4px; }
+.layout-hud .m01-group { display: flex; flex-direction: column; gap: calc(3px * var(--hud)); padding: calc(6px * var(--hud)) calc(14px * var(--hud)) calc(8px * var(--hud)); border-right: 1px solid var(--hairline); }
+.layout-hud .m01-end { border-right: none; margin-left: auto; }
+.layout-hud .m01-label { font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); white-space: nowrap; }
+.layout-hud .m01-row { display: flex; align-items: center; gap: calc(6px * var(--hud)); min-height: calc(28px * var(--hud)); }
+.layout-hud .m01-row input.dim-range { width: calc(160px * var(--hud)); flex: none; }
+.layout-hud .m01-val { font-size: calc(12px * var(--hud)); font-weight: 500; font-variant-numeric: tabular-nums; min-width: 4.5em; }
+.layout-hud .m01-row .btn { flex: none; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(6px * var(--hud)) calc(10px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
+.layout-hud .m01-row .btn[aria-pressed="false"] { color: var(--ink-dim); border-color: var(--hairline); }
+.layout-hud .m01-row .btn.pause { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; }
+@media (max-width: 700px) {
+  .layout-hud .m01-group { padding: calc(4px * var(--hud)) calc(8px * var(--hud)); border-right: none; }
+  .layout-hud .m01-label { display: none; }
+  .layout-hud .m01-end { margin-left: 0; }
+  .layout-hud .m01-row input.dim-range { width: calc(120px * var(--hud)); }
+}

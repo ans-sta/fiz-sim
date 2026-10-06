@@ -7,7 +7,7 @@ import { mulberry32, gaussian } from '../measure/rng.js';
 
 export const BOX_H = 250; // pasaules vienības; platums seko ekrāna proporcijai
 export const BOX_W_DEFAULT = 400;
-export const BOX_W_MIN = 150;
+export const BOX_W_MIN = 100; // telefons stāvus: pasaule aizpilda visu laukumu arī šaurā ekrānā
 export const BOX_W_MAX = 900;
 export const DENSITY = 600 / (BOX_W_DEFAULT * BOX_H); // molekulas uz laukuma vienību (600 noklusējuma traukā)
 export const DUST_R = 8;
@@ -21,7 +21,7 @@ export const SUB_STEPS = 4;
 export const MAX_DT = 0.05;
 
 export function defaultSettings() {
-  return { T: 300, trail: true, molecules: true };
+  return { T: 300, trail: false, molecules: false }; // noklusēti tikai oranžs punkts (Ansis 06.10)
 }
 export function withT(s, v) {
   if (!Number.isFinite(v)) return s;
@@ -152,13 +152,10 @@ export function kineticEnergy(world) {
   return e;
 }
 
-// Izkārtojums: trauks aizpilda brīvo laukumu starp paneļiem un pogām; pasaules augstums BOX_H, platums pēc proporcijas
-export function boxLayout(availW, availH, { drawScale = 1 } = {}) {
-  const k = Math.min(1, drawScale);
-  const pxW = availW * k;
-  const pxH = availH * k;
-  const w = Math.min(BOX_W_MAX, Math.max(BOX_W_MIN, Math.round((BOX_H * pxW) / Math.max(1, pxH))));
-  // mērogs no augstuma; ja platums nogriezts līdz robežai (šaurs/plats ekrāns), trauks ietilpst arī platumā
-  const scale = Math.min(pxH / BOX_H, pxW / w);
+// Izkārtojums: pasaule ir viss laukums zem vadības (bez rāmja, Ansis 06.10): augstums BOX_H vienības, platums pēc proporcijas.
+// Ja platums nogriezts līdz robežai (ļoti šaurs vai plats ekrāns), mērogs seko platumam un pasaule ir centrēta.
+export function boxLayout(availW, availH) {
+  const w = Math.min(BOX_W_MAX, Math.max(BOX_W_MIN, Math.round((BOX_H * availW) / Math.max(1, availH))));
+  const scale = Math.min(availH / BOX_H, availW / w);
   return { w, h: BOX_H, scale, pxW: w * scale, pxH: BOX_H * scale, fill: 1 };
 }

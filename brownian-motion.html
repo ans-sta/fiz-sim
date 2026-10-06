@@ -24,13 +24,35 @@
     <h1><span data-i18n="page.heading">BRAUNA KUSTĪBA</span> <span class="sheet-no">M-01</span></h1>
     <div class="head-tools" id="headTools"></div>
   </header>
+  <div class="m01-bar" id="bar">
+    <div class="m01-group">
+      <span class="m01-label" id="tLabel">TEMPERATŪRA</span>
+      <div class="m01-row">
+        <button class="q-step" id="tMinus" type="button">−</button>
+        <input class="dim-range" id="tRange" type="range">
+        <button class="q-step" id="tPlus" type="button">+</button>
+        <span class="m01-val" id="tVal">300 K</span>
+      </div>
+    </div>
+    <div class="m01-group">
+      <span class="m01-label" id="showLabel">RĀDĪT</span>
+      <div class="m01-row">
+        <button class="btn" id="trailBtn" type="button" aria-pressed="false">TRAJEKTORIJA</button>
+        <button class="btn" id="molBtn" type="button" aria-pressed="false">MOLEKULAS</button>
+      </div>
+    </div>
+    <div class="m01-group m01-end">
+      <span class="m01-label" id="runLabel">KUSTĪBA</span>
+      <div class="m01-row">
+        <button class="btn pause" id="pauseBtn" type="button">⏸</button>
+        <button class="btn" id="resetBtn" type="button">↺ NO CENTRA</button>
+      </div>
+    </div>
+  </div>
   <div class="work">
     <div class="drawing" id="drawing">
       <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
       <canvas id="scene" role="img" data-i18n-aria="scene.aria"></canvas>
-      <div id="hudLeft"></div>
-      <div class="m01-views" id="runSlot" role="group"></div>
-      <p class="m01-hint" id="hint" hidden></p>
       <div class="notices" id="notices" role="status" aria-live="polite"></div>
       <div class="title-small" id="titleSmall" hidden></div>
       <div id="gear"></div>
