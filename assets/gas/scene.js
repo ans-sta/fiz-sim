@@ -126,7 +126,7 @@ export function cylinderLayout(avail, { drawScale = 1 } = {}) {
   const scale = Math.min(usableH / H_MAX, usableW / BOX_W);
   const pxW = BOX_W * scale;
   const pxH = H_MAX * scale;
-  const x0 = avail.x + (avail.w - pxW) / 2 + 12; // mazliet pa labi — izmēru līnijai vieta pa kreisi
+  const x0 = avail.x + (avail.w - pxW) / 2; // cilindrs tieši laukuma vidū (Ansis 06.10)
   const y0 = avail.y + headroom + (avail.h - headroom - footroom - pxH) / 2;
   return { x0, y0, scale, pxW, pxH, rodTop: y0 - Math.min(headroom - 10, 0.2 * pxH + 30), fill: 1 };
 }

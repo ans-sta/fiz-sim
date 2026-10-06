@@ -48,11 +48,11 @@ const rows = {};
 for (const key of ['V', 'T', 'p']) {
   const row = document.createElement('div');
   row.className = 'g01-row';
-  row.innerHTML = `<div class="g01-head"><button class="g01-lock" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect class="body" x="3" y="7" width="10" height="7"/><path class="shackle" d="M5 7V5a3 3 0 0 1 6 0v2"/><path class="shackle-open" d="M5 7V5a3 3 0 0 1 6 0"/></svg></button><span class="g01-sym"></span><span class="g01-name"></span><span class="g01-val"></span></div>
-    <div class="g01-ctl"><button class="q-step" type="button">−</button><input class="dim-range" type="range"><button class="q-step" type="button">+</button></div>
+  row.innerHTML = `<div class="g01-head"><span class="g01-sym"></span><span class="g01-name"></span><span class="g01-val"></span></div>
+    <div class="g01-ctl"><button class="q-step" type="button">−</button><input class="dim-range" type="range"><button class="q-step" type="button">+</button><button class="q-step g01-lock" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><rect class="body" x="3" y="7" width="10" height="7"/><path class="shackle" d="M5 7V5a3 3 0 0 1 6 0v2"/><path class="shackle-open" d="M5 7V5a3 3 0 0 1 6 0"/></svg></button></div>
     <div class="q-ends"><span></span><span></span></div>`;
   panel.appendChild(row);
-  const [minus, input, plus] = [row.querySelector('.q-step'), row.querySelector('input'), row.querySelectorAll('.q-step')[1]];
+  const [minus, input, plus] = [row.querySelectorAll('.q-step')[0], row.querySelector('input'), row.querySelectorAll('.q-step')[1]];
   input.min = String(RANGES[key].min);
   input.max = String(RANGES[key].max);
   input.step = String(RANGES[key].step);
@@ -173,9 +173,10 @@ function layout() {
   const { w, h } = view.size();
   placePanel();
   // pārbīdīts panelis vietu nerezervē — cilindrs izmanto visu laukumu (Ansis izvēlas, kur panelim būt)
-  const avail = panelPos ? { x: EDGE_PX, y: TOP_MARGIN, w: w - 2 * EDGE_PX, h: h - 2 * TOP_MARGIN } : MOBILE.matches
+  // cilindrs vienmēr ekrāna vidū (Ansis 06.10); telefonā panelis apakšā atņem augstumu, datorā panelis stāv pa labi un netraucē
+  const avail = !panelPos && MOBILE.matches
     ? { x: EDGE_PX, y: TOP_MARGIN, w: w - 2 * EDGE_PX, h: h - panel.offsetHeight - 2 * PANEL_GAP - TOP_MARGIN }
-    : { x: EDGE_PX, y: TOP_MARGIN, w: w - panel.offsetWidth - 2 * EDGE_PX - PANEL_GAP, h: h - 2 * TOP_MARGIN };
+    : { x: EDGE_PX, y: TOP_MARGIN, w: w - 2 * EDGE_PX, h: h - 2 * TOP_MARGIN };
   return cylinderLayout(avail, { drawScale: state.drawScale });
 }
 

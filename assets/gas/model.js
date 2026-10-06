@@ -11,9 +11,9 @@ export const RANGES = {
   p: { min: 20, max: 500, step: 10 }, // kPa
 };
 export const NR = 100 * 2 / 300; // kPa·L/K — pV/T pie p = 100 kPa, V = 2 L, T = 300 K (gāzes daudzums nemainās)
-export const BOX_W = 100; // pasaules vienības — cilindra platums
+export const BOX_W = 150; // pasaules vienības — cilindra platums (06.10: 1,5× platāks)
 export const H_MAX = 250; // pasaules vienības — gāzes augstums pie V = RANGES.V.max
-export const N_MOL = 300;
+export const N_MOL = 450; // blīvums kā pie 300 molekulām 100 platā cilindrā
 export const MOL_R = 1.2;
 export const T_REF = 300;
 export const V_REF = 25; // vienības/s — molekulu v_rms pie T_REF (kā Brauna kustībā)
