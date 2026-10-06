@@ -759,6 +759,41 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 10: Gas law ══════ -->
+    <a href="ideal-gas.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- cylinder -->
+          <path d="M 60 30 L 60 124 L 140 124 L 140 30" fill="none" stroke="#c8d6e8" stroke-width="2"/>
+          <!-- piston and rod -->
+          <rect x="60" y="56" width="80" height="8" fill="#1a2540" stroke="#c8d6e8" stroke-width="1.2"/>
+          <rect x="96" y="22" width="8" height="34" fill="#0c1220" stroke="#c8d6e8" stroke-width="1.2"/>
+          <line x1="82" y1="22" x2="118" y2="22" stroke="#c8d6e8" stroke-width="3" stroke-linecap="round"/>
+          <!-- molecules -->
+          <g fill="#5a6d88">
+            <circle cx="70" cy="76" r="2"/><circle cx="88" cy="70" r="2"/><circle cx="110" cy="80" r="2"/><circle cx="128" cy="72" r="2"/>
+            <circle cx="76" cy="96" r="2"/><circle cx="98" cy="90" r="2"/><circle cx="120" cy="100" r="2"/><circle cx="132" cy="112" r="2"/>
+            <circle cx="66" cy="114" r="2"/><circle cx="90" cy="110" r="2"/><circle cx="108" cy="116" r="2"/><circle cx="84" cy="84" r="2"/>
+          </g>
+          <!-- V dimension -->
+          <line x1="46" y1="64" x2="46" y2="124" stroke="#5a6d88" stroke-width="1"/>
+          <path d="M 43 67 l 6 -6 M 43 127 l 6 -6" stroke="#5a6d88" stroke-width="1"/>
+          <text x="38" y="98" text-anchor="end" font-family="'Orbitron', monospace" font-size="8" fill="#5a6d88">V</text>
+          <!-- formula -->
+          <text x="168" y="80" text-anchor="middle" font-family="'Orbitron', monospace" font-size="8" fill="#ff7a29">pV/T</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-waves" data-i18n="tagMolecular">Molecular physics</div>
+        <div class="card-title" data-i18n="gasTitle">Gas Law</div>
+        <p class="card-desc" data-i18n="gasDesc">A cylinder with a piston and molecules: drag the piston or move the V, T and p sliders and watch pV/T stay constant.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -782,6 +817,8 @@ const TRANSLATIONS = {
     tagMolecular: "Molecular physics",
     brownTitle: "Brownian Motion",
     brownDesc: "One dust particle among invisible molecules: it jitters from their kicks. Change the temperature, show or hide the molecules and the trajectory.",
+    gasTitle: "Gas Law",
+    gasDesc: "A cylinder with a piston and molecules: drag the piston or move the V, T and p sliders and watch pV/T stay constant.",
     soundTitle: "Sound Lab",
     soundDesc: "Hear and see how sound is made of oscillations: waveform and timbre, two sources with a phase shift, a tone built from harmonics. Play it on the keyboard.",
     shmTitle: "Oscillations and Waves",
@@ -817,6 +854,8 @@ const TRANSLATIONS = {
     tagMolecular: "Molekulārā fizika",
     brownTitle: "Brauna kustība",
     brownDesc: "Viens puteklis starp neredzamām molekulām: tas dreb no to grūdieniem. Maini temperatūru, rādi vai slēp molekulas un trajektoriju.",
+    gasTitle: "Gāzes likums",
+    gasDesc: "Cilindrs ar virzuli un molekulām: velc virzuli vai bīdi V, T un p slīdņus un skaties, kā pV/T paliek nemainīgs.",
     soundTitle: "Skaņas laboratorija",
     soundDesc: "Klausies un skaties, kā no svārstībām veidojas skaņa: viļņa forma un tembrs, divi avoti ar fāzu nobīdi, tonis no harmonikām. Spēlē uz klaviatūras.",
     shmTitle: "Svārstības un viļņi",

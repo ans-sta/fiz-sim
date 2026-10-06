@@ -20,6 +20,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | 🔊 Sound Lab               | Sound / waveform, phase, harmonics | ✅ Live |
 | 🔊 Sound Lab v2 (S-02)     | The same in the technical-drawing design (review copy) | 🟡 Review |
 | ∿ Brownian Motion (M-01)   | Molecular physics / a dust particle among molecules | ✅ Live |
+| ⬒ Gas Law (M-02)           | Molecular physics / pV/T = const with a piston | ✅ Live |
 
 ## Structure
 
@@ -35,8 +36,9 @@ fiz-sim/
 ├── sound-lab.html                  ← Sound Lab (single file, Web Audio; Latvian only; 40 Hz – 20 kHz)
 ├── sound-lab-v2.html               ← Sound Lab (S-02) in the technical-drawing design: assets/sound/
 ├── brownian-motion.html            ← Brownian Motion (M-01): assets/brownian/
+├── ideal-gas.html                  ← Gas Law (M-02): assets/gas/
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -172,3 +174,17 @@ Parameters of `brownian-motion.html`. Starting values only; unknown parameters a
 Example (hot, molecules shown):
 
     brownian-motion.html?T=800&molecules=1
+
+## Teacher links (M-02)
+
+Parameters of `ideal-gas.html`. Starting values only; unknown parameters are ignored, values outside the range are clamped with a notice. The three quantities are linked by pV/T = const: they apply in link order, and the one given earliest adapts (as on the page).
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `V=<number>` | Volume, L, 1–5 (step 0.1) |
+| `T=<number>` | Temperature, K, 100–600 (step 10) |
+| `p=<number>` | Pressure, kPa, 20–500 (step 10) |
+
+Example (hot gas, then pressure set — the volume adapts):
+
+    ideal-gas.html?T=600&p=100

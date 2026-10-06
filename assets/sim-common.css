@@ -627,3 +627,23 @@ html.is-fullscreen body.layout-hud header { display: none; }
   .layout-hud .m01-end { margin-left: 0; }
   .layout-hud .m01-row input.dim-range { width: calc(120px * var(--hud)); }
 }
+
+/* ══ M-02 Gāzes likums: panelis ar trim slīdņiem blakus cilindram, vienmēr redzams (Ansis 06.10) ══ */
+.layout-hud .g01-panel { right: 8px; width: calc(250px * var(--hud)); max-width: calc(50% - 12px); padding-bottom: calc(8px * var(--hud)); }
+.layout-hud .g01-row { padding: calc(4px * var(--hud)) calc(10px * var(--hud)) 0; }
+.layout-hud .g01-row + .g01-row { border-top: 1px solid var(--hairline); margin-top: calc(4px * var(--hud)); }
+.layout-hud .g01-head { display: flex; align-items: baseline; gap: calc(6px * var(--hud)); font-size: calc(12px * var(--hud)); white-space: nowrap; }
+.layout-hud .g01-sym { font-style: italic; font-family: 'IBM Plex Sans', sans-serif; }
+.layout-hud .g01-name { color: var(--ink-dim); font-size: calc(10px * var(--hud)); letter-spacing: 0.06em; overflow: hidden; text-overflow: ellipsis; }
+.layout-hud .g01-val { margin-left: auto; font-weight: 500; font-variant-numeric: tabular-nums; }
+.layout-hud .g01-row.adapts .g01-val { color: var(--ink-dim); font-weight: 400; } /* pieskaņosies nākamajā maiņā — pelēks */
+.layout-hud .g01-ctl { display: flex; align-items: center; gap: calc(6px * var(--hud)); }
+.layout-hud .g01-const { display: flex; justify-content: space-between; gap: 0.6em; padding: calc(8px * var(--hud)) calc(10px * var(--hud)) 0; border-top: 1px solid var(--ink); margin-top: calc(6px * var(--hud)); font-size: calc(12px * var(--hud)); font-variant-numeric: tabular-nums; }
+.layout-hud .g01-const .v { font-weight: 600; color: var(--accent); }
+.layout-hud .g01-hint { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11px * var(--hud)); line-height: 1.35; color: var(--ink-dim); padding: calc(6px * var(--hud)) calc(10px * var(--hud)) 0; }
+.layout-hud canvas.grab { cursor: grab; }
+.layout-hud canvas.dragging { cursor: grabbing; }
+@media (max-width: 700px) {
+  .layout-hud .g01-panel { top: auto; bottom: 8px; left: 54px; right: 8px; width: auto; max-width: none; } /* ⚙ stūris paliek brīvs */
+  .layout-hud .g01-hint { display: none; }
+}
