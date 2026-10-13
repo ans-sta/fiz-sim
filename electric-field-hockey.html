@@ -404,6 +404,27 @@
       [data-skin="draw"] input[type="range"]::-moz-range-thumb { width: 11px; height: 11px; background: var(--sheet); border: 1px solid var(--ink); border-radius: 0; transform: rotate(45deg); }
       [data-skin="draw"] input[type="range"]:active::-webkit-slider-thumb { background: var(--accent); border-color: var(--accent); }
       [data-skin="draw"] .hint { font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 12px; color: var(--ink-dim); }
+
+      /* ═══════════════════════════════════════════
+         ⚙ — BURTI un ZĪMĒJUMS kā rasējuma lapās (Ansis 13.10: projektoram visu lielāku); fiksēts apakšā pa kreisi
+         ═══════════════════════════════════════════ */
+      header, .toolbar { zoom: var(--ui, 1); }
+      .gear-corner { position: fixed; left: max(16px, calc(env(safe-area-inset-left) + 4px)); bottom: max(16px, calc(env(safe-area-inset-bottom) + 4px)); z-index: 5; }
+      .gear-btn { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; font-size: 22px; line-height: 1; }
+      .gear-pop { position: absolute; left: 0; bottom: 42px; width: 260px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 10px; display: grid; gap: 10px; }
+      .gear-pop[hidden] { display: none; }
+      .gear-pop .gr { display: grid; grid-template-rows: 14px 30px; gap: 4px; }
+      .gear-pop .k { font-family: var(--font-display); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+      .gear-pop .k b { color: var(--text); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
+      .gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
+      .gear-pop .ctl button { min-width: 34px; height: 30px; padding: 0 6px; font-size: 12px; flex: none; }
+      .gear-pop input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
+      [data-skin="draw"] .gear-btn { background: var(--sheet); border: 1px solid var(--hairline); font-size: 24px; padding: 0; }
+      [data-skin="draw"] .gear-btn:hover, [data-skin="draw"] .gear-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); background: var(--sheet); }
+      [data-skin="draw"] .gear-pop { background: var(--sheet); border: 1px solid var(--ink); }
+      [data-skin="draw"] .gear-pop .k { font-size: 9.5px; letter-spacing: 0.14em; color: var(--ink-dim); }
+      [data-skin="draw"] .gear-pop .ctl button { font-size: 11px; }
+      @media (max-width: 700px) { .gear-pop { width: min(260px, calc(100vw - 32px)); } }
       [data-skin="draw"] canvas { cursor: crosshair; }
       [data-skin="draw"] header .status { border-radius: 0; border-color: var(--hairline); background: none; color: var(--ink-dim); letter-spacing: 0.1em; font-size: 10px; align-self: center; }
       [data-skin="draw"] header .status.running { border-color: var(--accent); color: var(--accent); }
@@ -514,6 +535,16 @@
       <canvas id="gameCanvas" aria-label="Electric field hockey game field" data-i18n-aria="canvasLabel"></canvas>
     </div>
 
+    <div class="gear-corner" id="gearCorner">
+      <div class="gear-pop" id="gearPop" role="dialog" hidden>
+        <div class="gr"><span class="k"><span data-i18n="gearText">TEXT</span><b id="gearTextPct">100 %</b></span>
+          <div class="ctl"><button type="button" id="gearTextMinus" data-i18n-title="gearTextDown" title="Smaller text">A−</button><input type="range" id="gearTextRange" min="0.8" max="2" step="0.05" data-i18n-aria="gearText" aria-label="Text"><button type="button" id="gearTextPlus" data-i18n-title="gearTextUp" title="Larger text">A+</button></div></div>
+        <div class="gr"><span class="k"><span data-i18n="gearDraw">DRAWING</span><b id="gearDrawPct">100 %</b></span>
+          <div class="ctl"><button type="button" id="gearDrawMinus" data-i18n-title="gearDrawDown" title="Smaller drawing">−</button><input type="range" id="gearDrawRange" min="0.6" max="2" step="0.05" data-i18n-aria="gearDraw" aria-label="Drawing"><button type="button" id="gearDrawPlus" data-i18n-title="gearDrawUp" title="Larger drawing">+</button></div></div>
+      </div>
+      <button type="button" class="gear-btn" id="gearBtn" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="gearOpen" title="Text and drawing size">⚙</button>
+    </div>
+
     <script>
       // ═══════════════════════════════════════════
       //  TRANSLATIONS
@@ -562,6 +593,13 @@
           skinDraw: "DRAWING",
           titleSkin: "Neon / drawing",
           titleTheme: "Light / dark (drawing skin)",
+          gearOpen: "Text and drawing size",
+          gearText: "TEXT",
+          gearTextDown: "Smaller text",
+          gearTextUp: "Larger text",
+          gearDraw: "DRAWING",
+          gearDrawDown: "Smaller drawing",
+          gearDrawUp: "Larger drawing",
           hint: "Click on the rink to place a charge, drag to move it, right-click (or long-press) to remove it. Keys: Space — start/pause, R — reset, C — clear, F — field, T — trace.",
         },
         lv: {
@@ -607,6 +645,13 @@
           skinDraw: "RASĒJUMS",
           titleSkin: "Neons / rasējums",
           titleTheme: "Gaišs / tumšs (rasējuma āda)",
+          gearOpen: "Burtu un zīmējuma izmērs",
+          gearText: "BURTI",
+          gearTextDown: "Mazāki burti",
+          gearTextUp: "Lielāki burti",
+          gearDraw: "ZĪMĒJUMS",
+          gearDrawDown: "Mazāks zīmējums",
+          gearDrawUp: "Lielāks zīmējums",
           hint: "Klikšķis uz laukuma liek lādiņu, vilkšana to pārvieto, labais klikšķis (vai ilgs pieskāriens) noņem. Taustiņi: atstarpe — sākt/pauze, R — no jauna, C — notīrīt, F — lauks, T — trajektorija.",
         },
       };
@@ -866,6 +911,61 @@
       applySkin();
 
       // ═══════════════════════════════════════════
+      //  ⚙ BURTI un ZĪMĒJUMS — tās pašas atslēgas un robežas kā rasējuma lapās (assets/measure/ui-scale.js);
+      //  BURTI mērogo galveni un vadības joslu (CSS zoom), ZĪMĒJUMS — pasaules mērogu kanvā (resizeCanvas)
+      // ═══════════════════════════════════════════
+      const TEXT_KEY = "fiz-sim-text";
+      const DRAW_KEY = "fiz-sim-draw";
+      const TEXT_RANGE = { min: 0.8, max: 2, step: 0.05 };
+      const DRAW_RANGE = { min: 0.6, max: 2, step: 0.05 };
+      const clampScale = (v, r) => (Number.isFinite(v) ? Math.round(Math.min(r.max, Math.max(r.min, v)) / r.step) * r.step : null);
+      function readScale(key, r, fallback) {
+        const raw = load(key);
+        const v = raw === null || raw === undefined || raw.trim() === "" ? null : clampScale(Number(raw), r);
+        return v === null ? fallback : v;
+      }
+      // BURTI sākumā pielāgojas ekrānam: līdz 1280 × 800 — 100 %, lielākā ekrānā proporcionāli, līdz 200 %
+      let textScale = readScale(TEXT_KEY, TEXT_RANGE, clampScale(Math.min(2, Math.max(1, Math.min(window.innerWidth / 1280, window.innerHeight / 800))), TEXT_RANGE));
+      let drawK = readScale(DRAW_KEY, DRAW_RANGE, 1);
+      const gearBtn = document.getElementById("gearBtn");
+      const gearPop = document.getElementById("gearPop");
+      const pct = (v) => `${Math.round(v * 100)} %`;
+      function paintGear() {
+        document.documentElement.style.setProperty("--ui", String(textScale));
+        document.getElementById("gearTextPct").textContent = pct(textScale);
+        document.getElementById("gearDrawPct").textContent = pct(drawK);
+        document.getElementById("gearTextRange").value = String(textScale);
+        document.getElementById("gearDrawRange").value = String(drawK);
+        gearBtn.setAttribute("aria-expanded", String(!gearPop.hidden));
+      }
+      function setTextScale(v) {
+        const next = clampScale(v, TEXT_RANGE);
+        if (next === null || next === textScale) return;
+        textScale = next;
+        save(TEXT_KEY, String(next));
+        paintGear();
+        resizeCanvas();
+      }
+      function setDrawScale(v) {
+        const next = clampScale(v, DRAW_RANGE);
+        if (next === null || next === drawK) return;
+        drawK = next;
+        save(DRAW_KEY, String(next));
+        paintGear();
+        resizeCanvas();
+      }
+      document.getElementById("gearTextRange").addEventListener("input", (e) => setTextScale(Number(e.target.value)));
+      document.getElementById("gearTextMinus").addEventListener("click", () => setTextScale(textScale - 0.1));
+      document.getElementById("gearTextPlus").addEventListener("click", () => setTextScale(textScale + 0.1));
+      document.getElementById("gearDrawRange").addEventListener("input", (e) => setDrawScale(Number(e.target.value)));
+      document.getElementById("gearDrawMinus").addEventListener("click", () => setDrawScale(drawK - 0.1));
+      document.getElementById("gearDrawPlus").addEventListener("click", () => setDrawScale(drawK + 0.1));
+      gearBtn.addEventListener("click", () => { gearPop.hidden = !gearPop.hidden; paintGear(); });
+      document.addEventListener("pointerdown", (e) => { if (!gearPop.hidden && !document.getElementById("gearCorner").contains(e.target)) { gearPop.hidden = true; paintGear(); } }, true);
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !gearPop.hidden) { gearPop.hidden = true; paintGear(); gearBtn.focus(); } });
+      paintGear();
+
+      // ═══════════════════════════════════════════
       //  GAME STATE
       // ═══════════════════════════════════════════
       const canvas = document.getElementById("gameCanvas");
@@ -936,7 +1036,7 @@
 
         // Mērogs no augstuma: laukums ~560 vienības augsts kā līdz šim; zemā ekrānā ne mazāks par 0,5 (lādiņi paliek pirksta lielumā)
         const totalH = BASE_H + WALL_T * 2 + VISUAL_MARGIN * 2;
-        scale = Math.min(1.25, Math.max(0.5, pxH / totalH));
+        scale = Math.min(1.25, Math.max(0.5, pxH / totalH)) * drawK; // ZĪMĒJUMS reizina mērogu: pasaule mazāka, viss lielāks
         const newW = Math.max(200, pxW / scale - WALL_T * 2 - GOAL_DEPTH);
         const newH = Math.max(200, pxH / scale - WALL_T * 2 - VISUAL_MARGIN * 2);
 
