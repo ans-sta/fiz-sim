@@ -800,29 +800,40 @@
       //  LEVEL DEFINITIONS
       // ═══════════════════════════════════════════
       // Walls defined as {x, y, w, h} rectangles
+      // Sienas sēž uz rūtiņu līnijām (GRID = 40 vienības — tās pašas, uz kurām zīmē fona režģi un lauka vektorus),
+      // lai šķēršļi un bultiņas ir nolīdzināti vienādi (Ansis 13.10): x — siena centrēta uz līnijas, y un garums — veselās rūtiņās.
+      const GRID = 40;
       function makeLevelWalls(level) {
         const walls = [];
         const cw = FIELD_W,
           ch = FIELD_H;
+        const line = (v) => Math.round(v / GRID) * GRID; // tuvākā rūtiņu līnija
+        const wall = (fx, fy, fh) => {
+          const y = Math.max(0, line(fy * ch));
+          const y2 = Math.min(ch, line((fy + fh) * ch));
+          return { x: line(fx * cw) - WALL_T / 2, y, w: WALL_T, h: y2 - y };
+        };
         switch (level) {
           case "practice":
             // No internal walls
             break;
-          case "1":
-            // Single vertical line in center, length = 2x goal width
-            const wallLen1 = GOAL_OPENING * 2;
-            walls.push({ x: cw * 0.5, y: (ch - wallLen1) / 2, w: WALL_T, h: wallLen1 });
+          case "1": {
+            // Single vertical line in centre, length ≈ 2× goal width, whole cells
+            const len = line(GOAL_OPENING * 2);
+            const y = line((ch - len) / 2);
+            walls.push({ x: line(cw * 0.5) - WALL_T / 2, y, w: WALL_T, h: len });
             break;
+          }
           case "2":
             // Two barriers forming a chicane
-            walls.push({ x: cw * 0.35, y: 0, w: WALL_T, h: ch * 0.65 });
-            walls.push({ x: cw * 0.62, y: ch * 0.35, w: WALL_T, h: ch * 0.65 });
+            walls.push(wall(0.35, 0, 0.65));
+            walls.push(wall(0.62, 0.35, 0.65));
             break;
           case "3":
             // Three barriers - maze-like
-            walls.push({ x: cw * 0.25, y: 0, w: WALL_T, h: ch * 0.6 });
-            walls.push({ x: cw * 0.48, y: ch * 0.3, w: WALL_T, h: ch * 0.7 });
-            walls.push({ x: cw * 0.71, y: 0, w: WALL_T, h: ch * 0.55 });
+            walls.push(wall(0.25, 0, 0.6));
+            walls.push(wall(0.48, 0.3, 0.7));
+            walls.push(wall(0.71, 0, 0.55));
             break;
         }
         return walls;
