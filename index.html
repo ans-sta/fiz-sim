@@ -151,6 +151,10 @@
     padding: 40px 24px 80px;
   }
 
+  .section-label-2 {
+    margin-top: 56px;
+  }
+
   .section-label {
     font-family: 'Orbitron', monospace;
     font-size: 11px;
@@ -269,6 +273,25 @@
     color: #ff7a29;
     background: #ff7a2922;
     border: 1px solid #ff7a2933;
+  }
+
+  .tag-electricity {
+    color: #5fd08f;
+    background: #5fd08f22;
+    border: 1px solid #5fd08f33;
+  }
+
+  /* Infographic cards: a screenshot instead of a drawing */
+  .card-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    transition: transform 0.35s ease;
+  }
+
+  .card:hover .card-visual img {
+    transform: scale(1.05);
   }
 
   .card-title {
@@ -795,6 +818,44 @@
     </a>
 
   </div>
+
+  <div class="section-label section-label-2" data-i18n="sectionInfographics">Infographics</div>
+
+  <div class="grid">
+
+    <!-- ══════ INFOGRAPHIC 1: Current in Liquids ══════ -->
+    <a href="infografikas/strava-skidrumos.html" class="card">
+      <div class="card-visual">
+        <img src="assets/infografikas/strava-skidrumos.png" alt="" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electricity" data-i18n="tagElectricity">Electricity · Grade 11</div>
+        <div class="card-title" data-i18n="liquidsTitle">Current in Liquids</div>
+        <p class="card-desc" data-i18n="liquidsDesc">Why salt and pure water do not conduct but salt water does: ions, hydration, electrolysis.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+    <!-- ══════ INFOGRAPHIC 2: Batteries and Accumulators ══════ -->
+    <a href="infografikas/baterijas-un-akumulatori.html" class="card">
+      <div class="card-visual">
+        <img src="assets/infografikas/baterijas-un-akumulatori.png" alt="" loading="lazy">
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electricity" data-i18n="tagElectricity">Electricity · Grade 11</div>
+        <div class="card-title" data-i18n="batteriesTitle">Batteries and Accumulators</div>
+        <p class="card-desc" data-i18n="batteriesDesc">How chemical sources store, give and take back energy; the common chemistries; why some cannot be recharged.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
 </main>
 
 <footer>
@@ -809,6 +870,12 @@ const TRANSLATIONS = {
     heading: "Physics Lab",
     subtitle: "Interactive simulations for exploring electrostatics & more",
     sectionLabel: "Simulations",
+    sectionInfographics: "Infographics",
+    tagElectricity: "Electricity · Grade 11",
+    liquidsTitle: "Current in Liquids",
+    liquidsDesc: "Why salt and pure water do not conduct but salt water does: ions, hydration, electrolysis.",
+    batteriesTitle: "Batteries and Accumulators",
+    batteriesDesc: "How chemical sources store, give and take back energy; the common chemistries; why some cannot be recharged.",
     tagElectrostatics: "Electrostatics",
     tagQuantization: "Charge quantization",
     tagMechanics: "Mechanics",
@@ -846,6 +913,12 @@ const TRANSLATIONS = {
     heading: "Fizikas laboratorija",
     subtitle: "Interaktīvas simulācijas elektrostatikas un citu tēmu izpētei",
     sectionLabel: "Simulācijas",
+    sectionInfographics: "Infografikas",
+    tagElectricity: "Elektrība · 11. klase",
+    liquidsTitle: "Strāva šķidrumos",
+    liquidsDesc: "Kāpēc sāls un tīrs ūdens nevada, bet sālsūdens vada: joni, hidratācija, elektrolīze.",
+    batteriesTitle: "Baterijas un akumulatori",
+    batteriesDesc: "Kā ķīmiskie strāvas avoti krāj, atdod un saņem enerģiju; biežākās ķīmijas; kāpēc dažus nevar uzlādēt.",
     tagElectrostatics: "Elektrostatika",
     tagQuantization: "Lādiņa kvantēšana",
     tagMechanics: "Mehānika",

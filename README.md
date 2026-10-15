@@ -22,6 +22,22 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ∿ Brownian Motion (M-01)   | Molecular physics / a dust particle among molecules | ✅ Live |
 | ⬒ Gas Law (M-02)           | Molecular physics / pV/T = const with a piston | ✅ Live |
 
+## Infographics
+
+Static study pages in `infografikas/` (Latvian only, Montserrat + IBM Plex Mono, light and dark). Each page has a thin “← FIZ-SIM” bar, Open Graph preview tags and a card on the landing page under “Infographics”.
+
+| Infographic | Topic | Page |
+| ----------- | ----- | ---- |
+| Strāva šķidrumos (1 of 2) | Electricity, grade 11 / ions, hydration, electrolysis | `infografikas/strava-skidrumos.html` |
+| Baterijas un akumulatori (2 of 2) | Electricity, grade 11 / batteries, chemistries, charging | `infografikas/baterijas-un-akumulatori.html` |
+
+Preview images for the cards and link previews are in `assets/infografikas/` (760 × 400 CSS px at 2×, headless Chrome, light theme). Regenerate them after changing a page:
+
+    python3 -m http.server 8765
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+      --force-device-scale-factor=2 --virtual-time-budget=8000 --window-size=760,400 \
+      --screenshot=assets/infografikas/strava-skidrumos.png http://localhost:8765/infografikas/strava-skidrumos.html
+
 ## Structure
 
 ```
@@ -37,8 +53,9 @@ fiz-sim/
 ├── sound-lab-v2.html               ← Sound Lab (S-02) in the technical-drawing design: assets/sound/
 ├── brownian-motion.html            ← Brownian Motion (M-01): assets/brownian/
 ├── ideal-gas.html                  ← Gas Law (M-02): assets/gas/
+├── infografikas/                   ← Infographics (Latvian): strava-skidrumos, baterijas-un-akumulatori
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, infografikas/ (preview images)
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans

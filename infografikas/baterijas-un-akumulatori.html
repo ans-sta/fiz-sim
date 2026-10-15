@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Baterijas un akumulatori</title>
+<meta name="description" content="Kā ķīmiskie strāvas avoti krāj, atdod un saņem enerģiju; biežākās ķīmijas; kāpēc dažus nevar uzlādēt.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Baterijas un akumulatori — FIZ-SIM">
+<meta property="og:description" content="Kā ķīmiskie strāvas avoti krāj, atdod un saņem enerģiju; biežākās ķīmijas; kāpēc dažus nevar uzlādēt.">
+<meta property="og:image" content="https://ans-sta.github.io/fiz-sim/assets/infografikas/baterijas-un-akumulatori.png">
+<meta property="og:url" content="https://ans-sta.github.io/fiz-sim/infografikas/baterijas-un-akumulatori.html">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;900&amp;family=IBM+Plex+Mono:wght@400;600;700&amp;display=swap">
+<style>
+:root{
+  /* Layout: viena šaura kolonna telefonam; katrs solis = teksts + shēma uz "laboratorijas kartītes".
+     Krāsu kods visā sērijā: "+" = koraļļsarkans, "−" = zils, elektrons = zelta punkts. */
+  --bg:#ECF1F4; --surface:#FFFFFF; --ink:#14212C; --muted:#56646F; --line:#C9D4DC;
+  --pos:#C4432A; --pos-soft:#F7DBD2; --neg:#1C67A8; --neg-soft:#D3E5F5;
+  --el:#E2A300; --liquid:#D2EBE6; --metal:#8C979F; --brass:#B4862C; --bar:#2E4B60;
+  --ok:#24794B; --ok-soft:#D6EFE1; --no:#B0342F; --no-soft:#F6D9D7;
+  --f-display:"Montserrat","Segoe UI",system-ui,sans-serif;
+  --f-body:"Montserrat",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E151B; --surface:#16212A; --ink:#E4ECF2; --muted:#9AA9B5; --line:#2B3946;
+  --pos:#FF7F62; --pos-soft:#4A241B; --neg:#62ACEE; --neg-soft:#16334D;
+  --el:#FFC93A; --liquid:#163A3A; --metal:#7F8B94; --brass:#D2A447; --bar:#A9C3D6;
+  --ok:#5FD08F; --ok-soft:#173A27; --no:#FF8A80; --no-soft:#47201E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E151B; --surface:#16212A; --ink:#E4ECF2; --muted:#9AA9B5; --line:#2B3946;
+  --pos:#FF7F62; --pos-soft:#4A241B; --neg:#62ACEE; --neg-soft:#16334D;
+  --el:#FFC93A; --liquid:#163A3A; --metal:#7F8B94; --brass:#D2A447; --bar:#A9C3D6;
+  --ok:#5FD08F; --ok-soft:#173A27; --no:#FF8A80; --no-soft:#47201E; color-scheme:dark}
+*{box-sizing:border-box}
+.fizsim{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:22px}
+.fizsim a{color:var(--muted);text-decoration:none}
+.fizsim a:hover{color:var(--ink)}
+.fizsim a:focus-visible{outline:3px solid var(--neg);outline-offset:2px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 72px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.eyebrow .dot{display:inline-flex;gap:4px}
+.eyebrow .dot i{width:9px;height:9px;border-radius:50%;display:inline-block}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(2.1rem,8vw,3.1rem);line-height:1.02;letter-spacing:-.02em;margin:14px 0 14px;text-wrap:balance}
+h1 .p{color:var(--pos)} h1 .n{color:var(--neg)}
+.lede{font-size:1.12rem;font-weight:300;color:var(--ink);margin:0 0 8px;max-width:36em}
+h2{font-family:var(--f-display);font-weight:900;font-size:1.55rem;line-height:1.15;letter-spacing:-.01em;margin:6px 0 10px;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:900;font-size:1.15rem;margin:22px 0 6px}
+section{margin-top:46px}
+.kick{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.kick b{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--bg);font-weight:600;letter-spacing:0}
+p{margin:0 0 12px}
+ul,ol{padding-left:1.25em;margin:0 0 12px}
+li{margin:0 0 7px}
+li::marker{color:var(--muted)}
+figure{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 10px 10px;margin:18px 0}
+figure svg{display:block;width:100%;max-width:540px;height:auto;margin:0 auto}
+figcaption{font-size:.86rem;color:var(--muted);margin:8px 4px 0;line-height:1.45}
+.note{border:1.5px dashed var(--line);border-radius:12px;padding:12px 14px;margin:16px 0;background:var(--surface)}
+.note .lab{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:4px;display:block}
+.note.warn{border-color:var(--pos)} .note.warn .lab{color:var(--pos)}
+.note.key{border-color:var(--neg)} .note.key .lab{color:var(--neg)}
+.note p:last-child,.note ul:last-child{margin-bottom:0}
+.eq{font-family:var(--f-mono);font-size:.95rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;overflow-x:auto;white-space:normal;margin:10px 0 14px}
+.pos{color:var(--pos);font-weight:600} .neg{color:var(--neg);font-weight:600} .elc{color:var(--el);font-weight:600}
+sub,sup{line-height:0}
+.defs{display:grid;gap:8px;margin:12px 0 16px}
+.defs div{display:grid;grid-template-columns:7.2em 1fr;gap:10px;align-items:baseline}
+.defs dt,.defs .t{font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+@media (max-width:520px){.two{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.panel h4{margin:0 0 6px;font-family:var(--f-display);font-weight:900;font-size:1.05rem}
+.panel .eq{margin-bottom:0}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;font-size:13px;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--ink);display:grid;place-items:center;margin-top:1px}
+.sum{background:var(--ink);color:var(--bg);border-radius:16px;padding:18px 18px 8px;margin-top:46px}
+.sum h2{color:var(--bg);margin-top:0}
+.sum ol{padding-left:1.3em} .sum li::marker{color:var(--bg)}
+.sum .pos{color:var(--pos-soft)} .sum .neg{color:var(--neg-soft)}
+.next{display:block;margin-top:28px;padding:14px 16px;border:1.5px solid var(--ink);border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600}
+.next span{display:block;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.next:focus-visible{outline:3px solid var(--neg);outline-offset:2px}
+footer{margin-top:30px;font-size:.8rem;color:var(--muted);font-family:var(--f-mono)}
+/* ķīmijas kartītes */
+.chem{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin:16px 0}
+.chem header{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.chem h3{margin:0;font-size:1.2rem}
+.chem .sub{color:var(--muted);font-size:.9rem;margin:2px 0 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--f-mono);font-size:12px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+.chip.v{background:var(--bg)}
+.chip.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent;font-weight:600}
+.chip.no{background:var(--no-soft);color:var(--no);border-color:transparent;font-weight:600}
+.sand{display:grid;grid-template-columns:1fr 1fr 1fr;border-radius:10px;overflow:hidden;border:1px solid var(--line);margin:4px 0 12px;font-size:.88rem;line-height:1.3}
+.sand div{padding:8px 8px;min-width:0;overflow-wrap:anywhere;hyphens:auto}
+.sand div b{display:block;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:600;margin-bottom:2px}
+.sand .a{background:var(--neg-soft)} .sand .a b{color:var(--neg)}
+.sand .m{background:var(--liquid)} .sand .m b{color:var(--muted)}
+.sand .k{background:var(--pos-soft)} .sand .k b{color:var(--pos)}
+.chem p{font-size:.95rem}
+.chem .defs div{grid-template-columns:1fr;gap:1px}
+.chem .defs .t{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+a{color:var(--neg)}
+.legend{margin:8px 4px 0;padding-left:0;list-style:none;font-size:.88rem;display:grid;gap:4px}
+.legend li{display:grid;grid-template-columns:22px 1fr;gap:6px;margin:0}
+.legend b{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:11px;font-family:var(--f-mono)}
+.svg .badge{fill:var(--ink)} .svg .badget{fill:var(--bg);font-family:var(--f-mono);font-weight:600;font-size:11px;text-anchor:middle;dominant-baseline:central}
+.chem .eq{font-size:.85rem}
+.chem figure{margin:10px 0}
+/* SVG */
+.svg text{font-family:var(--f-mono);fill:var(--ink);font-size:12px}
+.svg .s{font-size:10.5px;fill:var(--muted)}
+.svg .b{font-weight:600}
+.svg .m{font-family:var(--f-mono)}
+.svg .c{text-anchor:middle}
+.svg .r{text-anchor:end}
+.svg .tp{fill:var(--pos)} .svg .tn{fill:var(--neg)} .svg .tok{fill:var(--ok)} .svg .tno{fill:var(--no)}
+.svg .ip{fill:var(--pos-soft);stroke:var(--pos);stroke-width:1.5}
+.svg .in{fill:var(--neg-soft);stroke:var(--neg);stroke-width:1.5}
+.svg .lbl{font-weight:700;text-anchor:middle;dominant-baseline:central}
+.svg .e{fill:var(--el);stroke:var(--ink);stroke-width:.7}
+.svg .wire{fill:none;stroke:var(--ink);stroke-width:2}
+.svg .glass{fill:none;stroke:var(--muted);stroke-width:2;stroke-linejoin:round}
+.svg .liq{fill:var(--liquid)}
+.svg .metal{fill:var(--metal)}
+.svg .brass{stroke:var(--brass)}
+.svg .shell{fill:none;stroke:var(--line);stroke-width:1.2}
+.svg .slot{fill:none;stroke:var(--el);stroke-width:1.4;stroke-dasharray:2 2}
+.svg .ai{fill:none;stroke:var(--ink);stroke-width:1.6}
+.svg .ap{fill:none;stroke:var(--pos);stroke-width:1.8}
+.svg .an{fill:none;stroke:var(--neg);stroke-width:1.8}
+.svg .ae{fill:none;stroke:var(--el);stroke-width:2}
+.svg .af{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-dasharray:5 4}
+.svg .mk-i{fill:var(--ink)} .svg .mk-p{fill:var(--pos)} .svg .mk-n{fill:var(--neg)} .svg .mk-e{fill:var(--el)} .svg .mk-f{fill:var(--muted)}
+.svg .leader{stroke:var(--muted);stroke-width:1;fill:none}
+.svg .sep{stroke:var(--ink);stroke-width:1.6;stroke-dasharray:4 3;fill:none}
+.svg .bar{fill:var(--bar)}
+.svg .grid{stroke:var(--line);stroke-width:1}
+.svg .glow{fill:var(--el);opacity:.35}
+.svg .bulb-off{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
+.svg .bulb-on{fill:var(--el);stroke:var(--ink);stroke-width:1.6}
+.svg .bub{fill:var(--surface);stroke:var(--muted);stroke-width:1}
+.svg .box{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
+.svg .cry{fill:var(--surface);stroke:var(--muted);stroke-width:1.2}
+@media (prefers-reduced-motion:no-preference){.svg .pulse{animation:pl 2.4s ease-in-out infinite}@keyframes pl{50%{opacity:.15}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="fizsim" aria-label="Vietne"><a href="../index.html">← FIZ-SIM</a></nav>
+<header>
+  <div class="eyebrow"><span>F11 · Elektrība</span><span>Infografika 2 no 2</span></div>
+  <h1>Baterijas un akumulatori</h1>
+  <p class="lede">Baterija neglabā lādiņu un neglabā „elektrību”. Tā glabā divas vielas: viena grib atdot elektronus, otra — tos paņemt. Iekšā elektroniem ceļa nav — tikai caur tavu ierīci.</p>
+</header>
+
+<figure><svg class="svg" viewBox="0 0 360 286" role="img" aria-label="Galvaniskā elementa uzbūve: anods, elektrolīts ar separatoru, katods un ārējā ķēde" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Ai" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Ap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="An" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="Ae" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Af" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><path d="M90 96 L90 40 L168 40 M192 40 L270 40 L270 96" class="wire"/><circle cx="180" cy="40" r="20" class="glow pulse"/><circle cx="180" cy="40" r="11" class="bulb-on"/><path d="M172 32 L188 48 M188 32 L172 48" class="wire" style="stroke-width:1.2"/><text x="180.0" y="16.0" class="c s">ierīce</text><circle cx="110.0" cy="40.0" r="3.4" class="e"/><line x1="114.0" y1="40.0" x2="126.0" y2="40.0" class="ae" marker-end="url(#Ae)"/><circle cx="140.0" cy="40.0" r="3.4" class="e"/><line x1="144.0" y1="40.0" x2="156.0" y2="40.0" class="ae" marker-end="url(#Ae)"/><circle cx="212.0" cy="40.0" r="3.4" class="e"/><line x1="216.0" y1="40.0" x2="228.0" y2="40.0" class="ae" marker-end="url(#Ae)"/><circle cx="242.0" cy="40.0" r="3.4" class="e"/><line x1="246.0" y1="40.0" x2="258.0" y2="40.0" class="ae" marker-end="url(#Ae)"/><circle cx="90.0" cy="76.0" r="3.4" class="e"/><line x1="90.0" y1="72.0" x2="90.0" y2="58.0" class="ae" marker-end="url(#Ae)"/><circle cx="270.0" cy="58.0" r="3.4" class="e"/><line x1="270.0" y1="62.0" x2="270.0" y2="76.0" class="ae" marker-end="url(#Ae)"/><text x="132.0" y="58.0" class="s c">e⁻ pa vadu</text><rect x="30" y="96" width="300" height="150" rx="10" class="liq" style="stroke:var(--muted);stroke-width:1.5"/><rect x="42" y="108" width="92" height="126" rx="4" class="in"/><rect x="226" y="108" width="92" height="126" rx="4" class="ip"/><line x1="180" y1="102" x2="180" y2="240" class="sep"/><text x="88.0" y="130.0" class="c b m tn">ANODS</text><text x="88.0" y="146.0" class="c b tn">(−)</text><text x="272.0" y="130.0" class="c b m tp">KATODS</text><text x="272.0" y="146.0" class="c b tp">(+)</text><circle cx="66.0" cy="172.0" r="3.4" class="e"/><circle cx="88.0" cy="186.0" r="3.4" class="e"/><circle cx="110.0" cy="170.0" r="3.4" class="e"/><circle cx="74.0" cy="208.0" r="3.4" class="e"/><circle cx="102.0" cy="212.0" r="3.4" class="e"/><circle cx="250" cy="172" r="3.6" class="slot"/><circle cx="272" cy="188" r="3.6" class="slot"/><circle cx="294" cy="170" r="3.6" class="slot"/><circle cx="258" cy="210" r="3.6" class="slot"/><circle cx="288" cy="212" r="3.6" class="slot"/><circle cx="152.0" cy="150.0" r="7" class="ip"/><text x="152.0" y="150.5" class="lbl tp" style="font-size:9.0px">+</text><line x1="162.0" y1="150.0" x2="176.0" y2="150.0" class="ap" marker-end="url(#Ap)"/><circle cx="204.0" cy="186.0" r="7" class="ip"/><text x="204.0" y="186.5" class="lbl tp" style="font-size:9.0px">+</text><line x1="214.0" y1="186.0" x2="228.0" y2="186.0" class="ap" marker-end="url(#Ap)"/><circle cx="156.0" cy="222.0" r="7" class="ip"/><text x="156.0" y="222.5" class="lbl tp" style="font-size:9.0px">+</text><line x1="166.0" y1="222.0" x2="180.0" y2="222.0" class="ap" marker-end="url(#Ap)"/><text x="180.0" y="262.0" class="c s b">elektrolīts + separators</text><text x="62.0" y="262.0" class="c s">atdod e⁻</text><text x="298.0" y="262.0" class="c s">paņem e⁻</text><text x="180.0" y="278.0" class="c s">joni iet iekšā, elektroni — tikai pa ārējo vadu</text></svg>
+<figcaption>Jebkura ķīmiskā strāvas avota uzbūve: divi elektrodi, starp tiem elektrolīts un separators.</figcaption></figure>
+
+<section>
+  <div class="kick"><b>1</b> Uzbūve</div>
+  <h2>Divas vielas un starpslānis</h2>
+  <ul>
+    <li><span class="neg">Anods (−)</span> — viela, kas viegli atdod elektronus: cinks, litijs, svins.</li>
+    <li><span class="pos">Katods (+)</span> — viela, kas elektronus labprāt paņem: mangāna dioksīds, svina dioksīds, metālu oksīdi.</li>
+    <li><b>Elektrolīts</b> — slānis starp tiem, kas laiž cauri jonus, bet ne elektronus. <b>Separators</b> — poraina starpsiena, lai elektrodi nesaskartos.</li>
+  </ul>
+  <p>Ja elektroni varētu iet tieši caur elektrolītu, baterija izlādētos pati no sevis. Tā kā nevar, reakcija gaida, līdz tu noslēdz ķēdi.</p>
+  <div class="note key"><span class="lab">Vārdi</span>
+  <p><b>Anods</b> ir elektrods, kur elektroni aiziet no vielas; <b>katods</b> — kur elektroni ienāk vielā. Baterijai izlādējoties, anods ir „−” gals. Elektrolīzē (<a href="strava-skidrumos.html">1. infografika</a>) anods ir pie „+”, jo tur elektronus no vielas izrauj ārējais avots. Akumulatoru ražotāji „−” elektrodu sauc par anodu vienmēr, arī lādējot.</p></div>
+  <p>Baterija ir Volta staba pēctece: 1800. gadā Alesandro Volta sakrāva kaudzē cinka un vara plāksnītes, starp tām sālsūdenī samērcētu audumu.</p>
+</section>
+
+<section>
+  <div class="kick"><b>2</b> Uzkrāšana</div>
+  <h2>Enerģija ir vielu uzbūvē</h2>
+  <p>Baterijā enerģija ir uzkrāta <b>ķīmiskā formā</b>. Anoda vielā elektroni ir „augstu”, katoda vielā tie var nokrist „zemāk”. Šī augstuma starpība ir <b>spriegums</b> — kā ūdenskritumā: augstums nosaka, cik enerģijas iegūst katrs ūdens litrs, spriegums — cik enerģijas iegūst katrs kulons.</p>
+  <p>Katram vielu pārim ir sava starpība, tāpēc <b>spriegumu nosaka ķīmija, nevis izmērs</b>. Lielā D baterija un mazā AAA dod tos pašus 1,5 V. Lielākajā ir vairāk vielas — tai lielāka <b>ietilpība</b> (mAh), tā ilgāk var dot strāvu.</p>
+  <figure><svg class="svg" viewBox="0 0 360 230" role="img" aria-label="diagramma" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Bi" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Bp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="Bn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="Be" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Bf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><line x1="118.0" y1="6" x2="118.0" y2="202.0" class="grid"/><text x="118.0" y="217.0" class="s c m">0 V</text><line x1="173.0" y1="6" x2="173.0" y2="202.0" class="grid"/><text x="173.0" y="217.0" class="s c m">1 V</text><line x1="228.0" y1="6" x2="228.0" y2="202.0" class="grid"/><text x="228.0" y="217.0" class="s c m">2 V</text><line x1="283.0" y1="6" x2="283.0" y2="202.0" class="grid"/><text x="283.0" y="217.0" class="s c m">3 V</text><line x1="338.0" y1="6" x2="338.0" y2="202.0" class="grid"/><text x="338.0" y="217.0" class="s c m">4 V</text><text x="4.0" y="25.0" class="b">NiMH, NiCd</text><text x="4.0" y="37.0" class="s">lādējamās AA</text><rect x="118" y="16.0" width="66.0" height="13" rx="2" class="bar"/><text x="189.0" y="26.5" class="s m">1,2 V</text><text x="4.0" y="57.0" class="b">sārma</text><text x="4.0" y="69.0" class="s">AA, AAA, C, D</text><rect x="118" y="48.0" width="82.5" height="13" rx="2" class="bar"/><text x="205.5" y="58.5" class="s m">1,5 V</text><text x="4.0" y="89.0" class="b">svina-skābes</text><text x="4.0" y="101.0" class="s">auto akumulators</text><rect x="118" y="80.0" width="115.5" height="13" rx="2" class="bar"/><text x="238.5" y="90.5" class="s m">2,1 V</text><text x="4.0" y="121.0" class="b">litija metāla</text><text x="4.0" y="133.0" class="s">monētbaterija</text><rect x="118" y="112.0" width="165.0" height="13" rx="2" class="bar"/><text x="288.0" y="122.5" class="s m">3,0 V</text><text x="4.0" y="153.0" class="b">Li-ion LFP</text><text x="4.0" y="165.0" class="s">LiFePO₄</text><rect x="118" y="144.0" width="176.0" height="13" rx="2" class="bar"/><text x="299.0" y="154.5" class="s m">3,2 V</text><text x="4.0" y="185.0" class="b">Li-ion</text><text x="4.0" y="197.0" class="s">telefons, dators</text><rect x="118" y="176.0" width="203.5" height="13" rx="2" class="bar"/><text x="326.5" y="186.5" class="s m">3,7 V</text></svg>
+  <figcaption>Viena elementa (šūnas) spriegums. Lai iegūtu vairāk, elementus slēdz virknē: 9 V baterijā ir 6 elementi, 12 V auto akumulatorā — 6 šūnas.</figcaption></figure>
+  <div class="note"><span class="lab">Aprēķins</span>
+  <p>Power bank 10 000 mAh, 3,7 V.</p>
+  <div class="eq">q = 10 A · 3600 s = 36 000 C</div>
+  <div class="eq">W = U · q = 3,7 V · 36 000 C ≈ 133 000 J ≈ 37 Wh</div>
+  <p>Ar tik daudz enerģijas 100 kg smagu kravu varētu pacelt ap 136 m augstumā (W = m g h).</p></div>
+  <p>Elektrisko enerģiju tieši, kā lādiņu uz plātnēm, krāj <b>kondensators</b>. Baterija to dara ķīmiski, tāpēc tajā var uzkrāt daudz vairāk enerģijas.</p>
+</section>
+
+<section>
+  <div class="kick"><b>3</b> Izlāde</div>
+  <h2>Kā enerģija tiek atdota</h2>
+  <p>Piemērs — litija jonu akumulators telefonā:</p>
+  <figure><svg class="svg" viewBox="0 0 360 270" role="img" aria-label="Izlāde: litijs no grafīta pāriet uz oksīdu, elektroni iet caur ierīci" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Ldi" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Ldp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="Ldn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="Lde" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Ldf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><path d="M90 98 L90 40 L150 40 M210 40 L270 40 L270 98" class="wire"/><line x1="150" y1="40" x2="168" y2="40" class="wire"/><line x1="192" y1="40" x2="210" y2="40" class="wire"/><circle cx="180" cy="40" r="20" class="glow pulse"/><circle cx="180" cy="40" r="11" class="bulb-on"/><path d="M172 32 L188 48 M188 32 L172 48" class="wire" style="stroke-width:1.2"/><text x="180.0" y="14.0" class="c s">ierīce saņem enerģiju</text><circle cx="104.0" cy="40.0" r="3.4" class="e"/><line x1="108.0" y1="40.0" x2="122.0" y2="40.0" class="ae" marker-end="url(#Lde)"/><circle cx="228.0" cy="40.0" r="3.4" class="e"/><line x1="232.0" y1="40.0" x2="246.0" y2="40.0" class="ae" marker-end="url(#Lde)"/><rect x="30" y="98" width="300" height="146" rx="10" class="liq" style="stroke:var(--muted);stroke-width:1.5"/><rect x="40" y="106" width="100" height="130" rx="3" class="in"/><rect x="220" y="106" width="100" height="130" rx="3" class="ip"/><line x1="46" y1="116" x2="134" y2="116" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="116" x2="314" y2="116" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="138" x2="134" y2="138" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="138" x2="314" y2="138" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="160" x2="134" y2="160" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="160" x2="314" y2="160" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="182" x2="134" y2="182" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="182" x2="314" y2="182" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="204" x2="134" y2="204" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="204" x2="314" y2="204" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="226" x2="134" y2="226" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="226" x2="314" y2="226" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="180" y1="102" x2="180" y2="240" class="sep"/><circle cx="60" cy="127" r="4.2" class="ip"/><circle cx="92" cy="127" r="4.2" class="ip"/><circle cx="122" cy="149" r="4.2" class="ip"/><circle cx="240" cy="127" r="4.2" class="ip"/><circle cx="272" cy="149" r="4.2" class="ip"/><circle cx="300" cy="171" r="4.2" class="ip"/><circle cx="250" cy="193" r="4.2" class="ip"/><circle cx="286" cy="215" r="4.2" class="ip"/><circle cx="300" cy="127" r="4.2" class="ip"/><circle cx="158.0" cy="140.0" r="7.5" class="ip"/><text x="158.0" y="140.5" class="lbl tp" style="font-size:6.5px">Li⁺</text><line x1="168.0" y1="140.0" x2="182.0" y2="140.0" class="ap" marker-end="url(#Ldp)"/><circle cx="200.0" cy="172.0" r="7.5" class="ip"/><text x="200.0" y="172.5" class="lbl tp" style="font-size:6.5px">Li⁺</text><line x1="210.0" y1="172.0" x2="224.0" y2="172.0" class="ap" marker-end="url(#Ldp)"/><circle cx="160.0" cy="206.0" r="7.5" class="ip"/><text x="160.0" y="206.5" class="lbl tp" style="font-size:6.5px">Li⁺</text><line x1="170.0" y1="206.0" x2="184.0" y2="206.0" class="ap" marker-end="url(#Ldp)"/><text x="80.0" y="262.0" class="c b tn">grafīts (−)</text><text x="282.0" y="262.0" class="c b tp">metāla oksīds (+)</text><text x="180.0" y="262.0" class="c s">elektrolīts</text></svg>
+  <figcaption>Izlāde. Rozā punkti — litijs. Grafīta slāņos glabātais litijs pāriet uz metāla oksīdu; elektroni tikmēr iet caur ierīci.</figcaption></figure>
+  <ol class="steps">
+    <li>Noslēdz ķēdi — elektroniem rodas ceļš.</li>
+    <li>Anodā litija atoms atdod elektronu un kļūst par jonu: Li → Li⁺ + e⁻.</li>
+    <li>Elektrons iet pa vadu caur ierīci un veic darbu: ekrāns spīd, procesors skaita, motors griežas.</li>
+    <li>Jons Li⁺ tikmēr iet caur elektrolītu un separatoru uz katodu, lai abās pusēs lādiņi paliktu līdzsvarā.</li>
+    <li>Katodā jons un elektrons satiekas un iebūvējas metāla oksīdā.</li>
+    <li>Kad anodā vairs nav ko atdot, akumulators ir tukšs.</li>
+  </ol>
+  <p>Litija jonu akumulatoru sauc par <b>šūpuļkrēslu</b>: litija joni šūpojas no viena elektroda uz otru un atpakaļ, bet paši elektrodi paliek veseli.</p>
+</section>
+
+<section>
+  <div class="kick"><b>4</b> Kas ir iekšā</div>
+  <h2>Biežākie ķīmiskie strāvas avoti</h2>
+  <p>Katrā kartītē: kas ir anodā, kas katodā, kas starpā, un izlādes reakcija kopumā.</p>
+  <div class="chem"><header><h3>Sārma baterija</h3><div class="chips"><span class="chip v">1,5 V</span><span class="chip no">nelādējams</span></div></header>
+<div class="sub">Pirkstiņbaterijas AA, AAA, arī C, D un 9 V. Angliski <i>alkaline</i>.</div>
+<div class="sand"><div class="a"><b>anods (−)</b>cinka pulveris gēlā</div><div class="m"><b>starpā</b>kālija hidroksīds KOH (sārms)</div><div class="k"><b>katods (+)</b>mangāna dioksīds MnO₂ + grafīts</div></div>
+<div class="defs"><div><span class="t">Kur lieto</span><span>pultis, pulksteņi, rotaļlietas, lukturīši.</span></div><div><span class="t">Piezīme</span><span>Lētākās „sāls” baterijas: tas pats cinks un MnO₂, bet elektrolīts ir amonija vai cinka hlorīds; enerģijas mazāk.</span></div></div>
+<div class="eq">Zn + 2 MnO₂ + H₂O → ZnO + 2 MnO(OH)</div><figure><svg class="svg" viewBox="0 0 360 222" role="img" aria-label="Sārma pirkstiņbaterijas garengriezums" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Ci" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Cp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="Cn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="Ce" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Cf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><rect x="40" y="96" width="262" height="90" rx="7" class="metal"/><rect x="46" y="102" width="250" height="78" rx="4" class="ip"/><rect x="58" y="120" width="232" height="42" rx="3" class="in"/><rect x="56" y="118" width="236" height="46" rx="4" class="sep"/><circle cx="70" cy="130" r="2" style="fill:var(--neg)"/><circle cx="95" cy="152" r="2" style="fill:var(--neg)"/><circle cx="130" cy="128" r="2" style="fill:var(--neg)"/><circle cx="160" cy="150" r="2" style="fill:var(--neg)"/><circle cx="190" cy="130" r="2" style="fill:var(--neg)"/><circle cx="222" cy="152" r="2" style="fill:var(--neg)"/><circle cx="255" cy="130" r="2" style="fill:var(--neg)"/><circle cx="275" cy="150" r="2" style="fill:var(--neg)"/><circle cx="115" cy="146" r="2" style="fill:var(--neg)"/><circle cx="205" cy="146" r="2" style="fill:var(--neg)"/><line x1="34" y1="141" x2="250" y2="141" class="brass" style="stroke-width:4;stroke-linecap:round"/><rect x="34" y="104" width="12" height="74" rx="2" style="fill:var(--muted)"/><rect x="26" y="112" width="8" height="58" rx="2" class="metal"/><rect x="302" y="124" width="14" height="34" rx="4" class="metal"/><text x="16.0" y="147.0" class="b tn c">−</text><text x="330.0" y="147.0" class="b tp c">+</text><line x1="180" y1="84" x2="180" y2="97" class="leader"/><circle cx="180" cy="76" r="9" class="badge"/><text x="180" y="76.5" class="badget">1</text><circle cx="240" cy="110" r="9" class="badge"/><text x="240" y="110.5" class="badget">2</text><line x1="262" y1="164" x2="262" y2="198" class="leader"/><circle cx="262" cy="206" r="9" class="badge"/><text x="262" y="206.5" class="badget">3</text><circle cx="140" cy="129" r="9" class="badge"/><text x="140" y="129.5" class="badget">4</text><circle cx="222" cy="141" r="9" class="badge"/><text x="222" y="141.5" class="badget">5</text></svg><figcaption>AA baterijas garengriezums.</figcaption><ol class="legend"><li><b>1</b><span>tērauda korpuss — savienots ar „+” galu</span></li><li><b>2</b><span>MnO₂ + grafīts — katods (+), gredzenā gar korpusu</span></li><li><b>3</b><span>separators (papīrs ar elektrolītu)</span></li><li><b>4</b><span>cinka pulveris gēlā ar KOH — anods (−)</span></li><li><b>5</b><span>misiņa nagla savāc elektronus un aizvada uz „−” galu</span></li></ol></figure></div><div class="chem"><header><h3>Litija monētbaterija</h3><div class="chips"><span class="chip v">3 V</span><span class="chip no">nelādējams</span></div></header>
+<div class="sub">Plakanās „tabletes”, piemēram, CR2032.</div>
+<div class="sand"><div class="a"><b>anods (−)</b>litija metāls</div><div class="m"><b>starpā</b>litija sāls organiskā šķīdinātājā</div><div class="k"><b>katods (+)</b>mangāna dioksīds MnO₂</div></div>
+<div class="defs"><div><span class="t">Kur lieto</span><span>auto atslēgas, svari, datora mātesplate, pulksteņi.</span></div><div><span class="t">Piezīme</span><span>Bīstama, ja to norij mazs bērns: barības vadā sāk notikt elektrolīze un rodas sārms, kas apdedzina audus.</span></div></div>
+<div class="eq">Li + MnO₂ → LiMnO₂</div></div><div class="chem"><header><h3>Svina-skābes akumulators</h3><div class="chips"><span class="chip v">2,1 V × 6 = 12,6 V</span><span class="chip ok">lādējams</span></div></header>
+<div class="sub">Automašīnās, arī gēla un AGM akumulatori.</div>
+<div class="sand"><div class="a"><b>anods (−)</b>svins Pb (porains)</div><div class="m"><b>starpā</b>sērskābe H₂SO₄ ūdenī (~35 %)</div><div class="k"><b>katods (+)</b>svina dioksīds PbO₂</div></div>
+<div class="defs"><div><span class="t">Izlādē</span><span>uz abiem elektrodiem rodas svina sulfāts PbSO₄, skābe kļūst atšķaidītāka.</span></div><div><span class="t">Gēls, AGM</span><span>Ķīmija tā pati. Gēlā skābe sabiezināta ar silīcija dioksīdu līdz želejai, AGM — iesūkta stikla šķiedras paklājiņā. Nekas neizlīst, akumulatoru var sasvērt, ūdens nav jāpielej.</span></div><div><span class="t">Mērīšana</span><span>Uzlādi var izmērīt ar areometru (Arhimēda likums): pilnam akumulatoram elektrolīta blīvums ap 1,28 g/cm³, tukšam ap 1,10 g/cm³.</span></div></div>
+<div class="eq">Pb + PbO₂ + 2 H₂SO₄ → 2 PbSO₄ + 2 H₂O</div><figure><svg class="svg" viewBox="0 0 360 258" role="img" aria-label="Svina-skābes akumulatora šūna: pamīšus svina un svina dioksīda plātnes sērskābē" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Di" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Dp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="Dn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="De" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Df" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><rect x="40" y="56" width="280" height="150" rx="8" class="glass"/><rect x="43" y="78" width="274" height="125" rx="5" class="liq"/><rect x="62" y="70" width="14" height="124" rx="2" class="in"/><rect x="96" y="70" width="14" height="124" rx="2" class="ip"/><rect x="130" y="70" width="14" height="124" rx="2" class="in"/><rect x="164" y="70" width="14" height="124" rx="2" class="ip"/><rect x="198" y="70" width="14" height="124" rx="2" class="in"/><rect x="232" y="70" width="14" height="124" rx="2" class="ip"/><rect x="266" y="70" width="14" height="124" rx="2" class="in"/><rect x="300" y="70" width="14" height="124" rx="2" class="ip"/><rect x="70" y="36" width="26" height="20" rx="3" class="metal"/><rect x="264" y="36" width="26" height="20" rx="3" class="metal"/><text x="83.0" y="30.0" class="c b tn">−</text><text x="277.0" y="30.0" class="c b tp">+</text><text x="180.0" y="226.0" class="c s b">sērskābe H₂SO₄ ūdenī</text><rect x="50" y="238" width="12" height="12" class="in"/><text x="68.0" y="248.0" class="s">Pb — svins (−)</text><rect x="172" y="238" width="12" height="12" class="ip"/><text x="190.0" y="248.0" class="s">PbO₂ — svina dioksīds (+)</text></svg><figcaption>Viena šūna (2,1 V). Auto akumulatorā sešas šādas šūnas ir slēgtas virknē.</figcaption></figure></div><div class="chem"><header><h3>Niķeļa-kadmija (NiCd)</h3><div class="chips"><span class="chip v">1,2 V</span><span class="chip ok">lādējams</span></div></header>
+<div class="sub">Vecākie lādējamie akumulatori.</div>
+<div class="sand"><div class="a"><b>anods (−)</b>kadmijs Cd</div><div class="m"><b>starpā</b>kālija hidroksīds KOH</div><div class="k"><b>katods (+)</b>niķeļa oksīd&shy;hidroksīds NiOOH</div></div>
+<div class="defs"><div><span class="t">Kur lieto</span><span>agrāk — instrumenti, rācijas; tagad gandrīz tikai rūpniecībā.</span></div><div><span class="t">Piezīme</span><span>Kadmijs ir indīgs, tāpēc ES tos gandrīz aizliedza. „Atmiņas efekts”: ja bieži lādē daļēji izlādētu, ietilpība šķietami samazinās.</span></div></div>
+<div class="eq">Cd + 2 NiOOH + 2 H₂O → Cd(OH)₂ + 2 Ni(OH)₂</div></div><div class="chem"><header><h3>Niķeļa-metālhidrīda (NiMH)</h3><div class="chips"><span class="chip v">1,2 V</span><span class="chip ok">lādējams</span></div></header>
+<div class="sub">Lādējamās pirkstiņbaterijas.</div>
+<div class="sand"><div class="a"><b>anods (−)</b>sakausējums, kas kā sūklis uzsūc ūdeņradi</div><div class="m"><b>starpā</b>kālija hidroksīds KOH</div><div class="k"><b>katods (+)</b>niķeļa oksīd&shy;hidroksīds NiOOH</div></div>
+<div class="defs"><div><span class="t">Kur lieto</span><span>lādējamās AA un AAA, hibrīdauto.</span></div><div><span class="t">Piezīme</span><span>Dod 1,2 V, nevis 1,5 V, bet vairums ierīču strādā arī ar tiem.</span></div></div>
+<div class="eq">MH + NiOOH → M + Ni(OH)₂</div></div><div class="chem"><header><h3>Litija jonu (Li-ion)</h3><div class="chips"><span class="chip v">3,6–3,7 V</span><span class="chip ok">lādējams</span></div></header>
+<div class="sub">Telefoni, datori, power bank, elektroauto, skrejriteņi.</div>
+<div class="sand"><div class="a"><b>anods (−)</b>grafīts ar iespiestiem litija atomiem (LiC₆)</div><div class="m"><b>starpā</b>litija sāls LiPF₆ organiskā šķīdinātājā + plēvītes separators</div><div class="k"><b>katods (+)</b>litija metāla oksīds: LiCoO₂, NMC vai LiFePO₄</div></div>
+<div class="defs"><div><span class="t">Katodi</span><span>LiCoO₂ — telefoni; NMC (niķelis, mangāns, kobalts) — elektroauto; LFP (LiFePO₄, 3,2 V) — elektroauto un mājas akumulatori, ilgmūžīgāks un drošāks.</span></div><div><span class="t">Li-Po</span><span>Litija polimēra akumulators: tā pati ķīmija, elektrolīts gēlā, iepakots mīkstā maisiņā.</span></div><div><span class="t">Drošība</span><span>Elektrolīts deg. Iekšā ir aizsardzības mikroshēma (BMS), kas neļauj pārlādēt un pārāk izlādēt. Sasistu, uzpūtušos akumulatoru nelādē.</span></div></div>
+<div class="eq">LiC₆ + CoO₂ → C₆ + LiCoO₂</div></div>
+</section>
+
+<section>
+  <div class="kick"><b>5</b> Uzlāde</div>
+  <h2>Reakcija notiek otrādi</h2>
+  <p>Lādētājs ir ārējs avots ar nedaudz lielāku spriegumu nekā akumulatoram. Tas pārvieto elektronus pretējā virzienā — no katoda uz anodu —, un joni iekšā iet atpakaļ. Lādētāja elektriskā enerģija pārvēršas ķīmiskajā.</p>
+  <figure><svg class="svg" viewBox="0 0 360 270" role="img" aria-label="Uzlāde: lādētājs dzen elektronus un litija jonus atpakaļ uz grafītu" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Lci" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Lcp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="Lcn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="Lce" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Lcf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><path d="M90 98 L90 40 L150 40 M210 40 L270 40 L270 98" class="wire"/><rect x="150" y="24" width="60" height="32" rx="5" class="box"/><text x="180.0" y="44.0" class="c s b">lādētājs</text><text x="144.0" y="34.0" class="b tn r">−</text><text x="216.0" y="34.0" class="b tp">+</text><text x="180.0" y="14.0" class="c s">lādētājs dod enerģiju</text><circle cx="132.0" cy="40.0" r="3.4" class="e"/><line x1="128.0" y1="40.0" x2="114.0" y2="40.0" class="ae" marker-end="url(#Lce)"/><circle cx="256.0" cy="40.0" r="3.4" class="e"/><line x1="252.0" y1="40.0" x2="238.0" y2="40.0" class="ae" marker-end="url(#Lce)"/><rect x="30" y="98" width="300" height="146" rx="10" class="liq" style="stroke:var(--muted);stroke-width:1.5"/><rect x="40" y="106" width="100" height="130" rx="3" class="in"/><rect x="220" y="106" width="100" height="130" rx="3" class="ip"/><line x1="46" y1="116" x2="134" y2="116" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="116" x2="314" y2="116" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="138" x2="134" y2="138" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="138" x2="314" y2="138" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="160" x2="134" y2="160" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="160" x2="314" y2="160" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="182" x2="134" y2="182" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="182" x2="314" y2="182" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="204" x2="134" y2="204" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="204" x2="314" y2="204" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="46" y1="226" x2="134" y2="226" style="stroke:var(--neg);stroke-width:3;stroke-linecap:round"/><line x1="226" y1="226" x2="314" y2="226" style="stroke:var(--pos);stroke-width:3;stroke-dasharray:3 3"/><line x1="180" y1="102" x2="180" y2="240" class="sep"/><circle cx="60" cy="127" r="4.2" class="ip"/><circle cx="92" cy="127" r="4.2" class="ip"/><circle cx="122" cy="149" r="4.2" class="ip"/><circle cx="70" cy="171" r="4.2" class="ip"/><circle cx="108" cy="193" r="4.2" class="ip"/><circle cx="60" cy="215" r="4.2" class="ip"/><circle cx="240" cy="127" r="4.2" class="ip"/><circle cx="272" cy="149" r="4.2" class="ip"/><circle cx="300" cy="171" r="4.2" class="ip"/><circle cx="158.0" cy="140.0" r="7.5" class="ip"/><text x="158.0" y="140.5" class="lbl tp" style="font-size:6.5px">Li⁺</text><line x1="148.0" y1="140.0" x2="134.0" y2="140.0" class="ap" marker-end="url(#Lcp)"/><circle cx="200.0" cy="172.0" r="7.5" class="ip"/><text x="200.0" y="172.5" class="lbl tp" style="font-size:6.5px">Li⁺</text><line x1="190.0" y1="172.0" x2="176.0" y2="172.0" class="ap" marker-end="url(#Lcp)"/><circle cx="160.0" cy="206.0" r="7.5" class="ip"/><text x="160.0" y="206.5" class="lbl tp" style="font-size:6.5px">Li⁺</text><line x1="150.0" y1="206.0" x2="136.0" y2="206.0" class="ap" marker-end="url(#Lcp)"/><text x="80.0" y="262.0" class="c b tn">grafīts (−)</text><text x="282.0" y="262.0" class="c b tp">metāla oksīds (+)</text><text x="180.0" y="262.0" class="c s">elektrolīts</text></svg>
+  <figcaption>Uzlāde. Lādētāja „−” pievienots anodam, „+” — katodam. Litijs atgriežas grafīta slāņos.</figcaption></figure>
+  <ul>
+    <li><b>Li-ion</b> lādē līdz 4,2 V uz šūnu. Sākumā ar lielu nemainīgu strāvu, beigās strāva samazinās. Tāpēc pēdējie 20 % lādējas lēni.</li>
+    <li><b>Svina akumulatorā</b> PbSO₄ uz elektrodiem pārvēršas atpakaļ par Pb un PbO₂, skābe atkal kļūst stiprāka.</li>
+    <li><b>NiMH un NiCd</b> — Ni(OH)₂ atkal kļūst par NiOOH, ūdeņradis atgriežas sakausējumā vai kadmijs atjaunojas.</li>
+    <li>Daļa enerģijas lādējot aiziet siltumā — akumulators silst.</li>
+  </ul>
+  <div class="note warn"><span class="lab">Pārlādēšana</span>
+  <p>Ja svina akumulatoru lādē pārāk ilgi, sāk sadalīties ūdens elektrolītā: izdalās ūdeņradis un skābeklis (elektrolīze, kā 1. infografikā). Šis gāzu maisījums ir sprādzienbīstams, tāpēc akumulatoru lādē vēdināmā telpā.</p></div>
+</section>
+
+<section>
+  <div class="kick"><b>6</b> Vienreizējās</div>
+  <h2>Kāpēc dažus nevar uzlādēt</h2>
+  <p>Akumulatoru var uzlādēt tikai tad, ja izlādes reakcija ir <b>atgriezeniska</b>: izlādes produkti paliek tur, kur radās, un lādējot pārvēršas atpakaļ tieši tādā pašā formā. Vienreizējās baterijās tā nenotiek.</p>
+  <ul>
+    <li><b>Sārma baterijā</b> cinks pārvēršas cinka oksīdā, kas daļēji izšķīst un pārvietojas. Lādējot cinks atgriežas nevis gludā kārtā, bet adatās — <b>dendrītos</b>.</li>
+    <li>Mangāna dioksīds pārvēršas savienojumos, kas atpakaļ par MnO₂ vairs nekļūst.</li>
+    <li><b>Litija monētbaterijā</b> litija metāls lādējot izaug dendrītos.</li>
+  </ul>
+  <figure><svg class="svg" viewBox="0 0 360 182" role="img" aria-label="Pa kreisi gluda metāla kārta, pa labi dendrīti caurdur separatoru" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Ei" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Ep" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="En" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="Ee" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Ef" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><rect x="10" y="34" width="26" height="116" rx="3" class="in"/><rect x="142" y="34" width="26" height="116" rx="3" class="ip"/><line x1="96" y1="30" x2="96" y2="154" class="sep"/><rect x="192" y="34" width="26" height="116" rx="3" class="in"/><rect x="324" y="34" width="26" height="116" rx="3" class="ip"/><line x1="278" y1="30" x2="278" y2="154" class="sep"/><rect x="36" y="34" width="8" height="116" style="fill:var(--neg)"/><text x="89.0" y="18.0" class="c s b tok">gluda kārta atpakaļ</text><text x="89.0" y="172.0" class="c s">lādējams akumulators</text><path d="M218 52 L238 48 L252 56 M238 48 L246 38" style="fill:none;stroke:var(--neg);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"/><path d="M218 80 L242 84 L264 76 L290 82 L322 84 M264 76 L272 64 M242 84 L248 96" style="fill:none;stroke:var(--neg);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"/><path d="M218 112 L234 116 L248 108 M234 116 L240 128" style="fill:none;stroke:var(--neg);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"/><path d="M218 136 L230 132 L242 140" style="fill:none;stroke:var(--neg);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round"/><polygon points="333.0,84.0 326.2,85.7 329.8,91.8 323.7,88.2 322.0,95.0 320.3,88.2 314.2,91.8 317.8,85.7 311.0,84.0 317.8,82.3 314.2,76.2 320.3,79.8 322.0,73.0 323.7,79.8 329.8,76.2 326.2,82.3" class="e"/><text x="271.0" y="18.0" class="c s b tno">adatas — dendrīti</text><text x="271.0" y="172.0" class="c s">īsslēgums caur separatoru</text></svg>
+  <figcaption>Pa kreisi: metāls atgriežas gludā kārtā. Pa labi: metāls izaug adatās, kas var caurdurt separatoru un saslēgt elektrodus.</figcaption></figure>
+  <h3>Kas notiks, ja nelādējamu bateriju lādēs?</h3>
+  <ul>
+    <li>Lielākā daļa strāvas sadala ūdeni elektrolītā — rodas ūdeņradis un skābeklis.</li>
+    <li>Baterija ir noslēgta, tāpēc iekšā aug spiediens; tā silst un uzbriest.</li>
+    <li>Var izplūst kālija hidroksīds — kodīgs sārms, kas apdedzina ādu un acis.</li>
+    <li>Dendrīti var caurdurt separatoru: īsslēgums, karšana. Litija baterija var aizdegties vai uzsprāgt.</li>
+    <li>Enerģiju atgūst tikai niecīgu daļu. Tāpēc uz baterijām raksta <i>Do not recharge</i>.</li>
+  </ul>
+  <div class="note"><span class="lab">Kāpēc noveco arī akumulatori</span>
+  <p>Arī lādējamos akumulatoros katrā ciklā notiek mazliet neatgriezenisku pārmaiņu. Li-ion iztur aptuveni 500–1500 pilnu ciklu (LFP — vairākus tūkstošus). Tam patīk 20–80 % uzlāde un istabas temperatūra. Salā (zem 0 °C) to lādēt nedrīkst: litijs uz grafīta nogulsnējas kā metāls.</p></div>
+</section>
+
+<section>
+  <div class="kick"><b>7</b> Salīdzinājums</div>
+  <h2>Cik enerģijas vienā kilogramā</h2>
+  <figure><svg class="svg" viewBox="0 0 360 218" role="img" aria-label="diagramma" xmlns="http://www.w3.org/2000/svg"><defs><marker id="Hi" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-i"/></marker><marker id="Hp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-p"/></marker><marker id="Hn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-n"/></marker><marker id="He" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-e"/></marker><marker id="Hf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="mk-f"/></marker></defs><line x1="106.0" y1="6" x2="106.0" y2="190.0" class="grid"/><text x="106.0" y="205.0" class="s c m">0</text><line x1="183.3" y1="6" x2="183.3" y2="190.0" class="grid"/><text x="183.3" y="205.0" class="s c m">100</text><line x1="260.7" y1="6" x2="260.7" y2="190.0" class="grid"/><text x="260.7" y="205.0" class="s c m">200</text><line x1="338.0" y1="6" x2="338.0" y2="190.0" class="grid"/><text x="338.0" y="205.0" class="s c m">300</text><text x="4.0" y="25.0" class="b">svina-skābes</text><rect x="106" y="16.0" width="27.1" height="13" rx="2" class="bar"/><text x="138.1" y="26.5" class="s m">~35</text><text x="4.0" y="55.0" class="b">NiCd</text><rect x="106" y="46.0" width="38.7" height="13" rx="2" class="bar"/><text x="149.7" y="56.5" class="s m">~50</text><text x="4.0" y="85.0" class="b">NiMH</text><rect x="106" y="76.0" width="61.9" height="13" rx="2" class="bar"/><text x="172.9" y="86.5" class="s m">~80</text><text x="4.0" y="115.0" class="b">sārma</text><text x="4.0" y="127.0" class="s">vienreizējā</text><rect x="106" y="106.0" width="92.8" height="13" rx="2" class="bar"/><text x="203.8" y="116.5" class="s m">~120</text><text x="4.0" y="145.0" class="b">Li-ion LFP</text><rect x="106" y="136.0" width="116.0" height="13" rx="2" class="bar"/><text x="227.0" y="146.5" class="s m">~150</text><text x="4.0" y="175.0" class="b">Li-ion NMC</text><rect x="106" y="166.0" width="193.3" height="13" rx="2" class="bar"/><text x="304.3" y="176.5" class="s m">~250</text></svg>
+  <figcaption>Aptuvenas vērtības, Wh/kg (1 Wh = 3600 J).</figcaption></figure>
+  <p>Tāpēc telefonos un elektroauto ir litija jonu akumulatori. Automašīnas starterim pietiek ar smago svina akumulatoru: tas ir lēts, iztur salu un īsā brīdī var dot 200–300 A lielu strāvu.</p>
+  <p>Salīdzinājumam: benzīnā ir ap 12 000 Wh/kg ķīmiskās enerģijas, bet dzinējs kustībā pārvērš tikai ap 30 % no tās.</p>
+</section>
+
+<section>
+  <div class="kick"><b>8</b> Izlietotās baterijas</div>
+  <h2>Nemet miskastē, neizjauc</h2>
+  <p>Baterijās un akumulatoros ir vielas, kas kaitē cilvēkam un dabai: svins un sērskābe, kadmijs, niķelis, kobalts, kodīgais kālija hidroksīds un degošais litija elektrolīts.</p>
+  <ul>
+    <li><b>Neizjauc.</b> Sārms apdedzina ādu un acis. Caurdurts vai saliekts litija akumulators var aizdegties.</li>
+    <li><b>Nodod atsevišķi.</b> Izlietotās baterijas liek īpašos savākšanas konteineros — tie ir veikalos, kas pārdod baterijas, skolās un šķirošanas laukumos. Auto akumulatorus pieņem auto veikali un servisi.</li>
+    <li><b>Litijs atkritumu mašīnā ir bīstams.</b> Saspiests litija akumulators var izraisīt ugunsgrēku atkritumu mašīnā vai poligonā.</li>
+    <li><b>Pārstrādē vielas atgūst:</b> no auto akumulatoriem gandrīz visu svinu, no litija akumulatoriem — niķeli, kobaltu un litiju.</li>
+  </ul>
+</section>
+
+<div class="sum">
+  <h2>Īsumā</h2>
+  <ol>
+    <li>Baterija krāj ķīmisko enerģiju: <span class="neg">anods</span> grib atdot elektronus, <span class="pos">katods</span> — paņemt.</li>
+    <li>Elektrolīts laiž jonus, ne elektronus, tāpēc elektroni iet caur ierīci un veic darbu.</li>
+    <li>Spriegumu nosaka vielu pāris (1,2–3,7 V uz elementu), ietilpību (mAh) — vielas daudzums. W = U · q.</li>
+    <li>Lādējot ārējs avots dzen elektronus atpakaļ, un reakcija notiek otrādi.</li>
+    <li>Lādēt var tikai tos, kuru reakcija ir atgriezeniska. Pārējie lādējot karst, izdala gāzes, var izplūst vai aizdegties.</li>
+    <li>Baterijās ir indīgas un kodīgas vielas. Tās neizjauc un izlietotās nodod īpašos savākšanas konteineros.</li>
+  </ol>
+</div>
+
+<a class="next" href="strava-skidrumos.html"><span>Atpakaļ · infografika 1</span>Strāva šķidrumos: joni, hidratācija, elektrolīze</a>
+<footer>Fizika I · F11 · 2026./27. m. g.</footer>
+</div>
+</body>
+</html>
