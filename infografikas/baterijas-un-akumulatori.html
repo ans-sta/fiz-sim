@@ -157,9 +157,16 @@ a{color:var(--neg)}
   .svg .mv{offset-rotate:0deg;animation:mv 4.2s linear infinite}
   @keyframes mv{from{offset-distance:0%}to{offset-distance:100%}}
   .svg .drift{animation:drift 3.6s ease-in-out infinite}
-  @keyframes drift{0%{transform:translateX(0);opacity:0}18%{opacity:1}82%{opacity:1}100%{transform:translateX(24px);opacity:0}}
+  @keyframes drift{0%{transform:translateX(0);opacity:0}18%{opacity:1}82%{opacity:1}100%{transform:translateX(var(--dx,24px));opacity:0}}
   .svg .drift.l{animation-name:driftl}
-  @keyframes driftl{0%{transform:translateX(0);opacity:0}18%{opacity:1}82%{opacity:1}100%{transform:translateX(-24px);opacity:0}}
+  @keyframes driftl{0%{transform:translateX(0);opacity:0}18%{opacity:1}82%{opacity:1}100%{transform:translateX(var(--dx,-24px));opacity:0}}
+  /* .far: jons iet līdz pašam elektrodam (--dx, ātrums ~30 vienības/s) un tur izzūd — reaģē; kustībā bultiņa lieka */
+  .svg .drift.far{animation-name:far;animation-timing-function:linear}
+  .svg .drift.far line{display:none}
+  @keyframes far{0%{transform:translate(0,var(--dy,0px));opacity:0}8%{opacity:1}90%{opacity:1}100%{transform:translate(var(--dx),var(--dy,0px));opacity:0}}
+  /* .rise: burbulis rodas pie elektroda apakšas (--y0), ceļas līdz virsmai (--y1) un pārplīst */
+  .svg .rise{animation:rise 4s linear infinite}
+  @keyframes rise{0%{transform:translateY(var(--y0));opacity:0}8%{opacity:1}90%{opacity:1}100%{transform:translateY(var(--y1));opacity:0}}
 }
 @media print{.svg .flow{display:none} .svg .still{display:inline}}
 </style>
