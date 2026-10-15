@@ -31,12 +31,9 @@ Static study pages in `infografikas/` (Latvian only, Montserrat + IBM Plex Mono,
 | Strāva šķidrumos (1 of 2) | Electricity, grade 11 / ions, hydration, electrolysis | `infografikas/strava-skidrumos.html` |
 | Baterijas un akumulatori (2 of 2) | Electricity, grade 11 / batteries, chemistries, charging | `infografikas/baterijas-un-akumulatori.html` |
 
-Preview images for the cards and link previews are in `assets/infografikas/` (760 × 400 CSS px at 2×, headless Chrome, light theme). Regenerate them after changing a page:
+Link-preview images (Open Graph) are in `assets/infografikas/` (1200 × 630, headless Chrome). Each one is the card's SVG drawing from `index.html` on the landing-page palette with the Latvian title, tag and description, so the card is the single source. Regenerate them after changing a card:
 
-    python3 -m http.server 8765
-    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
-      --force-device-scale-factor=2 --virtual-time-budget=8000 --window-size=760,400 \
-      --screenshot=assets/infografikas/strava-skidrumos.png http://localhost:8765/infografikas/strava-skidrumos.html
+    node assets/infografikas/og.mjs
 
 ## Structure
 
