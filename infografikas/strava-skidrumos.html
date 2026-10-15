@@ -163,7 +163,7 @@ a{color:var(--neg)}
   /* .far: jons iet līdz pašam elektrodam (--dx, ātrums ~30 vienības/s) un tur izzūd — reaģē; kustībā bultiņa lieka */
   .svg .drift.far{animation-name:far;animation-timing-function:linear}
   .svg .drift.far line{display:none}
-  @keyframes far{0%{transform:translate(0,var(--dy,0px));opacity:0}8%{opacity:1}90%{opacity:1}100%{transform:translate(var(--dx),var(--dy,0px));opacity:0}}
+  @keyframes far{0%{transform:translate(var(--x0,0px),var(--dy,0px));opacity:0}8%{opacity:1}90%{opacity:1}100%{transform:translate(var(--dx),var(--dy,0px));opacity:0}}
   /* .rise: burbulis rodas pie elektroda apakšas (--y0), ceļas līdz virsmai (--y1) un pārplīst */
   .svg .rise{animation:rise 4s linear infinite}
   @keyframes rise{0%{transform:translateY(var(--y0));opacity:0}8%{opacity:1}90%{opacity:1}100%{transform:translateY(var(--y1));opacity:0}}
