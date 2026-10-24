@@ -274,6 +274,22 @@ input[type=number]#speedInput:disabled {
 .info-item span:last-child { color: var(--text); }
 
 /* Stars background rendered on canvas, but we add a subtle CSS star layer too */
+
+/* ⚙ BURTI un ZĪMĒJUMS — kā lauka lapās: BURTI mērogo galveni un vadības paneli, ⚙ stūrī zem zīmējuma */
+header, .controls { zoom: var(--ui, 1); }
+.gear-corner { position: absolute; left: 12px; bottom: 12px; z-index: 5; }
+.gear-btn { display: grid; place-items: center; flex: none; width: 34px; height: 34px; padding: 0; font-size: 22px; line-height: 1; background: var(--panel); color: var(--text); border: 1px solid var(--panel-border); border-radius: var(--radius); }
+.gear-btn:hover, .gear-btn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+.gear-pop { position: absolute; left: 0; bottom: 42px; width: 260px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 10px; display: grid; gap: 10px; }
+.gear-pop[hidden] { display: none; }
+.gear-pop .gr { display: grid; grid-template-rows: 14px 30px; gap: 4px; }
+.gear-pop .k { font-family: 'Orbitron', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
+.gear-pop .k b { color: var(--text); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
+.gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
+.gear-pop .ctl button { flex: none; min-width: 34px; height: 30px; padding: 0 6px; font-size: 12px; }
+.gear-pop input[type="range"] { flex: 1; min-width: 0; }
+@media (max-width: 700px) { .gear-pop { width: min(260px, calc(100vw - 32px)); } }
+@media (max-height: 500px) { .gear-pop { left: 42px; bottom: 0; } }
 </style>
 </head>
 <body>
@@ -291,6 +307,15 @@ input[type=number]#speedInput:disabled {
 
 <div id="canvas-wrap">
   <canvas id="c"></canvas>
+<div class="gear-corner" id="gearCorner">
+  <div class="gear-pop" id="gearPop" role="dialog" hidden>
+    <div class="gr"><span class="k"><span data-i18n="gearText">TEXT</span><b id="gearTextPct">100 %</b></span>
+      <div class="ctl"><button type="button" id="gearTextMinus" data-i18n-title="gearTextDown" title="Smaller text">A−</button><input type="range" id="gearTextRange" min="0.8" max="2" step="0.05" data-i18n-aria="gearText" aria-label="Text"><button type="button" id="gearTextPlus" data-i18n-title="gearTextUp" title="Larger text">A+</button></div></div>
+    <div class="gr"><span class="k"><span data-i18n="gearDraw">DRAWING</span><b id="gearDrawPct">100 %</b></span>
+      <div class="ctl"><button type="button" id="gearDrawMinus" data-i18n-title="gearDrawDown" title="Smaller drawing">−</button><input type="range" id="gearDrawRange" min="0.6" max="2" step="0.05" data-i18n-aria="gearDraw" aria-label="Drawing"><button type="button" id="gearDrawPlus" data-i18n-title="gearDrawUp" title="Larger drawing">+</button></div></div>
+  </div>
+  <button type="button" class="gear-btn" id="gearBtn" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="gearOpen" title="Text and drawing size">⚙</button>
+</div>
 </div>
 
 <div class="controls">
@@ -352,6 +377,13 @@ const TRANSLATIONS = {
     farEllipseTitle: 'FAR ELLIPTICAL ORBIT',
     farEllipseSub: 'The ball will return',
     unitHr: 'hr',
+    gearOpen: "Text and drawing size",
+    gearText: "TEXT",
+    gearTextDown: "Smaller text",
+    gearTextUp: "Larger text",
+    gearDraw: "DRAWING",
+    gearDrawDown: "Smaller drawing",
+    gearDrawUp: "Larger drawing",
   },
   lv: {
     title: 'Ņūtona lielgabals',
@@ -377,6 +409,13 @@ const TRANSLATIONS = {
     farEllipseTitle: 'TĀLA ELIPSE',
     farEllipseSub: 'Bumba atgriezīsies',
     unitHr: 'h',
+    gearOpen: "Burtu un zīmējuma izmērs",
+    gearText: "BURTI",
+    gearTextDown: "Mazāki burti",
+    gearTextUp: "Lielāki burti",
+    gearDraw: "ZĪMĒJUMS",
+    gearDrawDown: "Mazāks zīmējums",
+    gearDrawUp: "Lielāks zīmējums",
   },
 };
 
@@ -401,6 +440,15 @@ function setLanguage(lang) {
     if (TRANSLATIONS[lang][key]) {
       el.innerHTML = TRANSLATIONS[lang][key];
     }
+  });
+
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+    const key = el.dataset.i18nTitle;
+    if (TRANSLATIONS[lang][key]) el.title = TRANSLATIONS[lang][key];
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+    const key = el.dataset.i18nAria;
+    if (TRANSLATIONS[lang][key]) el.setAttribute('aria-label', TRANSLATIONS[lang][key]);
   });
 
   if (TRANSLATIONS[lang].title) {
@@ -534,7 +582,7 @@ function resize() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   cx = W / 2;
   cy = H / 2;
-  earthPxBase = Math.min(W, H) * 0.38;
+  earthPxBase = Math.min(W, H) * 0.38 * drawK; // ZĪMĒJUMS reizina Zemes rādiusu — kalns, karodziņi un vektors seko
   earthPx = earthPxBase * zoomCurrent;
   scale = earthPx / R_EARTH;
   render();
@@ -822,7 +870,7 @@ function render() {
       ctx.moveTo(t0.sx, t0.sy);
       ctx.lineTo(t1.sx, t1.sy);
       ctx.strokeStyle = `rgba(0, 204, 255, ${alpha})`;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.5 * drawK;
       ctx.stroke();
     }
   }
@@ -924,16 +972,16 @@ function render() {
   // Cannonball
   const { sx, sy } = toScreen(ball.x, ball.y);
   // Glow
-  const ballGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 8);
+  const ballGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 8 * drawK);
   ballGrad.addColorStop(0, 'rgba(255, 215, 0, 0.9)');
   ballGrad.addColorStop(0.5, 'rgba(255, 215, 0, 0.4)');
   ballGrad.addColorStop(1, 'rgba(255, 215, 0, 0)');
   ctx.beginPath();
-  ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+  ctx.arc(sx, sy, 8 * drawK, 0, Math.PI * 2);
   ctx.fillStyle = ballGrad;
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(sx, sy, 3.5, 0, Math.PI * 2);
+  ctx.arc(sx, sy, 3.5 * drawK, 0, Math.PI * 2);
   ctx.fillStyle = '#ffd700';
   ctx.fill();
 
@@ -946,7 +994,7 @@ function render() {
     ctx.moveTo(sx, sy);
     ctx.lineTo(sx + Math.cos(vAngle) * vLen, sy + Math.sin(vAngle) * vLen);
     ctx.strokeStyle = 'rgba(0, 255, 136, 0.7)';
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.5 * drawK;
     ctx.stroke();
   }
   // End-of-flight message overlay (escape / far ellipse)
@@ -957,16 +1005,16 @@ function render() {
     const msgSub = endMessageKey === 'escaped' ? TRANSLATIONS[currentLang].escapedSub : TRANSLATIONS[currentLang].farEllipseSub;
     ctx.save();
     ctx.globalAlpha = fadeAlpha;
-    ctx.font = 'bold 18px Orbitron, monospace';
+    ctx.font = `bold ${18 * drawK}px Orbitron, monospace`;
     ctx.textAlign = 'center';
     ctx.fillStyle = msgColor;
     ctx.shadowColor = msgColor;
     ctx.shadowBlur = 20;
     ctx.fillText(msgTitle, cx, cy - earthPx * 0.5);
-    ctx.font = '12px "Exo 2", sans-serif';
+    ctx.font = `${12 * drawK}px "Exo 2", sans-serif`;
     ctx.fillStyle = '#c8d6e8';
     ctx.shadowBlur = 0;
-    ctx.fillText(msgSub, cx, cy - earthPx * 0.5 + 24);
+    ctx.fillText(msgSub, cx, cy - earthPx * 0.5 + 24 * drawK);
     ctx.restore();
   }
 }
@@ -1183,6 +1231,64 @@ document.addEventListener('keydown', e => {
   if (e.code === 'KeyR') document.getElementById('btnReset').click();
   if (e.code === 'KeyT') { document.getElementById('btnTrailToggle').click(); }
 });
+
+// ═══════════════════════════════════════════
+//  ⚙ BURTI un ZĪMĒJUMS — tās pašas atslēgas un robežas kā lauka un rasējuma lapās;
+//  BURTI mērogo galveni un vadību (CSS zoom), ZĪMĒJUMS — zīmējumu kanvā
+// ═══════════════════════════════════════════
+const TEXT_KEY = "fiz-sim-text";
+const DRAW_KEY = "fiz-sim-draw";
+const TEXT_RANGE = { min: 0.8, max: 2, step: 0.05 };
+const DRAW_RANGE = { min: 0.6, max: 2, step: 0.05 };
+const loadScale = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const saveScale = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* privātais režīms */ } };
+const clampScale = (v, r) => (Number.isFinite(v) ? Math.round(Math.min(r.max, Math.max(r.min, v)) / r.step) * r.step : null);
+function readScale(key, r, fallback) {
+  const raw = loadScale(key);
+  const v = raw === null || raw === undefined || raw.trim() === "" ? null : clampScale(Number(raw), r);
+  return v === null ? fallback : v;
+}
+// BURTI sākumā pielāgojas ekrānam: līdz 1280 × 800 — 100 %, lielākā ekrānā proporcionāli, līdz 200 %
+let textScale = readScale(TEXT_KEY, TEXT_RANGE, clampScale(Math.min(2, Math.max(1, Math.min(window.innerWidth / 1280, window.innerHeight / 800))), TEXT_RANGE));
+let drawK = readScale(DRAW_KEY, DRAW_RANGE, 1);
+const gearBtn = document.getElementById("gearBtn");
+const gearPop = document.getElementById("gearPop");
+const pct = (v) => `${Math.round(v * 100)} %`;
+function paintGear() {
+  document.documentElement.style.setProperty("--ui", String(textScale));
+  document.documentElement.style.setProperty("--draw", String(drawK));
+  document.getElementById("gearTextPct").textContent = pct(textScale);
+  document.getElementById("gearDrawPct").textContent = pct(drawK);
+  document.getElementById("gearTextRange").value = String(textScale);
+  document.getElementById("gearDrawRange").value = String(drawK);
+  gearBtn.setAttribute("aria-expanded", String(!gearPop.hidden));
+}
+function setTextScale(v) {
+  const next = clampScale(v, TEXT_RANGE);
+  if (next === null || next === textScale) return;
+  textScale = next;
+  saveScale(TEXT_KEY, String(next));
+  paintGear();
+  resize();
+}
+function setDrawScale(v) {
+  const next = clampScale(v, DRAW_RANGE);
+  if (next === null || next === drawK) return;
+  drawK = next;
+  saveScale(DRAW_KEY, String(next));
+  paintGear();
+  resize();
+}
+document.getElementById("gearTextRange").addEventListener("input", (e) => setTextScale(Number(e.target.value)));
+document.getElementById("gearTextMinus").addEventListener("click", () => setTextScale(textScale - 0.1));
+document.getElementById("gearTextPlus").addEventListener("click", () => setTextScale(textScale + 0.1));
+document.getElementById("gearDrawRange").addEventListener("input", (e) => setDrawScale(Number(e.target.value)));
+document.getElementById("gearDrawMinus").addEventListener("click", () => setDrawScale(drawK - 0.1));
+document.getElementById("gearDrawPlus").addEventListener("click", () => setDrawScale(drawK + 0.1));
+gearBtn.addEventListener("click", () => { gearPop.hidden = !gearPop.hidden; paintGear(); });
+document.addEventListener("pointerdown", (e) => { if (!gearPop.hidden && !document.getElementById("gearCorner").contains(e.target)) { gearPop.hidden = true; paintGear(); } }, true);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !gearPop.hidden) { gearPop.hidden = true; paintGear(); gearBtn.focus(); } });
+paintGear();
 
 // ═══════════════════════════════════════
 // INIT

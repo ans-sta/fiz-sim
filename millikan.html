@@ -548,6 +548,88 @@
         max-width: 400px;
       }
     }
+
+    /* ========== ⚙ BURTI un ZĪMĒJUMS (tās pašas atslēgas kā pārējās lapās) ========== */
+    header, .hamburger-btn, .drawer, .bottom-controls { zoom: var(--ui, 1); }
+    /* zoom reizina arī vw/vh — izvēlnes logs paliek ekrāna robežās */
+    .drawer { width: calc(75vw / var(--ui, 1)); max-height: calc(85vh / var(--ui, 1)); }
+    .main-content {
+      height: calc(100% - 54px * var(--ui, 1));
+      margin-top: calc(54px * var(--ui, 1));
+      padding-top: calc(50px * var(--ui, 1));
+    }
+    .microscope-container {
+      /* galvene 54 + atkāpe 50 + sprauga 15 + vadība ~191 + apakša 10 — viss mērogojas ar BURTIEM */
+      --available-height: calc(100dvh - 320px * var(--ui, 1));
+      width: min(90vw, calc(450px * var(--draw, 1)), var(--available-height));
+      height: min(90vw, calc(450px * var(--draw, 1)), var(--available-height));
+    }
+    @media (min-height: 700px) {
+      .main-content { padding-top: calc(70px * var(--ui, 1)); }
+      .microscope-container {
+        --available-height: calc(100dvh - 340px * var(--ui, 1));
+        width: min(90vw, calc(450px * var(--draw, 1)), var(--available-height));
+        height: min(90vw, calc(450px * var(--draw, 1)), var(--available-height));
+      }
+    }
+    .gear-corner {
+      position: fixed;
+      left: max(16px, calc(env(safe-area-inset-left) + 4px));
+      bottom: max(16px, calc(env(safe-area-inset-bottom) + 4px));
+      z-index: 150;
+      font-family: 'Courier New', monospace;
+    }
+    .gear-btn {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #3a3a4a, #252535);
+      color: #daa520;
+      font-size: 24px;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .gear-btn:active { transform: scale(0.95); }
+    .gear-pop {
+      position: absolute;
+      left: 0;
+      bottom: 52px;
+      width: 260px;
+      background: #1a1a2e;
+      border: 2px solid #3a3a4a;
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      gap: 12px;
+    }
+    .gear-pop[hidden] { display: none; }
+    .gear-pop .gr { display: grid; grid-template-rows: 14px 30px; gap: 6px; }
+    .gear-pop .k { font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .gear-pop .k b { color: #daa520; font-weight: bold; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
+    .gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
+    .gear-pop .ctl button {
+      min-width: 36px;
+      height: 30px;
+      padding: 0 8px;
+      background: #0a0a0f;
+      border: 2px solid #3a3a4a;
+      border-radius: 4px;
+      color: #daa520;
+      font-family: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .gear-pop input[type="range"] { flex: 1; min-width: 0; accent-color: #daa520; }
+    /* Telefonā apakšā pa kreisi ir sprieguma slīdņa mala — ⚙ iet augšā pa labi, pretī izvēlnes pogai */
+    @media (max-width: 600px) {
+      .gear-corner { left: auto; right: 12px; top: calc(54px * var(--ui, 1)); bottom: auto; }
+      .gear-pop { left: auto; right: 0; bottom: auto; top: 52px; width: min(260px, calc(100vw - 24px)); }
+    }
   </style>
 </head>
 <body>
@@ -658,6 +740,16 @@
     </div>
   </main>
 
+  <div class="gear-corner" id="gearCorner">
+    <div class="gear-pop" id="gearPop" role="dialog" hidden>
+      <div class="gr"><span class="k"><span data-i18n="gearText">TEXT</span><b id="gearTextPct">100 %</b></span>
+        <div class="ctl"><button type="button" id="gearTextMinus" data-i18n-title="gearTextDown" title="Smaller text">A−</button><input type="range" id="gearTextRange" min="0.8" max="2" step="0.05" data-i18n-aria="gearText" aria-label="Text"><button type="button" id="gearTextPlus" data-i18n-title="gearTextUp" title="Larger text">A+</button></div></div>
+      <div class="gr"><span class="k"><span data-i18n="gearDraw">DRAWING</span><b id="gearDrawPct">100 %</b></span>
+        <div class="ctl"><button type="button" id="gearDrawMinus" data-i18n-title="gearDrawDown" title="Smaller drawing">−</button><input type="range" id="gearDrawRange" min="0.6" max="2" step="0.05" data-i18n-aria="gearDraw" aria-label="Drawing"><button type="button" id="gearDrawPlus" data-i18n-title="gearDrawUp" title="Larger drawing">+</button></div></div>
+    </div>
+    <button type="button" class="gear-btn" id="gearBtn" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="gearOpen" title="Text and drawing size">⚙</button>
+  </div>
+
   <script>
     // ========== TRANSLATIONS ==========
     const TRANSLATIONS = {
@@ -674,7 +766,14 @@
         cannonLink: "→ CANNON",
         cannonTitle: "Try Newton’s Cannon simulation",
         openMenu: "Open menu",
-        closeMenu: "Close menu"
+        closeMenu: "Close menu",
+        gearOpen: "Text and drawing size",
+        gearText: "TEXT",
+        gearTextDown: "Smaller text",
+        gearTextUp: "Larger text",
+        gearDraw: "DRAWING",
+        gearDrawDown: "Smaller drawing",
+        gearDrawUp: "Larger drawing"
       },
       lv: {
         title: "Milikena eļļas pilienu eksperiments",
@@ -689,7 +788,14 @@
         cannonLink: "→ LIELGABALS",
         cannonTitle: "Izmēģini Ņūtona lielgabala simulāciju",
         openMenu: "Atvērt izvēlni",
-        closeMenu: "Aizvērt izvēlni"
+        closeMenu: "Aizvērt izvēlni",
+        gearOpen: "Burtu un zīmējuma izmērs",
+        gearText: "BURTI",
+        gearTextDown: "Mazāki burti",
+        gearTextUp: "Lielāki burti",
+        gearDraw: "ZĪMĒJUMS",
+        gearDrawDown: "Mazāks zīmējums",
+        gearDrawUp: "Lielāks zīmējums"
       }
     };
 
@@ -786,6 +892,64 @@
       canvas.style.height = size + 'px';
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     }
+
+    // ═══════════════════════════════════════════
+    //  ⚙ BURTI un ZĪMĒJUMS — tās pašas atslēgas un robežas kā lauka un rasējuma lapās;
+    //  BURTI mērogo galveni un vadību (CSS zoom), ZĪMĒJUMS — zīmējumu kanvā
+    // ═══════════════════════════════════════════
+    const TEXT_KEY = "fiz-sim-text";
+    const DRAW_KEY = "fiz-sim-draw";
+    const TEXT_RANGE = { min: 0.8, max: 2, step: 0.05 };
+    const DRAW_RANGE = { min: 0.6, max: 2, step: 0.05 };
+    const loadScale = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    const saveScale = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* privātais režīms */ } };
+    const clampScale = (v, r) => (Number.isFinite(v) ? Math.round(Math.min(r.max, Math.max(r.min, v)) / r.step) * r.step : null);
+    function readScale(key, r, fallback) {
+      const raw = loadScale(key);
+      const v = raw === null || raw === undefined || raw.trim() === "" ? null : clampScale(Number(raw), r);
+      return v === null ? fallback : v;
+    }
+    // BURTI sākumā pielāgojas ekrānam: līdz 1280 × 800 — 100 %, lielākā ekrānā proporcionāli, līdz 200 %
+    let textScale = readScale(TEXT_KEY, TEXT_RANGE, clampScale(Math.min(2, Math.max(1, Math.min(window.innerWidth / 1280, window.innerHeight / 800))), TEXT_RANGE));
+    let drawK = readScale(DRAW_KEY, DRAW_RANGE, 1);
+    const gearBtn = document.getElementById("gearBtn");
+    const gearPop = document.getElementById("gearPop");
+    const pct = (v) => `${Math.round(v * 100)} %`;
+    function paintGear() {
+      document.documentElement.style.setProperty("--ui", String(textScale));
+      document.documentElement.style.setProperty("--draw", String(drawK));
+      document.getElementById("gearTextPct").textContent = pct(textScale);
+      document.getElementById("gearDrawPct").textContent = pct(drawK);
+      document.getElementById("gearTextRange").value = String(textScale);
+      document.getElementById("gearDrawRange").value = String(drawK);
+      gearBtn.setAttribute("aria-expanded", String(!gearPop.hidden));
+    }
+    function setTextScale(v) {
+      const next = clampScale(v, TEXT_RANGE);
+      if (next === null || next === textScale) return;
+      textScale = next;
+      saveScale(TEXT_KEY, String(next));
+      paintGear();
+      resizeCanvas();
+    }
+    function setDrawScale(v) {
+      const next = clampScale(v, DRAW_RANGE);
+      if (next === null || next === drawK) return;
+      drawK = next;
+      saveScale(DRAW_KEY, String(next));
+      paintGear();
+      resizeCanvas();
+    }
+    document.getElementById("gearTextRange").addEventListener("input", (e) => setTextScale(Number(e.target.value)));
+    document.getElementById("gearTextMinus").addEventListener("click", () => setTextScale(textScale - 0.1));
+    document.getElementById("gearTextPlus").addEventListener("click", () => setTextScale(textScale + 0.1));
+    document.getElementById("gearDrawRange").addEventListener("input", (e) => setDrawScale(Number(e.target.value)));
+    document.getElementById("gearDrawMinus").addEventListener("click", () => setDrawScale(drawK - 0.1));
+    document.getElementById("gearDrawPlus").addEventListener("click", () => setDrawScale(drawK + 0.1));
+    gearBtn.addEventListener("click", () => { gearPop.hidden = !gearPop.hidden; paintGear(); });
+    document.addEventListener("pointerdown", (e) => { if (!gearPop.hidden && !document.getElementById("gearCorner").contains(e.target)) { gearPop.hidden = true; paintGear(); } }, true);
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !gearPop.hidden) { gearPop.hidden = true; paintGear(); gearBtn.focus(); } });
+    paintGear();
 
     // ========== PHYSICS ==========
     function createDroplet() {
@@ -919,13 +1083,13 @@
 
       // Grid lines (reticle) - vertical axis markings
       ctx.strokeStyle = 'rgba(140, 110, 70, 0.6)';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.5 * drawK;
       const gridSpacing = size / 10;
       for (let i = 1; i < 10; i++) {
         const y = i * gridSpacing;
         ctx.beginPath();
-        // Longer ticks at major divisions (every 2nd line)
-        const tickLength = (i % 2 === 0) ? 30 : 15;
+        // Longer ticks at major divisions (every 2nd line); ZĪMĒJUMS mērogo atzīmes un pilienus
+        const tickLength = ((i % 2 === 0) ? 30 : 15) * drawK;
         ctx.moveTo(cx - tickLength, y);
         ctx.lineTo(cx + tickLength, y);
         ctx.stroke();
@@ -933,14 +1097,14 @@
 
       // Small tick marks on the sides
       ctx.strokeStyle = 'rgba(140, 110, 70, 0.4)';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1 * drawK;
       for (let i = 1; i < 20; i++) {
         const y = i * (size / 20);
         ctx.beginPath();
-        ctx.moveTo(10, y);
-        ctx.lineTo(20, y);
-        ctx.moveTo(size - 20, y);
-        ctx.lineTo(size - 10, y);
+        ctx.moveTo(10 * drawK, y);
+        ctx.lineTo(20 * drawK, y);
+        ctx.moveTo(size - 20 * drawK, y);
+        ctx.lineTo(size - 10 * drawK, y);
         ctx.stroke();
       }
 
@@ -964,7 +1128,7 @@
 
         const x = droplet.x * size;
         const y = droplet.y * size;
-        const baseRadius = 6;
+        const baseRadius = 6 * drawK;
 
         // Subtle glow - darker
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, baseRadius * 2.5);
