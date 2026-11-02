@@ -658,3 +658,67 @@ html.is-fullscreen body.layout-hud header { display: none; }
   .layout-hud .g01-panel { top: auto; bottom: 8px; left: 54px; right: 8px; width: auto; max-width: none; } /* ⚙ stūris paliek brīvs */
   .layout-hud .g01-hint { display: none; }
 }
+
+/* ══ E-01 Ģenerators un motors: josla zem galvenes (M-01 klases), zīmējums izometrijā, ģeneratorā zem tā grafiks ══ */
+/* Gaišajā tēmā blāvā tinte un akcents tumšāki (kā S-03), lai mazs teksts ir ≥ 4,5 : 1 (WCAG AA):
+   --ink-dim #625f56 — 5,56 : 1 pret #f2efe9 (lapa), 6,01 : 1 pret #faf8f3 (lauks); --accent #a8470d — 5,12 / 5,54 : 1.
+   Tumšajā tēmā kopīgie der: #9a9891 — 6,22 / 6,69 : 1, #ff7a29 — 6,89 / 7,43 : 1. Zīmējuma krāsas — assets/emotor/scene.js. */
+:root[data-theme="light"] body.e01 { --ink-dim: #625f56; --accent: #a8470d; }
+.e01 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.e01-skip { position: absolute; left: 12px; top: -200px; z-index: 20; background: var(--sheet); color: var(--ink); border: 2px solid var(--accent); padding: 8px 12px; font-size: 13px; letter-spacing: 0.06em; text-decoration: none; }
+.e01-skip:focus { top: 12px; }
+.e01-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.layout-hud .e01-main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.layout-hud .e01-main:focus { outline: none; }
+.layout-hud .e01-bar .m01-row { flex-wrap: wrap; }
+.layout-hud .e01-bar .m01-group { padding-left: calc(9px * var(--hud)); padding-right: calc(9px * var(--hud)); } /* lai josla 1280 px platumā ietilpst vienā rindā */
+.layout-hud .e01-bar .m01-row input.dim-range { width: calc(104px * var(--hud)); }
+.layout-hud .e01-bar .m01-row .btn { padding-left: calc(8px * var(--hud)); padding-right: calc(8px * var(--hud)); }
+.layout-hud .e01-seg { gap: 0; }
+.layout-hud .e01-seg .btn + .btn { margin-left: -1px; }
+/* pārslēgiem stāvoklis ne tikai krāsā: ieslēgtam ✓ (WCAG 1.4.1) */
+.layout-hud .m01-row .btn.e01-tog::before { content: ""; display: inline-block; width: 1.1em; text-align: left; }
+.layout-hud .m01-row .btn.e01-tog[aria-pressed="true"]::before { content: "✓"; content: "✓" / ""; } /* ✓ nav nosaukuma daļa — stāvokli saka aria-pressed */
+.layout-hud .m01-row .btn.e01-info { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(13px * var(--hud)); }
+.layout-hud .m01-row .btn.e01-flip { color: var(--ink); }
+.layout-hud .e01-val { min-width: 0; white-space: nowrap; }
+.layout-hud .e01-freq { color: var(--ink-dim); font-weight: 400; }
+.layout-hud .e01-work { flex-direction: column; }
+/* zīmējumam vienmēr vismaz puse laukuma; grafiks — trešdaļa (ne vairāk par 340 px), bez pikseļu minimuma, lai zemā ekrānā neizspiež zīmējumu */
+.layout-hud .e01-work > .drawing { flex: 1 1 auto; min-height: 50%; }
+.layout-hud .e01-graph { position: relative; flex: none; height: min(34%, 340px); border-top: 1px solid var(--hairline); background: var(--field); }
+/* mērķi ≥ 24 × 24 px arī ar BURTI 80 % (WCAG 2.5.8) */
+.layout-hud .e01-bar .q-step, .layout-hud .e01-bar .m01-row .btn { min-width: 24px; min-height: 24px; }
+.layout-hud .e01-graph[hidden] { display: none; }
+.e01 .head-tools button { min-width: 24px; min-height: 24px; } /* WCAG 2.5.8: mērķi ≥ 24 × 24 px */
+.layout-hud .e01-bar .e01-short { display: none; }
+@media (max-width: 520px) {
+  /* šaurā galvenē virsraksts drīkst lūzt divās rindās (nevis tikt nogriezts) */
+  .layout-hud.e01 header { --head: min(var(--hud), 1.15); }
+  .layout-hud h1.e01-h1 { white-space: normal; overflow-wrap: anywhere; line-height: 1.2; font-size: calc(11px * var(--head)); letter-spacing: 0.06em; }
+  /* pogās vārds paslēpts tikai vizuāli: ✓ I, ✓ B, ✓ F, ⇄ +/− — nosaukums ekrāna lasītājam paliek pilns */
+  .layout-hud .e01-bar .e01-word { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .layout-hud .e01-bar .e01-short { display: inline; }
+  .layout-hud .e01-bar .m01-group { padding: calc(4px * var(--hud)) calc(6px * var(--hud)); }
+}
+/* ļoti šaurā ekrānā atpakaļ saitē redzams tikai ←, vārds SARAKSTS paliek ekrāna lasītājam — virsrakstam vieta */
+@media (max-width: 400px) {
+  .layout-hud .e01-backword { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+@media (max-width: 700px) and (orientation: portrait) {
+  .layout-hud.e01 { --hud: min(var(--ui, 1), 1.3); } /* telefonā josla neaug tā, ka zīmējumam nepaliek vietas */
+  .layout-hud .e01-graph { height: min(36%, 260px); }
+}
+/* telefons guļus (zems ekrāns): josla neaug un ir īsa (✓ I, ⇄ +/−), grafiks blakus zīmējumam, nevis zem tā */
+@media (max-height: 480px) and (orientation: landscape) {
+  .layout-hud.e01 { --hud: min(var(--ui, 1), 1); }
+  .layout-hud .e01-work { flex-direction: row; }
+  .layout-hud .e01-work > .drawing { min-height: 0; min-width: 50%; }
+  .layout-hud .e01-graph { height: auto; width: min(50%, 520px); border-top: none; border-left: 1px solid var(--hairline); }
+  .layout-hud .e01-bar .e01-word { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .layout-hud .e01-bar .e01-short { display: inline; }
+  .layout-hud .e01-bar .m01-group { padding: 3px 6px; }
+}
+.e01-overlay .e01-info-body { gap: 18px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(15px * var(--ui, 1)); line-height: 1.55; }
+.e01-overlay .e01-info-body > * { max-width: 72ch; }
+.e01-overlay .e01-info-body h3 { font-family: 'IBM Plex Mono', monospace; font-size: calc(12px * var(--ui, 1)); letter-spacing: 0.12em; font-weight: 600; margin-bottom: 4px; }

@@ -21,6 +21,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | 🔊 Sound Lab v2 (S-02)     | The same in the technical-drawing design (review copy) | 🟡 Review |
 | ∿ Brownian Motion (M-01)   | Molecular physics / a dust particle among molecules | ✅ Live |
 | ⬒ Gas Law (M-02)           | Molecular physics / pV/T = const with a piston | ✅ Live |
+| ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
 
 ## Infographics
 
@@ -50,9 +51,10 @@ fiz-sim/
 ├── sound-lab-v2.html               ← Sound Lab (S-02) in the technical-drawing design: assets/sound/
 ├── brownian-motion.html            ← Brownian Motion (M-01): assets/brownian/
 ├── ideal-gas.html                  ← Gas Law (M-02): assets/gas/
+├── motor-generator.html            ← Generator and Motor (E-01): assets/emotor/
 ├── infografikas/                   ← Infographics (Latvian): strava-skidrumos, baterijas-un-akumulatori
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, infografikas/ (preview images)
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, emotor/, infografikas/ (preview images)
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -203,3 +205,17 @@ Parameters of `ideal-gas.html`. Starting values only; unknown parameters are ign
 Example (hot gas, then pressure set — the volume adapts):
 
     ideal-gas.html?T=600&p=100
+
+## Teacher links (E-01)
+
+Parameters of `motor-generator.html`. Unknown parameters are ignored; a wrong value falls back to the default with a notice.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `mode=motor\|generator` | Starting mode (default `motor`: the coil held with its plane along the field, current on, commutator off) |
+
+Example (open straight in the generator with its voltage graph):
+
+    motor-generator.html?mode=generator
+
+In class (spec `docs/plans/2026-11-02-generators-motors.md`): motor — ALLOW MOTION (the coil swings to the position across the field and stops), then COMMUTATOR (it keeps turning; VOLTAGE 1–6 V gives 0.5–3 turns a second, POLARITY reverses it); generator — SPEED 0.5–3 Hz, the graph ℰ(t) below, COMMUTATOR turns alternating into pulsating direct current, FLUX Φ adds Φ(t) to the graph.

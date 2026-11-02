@@ -500,8 +500,9 @@ export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, o
     setText(text.pct, pct(scales.text));
     setText(text.minus, 'A−');
     setText(text.plus, 'A+');
-    setAttr(text.minus, 'aria-label', L.textDown);
-    setAttr(text.plus, 'aria-label', L.textUp);
+    // nosaukums sākas ar redzamo tekstu A− / A+ (WCAG 2.5.3 — balss vadībā lietotājs saka to, ko redz)
+    setAttr(text.minus, 'aria-label', `A−: ${L.textDown}`);
+    setAttr(text.plus, 'aria-label', `A+: ${L.textUp}`);
     setAttr(text.input, 'aria-label', L.text);
     setAttr(text.input, 'aria-valuetext', pct(scales.text));
     text.input.value = String(scales.text);

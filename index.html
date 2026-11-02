@@ -581,6 +581,37 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 3b: Generator and motor (E-01) ══════ -->
+    <a href="motor-generator.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- N and S poles, field lines, the coil in position A with the forces up and down -->
+          <g fill="#3d6aa6" fill-opacity="0.9" stroke="#5a6d88" stroke-width="0.8"><polygon points="91.4,60.4 91.4,25.3 49.5,49.5 49.5,84.7"/><polygon points="37.1,77.5 49.5,84.7 49.5,49.5 37.1,42.3" opacity="0.8"/><polygon points="79,18.1 91.4,25.3 49.5,49.5 37.1,42.3"/></g>
+          <text x="64.3" y="36.8" text-anchor="middle" font-family="'Orbitron', monospace" font-size="9" fill="#e8eef6">N</text>
+          <g stroke="#7fb8c9" stroke-width="0.8" opacity="0.8">
+            <line x1="84.3" y1="35.4" x2="143.3" y2="69.5"/><line x1="56.7" y1="51.4" x2="115.7" y2="85.5"/>
+            <line x1="84.3" y1="58.5" x2="143.3" y2="92.6"/><line x1="56.7" y1="74.5" x2="115.7" y2="108.6"/>
+          </g>
+          <polygon points="101.9,92.9 136.2,73.1 98.1,51.1 63.8,70.9" fill="none" stroke="#c8d6e8" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="128.6" y1="55.5" x2="68.6" y2="90.2" stroke="#5a6d88" stroke-width="1.5" stroke-dasharray="3 2"/>
+          <g fill="#a8473c" fill-opacity="0.55" stroke="#5a6d88" stroke-width="0.8"><polygon points="162.9,101.7 162.9,66.5 121,90.7 121,125.9"/><polygon points="108.6,118.8 121,125.9 121,90.7 108.6,83.5" opacity="0.8"/><polygon points="150.5,59.3 162.9,66.5 121,90.7 108.6,83.5"/></g>
+          <text x="135.7" y="78" text-anchor="middle" font-family="'Orbitron', monospace" font-size="9" fill="#e8eef6">S</text>
+          <!-- Ampère forces: up on the side at N, down on the side at S -->
+          <line x1="80.9" y1="61" x2="80.9" y2="47.4" stroke="#ff7a29" stroke-width="2"/><path d="M 80.9 43.4 l -3.5 6 h 7 z" fill="#ff7a29"/>
+          <line x1="119.1" y1="83" x2="119.1" y2="96.6" stroke="#ff7a29" stroke-width="2"/><path d="M 119.1 100.6 l -3.5 -6 h 7 z" fill="#ff7a29"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electricity" data-i18n="tagElectromagnetism">Electromagnetism</div>
+        <div class="card-title" data-i18n="e01Title">Generator and Motor</div>
+        <p class="card-desc" data-i18n="e01Desc">A coil in a magnet’s field: Ampère forces on its sides, the commutator that keeps a motor turning, and a generator with its voltage graph — alternating or pulsating direct current.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
     <!-- ══════ CARD 4: Newton's Cannon ══════ -->
     <a href="newtons-cannon.html" class="card">
       <div class="card-visual">
@@ -966,6 +997,9 @@ const TRANSLATIONS = {
     hockeyDesc: "Place positive and negative charges to guide a charged puck through obstacles into the goal using Coulomb forces.",
     millikanTitle: "Millikan Experiment",
     millikanDesc: "Balance oil droplets in an electric field to discover that charge comes in discrete units — just as Millikan did in 1913.",
+    tagElectromagnetism: "Electromagnetism",
+    e01Title: "Generator and Motor",
+    e01Desc: "A coil in a magnet’s field: Ampère forces on its sides, the commutator that keeps a motor turning, and a generator with its voltage graph — alternating or pulsating direct current.",
     fieldTitle: "Electric Field",
     fieldDesc: "Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.",
     cannonTitle: "Newton's Cannon",
@@ -1009,6 +1043,9 @@ const TRANSLATIONS = {
     hockeyDesc: "Novieto pozitīvus un negatīvus lādiņus, lai ar Kulona spēku vadītu lādētu ripu cauri šķēršļiem uz vārtiem.",
     millikanTitle: "Milikena eksperiments",
     millikanDesc: "Līdzsvaro eļļas pilienus elektriskajā laukā, lai atklātu, ka lādiņš pastāv diskrētos lielumos — tieši kā Milikens 1913. gadā.",
+    tagElectromagnetism: "Elektromagnētisms",
+    e01Title: "Ģenerators un motors",
+    e01Desc: "Rāmītis magnēta laukā: Ampēra spēki uz tā malām, kolektors, ar kuru motors griežas nepārtraukti, un ģenerators ar sprieguma grafiku — maiņstrāva vai pulsējoša līdzstrāva.",
     fieldTitle: "Elektriskais lauks",
     fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
     cannonTitle: "Ņūtona lielgabals",
