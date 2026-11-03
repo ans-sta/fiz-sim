@@ -244,7 +244,7 @@ function placeOverlays(lay, legend) {
     if (!b) continue;
     const lvl = levelOf(atom(), g.id);
     const x = Math.round(g.x0 - 4);
-    const w = Math.round((g.single ? g.labelX + 150 : g.narrow ? g.x1 + 4 : g.x1 + 46) - x);
+    const w = Math.round((g.single ? g.labelX + 150 : g.narrow ? g.x1 + 4 : g.x1 + Math.min(46, 0.5 * g.colW - 6)) - x); // nepārklājas ar kaimiņu kolonnu
     const top = Math.round(g.narrow ? Math.max(g.labelY - 16, g.y - 20) : g.labelY - 12);
     const s = b.style;
     const L = `${x}px`; const T = `${top}px`; const W = `${Math.max(24, w)}px`;
@@ -363,7 +363,8 @@ function render() {
   const { w, h } = view.size();
   const lay = sceneLayout(w, h, { slide: ui.slide, drawScale: ui.drawScale, topPad: el('readout').offsetHeight + 4 });
   ui.layout = lay;
-  const legend = legendScale(gear.textScale());
+  // šaurā ekrānā kanvas burti aug ne vairāk kā līdz 115 % (kā josla E-01), citādi uzraksti saduras
+  const legend = lay.portrait || h < 420 ? Math.min(1.15, legendScale(gear.textScale())) : legendScale(gear.textScale());
   const now = performance.now();
   const ax = axis();
   drawScene(view.ctx, lay, {

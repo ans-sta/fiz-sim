@@ -77,22 +77,23 @@ export function spreadLabels(items, minGap, top = -Infinity) {
 export function levelGeometry(atom, rect, legend = 1) {
   const ys = levelYs(atom, rect);
   const cols = atom.columns;
-  const axisW = 52;
+  const compact = rect.w < 300; // šaura shēma (telefons): ass tuvāk, enerģija tikai pie elektrona līmeņa
+  const axisW = compact ? 40 : 52;
   const inner = { x: rect.x + axisW, w: Math.max(0, rect.w - axisW) };
   const split = atom.id === 'He' ? 14 : 0; // para | orto
   const colW = (inner.w - split) / cols.length;
   const colX = (i) => inner.x + i * colW + (atom.id === 'He' && i >= 3 ? split : 0);
-  const gap = 14 * legend;
+  const gap = Math.max(24, 14 * legend); // līmeņu pogas (uzrakstu vietās) ≥ 24 px viena no otras (WCAG 2.5.8)
   const out = [];
   cols.forEach((c, i) => {
     const lv = atom.levels.filter((l) => l.col === c.id && l.kind !== 'limit').sort((a, b) => ys.get(a.id) - ys.get(b.id));
     const single = cols.length === 1;
-    const x0 = colX(i) + colW * 0.12;
+    const x0 = colX(i) + colW * (compact && single ? 0.04 : 0.12);
     const x1 = single ? x0 + Math.max(40, Math.min(colW * 0.43, colW - 150 * legend)) : colX(i) + colW * 0.62;
     const items = lv.map((l) => ({ id: l.id, y: ys.get(l.id) }));
     const narrow = !single && colW < 70; // šaurā shēmā uzraksts virs līnijas, nevis blakus
-    const spread = spreadLabels(items, narrow ? 12 * legend : gap, rect.y + 26 * legend);
-    for (const it of spread) out.push({ id: it.id, col: c.id, x0, x1, y: it.y, labelX: single ? x1 + 10 : x0, labelY: it.labelY, single, narrow });
+    const spread = spreadLabels(items, gap, rect.y + 26 * legend);
+    for (const it of spread) out.push({ id: it.id, col: c.id, x0, x1, y: it.y, labelX: single ? x1 + 10 : x0, labelY: it.labelY, single, narrow, colW, compact });
   });
   for (const l of atom.levels.filter((x) => x.kind === 'limit')) {
     out.push({ id: l.id, col: l.col, x0: inner.x, x1: inner.x + inner.w, y: ys.get(l.id), labelX: inner.x + inner.w * 0.6, labelY: ys.get(l.id), single: true, limit: true });
@@ -368,7 +369,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
   const a = v.atom;
   const ys = levelYs(a, r);
   // enerģijas ass pa kreisi
-  const ax = r.x + 40;
+  const ax = r.x + (r.w < 300 ? 28 : 40);
   ctx.strokeStyle = c.inkDim;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -469,7 +470,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     ctx.fillStyle = on ? c.ink : c.inkDim;
     ctx.font = font(11, on ? 600 : 400);
     ctx.textBaseline = 'middle';
-    const energy = g.single || showE.has(g.id) ? `  ${v.fmt(lvl.E, 2)} eV` : '';
+    const energy = (g.single && !g.compact) || showE.has(g.id) ? `  ${v.fmt(lvl.E, 2)} eV` : '';
     const text = `${lvl.label}${lvl.metastable ? ' *' : ''}${energy}`;
     const tw = ctx.measureText(text).width;
     if (g.narrow) {

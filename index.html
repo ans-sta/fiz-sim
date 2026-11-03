@@ -614,6 +614,36 @@
       </div>
     </a>
 
+    <!-- ══════ A-01: Atomic Spectra ══════ -->
+    <a href="atomic-spectra.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- a vertical rainbow with the hydrogen Balmer lines dark, a photon flying to the atom, the electron jump on the level ladder -->
+          <defs><linearGradient id="a01rainbow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8a3cff"/><stop offset="0.2" stop-color="#3a5bff"/><stop offset="0.36" stop-color="#00d4ff"/>
+            <stop offset="0.5" stop-color="#3cff6e"/><stop offset="0.62" stop-color="#ffe14a"/><stop offset="0.76" stop-color="#ff8a2a"/><stop offset="1" stop-color="#ff2a2a"/>
+          </linearGradient></defs>
+          <rect x="26" y="20" width="14" height="100" fill="url(#a01rainbow)" stroke="#5a6d88" stroke-width="0.8"/>
+          <g stroke="#060a14" stroke-width="1.6"><line x1="26" y1="28.1" x2="40" y2="28.1"/><line x1="26" y1="34.6" x2="40" y2="34.6"/><line x1="26" y1="48.6" x2="40" y2="48.6"/><line x1="26" y1="94.6" x2="40" y2="94.6"/></g>
+          <path d="M 46 52 q 3 -4 6 0 t 6 0 t 6 0 t 6 0" fill="none" stroke="#00d4ff" stroke-width="1.6"/>
+          <g fill="none" stroke="#5a6d88" stroke-width="0.8"><circle cx="100" cy="70" r="10"/><circle cx="100" cy="70" r="18"/><circle cx="100" cy="70" r="26"/><circle cx="100" cy="70" r="34"/></g>
+          <circle cx="100" cy="70" r="3" fill="#00ccff"/>
+          <circle cx="112.7" cy="57.3" r="3" fill="#ffd700"/>
+          <g stroke="#c8d6e8" stroke-width="1.2"><line x1="150" y1="112" x2="182" y2="112"/><line x1="150" y1="64" x2="182" y2="64"/><line x1="150" y1="44" x2="182" y2="44"/><line x1="150" y1="36" x2="182" y2="36"/><line x1="150" y1="32" x2="182" y2="32"/></g>
+          <line x1="166" y1="64" x2="166" y2="40" stroke="#00d4ff" stroke-width="1.8"/><path d="M 166 36 l -3.5 6 h 7 z" fill="#00d4ff"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-quantum" data-i18n="tagAtom">Atom and universe</div>
+        <div class="card-title" data-i18n="a01Title">Atomic Spectra</div>
+        <p class="card-desc" data-i18n="a01Desc">Fire photons at an atom and watch the electron jump: dark lines in white light and bright lines in emission, for hydrogen, sodium, mercury and helium.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
     <!-- ══════ CARD 4: Newton's Cannon ══════ -->
     <a href="newtons-cannon.html" class="card">
       <div class="card-visual">
@@ -1092,6 +1122,9 @@ const TRANSLATIONS = {
     tagElectromagnetism: "Electromagnetism",
     e01Title: "Generator and Motor",
     e01Desc: "A coil in a magnet’s field: Ampère forces on its sides, the commutator that keeps a motor turning, and a generator with its voltage graph — alternating or pulsating direct current.",
+    tagAtom: "Atom and universe",
+    a01Title: "Atomic Spectra",
+    a01Desc: "Fire photons at an atom and watch the electron jump: dark lines in white light and bright lines in emission, for hydrogen, sodium, mercury and helium.",
     fieldTitle: "Electric Field",
     fieldDesc: "Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.",
     cannonTitle: "Newton's Cannon",
@@ -1143,6 +1176,9 @@ const TRANSLATIONS = {
     tagElectromagnetism: "Elektromagnētisms",
     e01Title: "Ģenerators un motors",
     e01Desc: "Rāmītis magnēta laukā: Ampēra spēki uz tā malām, kolektors, ar kuru motors griežas nepārtraukti, un ģenerators ar sprieguma grafiku — maiņstrāva vai pulsējoša līdzstrāva.",
+    tagAtom: "Atoms un visums",
+    a01Title: "Atomu spektri",
+    a01Desc: "Šauj fotonus uz atomu un skaties, kā elektrons pārlec: tumšas līnijas baltajā gaismā un spožas līnijas starošanā — ūdeņradim, nātrijam, dzīvsudrabam un hēlijam.",
     fieldTitle: "Elektriskais lauks",
     fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
     cannonTitle: "Ņūtona lielgabals",
