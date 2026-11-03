@@ -44,6 +44,8 @@
 - Poga ⚙ apakšējā kreisajā stūrī. Logā: **tēma** (gaiša / tumša), **valoda** (LV / EN), **BURTI** 80–200 % un **ZĪMĒJUMS** 60–150 % (slīdņi ar − un +, mainās uzreiz), **PILNEKRĀNS** (ja ierīce to ļauj).
 - Logs neaug līdzi burtiem (pogas paliek zem pirksta), aizveras ar klikšķi ārpusē vai Esc.
 - Ierīce izvēli atceras. BURTI sākumā pielāgojas ekrānam: līdz 1280 × 800 — 100 %, lielākā ekrānā proporcionāli, līdz 200 %.
+- **Tālummaiņa ar diviem pirkstiem** (skārienpaliktnis vai telefona ekrāns) maina tās pašas izvēles: virs zīmējuma — ZĪMĒJUMS, virs virsraksta, pogām un paneļiem — BURTI. Pārlūka paša lupa šajās lapās nestrādā; telefona sistēmas tālummaiņa paliek. Kur divi pirksti ir paša rīka darbība (S-02 klavieres), tālummaiņas nav. Otrā pirksta kustību lapa neredz — vilktais lādiņš vai virzulis paliek uz vietas.
+- **Taustiņi:** ⌘ + / ⌘ − (PC — Ctrl) — BURTI; ⌘ → vai ↑ — ZĪMĒJUMS lielāks, ⌘ ← vai ↓ — mazāks (solis 10 %, kā − / +). Teksta laukā bultiņas paliek kursoram; ⌘ 0 paliek pārlūkam. ⚙ logā pie BURTI un ZĪMĒJUMS redzami taustiņi (telefonā paslēpti). Kods — `assets/measure/zoom-gestures.js`.
 
 ## 7. Galvene
 
@@ -56,3 +58,4 @@
 - 2026-10-04 — Pirmā versija no Anša piezīmēm (04.10, telefona ekrānuzņēmumi `scr.mini/sim-*.PNG` un skices komentāri).
 - 2026-10-04 — Ansis: zīmējums (no burta h līdz noripojušajai lodītei) vienmēr precīzi ekrāna vidū, arī mainot ZĪMĒJUMS. Visos K-01 pētījumos maināmi α, h, L (un vārti / Δt, kur tie ir); Δt — slīdnis 0,1–2 s ik pa 0,1 s, bez brīdinājuma, ja lodīte noripo ātrāk par Δt. Kamēr slīdnis vaļā, LIELUMI ir platāks un virs MĒRĪJUMIEM. Pētījums a(α) → t(α), t(h); sērijas tabulā katrā rindā α un h.
 - 2026-10-04 — Ansis: panelis visās simulācijās saucas **MAINĪGIE LIELUMI** (EN VARIABLES). Rinda, kas nav mainīgais lielums (S-01 palīglīnijas), tajā pašā panelī zem horizontālas līnijas kā čekbokss — ieslēdz ar vienu klikšķi.
+- 2026-11-03 — Ansis: “Vai būtu iespējams zūmot ar pinchu uz datora tochpad vai tel ekrāna?” → “Jā, lūdzu.” (virs zīmējuma ZĪMĒJUMS, virs pogām BURTI); “burtu izmērs cmd+ un cmd-, … cmd bultiņa uz sāniem/augšu lielina, cmd bulitiņa atpakaļ/leju mazina? Uz PC — atbilstoši cntrl?” Visās 12 lapās ar ⚙ (arī lauks, hokejs, lielgabals, Milikens). Termins: “tālummaiņa” vai “palielināšana / samazināšana”.

@@ -66,6 +66,7 @@ document.addEventListener('keydown', (ev) => {
 const gear = createSettingsCorner(el('gear'), {
   i18n,
   theme,
+  drawing: document.getElementById('drawing'), // tālummaiņa ar diviem pirkstiem virs zīmējuma — ZĪMĒJUMS
   labels: () => ({
     open: t('gear.open'), theme: t('gear.theme'), light: t('gear.light'), dark: t('gear.dark'), lang: t('gear.lang'),
     text: t('gear.text'), textDown: t('gear.textDown'), textUp: t('gear.textUp'),

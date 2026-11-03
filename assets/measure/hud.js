@@ -3,6 +3,7 @@
 import { formatNumber } from './format.js';
 import { TEXT_RANGE, DRAW_RANGE, clampScale, loadScales, saveScales, applyTextScale, trackFraction } from './ui-scale.js';
 import { toggleFullscreen } from '../sim-core.js';
+import { attachZoomGestures, modLabel } from './zoom-gestures.js';
 
 const MINI_ROWS = 6;
 const MINI_COLS = 4;
@@ -413,7 +414,8 @@ export function createMeasureBox(root, { labels, lang, onOpen, onSelect, onStrob
 // ── ⚙ ───────────────────────────────────────────────────
 // Tēma, valoda, BURTI, ZĪMĒJUMS, PILNEKRĀNS. Logs neaug līdzi burtiem; aizveras ar klikšķi ārpusē vai Esc.
 // Izmaiņas notiek uzreiz un tiek saglabātas ierīcē.
-export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, onTextScale }) {
+// drawing — zīmējuma laukums: tālummaiņa ar diviem pirkstiem virs tā maina ZĪMĒJUMS, citur — BURTI; ⌘ / Ctrl taustiņi (zoom-gestures.js).
+export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, onTextScale, drawing }) {
   root.classList.add('gear-corner');
   const scales = loadScales();
   applyTextScale(scales.text);
@@ -452,7 +454,8 @@ export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, o
     const k = node('span', 'k');
     const name = node('span');
     const pct = node('b');
-    k.append(name, pct);
+    const keys = node('span', 'gear-keys'); // īsinājumtaustiņi (skārienekrānā paslēpti)
+    k.append(name, pct, keys);
     const ctl = node('div', 'ctl');
     const minus = button('gear-step');
     const input = node('input', 'dim-range');
@@ -463,11 +466,14 @@ export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, o
     const plus = button('gear-step');
     ctl.append(minus, input, plus);
     group('col', k, ctl);
-    return { name, pct, minus, input, plus };
+    return { name, pct, keys, minus, input, plus };
   };
   const text = sizeRow(TEXT_RANGE);
   const draw = sizeRow(DRAW_RANGE);
   draw.input.classList.add('fit-track');
+  const mod = modLabel();
+  text.keys.textContent = `${mod}− ${mod}+`;
+  draw.keys.textContent = `${mod}← ${mod}→`;
 
   let fsBtn = null;
   let screenK = null;
@@ -561,6 +567,13 @@ export function createSettingsCorner(root, { i18n, theme, labels, onDrawScale, o
   i18n.onChange(paint);
   theme.onChange(paint);
   paint();
+  if (drawing) {
+    attachZoomGestures({
+      drawing,
+      text: { get: () => scales.text, set: setTextScale, ...TEXT_RANGE },
+      draw: { get: () => scales.draw, set: setDraw, ...DRAW_RANGE },
+    });
+  }
 
   return {
     drawScale: () => scales.draw,

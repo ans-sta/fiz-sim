@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0"
     />
     <title>Electric Field Visualizer</title>
     <link
@@ -397,6 +397,8 @@
       .gear-pop .gr { display: grid; grid-template-rows: 14px 30px; gap: 4px; }
       .gear-pop .k { font-family: var(--font-display); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); }
       .gear-pop .k b { color: var(--text); font-weight: 500; letter-spacing: 0; margin-left: 6px; font-variant-numeric: tabular-nums; }
+      .gear-pop .gear-keys { float: right; font-size: 11px; line-height: 14px; letter-spacing: 0.04em; text-transform: none; }
+      @media (hover: none) and (pointer: coarse) { .gear-pop .gear-keys { display: none; } } /* telefonā taustiņu nav */
       .gear-pop .ctl { display: flex; align-items: center; gap: 6px; }
       .gear-pop .ctl button { min-width: 34px; height: 30px; padding: 0 6px; font-size: 12px; flex: none; }
       .gear-pop input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
@@ -490,9 +492,9 @@
 
     <div class="gear-corner" id="gearCorner">
       <div class="gear-pop" id="gearPop" role="dialog" hidden>
-        <div class="gr"><span class="k"><span data-i18n="gearText">TEXT</span><b id="gearTextPct">100 %</b></span>
+        <div class="gr"><span class="k"><span data-i18n="gearText">TEXT</span><b id="gearTextPct">100 %</b><span class="gear-keys" id="gearTextKeys"></span></span>
           <div class="ctl"><button type="button" id="gearTextMinus" data-i18n-title="gearTextDown" title="Smaller text">A−</button><input type="range" id="gearTextRange" min="0.8" max="2" step="0.05" data-i18n-aria="gearText" aria-label="Text"><button type="button" id="gearTextPlus" data-i18n-title="gearTextUp" title="Larger text">A+</button></div></div>
-        <div class="gr"><span class="k"><span data-i18n="gearDraw">DRAWING</span><b id="gearDrawPct">100 %</b></span>
+        <div class="gr"><span class="k"><span data-i18n="gearDraw">DRAWING</span><b id="gearDrawPct">100 %</b><span class="gear-keys" id="gearDrawKeys"></span></span>
           <div class="ctl"><button type="button" id="gearDrawMinus" data-i18n-title="gearDrawDown" title="Smaller drawing">−</button><input type="range" id="gearDrawRange" min="0.6" max="2" step="0.05" data-i18n-aria="gearDraw" aria-label="Drawing"><button type="button" id="gearDrawPlus" data-i18n-title="gearDrawUp" title="Larger drawing">+</button></div></div>
       </div>
       <button type="button" class="gear-btn" id="gearBtn" aria-haspopup="dialog" aria-expanded="false" data-i18n-title="gearOpen" title="Text and drawing size">⚙</button>
@@ -776,6 +778,8 @@
       document.getElementById("gearDrawRange").addEventListener("input", (e) => setDrawScale(Number(e.target.value)));
       document.getElementById("gearDrawMinus").addEventListener("click", () => setDrawScale(drawK - 0.1));
       document.getElementById("gearDrawPlus").addEventListener("click", () => setDrawScale(drawK + 0.1));
+      // tālummaiņa ar diviem pirkstiem un ⌘ / Ctrl taustiņi (assets/measure/zoom-gestures.js, modulis lapas beigās) — tās pašas izvēles
+      window.__fizZoom = { text: { get: () => textScale, set: setTextScale, ...TEXT_RANGE }, draw: { get: () => drawK, set: setDrawScale, ...DRAW_RANGE } };
       gearBtn.addEventListener("click", () => { gearPop.hidden = !gearPop.hidden; paintGear(); });
       document.addEventListener("pointerdown", (e) => { if (!gearPop.hidden && !document.getElementById("gearCorner").contains(e.target)) { gearPop.hidden = true; paintGear(); } }, true);
       document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !gearPop.hidden) { gearPop.hidden = true; paintGear(); gearBtn.focus(); } });
@@ -2225,6 +2229,17 @@
       initLanguage();
       updateTestChargeUI();
       loop();
+    </script>
+    <script type="module">
+      // Ansis 03.11.: palielināšana / samazināšana ar diviem pirkstiem virs zīmējuma — ZĪMĒJUMS, virs pogām — BURTI; ⌘ / Ctrl + “−” “+” — burti, ← → ↑ ↓ — zīmējums
+      import { attachZoomGestures, modLabel } from "./assets/measure/zoom-gestures.js";
+      const z = window.__fizZoom;
+      if (z) {
+        attachZoomGestures({ drawing: document.getElementById("fieldCanvas"), ...z });
+        const m = modLabel();
+        document.getElementById("gearTextKeys").textContent = `${m}− ${m}+`;
+        document.getElementById("gearDrawKeys").textContent = `${m}← ${m}→`;
+      }
     </script>
   </body>
 </html>
