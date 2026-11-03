@@ -31,3 +31,12 @@ test('a forbidden fall lists where the electron can fall', () => {
   assert.match(s, /aizliegta vai ļoti vāja/);
   assert.match(s, /6³P₀, 6³P₁, 6³P₂, 6¹P/);
 });
+
+test('the scene description counts as “Melnas svītras: N” — no plural to get wrong', () => {
+  const lv = STRINGS.lv;
+  const one = lv['desc.abs'].replace(/\{(\w+)\}/g, (_, k) => ({ name: 'Ūdeņradis', level: 'n = 2', E: '−3,40', n: 1, list: ' (486,2 nm)' })[k]);
+  assert.match(one, /Melnas svītras: 1 \(486,2 nm\)/);
+  assert.match(lv['desc.emit'], /Līnijas: \{n\}\{list\}/);
+  assert.match(STRINGS.en['desc.abs'], /Dark stripes: \{n\}\{list\}/);
+  assert.match(STRINGS.en['desc.emit'], /Lines: \{n\}\{list\}/);
+});

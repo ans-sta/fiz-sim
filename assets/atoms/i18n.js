@@ -88,8 +88,8 @@ export const STRINGS = {
     'live.cleared': 'Stabs notīrīts.',
     'live.rate': 'Intensitāte {rate}.',
 
-    'desc.abs': '{name}, absorbcija. Elektrons līmenī {level} ({E} eV). Uz avota staba {n} melnas svītras{list}.',
-    'desc.emit': '{name}, starošana. Elektrons līmenī {level} ({E} eV). Spektrā {n} līnijas{list}.',
+    'desc.abs': '{name}, absorbcija. Elektrons līmenī {level} ({E} eV). Melnas svītras: {n}{list}.',
+    'desc.emit': '{name}, starošana. Elektrons līmenī {level} ({E} eV). Līnijas: {n}{list}.',
     'desc.ionised': '{name}, absorbcija. Atoms jonizēts — elektrons atbrīvojies.',
 
     'info.btnAria': 'Paskaidrojums: absorbcija, starošana, jonizācija, vienkāršojumi',
@@ -206,8 +206,8 @@ export const STRINGS = {
     'live.cleared': 'Column cleared.',
     'live.rate': 'Intensity {rate}.',
 
-    'desc.abs': '{name}, absorption. The electron is on level {level} ({E} eV). The source column has {n} dark stripes{list}.',
-    'desc.emit': '{name}, emission. The electron is on level {level} ({E} eV). The spectrum has {n} lines{list}.',
+    'desc.abs': '{name}, absorption. The electron is on level {level} ({E} eV). Dark stripes: {n}{list}.',
+    'desc.emit': '{name}, emission. The electron is on level {level} ({E} eV). Lines: {n}{list}.',
     'desc.ionised': '{name}, absorption. The atom is ionised — the electron is free.',
 
     'info.btnAria': 'Note: absorption, emission, ionisation, simplifications',

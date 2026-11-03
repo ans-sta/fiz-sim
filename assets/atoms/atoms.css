@@ -49,8 +49,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* josla: uz hover teksts paliek redzams (kopīgais .btn:hover maina tikai krāsu, fons paliek --sheet → teksts pazustu) */
-.layout-hud.a01 .m01-row .btn:hover:not(:disabled) { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
 @media (max-width: 520px), (max-height: 480px) {
   .layout-hud .a01-readout { font-size: calc(11px * min(var(--hud), 1.15)); line-height: 1.3; }
 }

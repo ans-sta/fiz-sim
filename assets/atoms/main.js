@@ -307,7 +307,7 @@ function describe() {
   const lv = levelOf(atom(), s.level);
   const src = s.mode === 'absorb' ? s.stripes : s.lines;
   const vals = [...src.values()].sort((a, b) => a - b);
-  const list = vals.length ? `: ${vals.slice(0, 12).map((λ) => `${fmtLam(λ)} nm`).join(', ')}${vals.length > 12 ? ' …' : ''}` : '';
+  const list = vals.length ? ` (${vals.slice(0, 12).map((λ) => `${fmtLam(λ)} nm`).join(', ')}${vals.length > 12 ? ' …' : ''})` : '';
   return t(s.mode === 'absorb' ? 'desc.abs' : 'desc.emit', { name, level: lv.label, E: fmt(lv.E, 2), n: vals.length, list });
 }
 
