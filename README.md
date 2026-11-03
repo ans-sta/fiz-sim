@@ -22,6 +22,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ∿ Brownian Motion (M-01)   | Molecular physics / a dust particle among molecules | ✅ Live |
 | ⬒ Gas Law (M-02)           | Molecular physics / pV/T = const with a piston | ✅ Live |
 | ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
+| 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | 🟡 Review |
 
 ## Infographics
 
@@ -52,9 +53,10 @@ fiz-sim/
 ├── brownian-motion.html            ← Brownian Motion (M-01): assets/brownian/
 ├── ideal-gas.html                  ← Gas Law (M-02): assets/gas/
 ├── motor-generator.html            ← Generator and Motor (E-01): assets/emotor/
+├── sound-spectrum.html             ← Sound Spectrum Analyser (S-03, microphone, https only): assets/spectrum/
 ├── infografikas/                   ← Infographics (Latvian): strava-skidrumos, baterijas-un-akumulatori
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, emotor/, infografikas/ (preview images)
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, emotor/, spectrum/, infografikas/ (preview images)
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -219,3 +221,19 @@ Example (open straight in the generator with its voltage graph):
     motor-generator.html?mode=generator
 
 In class (spec `docs/plans/2026-11-02-generators-motors.md`): motor — ALLOW MOTION (the coil swings to the position across the field and stops), then COMMUTATOR (it keeps turning; VOLTAGE 0.5–6 V gives 0.25–3 turns a second, ⇄ +/− swaps the battery terminals and ⇄ N/S the magnet poles — each reverses it); generator — SPEED 0.25–3 Hz, the graph ℰ(t) below, COMMUTATOR turns alternating into pulsating direct current, FLUX Φ adds Φ(t) to the graph.
+
+## Teacher links (S-03)
+
+Parameters of `sound-spectrum.html`. Without `lock=1` they are only starting values. Unknown parameters are ignored; values outside the range are clamped with a notice.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `view=spectrum\|spectrogram` | Starting view (default `spectrum`) |
+| `sens=<1–10>` | Sensitivity: shifts the visible 70 dB window (1: −10 … −80 dB, 10: −55 … −125 dB; default 5) |
+| `lock=1` (or `lock=true`) | Locks every setting that is given in the link (greyed out, marked FIKS.) |
+
+Example (only the spectrogram, students cannot switch):
+
+    sound-spectrum.html?view=spectrogram&lock=1
+
+The page needs the microphone, so it works only over https (GitHub Pages) or on `localhost`. Chrome remembers the permission for the site; Safari asks again on every visit unless the site is set to “Allow” (Safari → Settings for This Website… → Microphone → Allow). The sound is not recorded or sent anywhere.

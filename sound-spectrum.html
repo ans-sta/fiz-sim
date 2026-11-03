@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="lv" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Skaņas spektra analizators — FIZ-SIM</title>
+<script>
+  // Tēma pirms pirmā zīmējuma, lai nemirgo; tā pati loģika kā sim-core.js createTheme().
+  try {
+    var saved = localStorage.getItem('fiz-sim-theme');
+    document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/sim-common.css">
+<script type="module" src="assets/spectrum/main.js"></script>
+</head>
+<body class="layout-hud s03">
+<a class="s03-skip" href="#main" data-i18n="page.skip">Pāriet uz saturu</a>
+<div class="frame">
+  <header>
+    <a class="back" href="index.html" data-i18n="page.back">← SARAKSTS</a>
+    <h1><span class="s03-hfull" data-i18n="page.heading">SKAŅAS SPEKTRA ANALIZATORS</span><span class="s03-hshort" data-i18n="page.headingShort">SKAŅAS SPEKTRS</span> <span class="sheet-no">S-03</span></h1>
+    <div class="head-tools" id="headTools"></div>
+  </header>
+  <main class="s03-main" id="main" tabindex="-1">
+    <div class="m01-bar s03-bar" id="bar">
+      <div class="m01-group">
+        <span class="m01-label" id="micLabel">MIKROFONS</span>
+        <div class="m01-row">
+          <button class="btn s03-run" id="runBtn" type="button">● SĀKT</button>
+        </div>
+      </div>
+      <div class="m01-group" role="group" aria-labelledby="viewLabel">
+        <span class="m01-label"><span id="viewLabel">SKATS</span><span class="fix" id="viewFix" hidden></span></span>
+        <div class="m01-row s03-seg">
+          <button class="btn" id="viewSpec" type="button" aria-pressed="true">SPEKTRS</button>
+          <button class="btn" id="viewGram" type="button" aria-pressed="false">SPEKTROGRAMMA</button>
+        </div>
+      </div>
+      <div class="m01-group">
+        <span class="m01-label"><span id="sensLabel">JUTĪBA</span><span class="fix" id="sensFix" hidden></span></span>
+        <div class="m01-row">
+          <button class="q-step" id="sensMinus" type="button">−</button>
+          <input class="dim-range" id="sensRange" type="range" min="1" max="10" step="1" value="5">
+          <button class="q-step" id="sensPlus" type="button">+</button>
+          <span class="m01-val s03-sensval" id="sensVal">5</span>
+        </div>
+      </div>
+      <div class="m01-group m01-end">
+        <div class="m01-row s03-inforow">
+          <button class="btn s03-info" id="infoBtn" type="button">i</button>
+        </div>
+      </div>
+    </div>
+    <div class="work s03-work">
+      <div class="drawing" id="drawing">
+        <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
+        <canvas id="scene" role="img" aria-label="Skaņas spektrs"></canvas>
+        <input class="s03-cursor" id="cursor" type="range" min="0" max="1000" step="1" value="500">
+        <div class="s03-msg" id="msgBox">
+          <div id="msgAlert" role="alert">
+            <p class="s03-msg-text" id="msgText"></p>
+            <p class="s03-msg-detail" id="msgDetail" hidden></p>
+          </div>
+          <button class="btn primary s03-msg-btn" id="msgBtn" type="button">● SĀKT</button>
+        </div>
+        <div class="notices" id="notices" role="status" aria-live="polite"></div>
+      </div>
+      <aside class="s03-side" id="side" aria-labelledby="readTitle">
+        <div class="s03-read">
+          <h2 class="s03-k" id="readTitle"><span id="readTitleText">PAMATTONIS</span> <span aria-hidden="true">*</span></h2>
+          <p class="s03-big"><span class="s03-num" id="bigNum">—</span><span class="s03-unit" id="bigUnit" hidden>Hz</span></p>
+          <p class="s03-note"><span id="bigNote"></span> <span class="s03-cents" id="bigCents"></span></p>
+          <p class="s03-color" id="bigColorRow"><span class="s03-swatch" id="bigSwatch"></span><span id="bigColor"></span></p>
+          <p class="s03-foot"><span aria-hidden="true">* </span><span id="foot"></span></p>
+        </div>
+        <div class="s03-recs">
+          <dl class="s03-reclist">
+            <div class="s03-rec" id="recLoRow"><dt id="recLoK">ZEMĀKĀ</dt><dd><span class="s03-recv" id="recLoV">—</span><span class="s03-swatch" id="recLoSw"></span><span class="s03-recn" id="recLoN"></span></dd></div>
+            <div class="s03-rec" id="recHiRow"><dt id="recHiK">AUGSTĀKĀ</dt><dd><span class="s03-recv" id="recHiV">—</span><span class="s03-swatch" id="recHiSw"></span><span class="s03-recn" id="recHiN"></span></dd></div>
+          </dl>
+          <p class="s03-span" id="recSpan"></p>
+          <button class="btn s03-reset" id="resetBtn" type="button">↺ NO JAUNA</button>
+        </div>
+      </aside>
+      <div class="title-small" id="titleSmall" hidden></div>
+      <div id="gear"></div>
+    </div>
+    <p class="s03-sr" id="live" role="status" aria-live="polite"></p>
+  </main>
+</div>
+</body>
+</html>

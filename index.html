@@ -774,6 +774,44 @@
       </div>
     </a>
 
+    <!-- ══════ CARD 8b: Sound spectrum analyser (S-03) ══════ -->
+    <a href="sound-spectrum.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <defs>
+            <linearGradient id="specLight" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0" stop-color="#ff3b30"/><stop offset="0.21" stop-color="#ff9500"/><stop offset="0.3" stop-color="#ffd60a"/>
+              <stop offset="0.5" stop-color="#34c759"/><stop offset="0.72" stop-color="#0a84ff"/><stop offset="1" stop-color="#8e44ff"/>
+            </linearGradient>
+          </defs>
+          <!-- Plot frame and log frequency ticks (50 Hz … 10 kHz) -->
+          <rect x="18" y="14" width="164" height="100" fill="none" stroke="#1a2540" stroke-width="1.5"/>
+          <g stroke="#5a6d88" stroke-width="0.8">
+            <line x1="39.8" y1="114" x2="39.8" y2="119"/><line x1="56.2" y1="114" x2="56.2" y2="121"/><line x1="72.7" y1="114" x2="72.7" y2="119"/><line x1="94.4" y1="114" x2="94.4" y2="119"/>
+            <line x1="110.9" y1="114" x2="110.9" y2="121"/><line x1="127.3" y1="114" x2="127.3" y2="119"/><line x1="149.1" y1="114" x2="149.1" y2="119"/><line x1="165.6" y1="114" x2="165.6" y2="121"/>
+          </g>
+          <!-- A sung note: fundamental and harmonics, area coloured like the spectrum of light -->
+          <path d="M 18 104 L 48 103 L 54.6 102 L 56.2 52 L 57.8 102 L 71.1 101 L 72.7 34 L 74.3 101 L 81 101 L 82.4 58 L 83.8 101 L 88 102 L 89.3 66 L 90.6 102 L 93.2 103 L 94.4 76 L 95.6 103 L 110 104 L 182 106 L 182 114 L 18 114 Z" fill="url(#specLight)" opacity="0.6"/>
+          <path d="M 18 104 L 48 103 L 54.6 102 L 56.2 52 L 57.8 102 L 71.1 101 L 72.7 34 L 74.3 101 L 81 101 L 82.4 58 L 83.8 101 L 88 102 L 89.3 66 L 90.6 102 L 93.2 103 L 94.4 76 L 95.6 103 L 110 104 L 182 106" fill="none" stroke="#c8d6e8" stroke-width="1.3"/>
+          <!-- Loudest peak ▲ and the fundamental ✱ -->
+          <path d="M 72.7 22 l -4.5 8 h 9 z" fill="#ff7a29"/>
+          <g stroke="#c8d6e8" stroke-width="1.3" stroke-linecap="round">
+            <line x1="56.2" y1="39" x2="56.2" y2="47"/><line x1="52.7" y1="41" x2="59.7" y2="45"/><line x1="52.7" y1="45" x2="59.7" y2="41"/>
+          </g>
+          <text x="56.2" y="33" text-anchor="middle" font-family="'Orbitron', monospace" font-size="6" fill="#c8d6e8">98 Hz</text>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-waves" data-i18n="tagSound">Sound</div>
+        <div class="card-title" data-i18n="specTitle">Sound Spectrum Analyser</div>
+        <p class="card-desc" data-i18n="specDesc">Sing, whistle or strike a tuning fork at the microphone and see the frequencies: a spectrum coloured like light, the fundamental with its note, and a lowest-and-highest game.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
     <!-- ══════ CARD 9: Brownian motion ══════ -->
     <a href="brownian-motion.html" class="card">
       <div class="card-visual">
@@ -991,6 +1029,8 @@ const TRANSLATIONS = {
     gasDesc: "A cylinder with a piston and molecules: drag the piston or move the V, T and p sliders and watch pV/T stay constant.",
     soundTitle: "Sound Lab",
     soundDesc: "Hear and see how sound is made of oscillations: waveform and timbre, two sources with a phase shift, a tone built from harmonics. Play it on the keyboard.",
+    specTitle: "Sound Spectrum Analyser",
+    specDesc: "Sing, whistle or strike a tuning fork at the microphone and see the frequencies: a spectrum coloured like light, the fundamental with its note, and a lowest-and-highest game.",
     shmTitle: "Oscillations and Waves",
     shmDesc: "One motion seen three ways: points circling from the end, a transverse wave from the side, and the same rods turned into a longitudinal wave.",
     hockeyTitle: "Electric Field Hockey",
@@ -1037,6 +1077,8 @@ const TRANSLATIONS = {
     gasDesc: "Cilindrs ar virzuli un molekulām: velc virzuli vai bīdi V, T un p slīdņus un skaties, kā pV/T paliek nemainīgs.",
     soundTitle: "Skaņas laboratorija",
     soundDesc: "Klausies un skaties, kā no svārstībām veidojas skaņa: viļņa forma un tembrs, divi avoti ar fāzu nobīdi, tonis no harmonikām. Spēlē uz klaviatūras.",
+    specTitle: "Skaņas spektra analizators",
+    specDesc: "Dziedi, svilpo vai sit toņdakšu pie mikrofona un redzi frekvences: spektrs krāsots kā gaismas spektrs, pamattonis ar noti un spēle “Zemākā un augstākā”.",
     shmTitle: "Svārstības un viļņi",
     shmDesc: "Viena kustība no trim pusēm: punkti riņķo, skatoties no gala; šķērsvilnis no sāna; tās pašas svītras pagrieztas — garenvilnis.",
     hockeyTitle: "Elektriskā lauka hokejs",

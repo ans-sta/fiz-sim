@@ -659,6 +659,108 @@ html.is-fullscreen body.layout-hud header { display: none; }
   .layout-hud .g01-hint { display: none; }
 }
 
+/* ══ S-03 Skaņas spektra analizators: josla zem galvenes (M-01 klases), grafiks pa kreisi, rādījumu aile pa labi ══ */
+/* Gaišajā tēmā šajā lapā blāvā tinte un akcents tumšāki, lai mazs teksts ir ≥ 4,5 : 1 (WCAG AA):
+   --ink-dim #625f56 — 5,56 : 1 pret #f2efe9 (lapa), 6,01 : 1 pret #faf8f3 (lauks); kopīgais #7a776d būtu 3,90 / 4,22.
+   --accent #a8470d — 5,12 : 1 pret #f2efe9, 5,54 : 1 pret #faf8f3; kopīgais #c75612 būtu 3,84 / 4,15.
+   Tumšajā tēmā kopīgie der: #9a9891 — 6,22 / 6,69 : 1, #ff7a29 — 6,89 / 7,43 : 1. */
+:root[data-theme="light"] body.s03 { --ink-dim: #625f56; --accent: #a8470d; }
+.s03 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.s03-skip { position: absolute; left: 12px; top: -200px; z-index: 20; background: var(--sheet); color: var(--ink); border: 2px solid var(--accent); padding: 8px 12px; font-size: 13px; letter-spacing: 0.06em; text-decoration: none; }
+.s03-skip:focus { top: 12px; }
+.s03-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.layout-hud .s03-main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.layout-hud .s03-main:focus { outline: none; }
+.layout-hud .s03-bar .m01-end { justify-content: flex-end; }
+.layout-hud .s03-seg { gap: 0; }
+.layout-hud .s03-seg .btn + .btn { margin-left: -1px; }
+.layout-hud .m01-row .btn.s03-run { min-width: 9.5em; border-color: var(--ink); color: var(--ink); }
+.layout-hud .m01-row .btn.s03-run:hover:not(:disabled) { background: var(--ink); color: var(--sheet); }
+.layout-hud .m01-row .btn.s03-info { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(13px * var(--hud)); }
+.layout-hud .s03-sensval { min-width: 2ch; }
+.layout-hud .s03-bar .fix { margin-left: 6px; font-size: calc(8.5px * var(--hud)); }
+
+.layout-hud .s03-cursor { position: absolute; z-index: 1; margin: 0; padding: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; }
+.layout-hud .s03-cursor::-webkit-slider-runnable-track { background: transparent; border: 0; height: 100%; }
+.layout-hud .s03-cursor::-webkit-slider-thumb { -webkit-appearance: none; width: 1px; height: 1px; background: transparent; border: 0; }
+.layout-hud .s03-cursor::-moz-range-track { background: transparent; border: 0; }
+.layout-hud .s03-cursor::-moz-range-thumb { width: 1px; height: 1px; background: transparent; border: 0; }
+.layout-hud .s03-cursor:focus-visible { outline-offset: 0; }
+
+.layout-hud .s03-msg { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 3; width: min(calc(560px * var(--hud)), calc(100% - 32px)); max-height: calc(100% - 24px); overflow-y: auto; background: var(--sheet); border: 1px solid var(--ink); padding: calc(18px * var(--hud)) calc(20px * var(--hud)); display: grid; gap: calc(12px * var(--hud)); justify-items: start; }
+.layout-hud .s03-msg[hidden] { display: none; }
+.layout-hud .s03-msg-text { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(17px * var(--hud)); line-height: 1.45; }
+.layout-hud .s03-msg-detail { margin-top: calc(6px * var(--hud)); font-size: calc(11px * var(--hud)); color: var(--ink-dim); overflow-wrap: anywhere; }
+.layout-hud .s03-msg-btn { background: var(--sheet); font-size: calc(13px * var(--hud)); padding: calc(10px * var(--hud)) calc(18px * var(--hud)); letter-spacing: 0.1em; font-weight: 600; }
+
+.layout-hud .s03-side { flex: none; width: min(calc(300px * var(--hud)), 42%); container-type: inline-size; border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: calc(16px * var(--hud)); overflow-y: auto; padding: calc(12px * var(--hud)) calc(16px * var(--hud)); background: var(--sheet); }
+.s03-has-title .s03-side { padding-bottom: 64px; } /* mazais rakstlaukums labajā apakšas stūrī */
+.layout-hud .s03-read { display: flex; flex-direction: column; gap: calc(4px * var(--hud)); }
+.layout-hud .s03-k { font-size: calc(11px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); font-weight: 500; }
+.layout-hud .s03-big { display: flex; align-items: baseline; gap: 0.12em; font-size: min(calc(72px * var(--hud)), 19cqi); font-weight: 500; line-height: 1.05; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.layout-hud .s03-unit { font-size: 0.34em; color: var(--ink-dim); font-weight: 400; }
+.layout-hud .s03-note { font-size: calc(16px * var(--hud)); min-height: 1.4em; }
+.layout-hud .s03-cents { color: var(--ink-dim); font-size: 0.85em; white-space: nowrap; }
+.layout-hud .s03-color { display: flex; align-items: center; gap: 0.6em; font-size: calc(14px * var(--hud)); letter-spacing: 0.12em; font-weight: 600; min-height: 1.6em; }
+.layout-hud .s03-swatch { display: inline-block; flex: none; width: 0.9em; height: 0.9em; border: 1px solid var(--ink); align-self: center; }
+.layout-hud .s03-color .s03-swatch { width: 1.4em; height: 1.4em; }
+.layout-hud .s03-swatch.off { visibility: hidden; }
+.layout-hud .s03-foot { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11.5px * var(--hud)); line-height: 1.4; color: var(--ink-dim); }
+.layout-hud .s03-recs { border-top: 1px solid var(--ink); padding-top: calc(10px * var(--hud)); display: grid; gap: calc(8px * var(--hud)); }
+.layout-hud .s03-reclist { display: grid; gap: calc(8px * var(--hud)); }
+.layout-hud .s03-rec { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 0 0.6em; }
+.layout-hud .s03-rec dt { font-size: calc(11px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); }
+.layout-hud .s03-rec dd { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: 0 0.5em; }
+.layout-hud .s03-recv { font-size: calc(24px * var(--hud)); font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.layout-hud .s03-rec dd .s03-swatch { font-size: calc(20px * var(--hud)); }
+.layout-hud .s03-recn { flex-basis: 100%; text-align: right; font-size: calc(12px * var(--hud)); color: var(--ink-dim); min-height: 1.3em; }
+.layout-hud .s03-rec.new .s03-recv { color: var(--accent); }
+.layout-hud .s03-span { font-size: calc(12px * var(--hud)); color: var(--ink-dim); min-height: 1.4em; }
+.layout-hud .s03-reset { justify-self: start; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(7px * var(--hud)) calc(12px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
+
+.s03-overlay .s03-info-body { gap: 18px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(15px * var(--ui, 1)); line-height: 1.55; }
+.s03-overlay .s03-info-body > * { max-width: 72ch; }
+.s03-overlay .s03-info-body h3 { font-family: 'IBM Plex Mono', monospace; font-size: calc(12px * var(--ui, 1)); letter-spacing: 0.12em; font-weight: 600; margin-bottom: 4px; }
+.s03-overlay .s03-proc { display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; }
+.s03-overlay .s03-proc dt { color: var(--ink-dim); }
+.s03-overlay .s03-micpick { margin-top: 10px; display: grid; gap: 4px; max-width: 420px; }
+.s03-overlay .s03-micpick select { font-size: calc(13px * var(--ui, 1)); padding: 6px; }
+.s03-overlay .s03-privacy { color: var(--ink-dim); }
+
+/* Telefons (portretā): aile — šaura josla virs grafika (pamattonis, nots, krāsa vienā rindā; rekordi otrā) */
+@media (max-width: 700px) and (orientation: portrait) {
+  .layout-hud .s03-work { flex-direction: column; }
+  .layout-hud .s03-side { order: -1; width: auto; flex: none; overflow: visible; border-left: none; border-bottom: 1px solid var(--hairline); padding: 6px 10px 8px; gap: 6px; }
+  .s03-has-title .s03-side { padding-bottom: 8px; }
+  .layout-hud .s03-read { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 0; align-items: center; }
+  .layout-hud .s03-k { grid-column: 1 / -1; font-size: calc(9.5px * var(--hud)); }
+  .layout-hud .s03-big { grid-row: span 2; font-size: calc(34px * min(var(--hud), 1.3)); }
+  .layout-hud .s03-note { font-size: calc(13px * min(var(--hud), 1.3)); min-height: 0; }
+  .layout-hud .s03-color { font-size: calc(11px * min(var(--hud), 1.3)); min-height: 0; }
+  .layout-hud .s03-foot { grid-column: 1 / -1; font-size: calc(10.5px * min(var(--hud), 1.3)); margin-top: 2px; }
+  .layout-hud .s03-recs { padding-top: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; border-top-color: var(--hairline); }
+  .layout-hud .s03-reclist { display: flex; flex-wrap: wrap; gap: 2px 14px; }
+  .layout-hud .s03-rec { display: flex; align-items: baseline; gap: 0.4em; }
+  .layout-hud .s03-rec dt { font-size: calc(9.5px * var(--hud)); }
+  .layout-hud .s03-recv { font-size: calc(15px * min(var(--hud), 1.3)); }
+  .layout-hud .s03-rec dd .s03-swatch { font-size: calc(13px * min(var(--hud), 1.3)); }
+  .layout-hud .s03-recn { display: none; }
+  .layout-hud .s03-span { min-height: 0; font-size: calc(10.5px * min(var(--hud), 1.3)); }
+  .layout-hud .s03-span:empty { display: none; }
+  .layout-hud .s03-reset { margin-left: auto; padding: 5px 8px; }
+  .layout-hud .s03-msg-text { font-size: calc(15px * min(var(--hud), 1.3)); }
+}
+/* Telefons ainavā: aile šaurāka */
+@media (max-height: 480px) and (orientation: landscape) {
+  .layout-hud .s03-side { width: min(calc(220px * var(--hud)), 40%); gap: 8px; padding: 6px 10px; }
+  .layout-hud .s03-foot { display: none; }
+  .layout-hud .s03-recv { font-size: calc(16px * var(--hud)); }
+}
+.s03 .head-tools button { min-width: 24px; min-height: 24px; } /* WCAG 2.5.8: mērķi ≥ 24 × 24 px (tikai šajā lapā) */
+.s03-hshort { display: none; }
+@media (max-width: 520px) { .s03-hfull { display: none; } .s03-hshort { display: inline; } } /* “ANALIZATORS” šaurā galvenē neietilpst */
+@media (max-width: 700px) and (orientation: portrait) { .layout-hud.s03 { --hud: min(var(--ui, 1), 1.3); } } /* telefonā josla un aile neaug tā, ka grafikam nepaliek vietas */
+
 /* ══ E-01 Ģenerators un motors: josla zem galvenes (M-01 klases), zīmējums izometrijā, ģeneratorā zem tā grafiks ══ */
 /* Gaišajā tēmā blāvā tinte un akcents tumšāki (kā S-03), lai mazs teksts ir ≥ 4,5 : 1 (WCAG AA):
    --ink-dim #625f56 — 5,56 : 1 pret #f2efe9 (lapa), 6,01 : 1 pret #faf8f3 (lauks); --accent #a8470d — 5,12 / 5,54 : 1.
