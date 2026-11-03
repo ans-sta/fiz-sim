@@ -4,6 +4,10 @@ import { ATOMS } from './atoms.js';
 import { absorb, cascadeStep, createWhiteLight, isGround, isMetastable, levelOf, linesDown, timing, DEFAULT_INTENSITY, VIS } from './model.js';
 
 export const MAX_PHOTONS = 40;
+// Absorbcijas fotoni lido vienā ātrumā (zīmējums to rēķina no flight — lidojuma laika līdz atomam, Ansis 04.11.):
+// garām lidojošais paliek PASS_K × flight (pietiek, lai aizlidotu aiz ekrāna malas), iegrimstošā aste — SINK_K × flight
+const PASS_K = 3;
+const SINK_K = 0.6;
 const EPS = 1e-9;
 
 // Svītras un līnijas krājas pa λ grupām (redzamajā 0,5 nm, citur 0,1 % no λ) — ilgi spīdot, atmiņa neaug
@@ -53,7 +57,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
   function shoot(λ) {
     if (state.mode !== 'absorb') return;
     state.counts.shot += 1;
-    addPhoton({ λ, kind: 'in', dur: tm().flight });
+    addPhoton({ λ, kind: 'in', dur: tm().inFlight, flight: tm().inFlight });
   }
   function arrive(p, ev) {
     const idle = !busy && !state.ionised && state.level === state.start;
@@ -61,8 +65,9 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     const r = idle ? would : { kind: 'pass' };
     if (r.kind === 'pass') {
       ev.push({ type: 'passed', λ: p.λ, busy: !idle && would.kind !== 'pass' }); // busy — izlaida tikai tāpēc, ka elektrons vēl augšā
-      return { ...p, kind: 'pass', t: state.t, dur: tm().pass };
+      return [{ ...p, kind: 'pass', t: state.t, dur: p.flight * PASS_K }]; // tas pats ātrums tālāk
     }
+    const sink = { ...p, kind: 'sink', t: state.t, dur: p.flight * SINK_K }; // aste ieiet atomā
     state.counts.absorbed += 1;
     const λs = r.kind === 'line' ? r.λ : p.λ;
     state.stripes.set(binKey(λs), λs);
@@ -71,14 +76,14 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       state.arrow = { from: state.start, to: r.to, λ: r.λ, up: true };
       busy = { until: state.t + tm().hold, kind: 'line', λ: r.λ, from: r.to };
       ev.push({ type: 'absorbed', from: state.start, to: r.to, λ: r.λ });
-      return null;
+      return [sink];
     }
     state.ionised = true;
     state.level = null;
     state.arrow = null;
     busy = { until: state.t + tm().hold, kind: 'ionise', λ: p.λ };
     ev.push({ type: 'ionised', λ: p.λ });
-    return { ...p, kind: 'free', t: state.t, dur: tm().hold };
+    return [sink, { ...p, id: nextId++, kind: 'free', t: state.t, dur: tm().hold }];
   }
   function comeBack(ev) {
     const b = busy;
@@ -87,7 +92,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     state.level = state.start;
     if (b.kind === 'line') {
       state.arrow = { from: b.from, to: state.start, λ: b.λ, up: false };
-      addPhoton({ λ: b.λ, kind: 'reemit', dur: tm().pass, dirY: rng() < 0.5 ? -1 : 1 });
+      addPhoton({ λ: b.λ, kind: 'reemit', dur: tm().inFlight * 1.5, flight: tm().inFlight, dirY: rng() < 0.5 ? -1 : 1 });
     }
     ev.push({ type: 'returned', kind: b.kind, level: state.start });
   }
@@ -170,10 +175,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     const keep = [];
     for (const p of state.photons) {
       if (state.t < p.t + p.dur - EPS) { keep.push(p); continue; }
-      if (p.kind === 'in') {
-        const next = arrive(p, ev);
-        if (next) keep.push(next);
-      } else if (p.kind === 'emit') {
+      if (p.kind === 'in') keep.push(...arrive(p, ev)); else if (p.kind === 'emit') {
         state.lines.set(binKey(p.λ), p.λ);
       }
     }

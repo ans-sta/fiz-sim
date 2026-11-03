@@ -102,9 +102,10 @@ export function snap(ax, λ, targets, maxDp) {
 }
 
 // Animāciju ilgumi: līdz 5 f/s — pilni, ātrāk — proporcionāli īsāki; samazinātai kustībai — uz pusi
+// inFlight — absorbcijas fotons no staba līdz atomam (Ansis 04.11.: “mazliet lēnāku”); flight — starošanā no atoma līdz stabam
 export function timing(rate, reducedMotion = false) {
   const k = Math.min(1, 5 / rate) * (reducedMotion ? 0.5 : 1);
-  return { flight: 1.2 * k, hold: 1 * k, pass: 0.8 * k };
+  return { flight: 1.2 * k, inFlight: 1.5 * k, hold: 1 * k, pass: 0.8 * k };
 }
 
 // Baltā gaisma: nejauša λ redzamajā joslā; katrs 4. vai 5. fotons mērķēts (Ansis 03.11.: “mazliet negodīga”)

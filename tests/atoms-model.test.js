@@ -124,7 +124,8 @@ test('intensity steps and timing', () => {
   assert.deepEqual(INTENSITIES, [1, 2, 5, 10, 20]);
   assert.equal(DEFAULT_INTENSITY, 5);
   near(timing(20).flight, 0.25 * timing(5).flight, 1e-12, 'flight at 20 f/s');
-  assert.deepEqual(timing(5), { flight: 1.2, hold: 1, pass: 0.8 });
+  assert.deepEqual(timing(5), { flight: 1.2, inFlight: 1.5, hold: 1, pass: 0.8 }); // absorbcijas fotons lēnāks (Ansis 04.11.)
+  near(timing(20).inFlight, 0.25 * timing(5).inFlight, 1e-12, 'absorption flight at 20 f/s');
   assert.deepEqual(timing(1), timing(5));
   near(timing(5, true).flight, 0.6, 1e-12, 'reduced motion');
 });

@@ -16,7 +16,7 @@ test('absorption: a matching photon is absorbed, leaves a stripe, and the electr
   const sim = sim0();
   assert.equal(sim.state.level, '2');
   sim.shoot(486.2);
-  const ev = run(sim, 1.3);
+  const ev = run(sim, 1.6);
   const a = ev.filter((e) => e.type === 'absorbed');
   assert.equal(a.length, 1);
   assert.deepEqual([a[0].from, a[0].to], ['2', '4']);
@@ -33,10 +33,10 @@ test('absorption: a matching photon is absorbed, leaves a stripe, and the electr
 test('a photon that matches no step passes and leaves no stripe', () => {
   const sim = sim0();
   sim.shoot(500);
-  const ev = run(sim, 1.3);
+  const ev = run(sim, 1.6);
   assert.ok(ev.some((e) => e.type === 'passed'));
   assert.equal(sim.state.stripes.size, 0);
-  run(sim, 1);
+  run(sim, 5);
   assert.equal(sim.state.photons.length, 0);
 });
 
@@ -45,7 +45,7 @@ test('while the electron is up, the next photon passes', () => {
   sim.shoot(486.2);
   run(sim, 0.1);
   sim.shoot(486.2);
-  const ev = run(sim, 1.4);
+  const ev = run(sim, 1.6);
   assert.equal(ev.filter((e) => e.type === 'absorbed').length, 1);
   assert.equal(ev.filter((e) => e.type === 'passed').length, 1);
 });
@@ -53,7 +53,7 @@ test('while the electron is up, the next photon passes', () => {
 test('a photon above the binding energy ionises and leaves a stripe; the electron is caught again', () => {
   const sim = sim0();
   sim.shoot(300);
-  const ev = run(sim, 1.3);
+  const ev = run(sim, 1.6);
   assert.ok(ev.some((e) => e.type === 'ionised'));
   assert.equal(sim.state.ionised, true);
   assert.equal(sim.state.stripes.size, 1);
@@ -67,7 +67,7 @@ test('a chosen start level is where absorption starts from', () => {
   sim.setLevel('1');
   assert.equal(sim.state.start, '1');
   sim.shoot(121.6);
-  run(sim, 1.3);
+  run(sim, 1.6);
   assert.equal(sim.state.level, '2');
 });
 
@@ -139,7 +139,7 @@ test('Review Focus 2: changing the atom mid-flight cancels everything — no sta
 test('changing the mode keeps both columns but stops white light and flights', () => {
   const sim = sim0();
   sim.shoot(486.2);
-  run(sim, 1.3);
+  run(sim, 1.6);
   sim.setWhite(true);
   sim.setMode('emit');
   assert.equal(sim.state.white, false);
@@ -162,7 +162,7 @@ test('Review Focus 4: ten minutes of white light at 20 photons per second stay b
 test('clear() empties the stripes, lines and counters', () => {
   const sim = sim0();
   sim.shoot(486.2);
-  run(sim, 1.3);
+  run(sim, 1.6);
   sim.clear();
   assert.equal(sim.state.stripes.size, 0);
   assert.equal(sim.state.lines.size, 0);
@@ -171,7 +171,7 @@ test('clear() empties the stripes, lines and counters', () => {
 
 test('a stripe is kept once per line, however far inside the tolerance the photon was', () => {
   const sim = sim0();
-  for (const λ of [486.2, 487.6, 485.0]) { sim.shoot(λ); run(sim, 2.3); }
+  for (const λ of [486.2, 487.6, 485.0]) { sim.shoot(λ); run(sim, 2.7); }
   assert.equal(sim.state.stripes.size, 1);
 });
 
@@ -190,14 +190,14 @@ test('a passing photon says whether only the busy electron let it through', () =
   run(sim, 0.1);
   sim.shoot(486.2); // would match, but the electron is up
   sim.shoot(500); // would never match
-  const ev = run(sim, 1.4).filter((e) => e.type === 'passed');
+  const ev = run(sim, 1.6).filter((e) => e.type === 'passed');
   assert.deepEqual(ev.map((e) => [Math.round(e.λ), e.busy]), [[486, true], [500, false]]);
 });
 
 test('the return after ionisation is marked as such (no photon)', () => {
   const sim = sim0();
   sim.shoot(300);
-  const ev = run(sim, 2.4);
+  const ev = run(sim, 2.7);
   const r = ev.find((e) => e.type === 'returned');
   assert.equal(r.kind, 'ionise');
   assert.equal(sim.state.photons.filter((p) => p.kind === 'reemit').length, 0);
@@ -206,7 +206,7 @@ test('the return after ionisation is marked as such (no photon)', () => {
 test('choosing a start level while the atom is busy takes effect at once', () => {
   const sim = sim0();
   sim.shoot(486.2);
-  run(sim, 1.3);
+  run(sim, 1.6);
   assert.equal(sim.state.level, '4');
   const e = sim.setLevel('1');
   assert.deepEqual(e, { type: 'start', level: '1' });
@@ -223,4 +223,23 @@ test('the intensity setting only speeds up white light — emission keeps its ow
   sim.cascade();
   const ev = run(sim, 0.9);
   assert.equal(ev.filter((e) => e.type === 'emitted').length, 0, 'no fall before 1 s');
+});
+
+test('absorption photons keep one speed: a passing photon flies on at the speed it came in (Ansis 04.11.)', () => {
+  const sim = sim0();
+  sim.shoot(500);
+  run(sim, 1.6);
+  const p = sim.state.photons.find((x) => x.kind === 'pass');
+  assert.ok(p, 'pass photon');
+  assert.equal(p.flight, 1.5, 'carries its flight time — the drawing derives the speed from it');
+  assert.ok(p.dur >= 3 * p.flight, 'stays long enough to leave the screen at that speed');
+});
+
+test('an absorbed photon does not vanish at once — its tail sinks into the atom', () => {
+  const sim = sim0();
+  sim.shoot(486.2);
+  run(sim, 1.6);
+  const p = sim.state.photons.find((x) => x.kind === 'sink');
+  assert.ok(p, 'sink photon');
+  assert.equal(p.flight, 1.5);
 });

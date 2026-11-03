@@ -235,7 +235,7 @@ function placeOverlays(lay, legend) {
     const lvl = levelOf(atom(), g.id);
     const x = Math.round(g.x0 - 4);
     const w = Math.round((g.single ? g.labelX + 150 : g.narrow ? g.x1 + 4 : g.x1 + Math.min(46, 0.5 * g.colW - 6)) - x); // nepārklājas ar kaimiņu kolonnu
-    const top = Math.round(g.narrow ? Math.max(g.labelY - 16, g.y - 20) : g.labelY - 12);
+    const top = Math.round(g.narrow ? g.labelY - 16 : g.labelY - 12); // poga seko uzrakstam (uzraksti ≥ 24 px viens no otra)
     const s = b.style;
     const L = `${x}px`; const T = `${top}px`; const W = `${Math.max(24, w)}px`;
     if (s.left !== L) s.left = L;
@@ -368,7 +368,7 @@ function render() {
     labels: {
       ir: t('lbl.ir'), core: t('lbl.core'), notToScale: t('lbl.notToScale'), energyAxis: t('lbl.energyAxis'),
       ionisation: t('lbl.ionisation'), para: t('lbl.para'), ortho: t('lbl.ortho'),
-      atomName: `${t(`title.${s.atomId}`)} ${s.atomId}`, aim: fmtLam(ui.aim),
+      atomName: `${t(`title.${s.atomId}`)} ${s.atomId}`, aim: fmtLam(ui.aim), // bez “nm” — tas ir staba galvā
     },
   });
   placeOverlays(lay, legend);

@@ -21,13 +21,9 @@
 .a01-lam[hidden] { display: none; }
 .a01-lam::-webkit-slider-runnable-track { background: transparent; height: 100%; }
 .a01-lam::-moz-range-track { background: transparent; height: 100%; }
-.a01-lam::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none; width: 10px; height: 100%;
-  background: transparent; border: 2px solid #fff; box-shadow: 0 0 0 2px #000, inset 0 0 0 2px #000; border-radius: 2px;
-}
-.a01-lam::-moz-range-thumb {
-  width: 6px; height: 100%; background: transparent; border: 2px solid #fff; box-shadow: 0 0 0 2px #000, inset 0 0 0 2px #000; border-radius: 2px;
-}
+/* rokturis neredzams (vietu rāda kanva: skaitlis melnā lodziņā skalas pusē un rādītājs atoma pusē) — stabs paliek brīvs, svītras redzamas (Ansis 04.11.) */
+.a01-lam::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 100%; background: transparent; border: 0; }
+.a01-lam::-moz-range-thumb { width: 12px; height: 100%; background: transparent; border: 0; }
 .a01-lam:focus { outline: none; }
 .a01-lam:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 

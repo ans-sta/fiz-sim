@@ -14,7 +14,7 @@ export function sceneLayout(w, h, { slide = 0, drawScale = 1, topPad = 0 } = {})
   const s = Math.min(1, Math.max(0, slide));
   if (portrait) {
     const cw = Math.max(28, Math.min(44, Math.round(w * 0.1)));
-    const LX = 36; // vieta nm skalai pa kreisi
+    const LX = 44; // vieta nm skalai un slīdņa skaitlim pa kreisi
     const top = Math.max(M + 10, topPad + 6);
     const colH = Math.max(0, h - top - 58); // apakšā vieta ⚙
     const absCol = { x: LX - s * (cw + LX + 40), y: top, w: cw, h: colH };
@@ -63,9 +63,12 @@ export function levelYs(atom, rect) {
 }
 
 // Uzraksti pēc kārtas ne tuvāk par minGap; apakšējais paliek savā vietā (bīda uz augšu)
-// items — augšā pirmie (y augošā secībā); top — augstāk par to uzrakstu nebīda
+// items — augšā pirmie (y augošā secībā); top — augstāk par to uzrakstu nebīda.
+// Vispirms bīda uz augšu (apakšējais cieši sakārtotā grupā paliek pie savas līnijas, pārējie virs tā), tikai tad,
+// ja neietilpst līdz top, — uz leju (Ansis 04.11. pamanīja: “n = 4” stāvēja pie n = 3 līnijas)
 export function spreadLabels(items, minGap, top = -Infinity) {
   const out = items.map((it) => ({ ...it, labelY: it.y }));
+  for (let i = out.length - 2; i >= 0; i--) out[i].labelY = Math.min(out[i].labelY, out[i + 1].labelY - minGap);
   for (let i = 0; i < out.length; i++) {
     const lo = i ? out[i - 1].labelY + minGap : top;
     if (out[i].labelY < lo) out[i].labelY = lo;
@@ -92,7 +95,7 @@ export function levelGeometry(atom, rect, legend = 1) {
     const x1 = single ? x0 + Math.max(40, Math.min(colW * 0.43, colW - 150 * legend)) : colX(i) + colW * 0.62;
     const items = lv.map((l) => ({ id: l.id, y: ys.get(l.id) }));
     const narrow = !single && colW < 70; // šaurā shēmā uzraksts virs līnijas, nevis blakus
-    const spread = spreadLabels(items, gap, rect.y + 26 * legend);
+    const spread = spreadLabels(items, gap, rect.y + 4);
     for (const it of spread) out.push({ id: it.id, col: c.id, x0, x1, y: it.y, labelX: single ? x1 + 10 : x0, labelY: it.labelY, single, narrow, colW, compact });
   });
   for (const l of atom.levels.filter((x) => x.kind === 'limit')) {
@@ -217,22 +220,44 @@ function drawSourceColumn(ctx, r, v, ctxs) {
     ctx.stroke();
     ctx.setLineDash([]);
   }
-  // slīdņa vieta: šaura līnija pāri stabam un λ iekšpusē
+  // UV un IS uzraksti blakus stabam atoma pusē (Ansis 04.11.: “nav UZ spektra, bet blakus … atoma pusē”)
+  ctx.fillStyle = c.ink;
+  ctx.font = font(11, 600);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('UV', r.x + r.w + 22, columnY(r, 0.925));
+  ctx.fillText(v.labels.ir, r.x + r.w + 22, columnY(r, 0.075));
+  drawColumnFrame(ctx, r, v, ctxs, true);
+  // slīdņa vieta: skaitlis melnā lodziņā skalas pusē (aizsedz skalas ciparus), stabs paliek brīvs — svītras redzamas
   if (v.aim) {
     const y = columnY(r, lambdaToPos(v.axis, v.aim));
-    ctx.fillStyle = c.ink;
     ctx.font = font(11, 600);
-    ctx.textAlign = 'left';
+    const tw = ctx.measureText(v.labels.aim).width;
+    const bw = tw + 8;
+    const bh = 16 * v.legend;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(r.x - bw - 1, y - bh / 2, bw, bh);
+    ctx.beginPath();
+    ctx.moveTo(r.x - 1, y - 4);
+    ctx.lineTo(r.x + 3, y);
+    ctx.lineTo(r.x - 1, y + 4);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`${v.labels.aim} nm`, r.x + r.w + 22, y);
+    ctx.fillText(v.labels.aim, r.x - 5, y + 0.5);
+    // otrā pusē mazs rādītājs pret stabu
+    ctx.fillStyle = '#000';
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(r.x + r.w + 1, y);
+    ctx.lineTo(r.x + r.w + 8, y - 5);
+    ctx.lineTo(r.x + r.w + 8, y + 5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
   }
-  ctx.fillStyle = '#000';
-  ctx.font = font(11, 600);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('UV', r.x + r.w / 2, columnY(r, 0.925));
-  ctx.fillText(v.labels.ir, r.x + r.w / 2, columnY(r, 0.075));
-  drawColumnFrame(ctx, r, v, ctxs, true);
 }
 
 function drawEmissionColumn(ctx, r, v, ctxs) {
@@ -263,12 +288,12 @@ function drawEmissionColumn(ctx, r, v, ctxs) {
     ctx.stroke();
   }
   ctx.setLineDash([]);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = c.ink;
   ctx.font = font(11, 600);
-  ctx.textAlign = 'center';
+  ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
-  ctx.fillText('UV', r.x + r.w / 2, columnY(r, 0.925));
-  ctx.fillText(v.labels.ir, r.x + r.w / 2, columnY(r, 0.075));
+  ctx.fillText('UV', r.x - 8, columnY(r, 0.925));
+  ctx.fillText(v.labels.ir, r.x - 8, columnY(r, 0.075));
   // aiz skalas (> 10 µm)
   if (off.length) {
     ctx.fillStyle = c.ink;
@@ -521,9 +546,9 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
 }
 
 // Viļņa pakete: vijuma garums ekrānā aug ar λ (sarkanam garāki nekā violetam)
-function packet(ctx, x, y, ang, λ, color, alpha) {
+function packet(ctx, x, y, ang, λ, color, alpha, cycles = 3) {
   const lw = invisible(λ) ? (λ < VIS.min ? 5 : 20) : 6 + (10 * (λ - VIS.min)) / (VIS.max - VIS.min);
-  const len = lw * 3;
+  const len = lw * cycles;
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(ang);
@@ -542,28 +567,40 @@ function packet(ctx, x, y, ang, λ, color, alpha) {
   ctx.restore();
 }
 
+const LONG = 9; // absorbcijas fotona vijumi (3× garāks nekā starošanā; Ansis 04.11.)
 function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
   const now = v.st.t;
   for (const p of v.st.photons) {
     const k = Math.min(1, Math.max(0, (now - p.t) / p.dur));
     const color = rgbCss(photonRGB(p.λ, field, dark));
-    if (p.kind === 'in') {
+    if (p.kind === 'in' || p.kind === 'pass' || p.kind === 'sink' || p.kind === 'reemit') {
       const r = lay.absCol;
-      const x0 = r.x + r.w + 4;
-      const y0 = columnY(r, lambdaToPos(v.axis, p.λ));
-      const x = x0 + (C.x - x0) * k;
-      const y = y0 + (C.y - y0) * k;
-      packet(ctx, x, y, Math.atan2(C.y - y0, C.x - x0), p.λ, color, 1);
-    } else if (p.kind === 'pass') {
-      const r = lay.absCol;
-      const y0 = columnY(r, lambdaToPos(v.axis, p.λ));
-      const ang = Math.atan2(C.y - y0, C.x - (r.x + r.w + 4));
-      const dist = (W - C.x) / Math.max(0.3, Math.cos(ang));
-      packet(ctx, C.x + Math.cos(ang) * dist * k, C.y + Math.sin(ang) * dist * k, ang, p.λ, color, 1 - 0.6 * k);
-    } else if (p.kind === 'reemit') {
-      const ang = p.dirY < 0 ? -Math.PI / 2 - 0.35 : Math.PI / 2 + 0.35;
-      const dist = rMax * 1.6;
-      packet(ctx, C.x + Math.cos(ang) * dist * k, C.y + Math.sin(ang) * dist * k, ang, p.λ, color, 1 - 0.7 * k);
+      const S = { x: r.x + r.w + 4, y: columnY(r, lambdaToPos(v.axis, p.λ)) };
+      const D = Math.hypot(C.x - S.x, C.y - S.y) || 1;
+      const ux = (C.x - S.x) / D;
+      const uy = (C.y - S.y) / D;
+      const s = (D / (p.flight || 1)) * Math.max(0, now - p.t); // px — tas pats ātrums visā ceļā
+      const ang = Math.atan2(uy, ux);
+      if (p.kind === 'in') {
+        packet(ctx, S.x + ux * Math.min(D, s), S.y + uy * Math.min(D, s), ang, p.λ, color, 1, LONG);
+      } else if (p.kind === 'pass') {
+        packet(ctx, C.x + ux * s, C.y + uy * s, ang, p.λ, color, 1, LONG);
+      } else if (p.kind === 'sink') {
+        // aste turpina kustību, bet viss aiz atoma centra paslēpts — fotons “ieiet” atomā
+        ctx.save();
+        ctx.translate(C.x, C.y);
+        ctx.rotate(ang);
+        ctx.beginPath();
+        ctx.rect(-4000, -4000, 4000, 8000);
+        ctx.rotate(-ang);
+        ctx.translate(-C.x, -C.y);
+        ctx.clip();
+        packet(ctx, C.x + ux * s, C.y + uy * s, ang, p.λ, color, 1, LONG);
+        ctx.restore();
+      } else {
+        const a2 = p.dirY < 0 ? -Math.PI / 2 - 0.35 : Math.PI / 2 + 0.35;
+        packet(ctx, C.x + Math.cos(a2) * s, C.y + Math.sin(a2) * s, a2, p.λ, color, 1, LONG);
+      }
     } else if (p.kind === 'emit') {
       const r = lay.emCol;
       const x1 = r.x - 4;
