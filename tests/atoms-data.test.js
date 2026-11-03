@@ -91,3 +91,21 @@ test('branching ratios follow NIST A', () => {
   near(hg['6³P₁'], 44, 3, '436 share');
   near(hg['6³P₂'], 39, 3, '546 share');
 });
+
+test('nuclei: protons and neutrons to draw (Ansis 04.11.: “nav obligāti pilns komplekts, bet vienkārši daudz”)', () => {
+  assert.deepEqual(ATOMS.H.nucleus, { p: 1, n: 0 });
+  assert.deepEqual(ATOMS.He.nucleus, { p: 2, n: 2 });
+  assert.deepEqual(ATOMS.Na.nucleus, { p: 11, n: 12 });
+  assert.ok(ATOMS.Hg.nucleus.p + ATOMS.Hg.nucleus.n >= 30, 'mercury: many');
+  assert.ok(Math.abs(ATOMS.Hg.nucleus.n / ATOMS.Hg.nucleus.p - 120 / 80) < 0.1, 'mercury keeps the 80 : 120 mix');
+});
+
+test('ladders: one for hydrogen, sodium and mercury; para | ortho for helium', () => {
+  for (const id of ['H', 'Na', 'Hg']) assert.equal(ATOMS[id].columns.length, 1, id);
+  assert.deepEqual(ATOMS.He.columns.map((c) => c.id), ['para', 'ortho']);
+  for (const l of ATOMS.He.levels) {
+    assert.equal(l.col, l.id[1] === '¹' ? 'para' : 'ortho', l.id);
+    assert.equal(l.n, Number(l.id[0]));
+    assert.equal(l.sub, l.id[2]);
+  }
+});

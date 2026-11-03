@@ -63,7 +63,7 @@ export const STRINGS = {
     'series.5': 'Pfunda',
 
     'lbl.ir': 'IS',
-    'lbl.core': 'kodols + 78 e⁻',
+    'lbl.core': '78 iekšējie e⁻',
     'lbl.notToScale': 'nav mērogā',
     'lbl.energyAxis': 'E, eV',
     'lbl.ionisation': '0 eV — jonizācija',
@@ -108,7 +108,7 @@ export const STRINGS = {
     'info.ionH': 'Jonizācija',
     'info.ion': 'Ja fotona enerģija ir lielāka par elektrona saites enerģiju, fotons vienmēr tiek absorbēts un elektrons atbrīvojas (tas pats, kas fotoefektā). Robeža uz staba ir raustītā svītra; ūdeņradim no n = 2 tā ir 364,7 nm.',
     'info.simpH': 'Vienkāršojumi',
-    'info.simp': 'Bora modelis ir vēsturisks; zīmējums nav mērogā. Rādīti tikai zemākie līmeņi — augstāk tie sabiezē līdz 0 eV, un līniju ir vēl. Nātrija, dzīvsudraba un hēlija līmeņi ir no mērījumiem (NIST); cieši līmeņi apvienoti (nātrija D līnijas, dzīvsudraba 577 un 579 nm, hēlija tripleti); nātrija 4f un dzīvsudraba 7p līmeņu nav. Dzīvsudrabam kāpnes ¹ un ³ sajaucas, tāpēc starp tām ir līnijas; hēlijam to praktiski nav. Līnijas ir bezgalīgi šauras un vienādi spožas. λ ir vakuumā — tabulās gaisā tas ir par ~0,03 % īsāks. Absorbcijā elektrons atgriežas sākuma līmenī (dabā tas var krist arī citādi — fluorescence); kamēr tas ir augšā, citi fotoni iziet cauri (dabā — stimulētā izstarošana vai jonizācija). * — metastabils līmenis.',
+    'info.simp': 'Bora modelis ir vēsturisks; zīmējums nav mērogā. Rādīti tikai zemākie līmeņi — augstāk tie sabiezē līdz 0 eV, un līniju ir vēl. Nātrija, dzīvsudraba un hēlija līmeņi ir no mērījumiem (NIST); cieši līmeņi apvienoti (nātrija D līnijas, dzīvsudraba 577 un 579 nm, hēlija tripleti); nātrija 4f un dzīvsudraba 7p līmeņu nav. Dzīvsudrabam kāpnes ¹ un ³ sajaucas, tāpēc starp tām ir līnijas; hēlijam to praktiski nav. Līnijas ir bezgalīgi šauras un vienādi spožas. Ūdeņradim, dzīvsudrabam un hēlijam ass pārtraukta virs pamatstāvokļa, tāpēc garās bultas uz pamatstāvokli nav mērogā. λ ir vakuumā — tabulās gaisā tas ir par ~0,03 % īsāks. Absorbcijā elektrons atgriežas sākuma līmenī (dabā tas var krist arī citādi — fluorescence); kamēr tas ir augšā, citi fotoni iziet cauri (dabā — stimulētā izstarošana vai jonizācija). * — metastabils līmenis.',
 
     'gear.open': 'Iestatījumi: tēma, valoda, burtu un zīmējuma izmērs',
     'gear.theme': 'TĒMA',
@@ -187,7 +187,7 @@ export const STRINGS = {
     'series.5': 'Pfund',
 
     'lbl.ir': 'IR',
-    'lbl.core': 'nucleus + 78 e⁻',
+    'lbl.core': '78 inner e⁻',
     'lbl.notToScale': 'not to scale',
     'lbl.energyAxis': 'E, eV',
     'lbl.ionisation': '0 eV — ionisation',
@@ -232,7 +232,7 @@ export const STRINGS = {
     'info.ionH': 'Ionisation',
     'info.ion': 'If the photon energy is greater than the electron’s binding energy, the photon is always absorbed and the electron is freed (the same as in the photoelectric effect). The limit is the dashed line on the column; for hydrogen from n = 2 it is 364.7 nm.',
     'info.simpH': 'Simplifications',
-    'info.simp': 'The Bohr model is historical; the drawing is not to scale. Only the lowest levels are shown — higher up they crowd towards 0 eV, and there are more lines. Sodium, mercury and helium levels are measured (NIST); close levels are merged (sodium D lines, mercury 577 and 579 nm, helium triplets); sodium 4f and mercury 7p are left out. In mercury the ¹ and ³ ladders mix, so there are lines between them; in helium there practically are none. Lines are infinitely narrow and equally bright. λ is in vacuum — tables give it in air, about 0.03 % shorter. In absorption the electron returns to its start level (in nature it can also fall another way — fluorescence); while it is up, other photons pass through (in nature — stimulated emission or ionisation). * — metastable level.',
+    'info.simp': 'The Bohr model is historical; the drawing is not to scale. Only the lowest levels are shown — higher up they crowd towards 0 eV, and there are more lines. Sodium, mercury and helium levels are measured (NIST); close levels are merged (sodium D lines, mercury 577 and 579 nm, helium triplets); sodium 4f and mercury 7p are left out. In mercury the ¹ and ³ ladders mix, so there are lines between them; in helium there practically are none. Lines are infinitely narrow and equally bright. For hydrogen, mercury and helium the axis is broken above the ground level, so the long arrows to the ground level are not to scale. λ is in vacuum — tables give it in air, about 0.03 % shorter. In absorption the electron returns to its start level (in nature it can also fall another way — fluorescence); while it is up, other photons pass through (in nature — stimulated emission or ionisation). * — metastable level.',
 
     'gear.open': 'Settings: theme, language, text and drawing size',
     'gear.theme': 'THEME',

@@ -86,24 +86,54 @@ export function spreadLabels(items, minGap, top = -Infinity) {
 // Katram līmenim: līnija (x0–x1, y) kolonnā un uzraksta vieta (labelX, labelY), izvirzīta, ja līmeņi cieši
 export function levelGeometry(atom, rect, legend = 1) {
   const ys = levelYs(atom, rect);
-  const cols = atom.columns;
+  const cols = atom.columns; // kāpnes: H, Na, Hg — viena; He — para | orto
+  const single = cols.length === 1;
   const compact = rect.w < 300; // šaura shēma (telefons): ass tuvāk, enerģija tikai pie elektrona līmeņa
   const axisW = compact ? 40 : 52;
   const inner = { x: rect.x + axisW, w: Math.max(0, rect.w - axisW) };
-  const split = atom.id === 'He' ? 14 : 0; // para | orto
-  const colW = (inner.w - split) / cols.length;
-  const colX = (i) => inner.x + i * colW + (atom.id === 'He' && i >= 3 ? split : 0);
+  const split = single ? 0 : 14;
+  const colW = (inner.w - split * (cols.length - 1)) / cols.length;
+  const colX = (i) => inner.x + i * (colW + split);
   const gap = Math.max(24, 14 * legend); // līmeņu pogas (uzrakstu vietās) ≥ 24 px viena no otras (WCAG 2.5.8)
   const out = [];
   cols.forEach((c, i) => {
     const lv = atom.levels.filter((l) => l.col === c.id && l.kind !== 'limit').sort((a, b) => ys.get(a.id) - ys.get(b.id));
-    const single = cols.length === 1;
-    const x0 = colX(i) + colW * (compact && single ? 0.04 : 0.12);
-    const x1 = single ? x0 + Math.max(40, Math.min(colW * 0.7, colW - (x0 - colX(i)) - (compact ? 50 : 130) * legend)) : colX(i) + colW * 0.62;
-    const items = lv.map((l) => ({ id: l.id, y: ys.get(l.id) }));
+    const x0 = colX(i) + colW * (compact && single ? 0.04 : 0.06);
+    const x1 = single
+      ? x0 + Math.max(40, Math.min(colW * 0.7, colW - (x0 - colX(i)) - (compact ? 50 : 130) * legend))
+      : colX(i) + colW * 0.66;
+    // gandrīz sakrītoši līmeņi (He n ≥ 3) — blakus, katrs savā augstumā; ja par šauru, — pilnā platumā ar izvirzītiem uzrakstiem
+    const subW = (x1 - x0 - 8) / 3;
+    const splitSub = atom.splitSub && subW >= 26;
+    const items = lv.map((l) => {
+      if (splitSub && l.n >= 3) {
+        const sx0 = x0 + 'SPD'.indexOf(l.sub) * (subW + 4);
+        return { id: l.id, x0: sx0, x1: sx0 + subW, y: ys.get(l.id), group: `${c.id}:${l.n}`, n: l.n };
+      }
+      return { id: l.id, x0, x1, y: ys.get(l.id) };
+    });
+    const labels = [];
+    const byGroup = new Map();
+    for (const it of items) {
+      if (!it.group) { labels.push({ y: it.y, ids: [it.id] }); continue; }
+      if (!byGroup.has(it.group)) { const g = { y: it.y, ids: [] }; byGroup.set(it.group, g); labels.push(g); }
+      const g = byGroup.get(it.group);
+      g.ids.push(it.id);
+      g.y = Math.min(g.y, it.y);
+    }
+    labels.sort((a, b) => a.y - b.y);
+    const spread = spreadLabels(labels, gap, rect.y + 4);
+    const labelOf = new Map();
+    for (const sp of spread) for (const id of sp.ids) labelOf.set(id, sp);
     const narrow = !single && colW < 70; // šaurā shēmā uzraksts virs līnijas, nevis blakus
-    const spread = spreadLabels(items, gap, rect.y + 4);
-    for (const it of spread) out.push({ id: it.id, col: c.id, x0, x1, y: it.y, labelX: single ? x1 + 10 : x0, labelY: it.labelY, single, narrow, colW, compact });
+    for (const it of items) {
+      const sp = labelOf.get(it.id);
+      out.push({
+        id: it.id, col: c.id, x0: it.x0, x1: it.x1, y: it.y, single, narrow, colW, compact,
+        labelX: x1 + 10, labelY: sp.labelY, lineEnd: x1,
+        groupLabel: it.group ? `n = ${it.n}` : null, labelLead: sp.ids[0] === it.id, groupIds: sp.ids,
+      });
+    }
   });
   for (const l of atom.levels.filter((x) => x.kind === 'limit')) {
     out.push({ id: l.id, col: l.col, x0: inner.x, x1: inner.x + inner.w, y: ys.get(l.id), labelX: inner.x + inner.w * 0.6, labelY: ys.get(l.id), single: true, limit: true });
@@ -328,13 +358,10 @@ function drawAtom(ctx, C, rMax, v, { font, c, dark }) {
     ctx.fillStyle = c.ink;
     ctx.font = font(10);
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(v.labels.core, C.x, C.y + r0 * 0.38);
+    ctx.textBaseline = 'top';
+    ctx.fillText(v.labels.core, C.x, C.y + r0 * 0.72 + 4); // zem pelēkā diska — kodols ar protoniem un neitroniem paliek redzams
   }
-  ctx.fillStyle = c.accent;
-  ctx.beginPath();
-  ctx.arc(C.x, C.y, Math.max(4, rMax * 0.04), 0, Math.PI * 2);
-  ctx.fill();
+  drawNucleus(ctx, C, rMax, a.nucleus, { c, dark });
   if (a.inner.shells) {
     a.inner.shells.forEach((n, i) => {
       const r = r0 * (0.38 + 0.32 * i);
@@ -396,6 +423,35 @@ function drawAtom(ctx, C, rMax, v, { font, c, dark }) {
   return { rings, ANG };
 }
 
+// Kodols: protoni (sarkani, ar “+”, ja vieta) un neitroni (pelēki) saulespuķes rakstā — “daudz”, ne obligāti visi (Ansis 04.11.)
+function drawNucleus(ctx, C, rMax, nucleus, { c, dark }) {
+  const N = nucleus.p + nucleus.n;
+  const b = N === 1 ? Math.max(4, rMax * 0.04) : Math.max(2.2, rMax * (N > 20 ? 0.017 : 0.03));
+  const pCol = dark ? '#ff6b6b' : '#c0262d';
+  for (let i = 0; i < N; i++) {
+    const r = N === 1 ? 0 : b * 1.05 * Math.sqrt(i + 0.5) * 1.75;
+    const th = i * 2.39996;
+    const x = C.x + r * Math.cos(th);
+    const y = C.y + r * Math.sin(th);
+    const proton = Math.floor(((i + 1) * nucleus.p) / N) > Math.floor((i * nucleus.p) / N); // protoni vienmērīgi starp neitroniem
+    ctx.fillStyle = proton ? pCol : c.inkDim;
+    ctx.strokeStyle = c.field;
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.arc(x, y, b, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    if (proton && b >= 3.5) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x - b * 0.5, y); ctx.lineTo(x + b * 0.5, y);
+      ctx.moveTo(x, y - b * 0.5); ctx.lineTo(x, y + b * 0.5);
+      ctx.stroke();
+    }
+  }
+}
+
 function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
   if (r.w <= 0) return;
   const a = v.atom;
@@ -416,7 +472,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
   const step = a.id === 'H' ? 2 : 1;
   const yOf = (E) => levelYs({ ...a, levels: [{ id: '_', E }, { id: '_min', E: Emin }] }, r).get('_');
   for (let E = 0; E >= Emin; E -= step) {
-    if (a.axisBreak && E < a.axisBreak.to && E > a.axisBreak.from) continue;
+    if (a.axisBreak && E < a.axisBreak.to) continue; // zem pārtraukuma — tikai pamatstāvokļa vērtība
     const y = yOf(E);
     ctx.fillRect(ax - 4, y - 0.5, 4, 1);
     ctx.fillText(v.fmt(E, 0), ax - 6, y);
@@ -458,16 +514,15 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   const colsSeen = new Map();
-  for (const g of geo) if (!g.limit && !colsSeen.has(g.col)) colsSeen.set(g.col, (g.x0 + g.x1) / 2);
+  for (const g of geo) if (!g.limit && !g.groupLabel && !colsSeen.has(g.col)) colsSeen.set(g.col, (g.x0 + g.x1) / 2);
   for (const col of a.columns) {
     if (!col.label || !colsSeen.has(col.id)) continue;
     ctx.fillText(col.label, colsSeen.get(col.id), r.y + r.h - 2);
   }
-  if (a.id === 'He') {
-    const xs = a.columns.map((col) => colsSeen.get(col.id));
+  if (a.columns.length === 2) {
     ctx.fillStyle = c.ink;
-    ctx.fillText(v.labels.para, (xs[0] + xs[2]) / 2, r.y + 2 + 0.88 * r.h);
-    ctx.fillText(v.labels.ortho, (xs[3] + xs[5]) / 2, r.y + 2 + 0.88 * r.h);
+    ctx.fillText(v.labels.para, colsSeen.get('para'), r.y + 2 + 0.88 * r.h);
+    ctx.fillText(v.labels.ortho, colsSeen.get('ortho'), r.y + 2 + 0.88 * r.h);
   }
   // līmeņi
   const cur = v.st.level;
@@ -499,21 +554,26 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
       ctx.moveTo(xx + 5, g.y - 5); ctx.lineTo(xx - 5, g.y + 5);
       ctx.stroke();
     }
-    // uzraksts (izvirzīts ar norādi, ja pabīdīts)
-    const lx = g.single ? g.labelX : g.x1 + 4;
+    // uzraksts (izvirzīts ar norādi, ja pabīdīts); gandrīz sakrītošo līmeņu grupai — viens “n = 3”
+    if (g.groupLabel && !g.labelLead) continue;
+    const lx = g.single || g.groupLabel ? g.labelX : g.x1 + 4;
+    const lineEnd = g.groupLabel ? g.lineEnd : g.x1;
     if (Math.abs(g.labelY - g.y) > 1) {
       ctx.strokeStyle = c.hairline;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(g.x1, g.y);
+      ctx.moveTo(lineEnd, g.y);
       ctx.lineTo(lx - 2, g.labelY);
       ctx.stroke();
     }
     ctx.fillStyle = on ? c.ink : c.inkDim;
     ctx.font = font(11, on ? 600 : 400);
     ctx.textBaseline = 'middle';
-    const energy = (g.single && !g.compact) || showE.has(g.id) ? `  ${v.fmt(lvl.E, 2)} eV` : '';
-    const text = `${lvl.label}${lvl.metastable ? ' *' : ''}${energy}`;
+    const inGroup = g.groupLabel ? g.groupIds.find((id) => showE.has(id)) : null;
+    const energy = g.groupLabel
+      ? (inGroup ? `  ${levelOf(a, inGroup).label} ${v.fmt(levelOf(a, inGroup).E, 2)} eV` : '')
+      : (g.single && !g.compact) || showE.has(g.id) ? `  ${v.fmt(lvl.E, 2)} eV` : '';
+    const text = g.groupLabel ? `${g.groupLabel}${energy}` : `${lvl.label}${lvl.metastable ? ' *' : ''}${energy}`;
     const tw = ctx.measureText(text).width;
     if (g.narrow) {
       ctx.font = font(9.5, on ? 600 : 400);
@@ -538,6 +598,11 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     let xu = (U.x0 + U.x1) / 2;
     let xd = (D.x0 + D.x1) / 2;
     if (slots) xu = xd = slots.get(`${up}|${lo}`).x;
+    else if (xu > D.x0 + 3 && xu < D.x1 - 3) {
+      // taisni uz leju; vairākas bultas no tā paša līmeņa — blakus
+      const k = (v.atom.lines.filter((l) => l.up === up).findIndex((l) => l.lo === lo));
+      xu = xd = Math.min(D.x1 - 3, Math.max(D.x0 + 3, xu + (k - 1) * 6));
+    }
     const [xa, ya, xb, yb] = towardUp ? [xd, D.y, xu, U.y] : [xu, U.y, xd, D.y];
     arrowLine(ctx, xa, ya, xb, yb, λ ? colOf(λ) : c.inkDim, w, head);
   };
@@ -587,22 +652,22 @@ export function seriesSlots(atom, geo) {
   if (atom.columns.length !== 1) return null;
   const lv = geo.filter((g) => !g.limit);
   if (!lv.length) return null;
+  const E = (id) => levelOf(atom, id).E;
   const x0 = Math.min(...lv.map((g) => g.x0)) + 8;
   const x1 = Math.max(...lv.map((g) => g.x1)) - 8;
-  const ns = lv.map((g) => Number(g.id)).sort((p, q) => p - q);
-  const groups = ns.slice(0, -1).reverse(); // apakšējie līmeņi: 5, 4, 3, 2, 1
-  const n = groups.reduce((sum, lo) => sum + ns.filter((u) => u > lo).length, 0);
+  const groups = [...new Set(atom.lines.map((l) => l.lo))].sort((p, q) => E(q) - E(p)); // apakšējie līmeņi: augstākie pa kreisi
+  const n = atom.lines.length;
   const GAP = 1.6;
   const unit = (x1 - x0) / Math.max(1, n - 1 + GAP * (groups.length - 1));
   const out = new Map();
   let x = x0;
   groups.forEach((lo, gi) => {
     if (gi) x += unit * GAP;
-    for (const up of ns.filter((u) => u > lo)) {
-      out.set(`${up}|${lo}`, { x, up: String(up), lo: String(lo) });
-      x += unit;
-    }
-    x -= unit;
+    const ups = atom.lines.filter((l) => l.lo === lo).map((l) => l.up).sort((p, q) => E(p) - E(q));
+    ups.forEach((up, k) => {
+      out.set(`${up}|${lo}`, { x, up, lo });
+      if (k < ups.length - 1) x += unit;
+    });
   });
   return out;
 }

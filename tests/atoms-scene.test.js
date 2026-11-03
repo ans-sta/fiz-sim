@@ -42,13 +42,23 @@ test('tiny screens still give non-negative sizes', () => {
   }
 });
 
-test('levels: energy to scale, higher energy higher on screen', () => {
+test('levels: energy to scale above the axis break, higher energy higher on screen', () => {
   const rect = { x: 0, y: 0, w: 300, h: 600 };
   const y = levelYs(ATOMS.H, rect);
   assert.ok(y.get('2') < y.get('1') && y.get('3') < y.get('2'));
-  const k = (y.get('1') - y.get('2')) / (y.get('1') - y.get('3'));
-  const want = (13.6 - 3.4) / (13.6 - 13.6 / 9);
-  assert.ok(Math.abs(k - want) < 1e-9, 'n = 2 sits in proportion to E');
+  const k = (y.get('2') - y.get('3')) / (y.get('2') - y.get('6'));
+  const want = (13.6 / 9 - 3.4) / (13.6 / 36 - 3.4);
+  assert.ok(Math.abs(k - want) < 1e-9, 'n = 2…6 to scale');
+});
+
+test('hydrogen and mercury: the long gap above the ground level is broken (Ansis 04.11.), so the upper levels get most of the height', () => {
+  const rect = { x: 0, y: 100, w: 300, h: 500 };
+  for (const [id, ground, low] of [['H', '1', '2'], ['Hg', '6¹S', '6³P₀']]) {
+    const y = levelYs(ATOMS[id], rect);
+    assert.ok(y.get(ground) > 100 + 0.85 * 500, `${id} ground near the bottom`);
+    assert.ok(y.get(low) > 100 + 0.6 * 500 && y.get(low) < 100 + 0.88 * 500, `${id} ${low} low in the upper part`);
+  }
+  assert.ok(ATOMS.H.axisBreak && ATOMS.Hg.axisBreak && !ATOMS.Na.axisBreak);
 });
 
 test('helium: the ground sits near the bottom and the excited levels use most of the height (broken axis)', () => {
@@ -100,5 +110,20 @@ test('hydrogen arrows sit in fixed series slots like the textbook: IR series lef
   assert.ok(x(3, 2) < x(4, 2) && x(4, 2) < x(5, 2) && x(5, 2) < x(6, 2), 'a, b, c, d inside Balmer');
   assert.ok(x(6, 5) < x(5, 4), 'Pfund and Brackett further left');
   for (const s of slots.values()) assert.ok(s.x > rect.x && s.x < rect.x + rect.w);
-  assert.equal(seriesSlots(ATOMS.Hg, levelGeometry(ATOMS.Hg, rect, 1)), null, 'only for the single-column (Bohr) diagram');
+  assert.equal(seriesSlots(ATOMS.He, levelGeometry(ATOMS.He, rect, 1)), null, 'helium has two ladders');
+  assert.equal(seriesSlots(ATOMS.Na, levelGeometry(ATOMS.Na, rect, 1)).size, 21, 'sodium: one ladder, a slot per line');
+  assert.equal(seriesSlots(ATOMS.Hg, levelGeometry(ATOMS.Hg, rect, 1)).size, 12, 'mercury: one ladder');
+});
+
+test('helium: two ladders; near-coincident n = 3 and n = 4 levels are short segments side by side, each clickable (physics review 04.11.)', () => {
+  const wide = levelGeometry(ATOMS.He, { x: 500, y: 60, w: 600, h: 600 }, 1);
+  const g = (id) => wide.find((x) => x.id === id);
+  assert.ok(g('3¹P').x0 >= g('3¹D').x1 || g('3¹D').x0 >= g('3¹P').x1, '3¹P and 3¹D do not overlap');
+  assert.ok(Math.abs(g('3¹P').y - g('3¹D').y) < 3, 'same height');
+  assert.equal(g('3¹P').groupLabel, 'n = 3');
+  assert.ok(g('2³P').x1 - g('2³P').x0 > 2 * (g('3³P').x1 - g('3³P').x0), 'n = 2 lines are full width');
+  assert.ok(g('2¹S').x1 < g('2³S').x0, 'para ladder left of ortho');
+  const narrow = levelGeometry(ATOMS.He, { x: 0, y: 60, w: 250, h: 500 }, 1);
+  const n = (id) => narrow.find((x) => x.id === id);
+  assert.equal(n('3¹P').x0, n('3¹D').x0, 'too narrow to split — full width with spread labels');
 });

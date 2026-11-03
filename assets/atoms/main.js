@@ -254,9 +254,10 @@ function placeOverlays(lay, legend) {
     const b = levelBtns.get(g.id);
     if (!b) continue;
     const lvl = levelOf(atom(), g.id);
-    const x = Math.round(g.x0 - 4);
-    const w = Math.round((g.single ? g.labelX + 150 : g.narrow ? g.x1 + 4 : g.x1 + Math.min(46, 0.5 * g.colW - 6)) - x); // nepārklājas ar kaimiņu kolonnu
-    const top = Math.round(g.narrow ? g.labelY - 16 : g.labelY - 12); // poga seko uzrakstam (uzraksti ≥ 24 px viens no otra)
+    // hēlija blakus posmi — poga ir pats posms (savā augstumā); citiem poga seko uzrakstam (uzraksti ≥ 24 px viens no otra)
+    const x = Math.round(g.x0 - (g.groupLabel ? 2 : 4));
+    const w = Math.round((g.groupLabel ? g.x1 + 2 : g.single ? g.labelX + 150 : g.narrow ? g.x1 + 4 : g.x1 + Math.min(46, 0.5 * g.colW - 6)) - x);
+    const top = Math.round(g.groupLabel ? g.y - 12 : g.narrow ? g.labelY - 16 : g.labelY - 12);
     const s = b.style;
     const L = `${x}px`; const T = `${top}px`; const W = `${Math.max(24, w)}px`;
     if (s.left !== L) s.left = L;
