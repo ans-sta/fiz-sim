@@ -54,3 +54,6 @@
 @media (max-width: 520px), (max-height: 480px) {
   .layout-hud .a01-readout { font-size: calc(11px * min(var(--hud), 1.15)); line-height: 1.3; }
 }
+/* rādījumam vieta rezervēta (2 rindas, telefonā 4) — teksts mainās, zīmējums nelec */
+.layout-hud .a01-readout { min-height: calc(2 * 1.35em + 4px); }
+@media (max-width: 520px) { .layout-hud .a01-readout { min-height: calc(5 * 1.3em + 4px); } }

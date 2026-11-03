@@ -34,6 +34,8 @@ test('ionisation: any photon above the binding energy frees the electron', () =>
   assert.equal(absorb(H, '6', 500).kind, 'ionise');
   assert.equal(absorb(H, '1', 80).kind, 'ionise');
   assert.equal(edgeNm(H, 'inf'), Infinity);
+  assert.equal(absorb(H, '2', edgeNm(H, '2')).kind, 'ionise', 'exactly at the edge');
+  for (const id of ['3s', '3p', '5d']) assert.equal(absorb(Na, id, edgeNm(Na, id)).kind, 'ionise', `Na ${id} edge`);
 });
 
 test('lines from a level: up for absorption, down for emission', () => {

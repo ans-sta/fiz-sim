@@ -16,14 +16,16 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     atomId, mode, start: ATOMS[atomId].start, level: null, ionised: false,
     white: false, rate: DEFAULT_INTENSITY, photons: [], stripes: new Map(), lines: new Map(),
     counts: { shot: 0, absorbed: 0 }, arrow: null, cascading: false, t: 0,
+    allowed: null, // pēc aizliegtas krišanas — līmeņi, uz kuriem var krist (spec. § 7.3)
   };
   let pending = [];
   let busy = null; // { until, kind: 'line' | 'ionise', λ, from }
   let nextFall = Infinity;
   let whiteAcc = 0;
   let nextId = 1;
+  let cascadeFalls = 0;
   const atom = () => ATOMS[state.atomId];
-  const tm = () => timing(state.rate, reducedMotion);
+  const tm = () => timing(state.white && state.mode === 'absorb' ? state.rate : DEFAULT_INTENSITY, reducedMotion);
 
   function settle() {
     state.photons = [];
@@ -34,6 +36,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     nextFall = Infinity;
     whiteAcc = 0;
     state.arrow = null;
+    state.allowed = null;
     state.level = state.mode === 'absorb' ? state.start : ground(atom());
   }
   settle();
@@ -54,13 +57,15 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
   }
   function arrive(p, ev) {
     const idle = !busy && !state.ionised && state.level === state.start;
-    const r = idle ? absorb(atom(), state.start, p.λ) : { kind: 'pass' };
+    const would = absorb(atom(), state.start, p.λ);
+    const r = idle ? would : { kind: 'pass' };
     if (r.kind === 'pass') {
-      ev.push({ type: 'passed', λ: p.λ });
+      ev.push({ type: 'passed', λ: p.λ, busy: !idle && would.kind !== 'pass' }); // busy — izlaida tikai tāpēc, ka elektrons vēl augšā
       return { ...p, kind: 'pass', t: state.t, dur: tm().pass };
     }
     state.counts.absorbed += 1;
-    state.stripes.set(binKey(p.λ), r.kind === 'line' ? r.λ : p.λ);
+    const λs = r.kind === 'line' ? r.λ : p.λ;
+    state.stripes.set(binKey(λs), λs);
     if (r.kind === 'line') {
       state.level = r.to;
       state.arrow = { from: state.start, to: r.to, λ: r.λ, up: true };
@@ -84,7 +89,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       state.arrow = { from: b.from, to: state.start, λ: b.λ, up: false };
       addPhoton({ λ: b.λ, kind: 'reemit', dur: tm().pass, dirY: rng() < 0.5 ? -1 : 1 });
     }
-    ev.push({ type: 'returned' });
+    ev.push({ type: 'returned', kind: b.kind, level: state.start });
   }
 
   // ── starošana ──
@@ -100,20 +105,25 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
   }
   function fall(to) {
     const from = state.level;
-    const d = linesDown(atom(), from).find((x) => x.to === to);
-    if (!d) return { type: 'forbidden', from, to };
+    const downs = linesDown(atom(), from);
+    const d = downs.find((x) => x.to === to);
+    if (!d) {
+      state.allowed = downs.map((x) => x.to);
+      return { type: 'forbidden', from, to, allowed: state.allowed };
+    }
+    state.allowed = null;
     state.level = to;
     state.arrow = { from, to, λ: d.λ, up: false };
     addPhoton({ λ: d.λ, kind: 'emit', dur: tm().flight });
-    if (isMetastable(atom(), to)) pending.push({ type: 'metastable', level: to });
-    return { type: 'emitted', from, to, λ: d.λ };
+    return { type: 'emitted', from, to, λ: d.λ, metastable: isMetastable(atom(), to) };
   }
   function setLevel(id) {
     const a = atom();
     const lv = levelOf(a, id);
     if (!lv || lv.kind === 'limit') return null;
     if (state.mode === 'absorb') {
-      if (busy || state.ionised) return null;
+      busy = null; // izvēle stājas spēkā uzreiz (atgriešanos atceļ)
+      state.ionised = false;
       state.start = id;
       state.level = id;
       state.arrow = null;
@@ -121,6 +131,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     }
     state.cascading = false;
     nextFall = Infinity;
+    state.allowed = null;
     if (isMetastable(a, state.level)) toGroundSilently(); // nākamā darbība nogāž metastabilo bez fotona (spec. § 7.5)
     const cur = levelOf(a, state.level);
     if (lv.E > cur.E) return excite(id);
@@ -136,7 +147,9 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       const ups = a.levels.filter((l) => l.kind !== 'limit' && !isGround(a, l.id));
       e = excite(ups[Math.floor(rng() * ups.length)].id);
     }
+    state.allowed = null;
     state.cascading = true;
+    cascadeFalls = 0;
     nextFall = state.t + tm().hold;
     return e;
   }
@@ -153,6 +166,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
         shoot(white.next(atom(), state.start));
       }
     }
+    if (busy && state.t >= busy.until - EPS) comeBack(ev);
     const keep = [];
     for (const p of state.photons) {
       if (state.t < p.t + p.dur - EPS) { keep.push(p); continue; }
@@ -164,18 +178,18 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       }
     }
     state.photons = keep;
-    if (busy && state.t >= busy.until - EPS) comeBack(ev);
     if (state.cascading && state.t >= nextFall - EPS) {
       const d = cascadeStep(atom(), state.level, rng);
       if (!d) {
         state.cascading = false;
         nextFall = Infinity;
-        if (isMetastable(atom(), state.level)) ev.push({ type: 'metastable', level: state.level });
+        if (!cascadeFalls && isMetastable(atom(), state.level)) ev.push({ type: 'metastable', level: state.level });
       } else {
         ev.push(fall(d.to));
-        ev.push(...pending);
-        pending = [];
-        nextFall = state.t + tm().hold;
+        cascadeFalls += 1;
+        const end = isGround(atom(), d.to) || isMetastable(atom(), d.to);
+        state.cascading = !end;
+        nextFall = end ? Infinity : state.t + tm().hold;
       }
     }
     return ev;

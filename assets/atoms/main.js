@@ -5,6 +5,7 @@ import { STRINGS } from './i18n.js';
 import { ATOMS } from './atoms.js';
 import { columnAxis, lambdaToPos, posToLambda, hintTargets, snap, edgeNm, levelOf, INTENSITIES, VIS } from './model.js';
 import { createSim } from './sim.js';
+import { eventText } from './text.js';
 import { sceneLayout, drawScene, levelGeometry } from './scene.js';
 import { createSettingsCorner } from '../measure/hud.js';
 import { legendScale } from '../measure/ui-scale.js';
@@ -36,6 +37,7 @@ const ui = {
   jump: null, // { from, t0 }
   shownLevel: sim.state.level,
   whiteSaidAt: 0,
+  roAt: 0,
   descAt: -Infinity,
   layout: null,
 };
@@ -64,37 +66,25 @@ function bandOf(λ) {
   return 'red';
 }
 
-function eventText(e) {
-  const dE = (from, to) => fmt(levelOf(atom(), to).E - levelOf(atom(), from).E, 3).replace('−', '');
-  switch (e.type) {
-    case 'absorbed': return t('ro.absorbed', { from: levelLabel(e.from), to: levelLabel(e.to), dE: dE(e.from, e.to), lam: fmtLam(e.λ) });
-    case 'passed': return t(sim.state.level !== sim.state.start || sim.state.ionised ? 'ro.passedBusy' : 'ro.passed', { lam: fmtLam(e.λ) });
-    case 'ionised': return t('ro.ionised', { lam: fmtLam(e.λ) });
-    case 'returned': return t('ro.returned', { level: levelLabel(sim.state.start) });
-    case 'start': return t('ro.start', { level: levelLabel(e.level) });
-    case 'excited': return t('ro.excited', { from: levelLabel(e.from), to: levelLabel(e.to) });
-    case 'emitted': return t('ro.emitted', { from: levelLabel(e.from), to: levelLabel(e.to), dE: dE(e.to, e.from), lam: fmtLam(e.λ) });
-    case 'forbidden': return t('ro.forbidden', { from: levelLabel(e.from), to: levelLabel(e.to) });
-    case 'metastable': return t('ro.metastable', { level: levelLabel(e.level) });
-    default: return '';
-  }
-}
-
 function handle(events, now) {
   for (const e of events) {
-    if (!e) continue;
-    const text = eventText(e);
+    const text = eventText(e, { atom: atom(), t, fmt });
     if (!text) continue;
-    ui.readout = text;
-    // baltajā gaismā — kopsavilkums ne biežāk kā ik pēc 2 s; atsevišķi šāvieni — katrs notikums
     if (sim.state.white && (e.type === 'absorbed' || e.type === 'passed' || e.type === 'ionised' || e.type === 'returned')) {
+      // baltajā gaismā rādījums mainās ne biežāk kā 2 reizes sekundē (tikai absorbcija vai jonizācija),
+      // ekrāna lasītājam — kopsavilkums ik pēc 2 s
+      if ((e.type === 'absorbed' || e.type === 'ionised') && now - ui.roAt > 500) {
+        ui.roAt = now;
+        ui.readout = text;
+      }
       if (now - ui.whiteSaidAt > 2000) {
         ui.whiteSaidAt = now;
         say(t('live.white', { abs: sim.state.counts.absorbed, shot: sim.state.counts.shot }));
       }
-    } else if (e.type !== 'returned' || !sim.state.white) {
-      say(text);
+      continue;
     }
+    ui.readout = text;
+    say(text);
   }
 }
 
@@ -152,7 +142,7 @@ el('bar').addEventListener('click', (e) => { const b = e.target.closest('button'
 
 // ── slīdnis gar avota stabu (APG Slider: native range, pagriezts vertikāli) ──
 const lam = el('lam');
-const RES = 100000;
+const RES = 1000; // slīdņa solis — tūkstošdaļa staba (bultiņas maina λ precīzāk, skat. keydown)
 const defaultAim = () => {
   const h = hintTargets(atom(), sim.state.start).find((x) => x.kind === 'line' && x.λ >= VIS.min && x.λ <= VIS.max);
   return h ? h.λ + 6 : 550;
@@ -372,6 +362,7 @@ function render() {
     hints: hintTargets(atom(), s.start), showHints: ui.hints && !emit, edge: emit ? NaN : edgeNm(atom(), s.start),
     mode: s.mode, slide: ui.slide, legend, theme: theme.current(), colors: theme.colors(), fmt,
     fmtMicron: (λ) => fmt(λ / 1000, 1),
+    allowed: emit && s.allowed ? new Set(s.allowed) : null,
     jump: ui.jump ? { from: ui.jump.from, k: Math.min(1, (now - ui.jump.t0) / (reduced.matches ? 120 : 320)) } : null,
     aim: !emit && ui.slide < 0.02 ? ui.aim : null,
     labels: {

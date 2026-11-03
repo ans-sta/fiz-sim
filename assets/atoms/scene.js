@@ -457,6 +457,14 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     ctx.moveTo(g.x0, g.y);
     ctx.lineTo(g.x1, g.y);
     ctx.stroke();
+    // pēc aizliegtas krišanas — līmeņi, uz kuriem var krist (spec. § 7.3)
+    if (v.allowed?.has(g.id)) {
+      ctx.strokeStyle = c.accent;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(g.x0 - 3, g.y - 5, g.x1 - g.x0 + 6, 10);
+      ctx.setLineDash([]);
+    }
     // uzraksts (izvirzīts ar norādi, ja pabīdīts)
     const lx = g.single ? g.labelX : g.x1 + 4;
     if (Math.abs(g.labelY - g.y) > 1) {

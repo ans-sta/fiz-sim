@@ -44,7 +44,7 @@ export function absorb(atom, id, λ) {
   }
   if (best) return { kind: 'line', line: best.line, to: best.to, λ: best.λ };
   const E = levelOf(atom, id).E;
-  if (E < 0 && HC / λ > -E) return { kind: 'ionise' };
+  if (E < 0 && HC / λ >= -E * (1 - 1e-9)) return { kind: 'ionise' }; // arī tieši pie robežas
   return { kind: 'pass' };
 }
 
