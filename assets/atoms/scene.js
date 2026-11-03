@@ -8,26 +8,28 @@ const GAP = 22; // px — atstarpe starp stabu un atomu
 const COL_PAD = 46; // px — vieta stabam blakus: mājieni iekšpusē, nm skala ārpusē
 
 // ── izkārtojums ───────────────────────────────────────────
-export function sceneLayout(w, h, { slide = 0, drawScale = 1 } = {}) {
+// topPad — rādījuma augstums virs zīmējuma (lapa to izmēra), lai teksts neuzkrīt atomam
+export function sceneLayout(w, h, { slide = 0, drawScale = 1, topPad = 0 } = {}) {
   const portrait = w < h && w < 600;
   const s = Math.min(1, Math.max(0, slide));
   if (portrait) {
-    const cw = Math.max(28, Math.min(56, Math.round(w * 0.12)));
-    const top = M;
-    const colH = Math.max(0, h - 2 * M - 14);
-    const absCol = { x: M - s * (cw + 2 * M + 30), y: top, w: cw, h: colH };
-    const emCol = { x: w - M - cw + (1 - s) * (cw + 2 * M + 30), y: top, w: cw, h: colH };
-    const off = s * (cw + 30);
-    const gx = M + cw + 30 - off;
-    const gw = Math.max(0, w - (cw + 30) - 2 * M);
-    const atomH = Math.round(h * 0.36);
+    const cw = Math.max(28, Math.min(44, Math.round(w * 0.1)));
+    const LX = 36; // vieta nm skalai pa kreisi
+    const top = Math.max(M + 10, topPad + 6);
+    const colH = Math.max(0, h - top - 58); // apakšā vieta ⚙
+    const absCol = { x: LX - s * (cw + LX + 40), y: top, w: cw, h: colH };
+    const emCol = { x: w - 30 - cw + (1 - s) * (cw + LX + 40), y: top, w: cw, h: colH };
+    const off = s * (LX + cw + 22 - M);
+    const gx = LX + cw + 22 - off;
+    const gw = Math.max(0, w - (LX + cw + 22) - M);
+    const atomH = Math.round((h - top) * 0.36);
     const atom = { x: gx, y: top, w: gw, h: atomH };
-    const diagram = { x: gx, y: top + atomH + 8, w: gw, h: Math.max(0, h - atomH - 8 - 2 * M) };
+    const diagram = { x: gx, y: top + atomH + 8, w: gw, h: Math.max(0, h - top - atomH - 8 - M) };
     return { portrait, absCol, emCol, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
   }
   const cw = Math.round(Math.max(30, Math.min(52, w * 0.035)) * Math.min(1.4, Math.max(0.8, drawScale)));
   const total = cw + COL_PAD;
-  const top = M + 16;
+  const top = Math.max(M + 16, topPad + 10);
   const colH = Math.max(0, h - top - M - 18);
   const absCol = { x: M + 30 - s * (total + M + 30), y: top, w: cw, h: colH };
   const emCol = { x: w - M - 30 - cw + (1 - s) * (total + M + 30), y: top, w: cw, h: colH };
@@ -61,13 +63,12 @@ export function levelYs(atom, rect) {
 }
 
 // Uzraksti pēc kārtas ne tuvāk par minGap; apakšējais paliek savā vietā (bīda uz augšu)
-export function spreadLabels(items, minGap) {
+// items — augšā pirmie (y augošā secībā); top — augstāk par to uzrakstu nebīda
+export function spreadLabels(items, minGap, top = -Infinity) {
   const out = items.map((it) => ({ ...it, labelY: it.y }));
-  for (let i = out.length - 2; i >= 0; i--) {
-    if (out[i + 1].labelY - out[i].labelY < minGap) out[i].labelY = out[i + 1].labelY - minGap;
-  }
-  for (let i = 1; i < out.length; i++) {
-    if (out[i].labelY - out[i - 1].labelY < minGap) out[i].labelY = out[i - 1].labelY + minGap;
+  for (let i = 0; i < out.length; i++) {
+    const lo = i ? out[i - 1].labelY + minGap : top;
+    if (out[i].labelY < lo) out[i].labelY = lo;
   }
   return out;
 }
@@ -76,7 +77,7 @@ export function spreadLabels(items, minGap) {
 export function levelGeometry(atom, rect, legend = 1) {
   const ys = levelYs(atom, rect);
   const cols = atom.columns;
-  const axisW = 34;
+  const axisW = 52;
   const inner = { x: rect.x + axisW, w: Math.max(0, rect.w - axisW) };
   const split = atom.id === 'He' ? 14 : 0; // para | orto
   const colW = (inner.w - split) / cols.length;
@@ -84,13 +85,14 @@ export function levelGeometry(atom, rect, legend = 1) {
   const gap = 14 * legend;
   const out = [];
   cols.forEach((c, i) => {
-    const lv = atom.levels.filter((l) => l.col === c.id && l.kind !== 'limit').sort((a, b) => ys.get(b.id) - ys.get(a.id));
+    const lv = atom.levels.filter((l) => l.col === c.id && l.kind !== 'limit').sort((a, b) => ys.get(a.id) - ys.get(b.id));
     const single = cols.length === 1;
     const x0 = colX(i) + colW * 0.12;
-    const x1 = colX(i) + colW * (single ? 0.55 : 0.62);
+    const x1 = single ? x0 + Math.max(40, Math.min(colW * 0.43, colW - 150 * legend)) : colX(i) + colW * 0.62;
     const items = lv.map((l) => ({ id: l.id, y: ys.get(l.id) }));
-    const spread = spreadLabels(items.slice().reverse(), gap).reverse();
-    for (const it of spread) out.push({ id: it.id, col: c.id, x0, x1, y: it.y, labelX: single ? x1 + 10 : x0, labelY: it.labelY, single });
+    const narrow = !single && colW < 70; // šaurā shēmā uzraksts virs līnijas, nevis blakus
+    const spread = spreadLabels(items, narrow ? 12 * legend : gap, rect.y + 26 * legend);
+    for (const it of spread) out.push({ id: it.id, col: c.id, x0, x1, y: it.y, labelX: single ? x1 + 10 : x0, labelY: it.labelY, single, narrow });
   });
   for (const l of atom.levels.filter((x) => x.kind === 'limit')) {
     out.push({ id: l.id, col: l.col, x0: inner.x, x1: inner.x + inner.w, y: ys.get(l.id), labelX: inner.x + inner.w * 0.6, labelY: ys.get(l.id), single: true, limit: true });
@@ -133,8 +135,8 @@ export function drawScene(ctx, lay, v) {
 
   const geo = levelGeometry(v.atom, lay.diagram, L);
   const byId = new Map(geo.map((g) => [g.id, g]));
-  const atomC = { x: lay.atom.x + lay.atom.w / 2, y: lay.atom.y + lay.atom.h / 2 };
-  const rMax = Math.max(20, Math.min(lay.atom.w, lay.atom.h) * 0.42);
+  const atomC = { x: lay.atom.x + lay.atom.w / 2, y: lay.atom.y + 30 * L + (lay.atom.h - 30 * L - 22) / 2 };
+  const rMax = Math.max(20, Math.min(lay.atom.w * 0.92, lay.atom.h - 30 * L - 22) / 2);
 
   drawSourceColumn(ctx, lay.absCol, v, { font, c });
   drawEmissionColumn(ctx, lay.emCol, v, { font, c });
@@ -162,22 +164,6 @@ function drawColumnFrame(ctx, r, v, { font, c }, outerLeft) {
     ctx.fillText(nm >= 1000 ? `${nm / 1000} µm` : String(nm), xo, y);
     ctx.fillRect(outerLeft ? r.x - 4 : r.x + r.w, y - 0.5, 4, 1);
   }
-  ctx.font = font(11, 600);
-  ctx.fillStyle = c.ink;
-  const yUV = columnY(r, 0.925);
-  const yIR = columnY(r, 0.075);
-  ctx.save();
-  ctx.translate(r.x + r.w / 2, yUV);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#000';
-  ctx.fillText('UV', 0, 0);
-  ctx.restore();
-  ctx.save();
-  ctx.translate(r.x + r.w / 2, yIR);
-  ctx.textAlign = 'center';
-  ctx.fillStyle = '#000';
-  ctx.fillText(v.labels.ir, 0, 0);
-  ctx.restore();
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1;
   ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
@@ -230,8 +216,22 @@ function drawSourceColumn(ctx, r, v, ctxs) {
     ctx.stroke();
     ctx.setLineDash([]);
   }
+  // slīdņa vieta: šaura līnija pāri stabam un λ iekšpusē
+  if (v.aim) {
+    const y = columnY(r, lambdaToPos(v.axis, v.aim));
+    ctx.fillStyle = c.ink;
+    ctx.font = font(11, 600);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${v.labels.aim} nm`, r.x + r.w + 22, y);
+  }
+  ctx.fillStyle = '#000';
+  ctx.font = font(11, 600);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('UV', r.x + r.w / 2, columnY(r, 0.925));
+  ctx.fillText(v.labels.ir, r.x + r.w / 2, columnY(r, 0.075));
   drawColumnFrame(ctx, r, v, ctxs, true);
-  void font;
 }
 
 function drawEmissionColumn(ctx, r, v, ctxs) {
@@ -368,7 +368,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
   const a = v.atom;
   const ys = levelYs(a, r);
   // enerģijas ass pa kreisi
-  const ax = r.x + 22;
+  const ax = r.x + 40;
   ctx.strokeStyle = c.inkDim;
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -468,10 +468,22 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     }
     ctx.fillStyle = on ? c.ink : c.inkDim;
     ctx.font = font(11, on ? 600 : 400);
-    ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     const energy = g.single || showE.has(g.id) ? `  ${v.fmt(lvl.E, 2)} eV` : '';
-    ctx.fillText(`${lvl.label}${lvl.metastable ? ' *' : ''}${energy}`, lx, g.labelY);
+    const text = `${lvl.label}${lvl.metastable ? ' *' : ''}${energy}`;
+    const tw = ctx.measureText(text).width;
+    if (g.narrow) {
+      ctx.font = font(9.5, on ? 600 : 400);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(on || showE.has(g.id) ? text.replace('  ', ' ') : `${lvl.label}${lvl.metastable ? '*' : ''}`, (g.x0 + g.x1) / 2, g.labelY - 2);
+    } else if (lx + tw > r.x + r.w - 2) {
+      ctx.textAlign = 'right';
+      ctx.fillText(text, g.x0 - 4, g.labelY);
+    } else {
+      ctx.textAlign = 'left';
+      ctx.fillText(text, lx, g.labelY);
+    }
   }
   // bulta
   if (arrow && byId.has(arrow.from) && byId.has(arrow.to)) {

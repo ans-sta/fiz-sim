@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="lv" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Atomu spektri — FIZ-SIM</title>
+<script>
+  // Tēma pirms pirmā zīmējuma, lai nemirgo; tā pati loģika kā sim-core.js createTheme().
+  try {
+    var saved = localStorage.getItem('fiz-sim-theme');
+    document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/sim-common.css">
+<link rel="stylesheet" href="assets/atoms/atoms.css">
+<script type="module" src="assets/atoms/main.js"></script>
+</head>
+<!-- body.e01: josla, “pāriet uz saturu”, gaišās tēmas tintes un fokuss — kopīgi ar E-01 (sim-common.css); A-01 savs — atoms.css -->
+<body class="layout-hud e01 a01">
+<a class="e01-skip" href="#main" data-i18n="page.skip">Pāriet uz saturu</a>
+<div class="frame">
+  <header>
+    <a class="back" href="index.html"><span aria-hidden="true">←&nbsp;</span><span class="e01-backword" data-i18n="page.backWord">SARAKSTS</span></a>
+    <h1 class="e01-h1"><span data-i18n="page.heading">ATOMU SPEKTRI</span> <span class="sheet-no">A-01</span></h1>
+    <div class="head-tools" id="headTools"></div>
+  </header>
+  <main class="e01-main" id="main" tabindex="-1">
+    <div class="m01-bar e01-bar" id="bar">
+      <div class="m01-group" role="group" aria-labelledby="atomLabel">
+        <span class="m01-label" id="atomLabel">ATOMS</span>
+        <div class="m01-row e01-seg" id="atomBtns">
+          <button class="btn" type="button" data-atom="H" aria-pressed="true">H<span class="e01-sr" data-name="H"></span></button>
+          <button class="btn" type="button" data-atom="Na" aria-pressed="false">Na<span class="e01-sr" data-name="Na"></span></button>
+          <button class="btn" type="button" data-atom="Hg" aria-pressed="false">Hg<span class="e01-sr" data-name="Hg"></span></button>
+          <button class="btn" type="button" data-atom="He" aria-pressed="false">He<span class="e01-sr" data-name="He"></span></button>
+        </div>
+      </div>
+      <div class="m01-group" role="group" aria-labelledby="modeLabel">
+        <span class="m01-label" id="modeLabel">REŽĪMS</span>
+        <div class="m01-row e01-seg">
+          <button class="btn" id="modeAbs" type="button" aria-pressed="true">ABSORBCIJA</button>
+          <button class="btn" id="modeEmit" type="button" aria-pressed="false">STAROŠANA</button>
+        </div>
+      </div>
+      <div class="m01-group" role="group" aria-labelledby="lightLabel" id="lightGroup">
+        <span class="m01-label" id="lightLabel">GAISMA</span>
+        <div class="m01-row">
+          <button class="btn e01-tog" id="whiteBtn" type="button" aria-pressed="false"><span aria-hidden="true">☼ </span><span id="whiteW">BALTĀ GAISMA</span></button>
+          <span class="a01-ratek" id="rateK" aria-hidden="true">INTENSITĀTE</span>
+          <button class="q-step" id="rateMinus" type="button">−</button>
+          <span class="m01-val a01-rate" id="rateText" aria-live="off">5 f/s</span>
+          <button class="q-step" id="ratePlus" type="button">+</button>
+          <button class="btn" id="cascadeBtn" type="button" hidden><span aria-hidden="true">↯ </span><span id="cascadeW">NEJAUŠA KASKĀDE</span></button>
+        </div>
+      </div>
+      <div class="m01-group m01-end" role="group" aria-labelledby="toolsLabel">
+        <span class="m01-label" id="toolsLabel">SPEKTRS</span>
+        <div class="m01-row">
+          <button class="btn" id="clearBtn" type="button">NOTĪRĪT</button>
+          <button class="btn e01-tog" id="hintsBtn" type="button" aria-pressed="true">ATZĪMES</button>
+          <button class="btn e01-info" id="infoBtn" type="button">i</button>
+        </div>
+      </div>
+    </div>
+    <div class="work a01-work" id="work">
+      <div class="drawing" id="drawing">
+        <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
+        <canvas id="scene" role="img" aria-label="Atomu spektri" aria-describedby="sceneDesc"></canvas>
+        <input class="a01-lam" id="lam" type="range" min="0" max="100000" step="1" value="50000" aria-orientation="vertical">
+        <div class="a01-levels" id="levels" role="group"></div>
+        <p class="a01-readout" id="readout"></p>
+      </div>
+      <div id="gear"></div>
+    </div>
+    <p class="e01-sr" id="sceneDesc"></p>
+    <p class="e01-sr" id="live" role="status" aria-live="polite"></p>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+/* A-01 Atomu spektri — tikai šai lapai (josla, gaišās tēmas tintes, “pāriet uz saturu” — body.e01 klases sim-common.css).
+   Kontrasts: teksts — --ink / --ink-dim (≥ 4,5 : 1, sk. E-01 sadaļu sim-common.css); stabu krāsas — assets/atoms/scene.js (ensureContrast). */
+.layout-hud .a01-work { position: relative; }
+.layout-hud .a01-work > .drawing { flex: 1 1 auto; }
+.layout-hud .drawing canvas#scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* intensitātes solis */
+.layout-hud .a01-ratek { font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); white-space: nowrap; margin-left: calc(6px * var(--hud)); }
+.layout-hud .a01-ratek[hidden] { display: none; }
+.layout-hud .m01-row .a01-rate { min-width: 4.6em; text-align: center; }
+.layout-hud .m01-row .a01-rate[hidden] { display: none; }
+.layout-hud .e01-bar .q-step { min-width: 24px; min-height: 24px; }
+@media (max-width: 700px) { .layout-hud .a01-ratek { display: none; } }
+
+/* vertikālais slīdnis gar avota stabu: native range, pagriezts −90° (vērtība aug uz augšu), sliede caurspīdīga — zem tās varavīksne */
+.a01-lam {
+  position: absolute; left: 0; top: 0; z-index: 3; margin: 0; padding: 0;
+  transform-origin: 50% 50%; background: transparent; cursor: pointer;
+  -webkit-appearance: none; appearance: none; touch-action: none;
+}
+.a01-lam[hidden] { display: none; }
+.a01-lam::-webkit-slider-runnable-track { background: transparent; height: 100%; }
+.a01-lam::-moz-range-track { background: transparent; height: 100%; }
+.a01-lam::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 10px; height: 100%;
+  background: transparent; border: 2px solid #fff; box-shadow: 0 0 0 2px #000, inset 0 0 0 2px #000; border-radius: 2px;
+}
+.a01-lam::-moz-range-thumb {
+  width: 6px; height: 100%; background: transparent; border: 2px solid #fff; box-shadow: 0 0 0 2px #000, inset 0 0 0 2px #000; border-radius: 2px;
+}
+.a01-lam:focus { outline: none; }
+.a01-lam:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* līmeņu pogas virs shēmas: caurspīdīgas (uzrakstus zīmē kanva), redzamas uz hover un fokusa */
+.a01-levels { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.a01-level {
+  position: absolute; height: 24px; padding: 0; pointer-events: auto; cursor: pointer;
+  background: transparent; border: 1px solid transparent; border-radius: 2px;
+}
+.a01-level:hover { border-color: var(--hairline); }
+.a01-level:focus { outline: none; }
+.a01-level:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* rādījums virs zīmējuma */
+.layout-hud .a01-readout {
+  position: absolute; left: 50%; top: 4px; transform: translateX(-50%); z-index: 1; margin: 0;
+  max-width: calc(100% - 32px); padding: 2px 10px; text-align: center; pointer-events: none;
+  font-size: calc(12px * var(--hud)); line-height: 1.35; color: var(--ink); background: var(--field);
+  font-variant-numeric: tabular-nums;
+}
+
+/* josla: uz hover teksts paliek redzams (kopīgais .btn:hover maina tikai krāsu, fons paliek --sheet → teksts pazustu) */
+.layout-hud.a01 .m01-row .btn:hover:not(:disabled) { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
