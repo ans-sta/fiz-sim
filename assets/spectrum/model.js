@@ -4,7 +4,10 @@ import { formatNumber } from '../measure/format.js';
 
 export const F_MIN = 20;
 export const F_MAX = 20000;
-export const REC_MIN = 25; // rekordus un pamattoni meklē no 25 Hz (zemāk telpas dūkoņa un mikrofona troksnis)
+export const REC_MIN = 25; // pamattoni un toņus meklē no 25 Hz (zemāk telpas dūkoņa un mikrofona troksnis)
+// Rekordos skaitās tikai 40–5 000 Hz — balss, svilpiens, instrumenti (Ansis 03.11: telefonā un datorā rekordos bija
+// ~16–17 kHz elektronikas pīkstiens un ~26–29 Hz dūkoņa); grafiks un lielais skaitlis rāda visu
+export const REC_RANGE = { lo: 40, hi: 5000 };
 export const SEAM = 400; // zem šīs frekvences garais FFT (32 768), virs — īsais (8 192)
 export const DB_FLOOR = -160;
 const DECADES = 3; // 20 Hz–20 kHz
@@ -48,7 +51,11 @@ export function spectralRGB(nm) {
   else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
   else if (nm < 510) { g = 1; b = (510 - nm) / 20; }
   else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
-  else if (nm < 645) { r = 1; g = (645 - nm) / 65; }
+  // dzeltenā → oranžā → sarkanā: Bruton lineārais g = (645 − λ)/65 590–600 nm zīmēja zeltaini dzeltenu, lai gan tā ir oranžā josla
+  // (Ansis 03.11, 146 Hz); tagad zaļais krīt straujāk līdz 597 nm, robežas (§ 4.7) tās pašas
+  else if (nm < 597) { r = 1; g = 1 - (0.45 * (nm - 580)) / 17; }
+  else if (nm < 620) { r = 1; g = 0.55 - (0.25 * (nm - 597)) / 23; }
+  else if (nm < 645) { r = 1; g = (0.3 * (645 - nm)) / 25; }
   else r = 1;
   const k = nm < 420 ? 0.3 + (0.7 * (nm - 380)) / 40 : nm > 700 ? 0.3 + (0.7 * (780 - nm)) / 80 : 1;
   const c = (v) => Math.round(255 * Math.pow(Math.max(0, Math.min(1, v * k)), 0.8));
@@ -149,6 +156,7 @@ export function createFloor(n, { rise = 0.3, fastRise = 120, settle = 1, fall = 
         level[i] = v > l ? Math.min(v, l + up) : l + (v - l) * a;
       }
     },
+    get settled() { return age >= settle; }, // fons iepazīts (pirmā sekunde ar skaņu pagājusi)
     reset() { age = -1; },
   };
 }
@@ -324,7 +332,11 @@ export function createAnalysis(sampleRate, { thresh = 15, prom = 10, maxTones = 
         thr[i] = Math.max(band, binFloor.level[i]) + thresh;
       }
       const tones = findTones(map, db, thr, [low, high], { prom, maxTones, fmin, scratch });
-      return { tones, pitch: fundamental(tones, { fmin }) };
+      // “Skan” — vismaz 3 joslas virs sliekšņa (runa, šņākoņa, slīdoša nots), arī ja stabila augstuma nav; tad rādījums nav “klusums”.
+      // Viena josla pie paša sliekšņa ir trokšņa svārstība; pirmajā sekundē fons vēl mācās (analizatora buferis pildās).
+      let above = 0;
+      if (binFloor.settled) for (let i = 0; i < n && above < 3; i++) if (db[i] > thr[i] && map.f[i] >= fmin) above++;
+      return { tones, pitch: fundamental(tones, { fmin }), heard: above >= 3 };
     },
     reset() {
       binFloor.reset();
@@ -441,7 +453,8 @@ export function createReadout({ every = 0.2, silence = 0.5 } = {}) {
 }
 
 // Rekords mainās, ja jaunais tonis ir zemāks/augstāks vairāk par margin (citādi turētas nots trīce mainītu rekordu katrā kadrā)
-export function addRecord(rec, f, margin = 0.003) {
+export function addRecord(rec, f, margin = 0.003, { lo = REC_RANGE.lo, hi = REC_RANGE.hi } = {}) {
+  if (!(f >= lo && f <= hi)) return { rec, changed: null };
   if (rec.lo === null) return { rec: { lo: f, hi: f }, changed: 'first' };
   if (f < rec.lo * (1 - margin)) return { rec: { lo: f, hi: rec.hi }, changed: 'lo' };
   if (f > rec.hi * (1 + margin)) return { rec: { lo: rec.lo, hi: f }, changed: 'hi' };

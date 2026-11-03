@@ -7,7 +7,7 @@ test('LV and EN have exactly the same keys', () => {
 });
 
 test('the keys the shared modules and the page need are there', () => {
-  const need = ['page.title', 'page.heading', 'page.back', 'page.skip', 'tb.set', 'tb.sheet', 'tb.topic', 'tb.topicValue', 'tb.themeToggle', 'tb.fullscreen',
+  const need = ['page.title', 'page.heading', 'page.backWord', 'page.skip', 'tb.set', 'tb.sheet', 'tb.topic', 'tb.topicValue', 'tb.themeToggle', 'tb.fullscreen',
     'bar.mic', 'bar.view', 'bar.sens', 'bar.sensName', 'bar.fixed', 'dims.decrease', 'dims.increase',
     'run.start', 'run.starting', 'run.pause', 'run.resume', 'run.startAria', 'run.pauseAria', 'run.resumeAria',
     'view.spectrum', 'view.spectrogram', 'info.btnAria', 'info.title', 'info.close',

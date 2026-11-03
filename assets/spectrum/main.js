@@ -46,11 +46,12 @@ const state = {
   frames: 0,
   rec: { lo: null, hi: null },
   shown: null, // pamattonis lielajā rādījumā (≤ 5 reizes sekundē)
+  heardT: -Infinity, // pēdējais brīdis, kad kaut kas skanēja virs sliekšņa
   loud: null, // skaļākā virsotne { f, db } (≤ 5 reizes sekundē)
   cursorU: null,
   cursorKey: false,
   hovering: false,
-  flash: { lo: 0, hi: 0 },
+  flash: { lo: -Infinity, hi: -Infinity }, // jauna rekorda izcēlums (ne lapas ielādē)
   drawScale: 1,
 };
 const stab = createStability();
@@ -124,6 +125,7 @@ function attach(mic) {
   history.clear();
   colsDisp.fill(DB_FLOOR);
   state.shown = null;
+  state.heardT = -Infinity;
   state.loud = null;
   state.frames = 0;
   state.status = 'live';
@@ -199,12 +201,60 @@ el('sensMinus').addEventListener('click', () => setSens(state.settings.sens - 1)
 el('sensPlus').addEventListener('click', () => setSens(state.settings.sens + 1));
 el('resetBtn').addEventListener('click', resetRecords);
 el('infoBtn').addEventListener('click', openInfo);
+
+// SĀKT / PAUZE / TURPINĀT: poga vienmēr garākā uzraksta platumā — mainot stāvokli, josla nelec
+const runBtn = el('runBtn');
+const runLab = document.createElement('span');
+const runSizer = document.createElement('span');
+runLab.className = 's03-runlab';
+runSizer.className = 's03-runsizer';
+runSizer.setAttribute('aria-hidden', 'true');
+runBtn.replaceChildren(runLab, runSizer);
+let runSizerLang = '';
+function sizeRun() {
+  if (runSizerLang === i18n.lang()) return;
+  runSizerLang = i18n.lang();
+  runSizer.replaceChildren(...['run.start', 'run.starting', 'run.pause', 'run.resume'].map((k) => {
+    const sp = document.createElement('span');
+    sp.textContent = t(k);
+    return sp;
+  }));
+}
+
+// Atvilknes (APG Disclosure): JUTĪBA telefonā un pamattoņa paskaidrojums. Esc vai klikšķis ārpusē aizver.
+const sensGrp = el('sensGrp');
+const sensBtn = el('sensBtn');
+const footBtn = el('footBtn');
+const footTip = el('footTip');
+const sensIsDrawer = () => getComputedStyle(sensBtn).display !== 'none';
+function setSensOpen(open) {
+  sensGrp.classList.toggle('open', open);
+  setAttr(sensBtn, 'aria-expanded', open);
+}
+function setTip(open) {
+  setHidden(footTip, !open);
+  setAttr(footBtn, 'aria-expanded', open);
+}
+sensBtn.addEventListener('click', () => setSensOpen(!sensGrp.classList.contains('open')));
+footBtn.addEventListener('click', () => setTip(footTip.hidden));
+function closePops() {
+  let any = false;
+  const a = document.activeElement;
+  if (!footTip.hidden) { setTip(false); if (a === footBtn || footTip.contains(a)) footBtn.focus(); any = true; }
+  if (sensGrp.classList.contains('open')) { setSensOpen(false); if (sensIsDrawer() && sensGrp.contains(a)) sensBtn.focus(); any = true; }
+  return any;
+}
+document.addEventListener('pointerdown', (e) => {
+  if (!footTip.hidden && !e.target.closest('.s03-khead')) setTip(false);
+  if (sensGrp.classList.contains('open') && !sensGrp.contains(e.target)) setSensOpen(false);
+}, true);
 // Pēc klikšķa ar peli poga atdod fokusu, lai atstarpe paliek apturēšanai (kā M-01); ar tastatūru fokuss paliek
 el('bar').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && e.detail > 0 && b.id !== 'infoBtn') b.blur(); });
 
 document.addEventListener('keydown', (ev) => {
   if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if (document.querySelector('.overlay')) return;
+  if (ev.key === 'Escape') { if (closePops()) ev.preventDefault(); return; }
   const tag = ev.target?.tagName;
   const onCursor = ev.target === cursorEl; // kursorā atstarpe aptur (lai aplūko vienu mirkli), bultiņas kustina kursoru
   if (onCursor ? ev.key !== ' ' : tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON' || tag === 'A') return;
@@ -301,6 +351,7 @@ function process(dt) {
     columnsFrom(mic.lowBuf, mic.highBuf, mic.sampleRate, rowBuf);
     while (gramAcc >= 1) { history.push(rowBuf); gramAcc -= 1; }
   }
+  if (res.heard) state.heardT = state.time;
   const stable = stab.push(state.time, res.pitch ? res.pitch.f0 : null);
   state.shown = readout.update(state.time, stable);
   const loud = res.pitch ? res.pitch.loud : null;
@@ -404,7 +455,8 @@ function renderDom() {
   setText(el('micLabel'), t('bar.mic'));
   const run = el('runBtn');
   const runKey = live ? (state.paused ? 'run.resume' : 'run.pause') : state.status === 'starting' ? 'run.starting' : 'run.start';
-  setText(run, t(runKey));
+  sizeRun();
+  setText(runLab, t(runKey));
   setAttr(run, 'aria-label', t(live ? (state.paused ? 'run.resumeAria' : 'run.pauseAria') : 'run.startAria'));
   run.disabled = state.status === 'starting';
   run.classList.toggle('live', live && !state.paused);
@@ -423,6 +475,8 @@ function renderDom() {
   setHidden(el('sensFix'), !sLock);
   setText(el('sensFix'), t('bar.fixed'));
   setText(el('sensVal'), String(s.sens));
+  setText(sensBtn, String(s.sens));
+  setAttr(sensBtn, 'aria-label', t('bar.sensBtn', { n: s.sens }));
   if (Number(sensRange.value) !== s.sens) sensRange.value = String(s.sens);
   sensRange.disabled = sLock;
   setAttr(sensRange, 'aria-label', t('bar.sensName'));
@@ -459,13 +513,16 @@ function renderDom() {
   setText(el('readTitleText'), t('read.title'));
   const f = live ? state.shown : null;
   setText(el('bigNum'), f ? formatFreq(f, lang) : '—');
-  setHidden(el('bigUnit'), !f);
-  setText(el('bigNote'), f ? noteText(f) : t(live ? 'read.silence' : 'read.off'));
+  el('bigUnit').classList.toggle('off', !f); // vieta paliek — rādījums nelec
+  const heard = live && state.time - state.heardT <= 0.5; // kā rādījuma “—” pēc 0,5 s
+  setText(el('bigNote'), f ? noteText(f) : t(!live ? 'read.off' : heard ? 'read.noPitch' : 'read.silence'));
   setText(el('bigCents'), f ? centsText(noteParts(f).cents) : '');
   swatch(el('bigSwatch'), f || null, L);
   const band = f ? colorBand(f) : null;
-  setText(el('bigColor'), band ? t(`color.${band}`) : '');
+  // krāsu rāda lauciņš; nosaukums tikai ekrāna lasītājam (Ansis 03.11: “parādīt to, jā, bet rakstīt — diez vai”)
+  setText(el('bigColor'), band ? t('read.colorAria', { name: t(`color.${band}`).toLowerCase() }) : '');
   setText(el('foot'), t('read.foot'));
+  setAttr(footBtn, 'aria-label', t('read.tipAria'));
 
   // rekordi
   const now = performance.now();
@@ -478,7 +535,7 @@ function renderDom() {
   }
   const { lo, hi } = state.rec;
   setText(el('recSpan'), lo && hi && hi / lo > 1.0001 ? t('rec.span', { n: formatNumber(octaves(lo, hi), 1, lang) }) : '');
-  setText(el('resetBtn'), t('rec.reset'));
+  setText(el('resetWord'), t('rec.reset'));
   setAttr(el('resetBtn'), 'aria-label', t('rec.resetAria'));
 
   // kanva un kursors

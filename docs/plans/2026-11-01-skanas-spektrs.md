@@ -83,8 +83,8 @@ Tastatūra: atstarpe — apturēt/turpināt; R — rekordi no jauna (kā M-01 �
 - Virsraksts **PAMATTONIS \*** (Ansis 02.11: “Pamattoni. Ar zvaigznīti.”). Zem rādījuma zemsvītras piezīme: “\* Pamattonis — augstums, ko dzird auss. Skaļākā virsotne (▲ grafikā) var būt 2., 3. … harmonika.” Grafikā pamattonis atzīmēts ar to pašu zvaigznīti.
 - Liels skaitlis: zem 100 Hz ar vienu decimāli (82,4 Hz), no 100 Hz vesels (440 Hz), tūkstoši ar atstarpi (3 520 Hz). IBM Plex Mono, tabulārie cipari.
 - Zem tā nots: “la · 1. oktāva” (S-02 nosaukumi: do, do♯ … si; lielā, mazā, 1., 2. … oktāva). Ja nots atšķiras vairāk par ±20 centiem, centi mazā rindiņā (“+32 c”).
-- Krāsas lauciņš ar nosaukumu: SARKANA, ORANŽA, DZELTENA, ZAĻA, ZILA, VIOLETA (§ 4.7).
-- Kad nekas neskan pietiekami skaļi — “—” un blāvs uzraksts “klusums”.
+- Krāsas josliņa (§ 4.7); nosaukums (SARKANA, ORANŽA, DZELTENA, ZAĻA, ZILA, VIOLETA) tikai ekrāna lasītājam (§ 11.12).
+- Kad nekas neskan pietiekami skaļi — “—” un blāvs uzraksts “klusums”. Ja skan (runa, šņākoņa, ātri slīdoša nots), bet stabila toņa nav — “—” un “nav stabila toņa” (§ 11.10).
 - Skaitlis atjaunojas ~5 reizes sekundē, lai to var nolasīt; uz citu virsotni pārlec tikai tad, ja tā ir skaidri skaļāka (≥ 3 dB) vai noturas ≥ 0,2 s. Grafiks pats atjaunojas katrā kadrā.
 
 ### 3.6 Spēle “Zemākā un augstākā”
@@ -166,7 +166,7 @@ Skaļākā virsotne: lielākā josla spektrā, tad frekvenci precizē ar parabol
 - Lapa katrai frekvencei seko fona līmenim — tam, kas skan visu laiku (ventilators, projektors, klases dūkoņa): fona līkne lēni ceļas (desmitos sekunžu) un ātri krīt. Ilgi turēts tonis tāpēc fonā “neiesūcas”.
 - Slieksnis = fons + 15 dB. Grafikā to rāda raustītā līnija.
 - Rekordam (un lielā rādījuma “nav klusums” stāvoklim) virsotnei jābūt virs sliekšņa, šaurai (tonis, ne troksnis — vismaz 10 dB virs apkārtnes ±1/3 oktāvas robežās) un jāturas ≥ 0,25 s ar frekvenci ±3 % robežās. Tā izkrīt plaukšķi, klikšķi, “sss” un runas troksnis.
-- Rekordus meklē 25 Hz–20 kHz (zem 25 Hz telpas dūkoņa un mikrofona trokšņi).
+- Rekordos skaitās 40 Hz–5 kHz (Ansis 03.11; sākumā bija 25 Hz–20 kHz, bet telefonā un datorā rekordos nonāca ~16–17 kHz elektronikas pīkstiens un ~26–29 Hz dūkoņa). Grafiks un lielais skaitlis rāda no 25 Hz.
 
 ### 4.6 Ko lapa nevar
 
@@ -262,3 +262,6 @@ Uzbūvēts pēc § 1–10 ar šiem sīkākiem lēmumiem, kas radās būvējot:
 7. **Telefons:** portretā BURTI ne vairāk kā 130 %, lai grafikam paliek vieta; šaurā galvenē virsraksts “SKAŅAS SPEKTRS”.
 8. **“i” piezīmē** papildus sadaļa “Pamattonis un rekordi” (kas skaitās tonis, ko dara pirmā sekunde).
 9. **Papildu ziņas** (precīzs cēlonis): mikrofons dod pilnīgu klusumu (izslēgts, skaļums 0); pārlūks apturēja skaņas apstrādi (Safari pēc miega) — klikšķis turpina. Atvienota izvēlētā ierīce → nākamais SĀKT ņem jebkuru mikrofonu. Mikrofona maiņa “i” piezīmē: ja neizdodas, vecais turpina strādāt, cēlonis redzams piezīmē.
+10. **Pēc Anša pārbaudes ar īstu mikrofonu (03.11):** rādījums vairs nesaka “klusums”, kad skan, bet stabila toņa nav (ekrānuzņēmumā skanēja balss, nots mainījās) — tad “nav stabila toņa”; “skan” — vismaz 3 joslas virs sliekšņa pēc tam, kad fons iepazīts. Sliekšņa uzraksts “slieksnis” vairs nepaliek zem AUGSTĀKĀ rāmīša, ja rekords ir pie grafika labās malas — tad uzraksts paceļas virs rāmīša.
+11. **Telefons pēc Anša 03.11 (iPhone 16 Pro Max ekrānuzņēmumi: “spektra grafiks ir pārāk mazs, un kontroles pārāk lielas”; “grafikam ir jāaizņem LIELĀKĀ ekrāna daļa”):** josla vienā rindā — ⏸ PAUZE (bija APTURĒT; arī grafika rāmītis PAUZE) · SPEKTRS|SPEKTROGRAMMA · JUTĪBA atvilknē (sakļautā redz tikai skaitli; datorā josla kā līdz šim) · i. Virsraksts vienā rindā, atpakaļ saitē tikai ←. Paskaidrojums “* Pamattonis — …” uznirst, uzspiežot “i” pie PAMATTONIS (visos ekrānos). Nekas nelec, mainoties vērtībām: skaitlim rezervēti 5 cipari, vienība vienmēr aizņem vietu, rindas fiksētā augstumā, poga SĀKT/PAUZE/TURPINĀT garākā uzraksta platumā (Ansis: “tam ir jābūt noklusējumā”). Grafiks portretā ~70–76 % ekrāna (320 px — ~67 %), guļus ~50–58 %; burti telefonā līdz 115 % (320–379 px — 100 %). Telefonā portretā rekordu rindā “↺” bez vārda, starpība — guļus un datorā. PAUZE rāmītis grafika kreisajā augšējā stūrī, virsotņu uzraksti to apiet; mazā kanvā uzraksti 11–14 px.
+12. **Ansis 03.11 (“Jā, visus trīs — dari, kā iesaki”):** rekordos tikai 40–5 000 Hz; oranžajā joslā (590–620 nm, ~86–159 Hz) lauciņš un spektrs oranžāki (Bruton zaļais kanāls krīt straujāk līdz 597 nm; robežas tās pašas; tests: 101–146 Hz g ≤ 180, 170–188 Hz g ≥ 210). Pie lielā rādījuma krāsas nosaukums vairs nav rakstīts — tikai krāsas josliņa (“parādīt to, jā, bet rakstīt — diez vai”); nosaukums ekrāna lasītājam (“Krāsa: oranža”).

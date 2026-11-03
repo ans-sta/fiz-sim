@@ -676,7 +676,14 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .s03-bar .m01-end { justify-content: flex-end; }
 .layout-hud .s03-seg { gap: 0; }
 .layout-hud .s03-seg .btn + .btn { margin-left: -1px; }
-.layout-hud .m01-row .btn.s03-run { min-width: 9.5em; border-color: var(--ink); color: var(--ink); }
+.layout-hud .m01-row .btn.s03-run { display: inline-grid; justify-items: center; border-color: var(--ink); color: var(--ink); }
+/* poga garākā uzraksta platumā (SĀKT / PAUZE / TURPINĀT sakrauti vienā šūnā, neredzami) — mainot stāvokli, josla nelec */
+.layout-hud .s03-run > span { grid-area: 1 / 1; }
+.layout-hud .s03-runsizer { display: grid; visibility: hidden; }
+.layout-hud .s03-runsizer > span { grid-area: 1 / 1; }
+/* JUTĪBA: datorā vadīklas joslā kā līdz šim (atvilknes poga paslēpta); telefonā — atvilkne */
+.layout-hud .s03-sensbtn { display: none; }
+.layout-hud .s03-senspanel { display: contents; }
 .layout-hud .m01-row .btn.s03-run:hover:not(:disabled) { background: var(--ink); color: var(--sheet); }
 .layout-hud .m01-row .btn.s03-info { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(13px * var(--hud)); }
 .layout-hud .s03-sensval { min-width: 2ch; }
@@ -698,14 +705,23 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .s03-side { flex: none; width: min(calc(300px * var(--hud)), 42%); container-type: inline-size; border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: calc(16px * var(--hud)); overflow-y: auto; padding: calc(12px * var(--hud)) calc(16px * var(--hud)); background: var(--sheet); }
 .s03-has-title .s03-side { padding-bottom: 64px; } /* mazais rakstlaukums labajā apakšas stūrī */
 .layout-hud .s03-read { display: flex; flex-direction: column; gap: calc(4px * var(--hud)); }
+.layout-hud .s03-khead { position: relative; display: flex; align-items: center; gap: calc(8px * var(--hud)); }
 .layout-hud .s03-k { font-size: calc(11px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); font-weight: 500; }
+.layout-hud .s03-tipbtn { flex: none; display: grid; place-items: center; width: max(24px, calc(22px * var(--hud))); height: max(24px, calc(22px * var(--hud))); padding: 0; background: var(--sheet); border: 1px solid var(--hairline); color: var(--ink); cursor: pointer; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(12px * var(--hud)); }
+.layout-hud .s03-tipbtn:hover, .layout-hud .s03-tipbtn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+/* paskaidrojums uznirst zem virsraksta virs rādījuma (nepārbīda neko) */
+.layout-hud .s03-khead .s03-foot { position: absolute; z-index: 6; left: 0; right: 0; top: calc(100% + 6px); background: var(--sheet); border: 1px solid var(--ink); padding: calc(10px * var(--hud)) calc(12px * var(--hud)); color: var(--ink); }
+.layout-hud .s03-khead .s03-foot[hidden] { display: none; }
+/* rādījums nelec: skaitlim rezervēti 5 cipari (labajā malā), vienība vienmēr aizņem vietu, rindas fiksētā augstumā vienā rindā */
 .layout-hud .s03-big { display: flex; align-items: baseline; gap: 0.12em; font-size: min(calc(72px * var(--hud)), 19cqi); font-weight: 500; line-height: 1.05; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.layout-hud .s03-num { display: inline-block; min-width: 5ch; text-align: right; }
 .layout-hud .s03-unit { font-size: 0.34em; color: var(--ink-dim); font-weight: 400; }
-.layout-hud .s03-note { font-size: calc(16px * var(--hud)); min-height: 1.4em; }
+.layout-hud .s03-unit.off { visibility: hidden; }
+.layout-hud .s03-note { font-size: min(calc(16px * var(--hud)), 5.6cqi); height: 1.4em; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .layout-hud .s03-cents { color: var(--ink-dim); font-size: 0.85em; white-space: nowrap; }
-.layout-hud .s03-color { display: flex; align-items: center; gap: 0.6em; font-size: calc(14px * var(--hud)); letter-spacing: 0.12em; font-weight: 600; min-height: 1.6em; }
+.layout-hud .s03-color { display: flex; align-items: center; gap: 0.6em; font-size: calc(14px * var(--hud)); letter-spacing: 0.12em; font-weight: 600; height: 1.6em; white-space: nowrap; }
 .layout-hud .s03-swatch { display: inline-block; flex: none; width: 0.9em; height: 0.9em; border: 1px solid var(--ink); align-self: center; }
-.layout-hud .s03-color .s03-swatch { width: 1.4em; height: 1.4em; }
+.layout-hud .s03-color .s03-swatch { width: 3em; height: 1.3em; } /* krāsas josliņa bez nosaukuma (tas ekrāna lasītājam) */
 .layout-hud .s03-swatch.off { visibility: hidden; }
 .layout-hud .s03-foot { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(11.5px * var(--hud)); line-height: 1.4; color: var(--ink-dim); }
 .layout-hud .s03-recs { border-top: 1px solid var(--ink); padding-top: calc(10px * var(--hud)); display: grid; gap: calc(8px * var(--hud)); }
@@ -718,6 +734,7 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .s03-recn { flex-basis: 100%; text-align: right; font-size: calc(12px * var(--hud)); color: var(--ink-dim); min-height: 1.3em; }
 .layout-hud .s03-rec.new .s03-recv { color: var(--accent); }
 .layout-hud .s03-span { font-size: calc(12px * var(--hud)); color: var(--ink-dim); min-height: 1.4em; }
+.layout-hud .s03-reset .s03-resetword { margin-left: 0.5em; }
 .layout-hud .s03-reset { justify-self: start; background: var(--sheet); font-size: calc(10.5px * var(--hud)); padding: calc(7px * var(--hud)) calc(12px * var(--hud)); letter-spacing: 0.08em; font-weight: 600; }
 
 .s03-overlay .s03-info-body { gap: 18px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(15px * var(--ui, 1)); line-height: 1.55; }
@@ -729,39 +746,83 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .s03-overlay .s03-micpick select { font-size: calc(13px * var(--ui, 1)); padding: 6px; }
 .s03-overlay .s03-privacy { color: var(--ink-dim); }
 
-/* Telefons (portretā): aile — šaura josla virs grafika (pamattonis, nots, krāsa vienā rindā; rekordi otrā) */
+/* ── Telefons (Ansis 03.11: grafikam lielākā ekrāna daļa) ──
+   Josla vienā rindā: PAUZE · SPEKTRS|SPEKTROGRAMMA · jutības skaitlis (atvilkne) · i; grupu nosaukumi tikai ekrāna lasītājam
+   (redzami, ja kas FIKS.). Virsraksts vienā rindā, atpakaļ saitē tikai ←. Burti telefonā aug ne vairāk kā līdz 115 %. */
+@media (max-width: 700px) and (orientation: portrait), (max-height: 480px) and (orientation: landscape) {
+  .layout-hud.s03 { --hud: min(var(--ui, 1), 1.15); }
+  .layout-hud.s03 header { --head: min(var(--hud), 1.1); }
+  .layout-hud.s03 h1 { white-space: nowrap; flex-wrap: nowrap; padding: calc(7px * var(--head)) calc(10px * var(--head)); letter-spacing: 0.08em; }
+  .layout-hud .s03-backword { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .layout-hud .s03-bar { position: relative; flex-wrap: nowrap; padding: 0 2px; }
+  .layout-hud .s03-bar .m01-group { padding: calc(5px * var(--hud)) calc(5px * var(--hud)); border-right: none; justify-content: center; }
+  .layout-hud .s03-bar .m01-label { display: block; } /* M-01 telefonā tos slēpj pavisam; šeit FIKS. un atvilknes virsraksts paliek redzami */
+  .layout-hud .s03-bar .m01-label:not(:has(.fix:not([hidden]))) { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .layout-hud .s03-bar .m01-row { min-height: 0; gap: calc(4px * var(--hud)); }
+  .layout-hud .s03-bar .m01-row .btn, .layout-hud .s03-bar .s03-sensbtn { font-size: calc(10px * var(--hud)); padding: calc(6px * var(--hud)) calc(7px * var(--hud)); letter-spacing: 0.05em; min-height: 28px; }
+  .layout-hud .s03-bar .m01-end { margin-left: auto; }
+  .layout-hud .m01-row .btn.s03-info { min-width: 30px; }
+  .layout-hud .s03-sensbtn { display: inline-grid; place-items: center; min-width: calc(30px * var(--hud)); background: var(--sheet); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .layout-hud .s03-sensbtn[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); }
+  .layout-hud .s03-senspanel { display: none; }
+  .layout-hud .s03-sensgrp.open .s03-senspanel { display: flex; flex-direction: column; gap: calc(4px * var(--hud)); position: absolute; z-index: 6; left: 0; right: 0; top: 100%; background: var(--sheet); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--ink); padding: calc(8px * var(--hud)) 12px calc(10px * var(--hud)); }
+  .layout-hud .s03-sensgrp.open .s03-senspanel .m01-label { position: static; width: auto; height: auto; margin: 0; clip: auto; overflow: visible; }
+  .layout-hud .s03-senspanel .m01-row input.dim-range { flex: 1; width: auto; }
+  .layout-hud .s03-senspanel .q-step { width: 32px; height: 32px; }
+  .layout-hud .s03-msg-text { font-size: calc(15px * var(--hud)); }
+}
+
+/* Telefons portretā: rādījumu josla virs grafika (2 rindas pamattonim, 1 rekordiem), grafiks — viss pārējais */
 @media (max-width: 700px) and (orientation: portrait) {
   .layout-hud .s03-work { flex-direction: column; }
-  .layout-hud .s03-side { order: -1; width: auto; flex: none; overflow: visible; border-left: none; border-bottom: 1px solid var(--hairline); padding: 6px 10px 8px; gap: 6px; }
-  .s03-has-title .s03-side { padding-bottom: 8px; }
+  .layout-hud .s03-side { order: -1; width: auto; flex: none; overflow: visible; border-left: none; border-bottom: 1px solid var(--hairline); padding: 5px 10px 6px; gap: 4px; }
+  .s03-has-title .s03-side { padding-bottom: 6px; }
   .layout-hud .s03-read { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; row-gap: 0; align-items: center; }
-  .layout-hud .s03-k { grid-column: 1 / -1; font-size: calc(9.5px * var(--hud)); }
-  .layout-hud .s03-big { grid-row: span 2; font-size: calc(34px * min(var(--hud), 1.3)); }
-  .layout-hud .s03-note { font-size: calc(13px * min(var(--hud), 1.3)); min-height: 0; }
-  .layout-hud .s03-color { font-size: calc(11px * min(var(--hud), 1.3)); min-height: 0; }
-  .layout-hud .s03-foot { grid-column: 1 / -1; font-size: calc(10.5px * min(var(--hud), 1.3)); margin-top: 2px; }
-  .layout-hud .s03-recs { padding-top: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; border-top-color: var(--hairline); }
-  .layout-hud .s03-reclist { display: flex; flex-wrap: wrap; gap: 2px 14px; }
-  .layout-hud .s03-rec { display: flex; align-items: baseline; gap: 0.4em; }
-  .layout-hud .s03-rec dt { font-size: calc(9.5px * var(--hud)); }
-  .layout-hud .s03-recv { font-size: calc(15px * min(var(--hud), 1.3)); }
-  .layout-hud .s03-rec dd .s03-swatch { font-size: calc(13px * min(var(--hud), 1.3)); }
+  .layout-hud .s03-khead { grid-column: 1 / -1; }
+  .layout-hud .s03-k { font-size: calc(9.5px * var(--hud)); }
+  .layout-hud .s03-big { grid-row: span 2; font-size: min(calc(30px * var(--hud)), 9cqi); }
+  .layout-hud .s03-note { font-size: min(calc(13px * var(--hud)), 3.4cqi); }
+  .layout-hud .s03-color { font-size: min(calc(11px * var(--hud)), 3cqi); height: 1.5em; }
+  .layout-hud .s03-color .s03-swatch { width: 3em; height: 1.2em; }
+  .layout-hud .s03-recs { padding-top: 4px; display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; border-top-color: var(--hairline); }
+  .layout-hud .s03-reclist { display: flex; flex-wrap: nowrap; gap: 10px; min-width: 0; }
+  .layout-hud .s03-rec { display: flex; align-items: baseline; gap: 0.35em; }
+  .layout-hud .s03-rec dt { font-size: min(calc(9px * var(--hud)), 2.6cqi); letter-spacing: 0.08em; }
+  .layout-hud .s03-rec dd { flex-wrap: nowrap; gap: 0.3em; }
+  .layout-hud .s03-recv { font-size: min(calc(14px * var(--hud)), 3.9cqi); min-width: 8ch; text-align: right; }
+  .layout-hud .s03-rec dd .s03-swatch { font-size: min(calc(12px * var(--hud)), 3.3cqi); }
   .layout-hud .s03-recn { display: none; }
-  .layout-hud .s03-span { min-height: 0; font-size: calc(10.5px * min(var(--hud), 1.3)); }
-  .layout-hud .s03-span:empty { display: none; }
-  .layout-hud .s03-reset { margin-left: auto; padding: 5px 8px; }
-  .layout-hud .s03-msg-text { font-size: calc(15px * min(var(--hud), 1.3)); }
+  .layout-hud .s03-span { display: none; } /* starpība telefonā — “i” piezīmē un datorā; joslai vieta grafikam */
+  .layout-hud .s03-reset { margin-left: auto; flex: none; padding: 5px 8px; min-height: 28px; font-size: calc(10px * var(--hud)); }
 }
-/* Telefons ainavā: aile šaurāka */
+/* šaurs telefons: rekordu rindā pogai tikai ↺ (nosaukums ekrāna lasītājam paliek), josla bez atstarpēm burtos */
+@media (max-width: 440px) and (orientation: portrait) {
+  .layout-hud .s03-reset .s03-resetword { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .layout-hud .s03-reset { min-width: 32px; font-size: calc(13px * var(--hud)); padding: 3px 6px; }
+}
+@media (max-width: 379px) and (orientation: portrait) {
+  .layout-hud.s03 { --hud: min(var(--ui, 1), 1); } /* 320–379 px: lielāki burti joslu vairs neietilpinātu vienā rindā */
+  .layout-hud.s03 header { --head: min(var(--hud), 1); }
+  .layout-hud .s03-bar .m01-group { padding-left: 3px; padding-right: 3px; }
+  .layout-hud .s03-bar .m01-row .btn, .layout-hud .s03-bar .s03-sensbtn { letter-spacing: 0; padding-left: 5px; padding-right: 5px; }
+  .layout-hud .m01-row .btn.s03-info, .layout-hud .s03-sensbtn { min-width: 28px; }
+}
+/* Telefons ainavā: grafiks pa kreisi visā augstumā zem joslas, šaura aile pa labi */
 @media (max-height: 480px) and (orientation: landscape) {
-  .layout-hud .s03-side { width: min(calc(220px * var(--hud)), 40%); gap: 8px; padding: 6px 10px; }
-  .layout-hud .s03-foot { display: none; }
-  .layout-hud .s03-recv { font-size: calc(16px * var(--hud)); }
+  .layout-hud .s03-side { width: min(calc(230px * var(--hud)), 32%); gap: 6px; padding: 6px 10px; }
+  .layout-hud .s03-big { font-size: min(calc(40px * var(--hud)), 17cqi); }
+  .layout-hud .s03-note { font-size: min(calc(13px * var(--hud)), 6cqi); }
+  .layout-hud .s03-color { font-size: calc(11px * var(--hud)); height: 1.5em; }
+  .layout-hud .s03-recs { padding-top: 6px; gap: 4px; }
+  .layout-hud .s03-reclist { gap: 4px; }
+  .layout-hud .s03-recv { font-size: min(calc(15px * var(--hud)), 7cqi); }
+  .layout-hud .s03-recn { display: none; }
+  .layout-hud .s03-span { font-size: calc(10.5px * var(--hud)); }
+  .layout-hud .s03-reset { padding: 5px 8px; min-height: 28px; }
 }
 .s03 .head-tools button { min-width: 24px; min-height: 24px; } /* WCAG 2.5.8: mērķi ≥ 24 × 24 px (tikai šajā lapā) */
 .s03-hshort { display: none; }
 @media (max-width: 520px) { .s03-hfull { display: none; } .s03-hshort { display: inline; } } /* “ANALIZATORS” šaurā galvenē neietilpst */
-@media (max-width: 700px) and (orientation: portrait) { .layout-hud.s03 { --hud: min(var(--ui, 1), 1.3); } } /* telefonā josla un aile neaug tā, ka grafikam nepaliek vietas */
 
 /* ══ E-01 Ģenerators un motors: josla zem galvenes (M-01 klases), zīmējums izometrijā, ģeneratorā zem tā grafiks ══ */
 /* Gaišajā tēmā blāvā tinte un akcents tumšāki (kā S-03), lai mazs teksts ir ≥ 4,5 : 1 (WCAG AA):

@@ -109,6 +109,19 @@ test('colour mapping: 440 Hz → 544 nm green; band edges as in the spec table',
   assert.equal(M.colorBand(15000), 'violet');
 });
 
+test('a frequency named ORANGE is drawn orange, YELLOW yellow (Ansis 03.11: 146 Hz looked yellow)', () => {
+  for (const f of [136, 146, 113, 101]) {
+    assert.equal(M.colorBand(f), 'orange', String(f));
+    const [r, g, b] = M.spectralRGB(M.wavelengthNm(f));
+    assert.ok(r === 255 && g <= 180 && b === 0, `${f} Hz → ${r},${g},${b}`);
+  }
+  for (const f of [170, 188]) {
+    assert.equal(M.colorBand(f), 'yellow', String(f));
+    const [, g] = M.spectralRGB(M.wavelengthNm(f));
+    assert.ok(g >= 210, `${f} Hz → g ${g}`); // 170 Hz (587 nm) — 255,217,0 zeltaini dzeltens
+  }
+});
+
 test('spectrum colours are ≥ 3:1 against the sheet and the field in both themes', () => {
   const themes = [
     { sheet: '#15171b', field: '#0c0e11', dark: true },
@@ -205,6 +218,21 @@ test('white noise: over 0.4 s no stable pitch, no record', () => {
     if (s !== null) rec = M.addRecord(rec, s).rec;
   }
   assert.equal(rec.lo, null);
+});
+
+test('heard: room noise alone is not heard (“klusums”); a tone or a loud noise burst is heard, even with no pitch', () => {
+  assert.equal(analyse([]).heard, false);
+  assert.equal(analyse([[440, 0.05]]).heard, true);
+  const an = M.createAnalysis(SR);
+  const quiet = frame([], { seed: 99 });
+  for (let i = 0; i < 3; i++) an.update(quiet.low, quiet.high, 0.5);
+  const st = M.createStability();
+  for (let i = 0; i < 24; i++) {
+    const loud = frame([], { noise: 0.02, seed: 700 + i });
+    const r = an.update(loud.low, loud.high, 1 / 60);
+    assert.equal(r.heard, true);
+    assert.equal(st.push(i / 60, r.pitch ? r.pitch.f0 : null), null); // skan, bet stabila toņa nav
+  }
 });
 
 test('display columns: a tone shows its peak in the right column; columns span 20 Hz–20 kHz', () => {
@@ -319,6 +347,15 @@ test('records: first, lower, higher', () => {
   assert.equal(r.changed, null);
   r = M.addRecord(r.rec, 880);
   assert.deepEqual(r, { rec: { lo: 220, hi: 880 }, changed: 'hi' });
+});
+
+test('records count only 40–5 000 Hz (voice, whistle, instruments): electronics whine and rumble stay out', () => {
+  const empty = { lo: null, hi: null };
+  for (const f of [16111, 17179, 5100, 28.7, 26.5, 39]) assert.equal(M.addRecord(empty, f).changed, null, String(f));
+  assert.equal(M.addRecord(empty, 40).changed, 'first');
+  assert.equal(M.addRecord(empty, 5000).changed, 'first');
+  const r = M.addRecord({ lo: 98, hi: 440 }, 16111);
+  assert.deepEqual(r, { rec: { lo: 98, hi: 440 }, changed: null });
 });
 
 test('microphone errors: each cause has its own text key', () => {

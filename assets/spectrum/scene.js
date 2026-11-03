@@ -7,8 +7,10 @@ const signed = (v) => (v < 0 ? `${MINUS}${Math.abs(v)}` : String(v));
 const font = (px, weight = 400) => `${weight} ${px}px "IBM Plex Mono", ui-monospace, monospace`;
 
 // Grafika laukums kanvā; s — ZĪMĒJUMS (uzraksti un līnijas aug līdzi). Kreisajā apakšas stūrī paliek vieta ⚙ pogai.
+// Mazā kanvā (telefonā) uzraksti mazāki: 14 px no ~360 px, līdz 11 px pie ~180 px — grafikam paliek vieta.
 export function plotRect(w, h, s) {
-  const fs = Math.round(14 * s);
+  const base = Math.max(11, Math.min(14, 8 + Math.min(w, h) / 60));
+  const fs = Math.round(base * s);
   const left = Math.round(fs * 3.2 + 10);
   const bottom = Math.round(fs * 3 + 8);
   const top = Math.round(fs * 2.6);
@@ -77,9 +79,16 @@ function asterisk(ctx, x, y, r, { c, s }) {
   ctx.restore();
 }
 
+// PAUZE grafika augšējā kreisajā stūrī — virsotņu uzraksti (balss, instrumenti) tur reti, centrā tos aizsedza
 function pausedStamp(ctx, lay, text, c) {
-  const { x, y, w, fs, s } = lay;
-  tag(ctx, text, x + w / 2, y + 8 * s, { c, fs: Math.round(fs * 1.15), s, align: 'center', weight: 600 });
+  const { x, y, fs, s } = lay;
+  tag(ctx, text, x + 8 * s, y + 8 * s, { c, fs: Math.round(fs * 1.15), s, align: 'left', weight: 600 });
+}
+function stampBox(ctx, lay, text) {
+  const { x, y, fs, s } = lay;
+  const sfs = Math.round(fs * 1.15);
+  ctx.font = font(sfs, 600);
+  return { x0: x + 8 * s, x1: x + 8 * s + ctx.measureText(text).width + 10 * s, y0: y + 8 * s, y1: y + 8 * s + sfs + 8 * s };
 }
 
 // ── Spektrs ───────────────────────────────────────────────
@@ -104,6 +113,7 @@ export function drawSpectrum(ctx, lay, d) {
 
   // spektrs: krāsains laukums zem līknes un līkne tintē
   const n = d.cols ? d.cols.length : 0;
+  let thrY = null;
   if (d.hasData && n) {
     const px = (i) => x + ((i + 0.5) / n) * w;
     ctx.beginPath();
@@ -125,8 +135,7 @@ export function drawSpectrum(ctx, lay, d) {
       const pts = [];
       for (let i = 0; i < m; i++) pts.push([x + ((i + 0.5) / m) * w, yOf(d.thr[i])]);
       haloLine(ctx, pts, { c, s, dash: [6, 5], width: 1.5 });
-      const tfs = Math.round(fs * 0.9);
-      tag(ctx, d.labels.threshold, x1 - 4 * s, Math.max(y + 4 * s, pts[m - 1][1] - tfs - 14 * s), { c, fs: tfs, s, align: 'right', weight: 400 });
+      thrY = pts[m - 1][1]; // uzrakstu liek pēc rekordu rāmīšiem, lai tie to neaizsedz
     }
   }
 
@@ -156,6 +165,7 @@ export function drawSpectrum(ctx, lay, d) {
 
   // rekordi: raustīta vertikāle, uzraksts rāmītī grafika apakšā (ZEMĀKĀ pa kreisi, AUGSTĀKĀ pa labi no līnijas);
   // augša paliek virsotņu uzrakstiem
+  const recBoxes = [];
   for (const [f, text, side] of [[d.recLo, d.labels.lo, -1], [d.recHi, d.labels.hi, 1]]) {
     if (!f) continue;
     const xx = Math.round(xOf(f)) + 0.5;
@@ -165,7 +175,21 @@ export function drawSpectrum(ctx, lay, d) {
     let right = side > 0;
     if (!right && xx - 4 * s - bw < x) right = true;
     if (right && xx + 4 * s + bw > x1) right = false;
+    const bx = right ? xx + 4 * s : xx - 4 * s - bw;
     tag(ctx, text, right ? xx + 4 * s : xx - 4 * s, y1 - fs - 14 * s, { c, fs, s, align: right ? 'left' : 'right' });
+    recBoxes.push({ x0: bx, x1: bx + bw, y0: y1 - fs - 14 * s, y1: y1 - 6 * s });
+  }
+  // sliekšņa uzraksts labajā malā virs līnijas; ja tur ir rekorda rāmītis (slieksnis pie apakšas) — virs rāmīša
+  if (thrY !== null) {
+    const tfs = Math.round(fs * 0.9);
+    ctx.font = font(tfs, 400);
+    const tw = ctx.measureText(d.labels.threshold).width + 10 * s;
+    const th = tfs + 8 * s;
+    let ty = Math.max(y + 4 * s, thrY - tfs - 14 * s);
+    for (const r of recBoxes) {
+      if (r.x1 > x1 - 4 * s - tw - 4 * s && r.x0 < x1 && ty + th > r.y0 - 4 * s && ty < r.y1) ty = Math.max(y + 4 * s, r.y0 - th - 6 * s);
+    }
+    tag(ctx, d.labels.threshold, x1 - 4 * s, ty, { c, fs: tfs, s, align: 'right', weight: 400 });
   }
 
   // skaļākā virsotne ▲ (akcents) un pamattonis ✱ (tinte); ja sakrīt — abas zīmes vienā vietā, uzraksts vienreiz.
@@ -173,14 +197,15 @@ export function drawSpectrum(ctx, lay, d) {
   if (d.hasData && n) {
     const colAt = (f) => d.cols[Math.max(0, Math.min(n - 1, Math.floor(logPos(f) * n)))];
     const same = d.loud && d.f0 && Math.abs(d.loud.f / d.f0.f - 1) < 0.03;
-    const placed = [];
+    const placed = []; // aizņemtie taisnstūri { x0, x1, y0, y1 }
+    if (d.paused) placed.push(stampBox(ctx, lay, d.labels.paused)); // PAUZE rāmītis — uzraksti to apiet
     const labelAt = (text, mx, my, weight) => { // my — zīmes augšējā mala
       ctx.font = font(fs, weight);
       ctx.fillStyle = c.ink;
       const tw = ctx.measureText(text).width;
       let lx = Math.max(x + tw / 2, Math.min(x1 - tw / 2, mx));
       let ly = my - 3 * s; // apakšējā mala
-      const hit = () => placed.some((p) => Math.abs(p.x - lx) < (p.w + tw) / 2 + 6 * s && Math.abs(p.y - ly) < fs * 1.2);
+      const hit = () => placed.some((p) => lx - tw / 2 < p.x1 + 6 * s && lx + tw / 2 > p.x0 - 6 * s && ly - fs < p.y1 + 2 * s && ly > p.y0 - 2 * s);
       if (ly - fs < 2 || hit()) {
         const toRight = mx + 12 * s + tw <= x1;
         lx = toRight ? mx + 12 * s + tw / 2 : mx - 12 * s - tw / 2;
@@ -190,7 +215,7 @@ export function drawSpectrum(ctx, lay, d) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.fillText(text, lx, ly);
-      placed.push({ x: lx, y: ly, w: tw });
+      placed.push({ x0: lx - tw / 2, x1: lx + tw / 2, y0: ly - fs, y1: ly });
     };
     if (d.loud) {
       const lx = xOf(d.loud.f);

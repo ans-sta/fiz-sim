@@ -21,7 +21,7 @@
 <a class="s03-skip" href="#main" data-i18n="page.skip">Pāriet uz saturu</a>
 <div class="frame">
   <header>
-    <a class="back" href="index.html" data-i18n="page.back">← SARAKSTS</a>
+    <a class="back" href="index.html"><span aria-hidden="true">←&nbsp;</span><span class="s03-backword" data-i18n="page.backWord">SARAKSTS</span></a>
     <h1><span class="s03-hfull" data-i18n="page.heading">SKAŅAS SPEKTRA ANALIZATORS</span><span class="s03-hshort" data-i18n="page.headingShort">SKAŅAS SPEKTRS</span> <span class="sheet-no">S-03</span></h1>
     <div class="head-tools" id="headTools"></div>
   </header>
@@ -40,13 +40,17 @@
           <button class="btn" id="viewGram" type="button" aria-pressed="false">SPEKTROGRAMMA</button>
         </div>
       </div>
-      <div class="m01-group">
-        <span class="m01-label"><span id="sensLabel">JUTĪBA</span><span class="fix" id="sensFix" hidden></span></span>
-        <div class="m01-row">
-          <button class="q-step" id="sensMinus" type="button">−</button>
-          <input class="dim-range" id="sensRange" type="range" min="1" max="10" step="1" value="5">
-          <button class="q-step" id="sensPlus" type="button">+</button>
-          <span class="m01-val s03-sensval" id="sensVal">5</span>
+      <!-- JUTĪBA: datorā vadīklas joslā; telefonā atvilkne (APG Disclosure) — sakļautā redz tikai skaitli -->
+      <div class="m01-group s03-sensgrp" id="sensGrp">
+        <button class="btn s03-sensbtn" id="sensBtn" type="button" aria-expanded="false" aria-controls="sensPanel">5</button>
+        <div class="s03-senspanel" id="sensPanel">
+          <span class="m01-label"><span id="sensLabel">JUTĪBA</span><span class="fix" id="sensFix" hidden></span></span>
+          <div class="m01-row">
+            <button class="q-step" id="sensMinus" type="button">−</button>
+            <input class="dim-range" id="sensRange" type="range" min="1" max="10" step="1" value="5">
+            <button class="q-step" id="sensPlus" type="button">+</button>
+            <span class="m01-val s03-sensval" id="sensVal">5</span>
+          </div>
         </div>
       </div>
       <div class="m01-group m01-end">
@@ -71,11 +75,15 @@
       </div>
       <aside class="s03-side" id="side" aria-labelledby="readTitle">
         <div class="s03-read">
-          <h2 class="s03-k" id="readTitle"><span id="readTitleText">PAMATTONIS</span> <span aria-hidden="true">*</span></h2>
-          <p class="s03-big"><span class="s03-num" id="bigNum">—</span><span class="s03-unit" id="bigUnit" hidden>Hz</span></p>
+          <!-- “i” pie virsraksta atver paskaidrojumu (APG Disclosure): uznirst virs rādījuma, Esc vai klikšķis ārpusē aizver -->
+          <div class="s03-khead">
+            <h2 class="s03-k" id="readTitle"><span id="readTitleText">PAMATTONIS</span> <span aria-hidden="true">*</span></h2>
+            <button class="s03-tipbtn" id="footBtn" type="button" aria-expanded="false" aria-controls="footTip">i</button>
+            <p class="s03-foot" id="footTip" hidden><span aria-hidden="true">* </span><span id="foot"></span></p>
+          </div>
+          <p class="s03-big"><span class="s03-num" id="bigNum">—</span><span class="s03-unit" id="bigUnit">Hz</span></p>
           <p class="s03-note"><span id="bigNote"></span> <span class="s03-cents" id="bigCents"></span></p>
-          <p class="s03-color" id="bigColorRow"><span class="s03-swatch" id="bigSwatch"></span><span id="bigColor"></span></p>
-          <p class="s03-foot"><span aria-hidden="true">* </span><span id="foot"></span></p>
+          <p class="s03-color" id="bigColorRow"><span class="s03-swatch" id="bigSwatch"></span><span class="s03-sr" id="bigColor"></span></p>
         </div>
         <div class="s03-recs">
           <dl class="s03-reclist">
@@ -83,7 +91,7 @@
             <div class="s03-rec" id="recHiRow"><dt id="recHiK">AUGSTĀKĀ</dt><dd><span class="s03-recv" id="recHiV">—</span><span class="s03-swatch" id="recHiSw"></span><span class="s03-recn" id="recHiN"></span></dd></div>
           </dl>
           <p class="s03-span" id="recSpan"></p>
-          <button class="btn s03-reset" id="resetBtn" type="button">↺ NO JAUNA</button>
+          <button class="btn s03-reset" id="resetBtn" type="button"><span aria-hidden="true">↺</span><span class="s03-resetword" id="resetWord">NO JAUNA</span></button>
         </div>
       </aside>
       <div class="title-small" id="titleSmall" hidden></div>
