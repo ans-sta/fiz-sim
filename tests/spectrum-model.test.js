@@ -180,6 +180,79 @@ test('fundamental: voice-like series 220 Hz with falling harmonics → 220', () 
   assert.ok(Math.abs(r.pitch.f0 - 220) <= 1, String(r.pitch.f0));
 });
 
+// Besela funkcija J_k(x) (rinda) — vibrato spektram: FM ar indeksu β dod sānjoslas f ± k·fm ar amplitūdu J_k(β)
+function besselJ(k, x) {
+  let sum = 0;
+  let term = Math.pow(x / 2, k);
+  for (let j = 1; j <= k; j++) term /= j;
+  for (let m = 0; m < 40; m++) {
+    sum += term;
+    term *= -(x * x / 4) / ((m + 1) * (m + 1 + k));
+  }
+  return sum;
+}
+// Dziedāta nots ar vibrato (Ansis 03.11, augšējais do 262 Hz): fm = 5,5 Hz, ±dev; harmonikas 1–6 ar savām sānjoslām
+function vibratoNote(f0, dev, fm = 5.5) {
+  const parts = [];
+  for (let m = 1; m <= 6; m++) {
+    const beta = (m * f0 * dev) / fm;
+    for (let k = -8; k <= 8; k++) {
+      const j = besselJ(Math.abs(k), beta) * (k < 0 && k % 2 ? -1 : 1);
+      if (Math.abs(j) > 0.02) parts.push([m * f0 + k * fm, (0.05 / m) * Math.abs(j), j < 0 ? Math.PI + m : m]);
+    }
+  }
+  return parts;
+}
+
+test('vibrato: a sung 262 Hz with ±3–5 % vibrato reads as 262 (the side peaks 5.5 Hz apart merge into one tone)', () => {
+  for (const dev of [0.03, 0.04, 0.05]) {
+    const r = analyse(vibratoNote(261.63, dev));
+    assert.ok(r.pitch && Math.abs(r.pitch.f0 / 261.63 - 1) < 0.01, `±${dev * 100} %: ${r.pitch && r.pitch.f0}`);
+  }
+  // zemai notij vibrato sānjoslas vājas — tāpat pareizi
+  const low = analyse(vibratoNote(98, 0.04));
+  assert.ok(low.pitch && Math.abs(low.pitch.f0 / 98 - 1) < 0.01, String(low.pitch && low.pitch.f0));
+});
+
+test('vibrato over time: the reading follows the middle of a ±5 % vibrato, stays steady and the record is the sung note', () => {
+  const sm = M.createPitchSmoother();
+  const st = M.createStability();
+  const rs = M.createStability({ hold: M.REC_HOLD });
+  let rec = { lo: null, hi: null };
+  let steady = 0;
+  for (let i = 0; i < 120; i++) {
+    const t = i / 60;
+    const raw = 261.63 * (1 + 0.05 * Math.sin(2 * Math.PI * 5.5 * t)); // katrā kadrā — vibrato šī brīža augstums
+    const s = sm.push(t, raw);
+    if (st.push(t, s) !== null) steady++;
+    const r = rs.push(t, s);
+    if (r !== null) rec = M.addRecord(rec, r).rec;
+  }
+  assert.ok(steady > 60, String(steady)); // bez mediānas ±5 % pārsniedz ±3 % — nekad stabils
+  assert.ok(Math.abs(rec.lo / 261.63 - 1) < 0.015 && Math.abs(rec.hi / 261.63 - 1) < 0.015, `${rec.lo}–${rec.hi}`);
+  const raw = M.createStability();
+  let rawSteady = 0;
+  for (let i = 0; i < 120; i++) if (raw.push(i / 60, 261.63 * (1 + 0.05 * Math.sin(2 * Math.PI * 5.5 * (i / 60)))) !== null) rawSteady++;
+  assert.equal(rawSteady, 0);
+});
+
+test('records need a note held 0.5 s: a 0.4 s sound does not count, the start of a note sliding up does not lower the record', () => {
+  assert.equal(M.REC_HOLD, 0.5);
+  const st = M.createStability({ hold: M.REC_HOLD });
+  let got = null;
+  for (let t = 0; t <= 0.4; t += 1 / 60) got = st.push(t, 200) ?? got;
+  assert.equal(got, null);
+  // nots sākas 5 % par zemu un pusotras desmitdaļas sekundē lēni uzkāpj (garā FFT logs to izlīdzina), tad turas
+  const st2 = M.createStability({ hold: M.REC_HOLD });
+  let lo = Infinity;
+  for (let t = 0; t <= 1.5; t += 1 / 60) {
+    const f = t < 0.45 ? 130.8 * (0.97 + 0.03 * (t / 0.45)) : 130.8;
+    const s = st2.push(t, f);
+    if (s !== null && s < lo) lo = s;
+  }
+  assert.ok(lo > 130.8 * 0.985, String(lo));
+});
+
 test('fundamental: loudest peak is the 3rd harmonic → still the fundamental', () => {
   const amps = { 1: 0.01, 2: 0.03, 3: 0.06, 4: 0.02, 5: 0.015 };
   const parts = Object.entries(amps).map(([m, a]) => [130.8 * m, a, Number(m)]);

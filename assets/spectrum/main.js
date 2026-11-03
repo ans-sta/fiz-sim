@@ -4,7 +4,7 @@ import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas
 import { STRINGS } from './i18n.js';
 import { settingsFromURL, warningText, SENS, TIMES, timeAtSlider, sliderOfTime } from './params.js';
 import {
-  createAnalysis, columnsFrom, columnsFromMerged, createStability, createReadout, addRecord, buildLUT, lutIndex, colorBand,
+  createAnalysis, columnsFrom, columnsFromMerged, createStability, createPitchSmoother, createReadout, addRecord, REC_HOLD, buildLUT, lutIndex, colorBand,
   formatFreq, octaves, dbWindow, freqAt, hexRGB, classifyMicError, browserOf, DB_FLOOR,
 } from './model.js';
 import { micSupport, createAudioContext, startMic, listMics, LOW_FFT, HIGH_FFT } from './audio.js';
@@ -55,7 +55,9 @@ const state = {
   flash: { lo: -Infinity, hi: -Infinity }, // jauna rekorda izcēlums (ne lapas ielādē)
   drawScale: 1,
 };
-const stab = createStability();
+const smoother = createPitchSmoother(); // vibrato vidus (0,2 s mediāna)
+const stab = createStability(); // lielajam skaitlim: 0,25 s
+const stabRec = createStability({ hold: REC_HOLD }); // rekordiem: 0,5 s
 const readout = createReadout();
 const loudRO = createReadout({ every: 0.2, silence: 0.4 });
 const history = createHistory();
@@ -120,7 +122,9 @@ function attach(mic) {
   state.mic = mic;
   state.deviceId = mic.deviceId;
   state.an = createAnalysis(mic.sampleRate);
+  smoother.reset();
   stab.reset();
+  stabRec.reset();
   readout.reset();
   loudRO.reset();
   history.clear();
@@ -164,7 +168,7 @@ async function start(deviceId, { switching = false } = {}) {
 function onRun() {
   if (state.status === 'live') {
     state.paused = !state.paused;
-    if (!state.paused) stab.reset();
+    if (!state.paused) { smoother.reset(); stab.reset(); stabRec.reset(); }
     announce(t(state.paused ? 'live.paused' : 'live.resumed'));
     render();
   } else if (state.status !== 'starting') start();
@@ -172,6 +176,7 @@ function onRun() {
 
 function resetRecords() {
   state.rec = { lo: null, hi: null };
+  history.clear(); // arī spektrogramma no jauna (Ansis 03.11)
   recMsg = null;
   announce(t('rec.cleared'));
   render();
@@ -377,16 +382,18 @@ function process(dt) {
     while (gramAcc >= 1) { history.push(rowBuf); gramAcc -= 1; }
   }
   if (res.heard) state.heardT = state.time;
-  const stable = stab.push(state.time, res.pitch ? res.pitch.f0 : null);
+  const pitch = smoother.push(state.time, res.pitch ? res.pitch.f0 : null);
+  const stable = stab.push(state.time, pitch);
+  const recStable = stabRec.push(state.time, pitch);
   state.shown = readout.update(state.time, stable);
   const loud = res.pitch ? res.pitch.loud : null;
   state.loud = loudRO.update(state.time, loud ? { f: loud.f, db: loud.db } : null);
-  if (stable !== null) {
-    const r = addRecord(state.rec, stable);
+  if (recStable !== null) {
+    const r = addRecord(state.rec, recStable);
     if (r.changed) {
       state.rec = r.rec;
       const now = performance.now();
-      const f = formatFreq(stable, i18n.lang());
+      const f = formatFreq(recStable, i18n.lang());
       if (r.changed === 'first') { state.flash.lo = now; state.flash.hi = now; recMsg = t('rec.first', { f }); }
       else if (r.changed === 'lo') { state.flash.lo = now; recMsg = t('rec.newLo', { f }); }
       else { state.flash.hi = now; recMsg = t('rec.newHi', { f }); }

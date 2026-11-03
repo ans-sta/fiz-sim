@@ -8,6 +8,12 @@ export const REC_MIN = 25; // pamattoni un toņus meklē no 25 Hz (zemāk telpas
 // Rekordos skaitās tikai 40–5 000 Hz — balss, svilpiens, instrumenti (Ansis 03.11: telefonā un datorā rekordos bija
 // ~16–17 kHz elektronikas pīkstiens un ~26–29 Hz dūkoņa); grafiks un lielais skaitlis rāda visu
 export const REC_RANGE = { lo: 40, hi: 5000 };
+// Rekordā nots skaitās, ja turas ≥ 0,5 s (lielais skaitlis — jau pēc 0,25 s): nots sākums, kad balss vēl kāpj, rekordu nepazemina
+// (Ansis 03.11: do-mi-sol-do — ZEMĀKĀ 124 Hz zem “do” ~130 Hz)
+export const REC_HOLD = 0.5;
+// Vibrato sānjoslas: garajā FFT (0,68 s) nots ar vibrato ~5,5 Hz ir virsotņu ķemme ±5,5 Hz, ±11 Hz …; augstai notij sānjoslas
+// ir tikpat stipras kā vidējā, un rādījums lēkātu pa tām. Virsotnes ±5 % ap stiprāko apvieno vienā tonī ar jaudas vidējo frekvenci.
+const VIB_MERGE = 0.05;
 export const SEAM = 400; // zem šīs frekvences garais FFT (32 768), virs — īsais (8 192)
 export const DB_FLOOR = -160;
 const DECADES = 3; // 20 Hz–20 kHz
@@ -252,7 +258,26 @@ export function findTones(map, db, thr, raw, { prom = 10, maxTones = 20, maxChec
     const v = db[i];
     checks++;
     if (v - surroundMedian(map, db, i, f, scratch) < prom) continue;
-    tones.push({ f, db: v, w: Math.min(v - thr[i], 60), bin });
+    const p = Math.pow(10, v / 10);
+    const near = tones.find((t) => Math.abs(f / t.head - 1) <= VIB_MERGE);
+    if (near) { near.pw += p; near.pf += p * f; continue; } // vibrato sānjosla — pie stiprākā toņa
+    tones.push({ f, head: f, db: v, w: Math.min(v - thr[i], 60), bin, pw: p, pf: p * f });
+  }
+  for (const t of tones) t.f = t.pf / t.pw;
+  // otrā kārta: kopas, kuru vidējās frekvences ir ±5 % robežās, apvieno (stiprākā sānjosla nav vidū — citādi vidējā nobīdītos)
+  for (let merged = true; merged; ) {
+    merged = false;
+    for (let a = 0; a < tones.length && !merged; a++) {
+      for (let b = a + 1; b < tones.length; b++) {
+        if (Math.abs(tones[b].f / tones[a].f - 1) > VIB_MERGE) continue;
+        tones[a].pw += tones[b].pw;
+        tones[a].pf += tones[b].pf;
+        tones[a].f = tones[a].pf / tones[a].pw;
+        tones.splice(b, 1);
+        merged = true;
+        break;
+      }
+    }
   }
   return tones;
 }
@@ -298,7 +323,21 @@ export function fundamental(tones, { fmin = REC_MIN, maxN = 6, top = 5, tol = 0.
   for (const c of scored) if (c.score >= keep * best && (!pick || c.f0 > pick.f0)) pick = c;
   if (!pick) return null;
   const at = tones.find((t) => Math.abs(t.f / pick.f0 - 1) <= 0.03);
-  return { f0: at ? at.f : pick.f0, loud: tones[0] };
+  return { f0: at ? centroidNear(tones, at.f) : pick.f0, loud: tones[0] };
+}
+
+// Pamattoņa precīzā vērtība: visu toņu ±8 % ap to jaudas vidējā frekvence (3 kārtas) — vibrato sānjoslu ķemmes vidus,
+// arī ja stiprākā sānjosla nav vidū. Citi toņi tik tuvu (pustonis ir 6 %) dziedot reti; terca (19 %) un tālāk netiek klāt.
+function centroidNear(tones, f, r = 0.08) {
+  let c = f;
+  for (let it = 0; it < 3; it++) {
+    let pw = 0;
+    let pf = 0;
+    for (const t of tones) if (Math.abs(t.f / c - 1) <= r) { pw += t.pw; pf += t.pw * t.f; }
+    if (!pw) break;
+    c = pf / pw;
+  }
+  return c;
 }
 
 // Viss viena kadra apstrādes cikls: apvienotais spektrs, fons (pa joslām un pa frekvencēm), slieksnis, toņi, pamattonis
@@ -432,6 +471,23 @@ export function createStability({ hold = 0.25, tol = 0.03, gap = 0.06 } = {}) {
       return t - runStart >= hold - 1e-9 ? median() : null;
     },
     reset() { buf = []; runStart = null; lastT = null; },
+  };
+}
+
+// Vibrato vidū: pamattoņa mediāna pēdējās win s (≈ viens vibrato periods pie 5,5 Hz) — rādījums un stabilitāte seko notij,
+// nevis tās šūpošanās ±5 %; mediāna neņem vērā atsevišķus oktāvas lēcienus. Ja pusē kadru toņa nav — null.
+export function createPitchSmoother({ win = 0.2 } = {}) {
+  let buf = [];
+  return {
+    push(t, f) {
+      buf.push({ t, f: f === null || f === undefined || !Number.isFinite(f) ? null : f });
+      while (buf.length > 1 && buf[0].t < t - win) buf.shift();
+      const v = buf.filter((x) => x.f !== null).map((x) => x.f).sort((a, b) => a - b);
+      if (buf[buf.length - 1].f === null || v.length * 2 < buf.length) return null;
+      const m = v.length >> 1;
+      return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+    },
+    reset() { buf = []; },
   };
 }
 

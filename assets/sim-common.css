@@ -897,3 +897,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .e01-overlay .e01-info-body { gap: 18px; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: calc(15px * var(--ui, 1)); line-height: 1.55; }
 .e01-overlay .e01-info-body > * { max-width: 72ch; }
 .e01-overlay .e01-info-body h3 { font-family: 'IBM Plex Mono', monospace; font-size: calc(12px * var(--ui, 1)); letter-spacing: 0.12em; font-weight: 600; margin-bottom: 4px; }
+
+/* ══ Pogas virs peles (visās .layout-hud lapās): .btn:hover dod tintes fonu un lapas krāsas tekstu, bet joslas un paneļu pogām
+   fons pārrakstīts uz lapas krāsu (.m01-row .btn, .s02-views .btn, .s02-oct, .s03-reset …) — tad teksts bija fona krāsā un pazuda
+   (M-01 pauze un “no jauna”, E-01 arī “i”, S-02 v2 oktāvas un atskaņošana, S-03). Šis noteikums — pēdējais, lai uzvar. ══ */
+.layout-hud .btn:hover:not(:disabled) { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
