@@ -22,7 +22,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ∿ Brownian Motion (M-01)   | Molecular physics / a dust particle among molecules | ✅ Live |
 | ⬒ Gas Law (M-02)           | Molecular physics / pV/T = const with a piston | ✅ Live |
 | ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
-| 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | 🟡 Review |
+| 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | ✅ Live |
 
 ## Infographics
 
