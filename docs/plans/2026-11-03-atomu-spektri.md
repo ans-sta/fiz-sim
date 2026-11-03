@@ -30,7 +30,7 @@ Viens liels atoms, līmeņu shēma un vertikāls spektra stabs. Skolēns pats iz
 
 - Enerģijas skalā 0 = jonizācija (elektrons brīvs), līmeņi zem tās ar mīnusa zīmi — kā ūdeņradim mācību grāmatā (E₁ = −13,6 eV). Citiem atomiem E = E(NIST, no pamatstāvokļa) − jonizācijas enerģija (Rihards).
 - ΔE = E_augšējais − E_apakšējais, λ = hc / ΔE, hc = 1239,84 eV·nm. **λ visur rāda tieši hc / ΔE** (vakuumā), lai skolēna aprēķins no redzamā ΔE sakrīt ar lapu; tabulās redzamajai gaismai parasti dod λ gaisā, kas ir par ~0,03 % īsāks (piem. Hg zaļā 546,2 nm šeit, 546,1 nm tabulās) — to saka “i” logs (Rihards).
-- **Apvienoti līmeņi** (Rihards): Na 3p (D līnijas gaisā 589,0 un 589,6 nm → viena 589,4 nm); Hg 6¹D₂ un 6³D → “6D” (dzeltenās 577,1 un 579,2 nm nāk no singleta un tripleta līmeņiem; ±2 nm pielaidē tās pārklātos, tāpēc viena 577,9 nm; tādēļ UV līnija 365,1 nm lapā ir 365,9 nm); hēlija tripletu P un D līmeņi. Hg ³P₀, ³P₁, ³P₂ paliek atsevišķi, jo tie dod trīs dažādas krāsas.
+- **Apvienoti līmeņi** (Rihards): Na 3p (D līnijas gaisā 589,0 un 589,6 nm → viena 589,4 nm); Hg 6¹D₂ un 6³D → “6D” (dzeltenās 577,1 un 579,2 nm nāk no singleta un tripleta līmeņiem; ±2 nm pielaidē tās pārklātos, tāpēc viena 577,5 nm; tādēļ UV līnija 365,1 nm lapā ir 365,8 nm); hēlija tripletu P un D līmeņi. Hg ³P₀, ³P₁, ³P₂ paliek atsevišķi, jo tie dod trīs dažādas krāsas.
 - **Jonizācija** (fizikas pārbaude): fotons, kura enerģija lielāka par elektrona saites enerģiju |E|, vienmēr tiek absorbēts un atbrīvo elektronu (fotoefekts). Rādījumā “jonizēts — elektrons atbrīvojas”, elektrons aizlido no atoma, uz staba melna svītra (Anša likums: absorbēja — svītra); pēc ~1 s atoms elektronu “noķer” atpakaļ sākuma līmenī (Rihards). Pašreizējā līmeņa jonizācijas robeža atzīmēta uz staba ar raustītu svītru (H n = 2 — 364,7 nm, Balmera robeža; Na 3s — 241,3; Hg 6³P₁ — 223,4; He 2³P — 342,2 nm). No augstiem līmeņiem (H n ≥ 3, Hg 7³S, 7¹S, 6D, He n ≥ 3) jonizē jau redzamā gaisma.
 - **Tikai zemākie līmeņi** (fizikas pārbaude): augstāk līmeņi sabiezē līdz 0 eV, un līniju ir vēl (piem. H n = 7, 8, 9 → 2: 397,1 · 389,0 · 383,6 nm). Tāpēc nesakrītot rādījums saka “starp parādītajiem līmeņiem nav atbilstoša pakāpiena”. Nav rādīti Na 4f (IS 1847 nm) un Hg 7p (IS 1129–1395 nm) — to saka “i”.
 - **Kaskādes ceļi** (fizikas pārbaude): ja no līmeņa var krist vairākos veidos, ceļu izvēlas ar NIST pārejas varbūtībām A (piem. He 2¹P → 1¹S 99,9 %, → 2¹S 0,1 %; Hg 7³S → 404,8 / 436,0 / 546,2 nm — 16 / 44 / 39 %; Hg 7¹S → 1014 nm 87 %, → 407,9 nm 13 %).
@@ -72,10 +72,10 @@ Līmeņi (eV, no jonizācijas; jonizācija 10,44 eV): 6¹S −10,44 · 6³P₀ �
 | 7¹S ↔ 6³P₁ | 407,9 | violeta |
 | 7³S ↔ 6³P₁ | 436,0 | zila |
 | 7³S ↔ 6³P₂ | 546,2 | zaļa |
-| 6D ↔ 6¹P | 577,9 | dzeltena (īstās 577,1 un 579,2) |
+| 6D ↔ 6¹P | 577,5 | dzeltena (īstās 577,1 un 579,2) |
 | 6³P₁ ↔ 6¹S | 253,7 | UV (dienasgaismas spuldzes) |
 | 6¹P ↔ 6¹S | 185,0 | UV |
-| 6D ↔ 6³P₂ · 6D ↔ 6³P₁ · 6D ↔ 6³P₀ | 365,9 · 312,9 · 296,5 | UV (īstā i-līnija 365,1) |
+| 6D ↔ 6³P₂ · 6D ↔ 6³P₁ · 6D ↔ 6³P₀ | 365,8 · 312,8 · 296,4 | UV (īstā i-līnija 365,1) |
 | 7¹S ↔ 6¹P | 1014,3 | IS |
 | 7³S ↔ 6¹P | 1207 | IS, vāja |
 
