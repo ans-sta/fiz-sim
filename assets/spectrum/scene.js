@@ -256,38 +256,71 @@ function cursorV(ctx, lay, cur, c) {
 }
 
 // ── Spektrogramma ─────────────────────────────────────────
-// Vēsture: cols kolonnas (10 s), rows rindas (log frekvence, 0 = 20 Hz). Glabā dB, krāso zīmējot (JUTĪBA un tēma uzreiz).
+// Vēsture: rows rindas (log frekvence, 0 = 20 Hz), RATE kolonnas sekundē. Glabā dB, krāso zīmējot (JUTĪBA un tēma uzreiz).
+// ĀTRUMS (5–60 s ekrānā): četri gredzeni pa cols kolonnām — katrs k-tais pēc kārtas (k = 1, 2, 3, 6) glabā k kolonnu maksimumu,
+// tātad 10, 20, 30 un 60 s; 5 s — pirmā pēdējā puse. Pārslēdzot ātrumu, ierakstītais uzreiz redzams, zīmējums vienmēr ≤ cols × rows.
+export const GRAM_RATE = 60;
+const FACTORS = [1, 2, 3, 6];
 export function createHistory(cols = 600, rows = 320) {
-  const data = new Float32Array(cols * rows).fill(DB_FLOOR);
-  let head = 0;
+  const rings = FACTORS.map((k) => ({ k, data: new Float32Array(cols * rows).fill(DB_FLOOR), head: 0, acc: new Float32Array(rows).fill(DB_FLOOR), n: 0 }));
   let ver = 0;
   let canvas = null;
   let img = null;
   let key = '';
   let lastLut = null;
+  const pick = (seconds) => {
+    const k = Math.max(1, Math.round(seconds / 10));
+    const ring = rings.find((r) => r.k === k) || rings[0];
+    return { ring, n: Math.max(1, Math.min(cols, Math.round((seconds * GRAM_RATE) / ring.k))) };
+  };
   return {
     cols,
     rows,
+    rate: GRAM_RATE,
     push(col) {
-      data.set(col, head * rows);
-      head = (head + 1) % cols;
+      for (const r of rings) {
+        if (r.k === 1) {
+          r.data.set(col, r.head * rows);
+          r.head = (r.head + 1) % cols;
+          continue;
+        }
+        const a = r.acc;
+        for (let i = 0; i < rows; i++) if (col[i] > a[i]) a[i] = col[i];
+        if (++r.n >= r.k) {
+          r.data.set(a, r.head * rows);
+          r.head = (r.head + 1) % cols;
+          a.fill(DB_FLOOR);
+          r.n = 0;
+        }
+      }
       ver++;
     },
     clear() {
-      data.fill(DB_FLOOR);
+      for (const r of rings) { r.data.fill(DB_FLOOR); r.acc.fill(DB_FLOOR); r.n = 0; }
       ver++;
     },
-    image(lutRGB, win, fieldRGB) {
-      if (!canvas) {
-        canvas = document.createElement('canvas');
-        canvas.width = cols;
+    // xx-tā redzamā kolonna (0 — vecākā) — testiem
+    column(seconds, xx) {
+      const { ring, n } = pick(seconds);
+      const col = (ring.head - n + xx + cols) % cols;
+      return ring.data.subarray(col * rows, (col + 1) * rows);
+    },
+    visible(seconds) { return pick(seconds).n; },
+    image(lutRGB, win, fieldRGB, seconds = 10) {
+      const { ring, n } = pick(seconds);
+      if (!canvas || canvas.width !== n) {
+        canvas = canvas || document.createElement('canvas');
+        canvas.width = n;
         canvas.height = rows;
-        img = canvas.getContext('2d').createImageData(cols, rows);
+        img = canvas.getContext('2d').createImageData(n, rows);
+        key = '';
       }
-      const k = `${ver}|${win.top}|${fieldRGB.join(',')}`;
+      const k = `${ver}|${seconds}|${win.top}|${fieldRGB.join(',')}`;
       if (k === key && lastLut === lutRGB) return canvas;
       key = k;
       lastLut = lutRGB;
+      const data = ring.data;
+      const first = ring.head - n + cols;
       const px = img.data;
       const nL = lutRGB.length;
       const span = win.top - win.bottom;
@@ -295,9 +328,9 @@ export function createHistory(cols = 600, rows = 320) {
       for (let yy = 0; yy < rows; yy++) {
         const r = rows - 1 - yy;
         const [cr, cg, cb] = lutRGB[Math.min(nL - 1, Math.floor(((r + 0.5) / rows) * nL))];
-        let o = yy * cols * 4;
-        for (let xx = 0; xx < cols; xx++) {
-          const col = (head + xx) % cols;
+        let o = yy * n * 4;
+        for (let xx = 0; xx < n; xx++) {
+          const col = (first + xx) % cols;
           let b = (data[col * rows + r] - win.bottom) / span;
           b = b < 0 ? 0 : b > 1 ? 1 : b;
           px[o] = fr + (cr - fr) * b;
@@ -313,7 +346,9 @@ export function createHistory(cols = 600, rows = 320) {
   };
 }
 
-// d: { image, hasData, colors, recLo, recHi, cursor:{u,label}, paused, labels }
+// Laika ass: [uzrakstu solis platā grafikā, īso iedaļu solis] sekundēs; šaurā grafikā uzraksti −T, −T/2, 0
+const TIME_AXIS = { 5: [1, 0.5], 10: [2, 1], 20: [5, 1], 30: [5, 1], 60: [10, 5] };
+
 export function drawSpectrogram(ctx, lay, d) {
   const { x, y, w, h, fs, s } = lay;
   const c = d.colors;
@@ -333,7 +368,17 @@ export function drawSpectrogram(ctx, lay, d) {
   ctx.lineTo(x1, y1 + 0.5);
   for (const f of TICKS_MINOR) { const yy = Math.round(yOf(f)) + 0.5; ctx.moveTo(x - 4 * s, yy); ctx.lineTo(x, yy); }
   for (const f of TICKS_MAJOR) { const yy = Math.round(yOf(f)) + 0.5; ctx.moveTo(x - 7 * s, yy); ctx.lineTo(x, yy); }
-  for (let t = -10; t <= 0; t++) { const xx = Math.round(x1 + (t / 10) * w) + 0.5; ctx.moveTo(xx, y1); ctx.lineTo(xx, y1 + (t % 5 ? 4 : 7) * s); }
+  const T = d.seconds || 10;
+  const [lStep, mStep] = TIME_AXIS[T] || [T / 5, T / 10];
+  const wide = w >= 420;
+  const labelAt = wide ? (t) => Math.abs(t / lStep - Math.round(t / lStep)) < 1e-6 : (t) => t === -T || t === 0 || t === -T / 2;
+  const nTicks = Math.round(T / mStep);
+  for (let i = 0; i <= nTicks; i++) {
+    const t = -T + i * mStep;
+    const xx = Math.round(x1 + (t / T) * w) + 0.5;
+    ctx.moveTo(xx, y1);
+    ctx.lineTo(xx, y1 + (labelAt(t) ? 7 : 4) * s);
+  }
   ctx.stroke();
   ctx.fillStyle = c.ink;
   ctx.font = font(fs);
@@ -345,11 +390,13 @@ export function drawSpectrogram(ctx, lay, d) {
   ctx.fillText('Hz', x - 8 * s, y - 6 * s);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  const tLabels = w >= 420 ? [-10, -8, -6, -4, -2, 0] : [-10, -5, 0];
+  const tLabels = [];
+  for (let i = 0; i <= nTicks; i++) { const t = -T + i * mStep; if (labelAt(t)) tLabels.push(t); }
+  const num = d.formatTime || ((t) => signed(t));
   for (const t of tLabels) {
-    const xx = x1 + (t / 10) * w;
-    ctx.textAlign = t === 0 ? 'right' : t === -10 ? 'left' : 'center';
-    ctx.fillText(`${signed(t)} s`, t === 0 ? xx + 2 : xx, y1 + 9 * s);
+    const xx = x1 + (t / T) * w;
+    ctx.textAlign = t === 0 ? 'right' : t === -T ? 'left' : 'center';
+    ctx.fillText(`${num(t)} s`, t === 0 ? xx + 2 : xx, y1 + 9 * s);
   }
   // rekordi: ZEMĀKĀ rāmītis zem savas līnijas, AUGSTĀKĀ — virs (nepārklājas arī tad, ja abi vienādi)
   for (const [f, text, below] of [[d.recLo, d.labels.lo, true], [d.recHi, d.labels.hi, false]]) {

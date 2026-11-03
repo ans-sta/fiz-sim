@@ -40,16 +40,27 @@
           <button class="btn" id="viewGram" type="button" aria-pressed="false">SPEKTROGRAMMA</button>
         </div>
       </div>
-      <!-- JUTĪBA: datorā vadīklas joslā; telefonā atvilkne (APG Disclosure) — sakļautā redz tikai skaitli -->
+      <!-- JUTĪBA un spektrogrammas ĀTRUMS: datorā vadīklas joslā; telefonā atvilkne (APG Disclosure) — sakļautā redz tikai jutības skaitli -->
       <div class="m01-group s03-sensgrp" id="sensGrp">
         <button class="btn s03-sensbtn" id="sensBtn" type="button" aria-expanded="false" aria-controls="sensPanel">5</button>
         <div class="s03-senspanel" id="sensPanel">
-          <span class="m01-label"><span id="sensLabel">JUTĪBA</span><span class="fix" id="sensFix" hidden></span></span>
-          <div class="m01-row">
-            <button class="q-step" id="sensMinus" type="button">−</button>
-            <input class="dim-range" id="sensRange" type="range" min="1" max="10" step="1" value="5">
-            <button class="q-step" id="sensPlus" type="button">+</button>
-            <span class="m01-val s03-sensval" id="sensVal">5</span>
+          <div class="s03-sub">
+            <span class="m01-label"><span id="sensLabel">JUTĪBA</span><span class="fix" id="sensFix" hidden></span></span>
+            <div class="m01-row">
+              <button class="q-step" id="sensMinus" type="button">−</button>
+              <input class="dim-range" id="sensRange" type="range" min="1" max="10" step="1" value="5">
+              <button class="q-step" id="sensPlus" type="button">+</button>
+              <span class="m01-val s03-sensval" id="sensVal">5</span>
+            </div>
+          </div>
+          <div class="s03-sub s03-timesub">
+            <span class="m01-label"><span id="timeLabel">ĀTRUMS</span><span class="fix" id="timeFix" hidden></span><span class="s03-keys" id="timeKeys" aria-hidden="true"></span></span>
+            <div class="m01-row">
+              <button class="q-step" id="timeMinus" type="button">−</button>
+              <input class="dim-range s03-timerange" id="timeRange" type="range" min="0" max="4" step="1" value="3">
+              <button class="q-step" id="timePlus" type="button">+</button>
+              <span class="m01-val s03-timeval" id="timeVal">10 s</span>
+            </div>
           </div>
         </div>
       </div>

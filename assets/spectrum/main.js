@@ -2,7 +2,7 @@
 // (spektrs vai spektrogramma), rādījumu aile (pamattonis, nots, krāsa, rekordi). Spec. docs/plans/2026-11-01-skanas-spektrs.md.
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
-import { settingsFromURL, warningText, SENS } from './params.js';
+import { settingsFromURL, warningText, SENS, TIMES, timeAtSlider, sliderOfTime } from './params.js';
 import {
   createAnalysis, columnsFrom, columnsFromMerged, createStability, createReadout, addRecord, buildLUT, lutIndex, colorBand,
   formatFreq, octaves, dbWindow, freqAt, hexRGB, classifyMicError, browserOf, DB_FLOOR,
@@ -12,6 +12,7 @@ import { plotRect, drawSpectrum, drawSpectrogram, createHistory, smooth } from '
 import { nearestNote } from '../sound/model.js';
 import { createNotices } from '../measure/notices.js';
 import { createSettingsCorner } from '../measure/hud.js';
+import { modLabel, isMacLike, isEditable } from '../measure/zoom-gestures.js';
 import { openOverlay } from '../measure/overlay.js';
 import { formatNumber } from '../measure/format.js';
 
@@ -199,6 +200,23 @@ function setSens(v) {
 sensRange.addEventListener('input', () => setSens(Number(sensRange.value)));
 el('sensMinus').addEventListener('click', () => setSens(state.settings.sens - 1));
 el('sensPlus').addEventListener('click', () => setSens(state.settings.sens + 1));
+// Spektrogrammas ĀTRUMS (Ansis 03.11): slīdnī pa labi un ⌘⇧ → — ātrāk (mazāk sekunžu ekrānā), pa kreisi un ⌘⇧ ← — lēnāk
+const timeRange = el('timeRange');
+timeRange.max = String(TIMES.length - 1);
+function setTime(sec, say = false) {
+  if (state.locked.has('time') || !TIMES.includes(sec) || sec === state.settings.time) return;
+  state.settings = { ...state.settings, time: sec };
+  if (say) announce(t('live.time', { n: sec }));
+  render();
+}
+const stepTime = (dir, say) => setTime(timeAtSlider(Math.max(0, Math.min(TIMES.length - 1, sliderOfTime(state.settings.time) + dir))), say);
+timeRange.addEventListener('input', () => setTime(timeAtSlider(Number(timeRange.value))));
+el('timeMinus').addEventListener('click', () => stepTime(-1));
+el('timePlus').addEventListener('click', () => stepTime(1));
+const MAC = isMacLike();
+const MOD = modLabel().trim();
+const SHIFT_KEYS = MAC ? '⌘⇧' : 'Ctrl+Shift ';
+timeRange.setAttribute('aria-keyshortcuts', MAC ? 'Meta+Shift+ArrowRight Meta+Shift+ArrowLeft' : 'Control+Shift+ArrowRight Control+Shift+ArrowLeft');
 el('resetBtn').addEventListener('click', resetRecords);
 el('infoBtn').addEventListener('click', openInfo);
 
@@ -252,6 +270,13 @@ document.addEventListener('pointerdown', (e) => {
 el('bar').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && e.detail > 0 && b.id !== 'infoBtn') b.blur(); });
 
 document.addEventListener('keydown', (ev) => {
+  // ⌘⇧ → / ← (Ctrl+Shift datorā ar Windows) — spektrogramma ātrāk / lēnāk; ⌘ bultiņas bez Shift ir ZĪMĒJUMS (zoom-gestures.js)
+  if ((ev.metaKey || ev.ctrlKey) && ev.shiftKey && !ev.altKey && (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft')) {
+    if (document.querySelector('.overlay') || isEditable(ev.target)) return;
+    ev.preventDefault();
+    stepTime(ev.key === 'ArrowRight' ? 1 : -1, true);
+    return;
+  }
   if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
   if (document.querySelector('.overlay')) return;
   if (ev.key === 'Escape') { if (closePops()) ev.preventDefault(); return; }
@@ -346,7 +371,7 @@ function process(dt) {
     columnsFromMerged(state.an.map, state.an.thr, thrRaw);
     smooth(thrRaw, thrDisp, Math.max(1, Math.round(n / 120)));
   }
-  gramAcc += dt * (history.cols / 10);
+  gramAcc += dt * history.rate;
   if (gramAcc >= 1) {
     columnsFrom(mic.lowBuf, mic.highBuf, mic.sampleRate, rowBuf);
     while (gramAcc >= 1) { history.push(rowBuf); gramAcc -= 1; }
@@ -435,7 +460,9 @@ function draw() {
       f0: state.shown ? { f: state.shown, label: hz(state.shown) } : null,
     });
   } else {
-    drawSpectrogram(view.ctx, lay, { ...common, image: hasData ? history.image(L.rgb, win, hexRGB(c.field)) : null });
+    const lang = i18n.lang();
+    const formatTime = (v) => (v < 0 ? MINUS : '') + formatNumber(Math.abs(v), Number.isInteger(v) ? 0 : 1, lang);
+    drawSpectrogram(view.ctx, lay, { ...common, seconds: state.settings.time, formatTime, image: hasData ? history.image(L.rgb, win, hexRGB(c.field), state.settings.time) : null });
   }
 }
 
@@ -476,7 +503,7 @@ function renderDom() {
   setText(el('sensFix'), t('bar.fixed'));
   setText(el('sensVal'), String(s.sens));
   setText(sensBtn, String(s.sens));
-  setAttr(sensBtn, 'aria-label', t('bar.sensBtn', { n: s.sens }));
+  setAttr(sensBtn, 'aria-label', t('bar.sensBtn', { n: s.sens, t: s.time }));
   if (Number(sensRange.value) !== s.sens) sensRange.value = String(s.sens);
   sensRange.disabled = sLock;
   setAttr(sensRange, 'aria-label', t('bar.sensName'));
@@ -485,6 +512,21 @@ function renderDom() {
   el('sensPlus').disabled = sLock || s.sens >= SENS.max;
   setAttr(el('sensMinus'), 'aria-label', t('dims.decrease', { name: t('bar.sensName') }));
   setAttr(el('sensPlus'), 'aria-label', t('dims.increase', { name: t('bar.sensName') }));
+  const tLock = state.locked.has('time');
+  const ti = sliderOfTime(s.time);
+  setText(el('timeLabel'), t('bar.time'));
+  setHidden(el('timeFix'), !tLock);
+  setText(el('timeFix'), t('bar.fixed'));
+  setText(el('timeKeys'), `${SHIFT_KEYS}← →`);
+  if (Number(timeRange.value) !== ti) timeRange.value = String(ti);
+  timeRange.disabled = tLock;
+  setText(el('timeVal'), t('bar.timeVal', { n: s.time }));
+  setAttr(timeRange, 'aria-label', t('bar.timeName'));
+  setAttr(timeRange, 'aria-valuetext', t('bar.timeAria', { n: s.time }));
+  el('timeMinus').disabled = tLock || ti <= 0;
+  el('timePlus').disabled = tLock || ti >= TIMES.length - 1;
+  setAttr(el('timeMinus'), 'aria-label', t('dims.decrease', { name: t('bar.timeName') }));
+  setAttr(el('timePlus'), 'aria-label', t('dims.increase', { name: t('bar.timeName') }));
   setAttr(el('infoBtn'), 'aria-label', t('info.btnAria'));
 
   // ziņa grafika vietā (pirms SĀKT, gaidot atļauju, kļūda)
@@ -593,6 +635,10 @@ function openInfo() {
   ov.root.classList.add('s03-overlay');
   const body = ov.body;
   body.classList.add('s03-info-body');
+  // garā piezīme ritinās — ar tastatūru tai jāvar piekļūt (WCAG 2.1.1, axe scrollable-region-focusable)
+  body.tabIndex = 0;
+  body.setAttribute('role', 'region');
+  body.setAttribute('aria-label', t('info.title'));
   const section = (title, text) => {
     const sec = document.createElement('section');
     const h = document.createElement('h3');
@@ -606,6 +652,27 @@ function openInfo() {
   section(t('info.pitchH'), t('info.pitch'));
   section(t('info.dbH'), t('info.db'));
   section(t('info.micH'), t('info.mic'));
+  // Taustiņi (Ansis 03.11: “to vajag kaut kur pierakstīt”); skārienekrānā sadaļa paslēpta (CSS)
+  const keys = section(t('info.keysH'));
+  keys.classList.add('s03-keysec');
+  const kl = document.createElement('dl');
+  kl.className = 's03-keylist';
+  for (const [k, what] of [
+    [t('info.keySpace'), t('info.keyPause')],
+    ['R', t('info.keyReset')],
+    [`${SHIFT_KEYS}→ / ←`, t('info.keyTime')],
+    [`${MOD} + / ${MOD} −`, t('info.keyText')],
+    [`${MOD} → ↑ / ${MOD} ← ↓`, t('info.keyDraw')],
+    ['← →', t('info.keyCursor')],
+    ['Esc', t('info.keyEsc')],
+  ]) {
+    const dt = document.createElement('dt');
+    dt.textContent = k;
+    const dd = document.createElement('dd');
+    dd.textContent = what;
+    kl.append(dt, dd);
+  }
+  keys.append(kl);
   const proc = section(t('info.procH'));
   const rows = document.createElement('div');
   proc.append(rows);

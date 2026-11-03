@@ -230,6 +230,7 @@ Parameters of `sound-spectrum.html`. Without `lock=1` they are only starting val
 | --------- | ------- |
 | `view=spectrum\|spectrogram` | Starting view (default `spectrum`) |
 | `sens=<1–10>` | Sensitivity: shifts the visible 70 dB window (1: −10 … −80 dB, 10: −55 … −125 dB; default 5) |
+| `time=5\|10\|20\|30\|60` | Spectrogram SPEED: seconds on screen (5 runs fastest; default 10). Keys ⌘⇧ → / ← (Ctrl+Shift on PC) |
 | `lock=1` (or `lock=true`) | Locks every setting that is given in the link (greyed out, marked FIKS.) |
 
 Example (only the spectrogram, students cannot switch):

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mulberry32, gaussian } from '../assets/measure/rng.js';
 import * as M from '../assets/spectrum/model.js';
+import { createHistory, GRAM_RATE } from '../assets/spectrum/scene.js';
 
 // ── Sintētisks spektrs tā, kā to dod Web Audio AnalyserNode: pēdējie N paraugi × Blackman, FFT, |X|/N, dB ──
 const SR = 48000;
@@ -376,4 +377,21 @@ test('microphone errors: each cause has its own text key', () => {
   assert.equal(M.browserOf('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'), 'chrome');
   assert.equal(M.browserOf('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15'), 'safari');
   assert.equal(M.browserOf('Mozilla/5.0 (Macintosh; Intel Mac OS X 14.0; rv:131.0) Gecko/20100101 Firefox/131.0'), 'other');
+});
+
+test('spectrogram speed: 5–60 s on screen from one history; switching keeps what was recorded, short sounds survive', () => {
+  const h = createHistory(600, 4);
+  assert.equal(h.rate, GRAM_RATE);
+  const col = new Float32Array(4);
+  for (let i = 0; i < 60 * GRAM_RATE; i++) { col.fill(-120); if (i === 100) col[2] = -20; h.push(col); } // 60 s; 1/60 s klikšķis pie 100. kolonnas
+  assert.deepEqual([5, 10, 20, 30, 60].map((s) => h.visible(s)), [300, 600, 600, 600, 600]);
+  // 60 s ekrānā: katra kolonna — 6 pēc kārtas maksimums; klikšķis (kolonna 100 → 16.) nepazūd
+  assert.equal(h.column(60, 16)[2], -20);
+  assert.equal(h.column(60, 17)[2], -120);
+  // 10 s ekrānā klikšķa vairs nav (tas bija pirms 54 s), jaunākā kolonna — pēdējā
+  for (let x = 0; x < 600; x++) assert.equal(h.column(10, x)[2], -120);
+  col.fill(-50);
+  h.push(col);
+  assert.equal(h.column(5, 299)[0], -50);
+  assert.equal(h.column(10, 599)[0], -50);
 });

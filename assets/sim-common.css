@@ -681,9 +681,15 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .s03-run > span { grid-area: 1 / 1; }
 .layout-hud .s03-runsizer { display: grid; visibility: hidden; }
 .layout-hud .s03-runsizer > span { grid-area: 1 / 1; }
-/* JUTĪBA: datorā vadīklas joslā kā līdz šim (atvilknes poga paslēpta); telefonā — atvilkne */
+/* JUTĪBA un ĀTRUMS: datorā vadīklas joslā blakus (atvilknes poga paslēpta); telefonā — atvilkne */
 .layout-hud .s03-sensbtn { display: none; }
-.layout-hud .s03-senspanel { display: contents; }
+.layout-hud .s03-senspanel { display: flex; align-items: stretch; }
+.layout-hud .s03-sub { display: flex; flex-direction: column; gap: calc(3px * var(--hud)); }
+.layout-hud .s03-timesub { border-left: 1px solid var(--hairline); margin-left: calc(14px * var(--hud)); padding-left: calc(14px * var(--hud)); }
+.layout-hud .s03-timesub .m01-row input.dim-range { width: calc(90px * var(--hud)); }
+.layout-hud .s03-timeval { min-width: 4ch; } /* “5 s” … “60 s” — josla nelec */
+.layout-hud .s03-keys { margin-left: 8px; letter-spacing: 0.04em; } /* ⌘⇧ ← → blakus ĀTRUMS */
+@media (hover: none) and (pointer: coarse) { .layout-hud .s03-keys, .s03-overlay .s03-keysec { display: none; } } /* skārienekrānā taustiņu nav */
 .layout-hud .m01-row .btn.s03-run:hover:not(:disabled) { background: var(--ink); color: var(--sheet); }
 .layout-hud .m01-row .btn.s03-info { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(13px * var(--hud)); }
 .layout-hud .s03-sensval { min-width: 2ch; }
@@ -745,6 +751,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .s03-overlay .s03-micpick { margin-top: 10px; display: grid; gap: 4px; max-width: 420px; }
 .s03-overlay .s03-micpick select { font-size: calc(13px * var(--ui, 1)); padding: 6px; }
 .s03-overlay .s03-privacy { color: var(--ink-dim); }
+.s03-overlay .s03-keylist { display: grid; grid-template-columns: auto 1fr; gap: 2px 16px; }
+.s03-overlay .s03-keylist dt { font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
 
 /* ── Telefons (Ansis 03.11: grafikam lielākā ekrāna daļa) ──
    Josla vienā rindā: PAUZE · SPEKTRS|SPEKTROGRAMMA · jutības skaitlis (atvilkne) · i; grupu nosaukumi tikai ekrāna lasītājam
@@ -768,6 +776,7 @@ html.is-fullscreen body.layout-hud header { display: none; }
   .layout-hud .s03-sensgrp.open .s03-senspanel { display: flex; flex-direction: column; gap: calc(4px * var(--hud)); position: absolute; z-index: 6; left: 0; right: 0; top: 100%; background: var(--sheet); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--ink); padding: calc(8px * var(--hud)) 12px calc(10px * var(--hud)); }
   .layout-hud .s03-sensgrp.open .s03-senspanel .m01-label { position: static; width: auto; height: auto; margin: 0; clip: auto; overflow: visible; }
   .layout-hud .s03-senspanel .m01-row input.dim-range { flex: 1; width: auto; }
+  .layout-hud .s03-timesub { border-left: none; margin-left: 0; padding-left: 0; border-top: 1px solid var(--hairline); margin-top: calc(6px * var(--hud)); padding-top: calc(8px * var(--hud)); }
   .layout-hud .s03-senspanel .q-step { width: 32px; height: 32px; }
   .layout-hud .s03-msg-text { font-size: calc(15px * var(--hud)); }
 }
