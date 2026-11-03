@@ -32,6 +32,7 @@ Static study pages in `infografikas/` (Latvian only, Montserrat + IBM Plex Mono,
 | ----------- | ----- | ---- |
 | Strāva šķidrumos (1 of 2) | Electricity, grade 11 / ions, hydration, electrolysis | `infografikas/strava-skidrumos.html` |
 | Baterijas un akumulatori (2 of 2) | Electricity, grade 11 / batteries, chemistries, charging | `infografikas/baterijas-un-akumulatori.html` |
+| Magnētiskie materiāli | Magnetism, grade 11 / dia-, para- and ferromagnets, domains, hysteresis, Curie temperature, iron core | `infografikas/magnetiskie-materiali.html` |
 
 Link-preview images (Open Graph) are in `assets/infografikas/` (1200 × 630, headless Chrome). Each one is the card's SVG drawing from `index.html` on the landing-page palette with the Latvian title, tag and description, so the card is the single source. Regenerate them after changing a card:
 
@@ -54,7 +55,7 @@ fiz-sim/
 ├── ideal-gas.html                  ← Gas Law (M-02): assets/gas/
 ├── motor-generator.html            ← Generator and Motor (E-01): assets/emotor/
 ├── sound-spectrum.html             ← Sound Spectrum Analyser (S-03, microphone, https only): assets/spectrum/
-├── infografikas/                   ← Infographics (Latvian): strava-skidrumos, baterijas-un-akumulatori
+├── infografikas/                   ← Infographics (Latvian): strava-skidrumos, baterijas-un-akumulatori, magnetiskie-materiali
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
 │                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, emotor/, spectrum/, infografikas/ (preview images)
 ├── tests/                          ← Unit tests (npm test)

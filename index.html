@@ -998,6 +998,53 @@
       </div>
     </a>
 
+    <!-- ══════ INFOGRAPHIC 3: Magnetic Materials ══════ -->
+    <a href="infografikas/magnetiskie-materiali.html" class="card">
+      <div class="card-visual">
+        <svg width="200" height="140" viewBox="0 0 200 140">
+          <!-- field loops around the electromagnet -->
+          <g fill="none" stroke="#5a6d88" stroke-width="1" stroke-dasharray="3 2">
+            <path d="M 152 66 C 184 38 16 38 48 66"/><path d="M 152 74 C 184 102 16 102 48 74"/>
+            <path d="M 152 62 C 196 20 4 20 48 62"/><path d="M 152 78 C 196 120 4 120 48 78"/>
+          </g>
+          <!-- coil, back half -->
+          <g fill="none" stroke="#b4862c" stroke-width="1.6" opacity="0.45">
+            <path d="M 60 92 A 5 22 0 0 1 60 48"/><path d="M 76 92 A 5 22 0 0 1 76 48"/><path d="M 92 92 A 5 22 0 0 1 92 48"/>
+            <path d="M 108 92 A 5 22 0 0 1 108 48"/><path d="M 124 92 A 5 22 0 0 1 124 48"/><path d="M 140 92 A 5 22 0 0 1 140 48"/>
+          </g>
+          <!-- iron core with aligned domains -->
+          <rect x="44" y="60" width="112" height="20" rx="3" fill="#1a2540" stroke="#c8d6e8" stroke-width="1"/>
+          <g stroke="#ff3355" stroke-width="1.6">
+            <line x1="54" y1="70" x2="66" y2="70"/><line x1="78" y1="70" x2="90" y2="70"/><line x1="102" y1="70" x2="114" y2="70"/><line x1="126" y1="70" x2="138" y2="70"/>
+          </g>
+          <g fill="#ff3355">
+            <polygon points="70,70 65,67 65,73"/><polygon points="94,70 89,67 89,73"/><polygon points="118,70 113,67 113,73"/><polygon points="142,70 137,67 137,73"/>
+          </g>
+          <!-- coil, front half -->
+          <g fill="none" stroke="#ffd700" stroke-width="1.6">
+            <path d="M 60 48 A 5 22 0 0 1 60 92"/><path d="M 76 48 A 5 22 0 0 1 76 92"/><path d="M 92 48 A 5 22 0 0 1 92 92"/>
+            <path d="M 108 48 A 5 22 0 0 1 108 92"/><path d="M 124 48 A 5 22 0 0 1 124 92"/><path d="M 140 48 A 5 22 0 0 1 140 92"/>
+          </g>
+          <!-- poles -->
+          <text x="164" y="74" font-family="'Orbitron', monospace" font-size="10" font-weight="700" fill="#ff3355">N</text>
+          <text x="28" y="74" font-family="'Orbitron', monospace" font-size="10" font-weight="700" fill="#3388ff">S</text>
+          <!-- leads and battery -->
+          <path d="M 60 92 L 60 118 L 95 118 M 105 118 L 140 118 L 140 92" fill="none" stroke="#c8d6e8" stroke-width="1.2"/>
+          <line x1="96" y1="111" x2="96" y2="125" stroke="#c8d6e8" stroke-width="1.2"/>
+          <line x1="104" y1="115" x2="104" y2="121" stroke="#c8d6e8" stroke-width="2.5"/>
+        </svg>
+      </div>
+      <div class="card-body">
+        <div class="card-tag tag-electricity" data-i18n="tagMagnetism">Magnetism · Grade 11</div>
+        <div class="card-title" data-i18n="magnetsTitle">Magnetic Materials</div>
+        <p class="card-desc" data-i18n="magnetsDesc">Dia-, para- and ferromagnets: electron magnets, domains, magnetizing, the Curie temperature and the iron core in a coil.</p>
+        <div class="card-status status-live">
+          <div class="status-dot"></div>
+          <span data-i18n="statusLive">Live</span>
+        </div>
+      </div>
+    </a>
+
   </div>
 </main>
 
@@ -1019,6 +1066,9 @@ const TRANSLATIONS = {
     liquidsDesc: "Why salt and pure water do not conduct but salt water does: ions, hydration, electrolysis.",
     batteriesTitle: "Batteries and Accumulators",
     batteriesDesc: "How chemical sources store, give and take back energy; the common chemistries; why some cannot be recharged.",
+    tagMagnetism: "Magnetism · Grade 11",
+    magnetsTitle: "Magnetic Materials",
+    magnetsDesc: "Dia-, para- and ferromagnets: electron magnets, domains, magnetizing, the Curie temperature and the iron core in a coil.",
     tagElectrostatics: "Electrostatics",
     tagQuantization: "Charge quantization",
     tagMechanics: "Mechanics",
@@ -1067,6 +1117,9 @@ const TRANSLATIONS = {
     liquidsDesc: "Kāpēc sāls un tīrs ūdens nevada, bet sālsūdens vada: joni, hidratācija, elektrolīze.",
     batteriesTitle: "Baterijas un akumulatori",
     batteriesDesc: "Kā ķīmiskie strāvas avoti krāj, atdod un saņem enerģiju; biežākās ķīmijas; kāpēc dažus nevar uzlādēt.",
+    tagMagnetism: "Magnētisms · 11. klase",
+    magnetsTitle: "Magnētiskie materiāli",
+    magnetsDesc: "Dia-, para- un feromagnētiķi: elektronu magnēti, domēni, magnetizēšana, Kirī temperatūra un dzelzs serde spolē.",
     tagElectrostatics: "Elektrostatika",
     tagQuantization: "Lādiņa kvantēšana",
     tagMechanics: "Mehānika",

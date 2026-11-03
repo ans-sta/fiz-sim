@@ -13,11 +13,12 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const index = readFileSync(join(root, 'index.html'), 'utf8');
-const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 const PAGES = [
   { slug: 'strava-skidrumos', title: 'liquidsTitle', desc: 'liquidsDesc' },
   { slug: 'baterijas-un-akumulatori', title: 'batteriesTitle', desc: 'batteriesDesc' },
+  { slug: 'magnetiskie-materiali', title: 'magnetsTitle', desc: 'magnetsDesc', tag: 'tagMagnetism' },
 ];
 
 // Latvian strings from the TRANSLATIONS object (the lv block comes after the en block).
@@ -37,7 +38,7 @@ const cardSvg = (slug) => {
   return index.slice(a, b);
 };
 
-const page = ({ slug, title, desc }) => `<!DOCTYPE html>
+const page = ({ slug, title, desc, tag = 'tagElectricity' }) => `<!DOCTYPE html>
 <html lang="lv"><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -62,15 +63,16 @@ const page = ({ slug, title, desc }) => `<!DOCTYPE html>
 <div class="art">${cardSvg(slug)}</div>
 <div class="text">
   <div class="mark">FIZ-SIM</div>
-  <div class="tag">${lv('tagElectricity')}</div>
+  <div class="tag">${lv(tag)}</div>
   <h1>${lv(title)}</h1>
   <p>${lv(desc)}</p>
   <div class="live"><i></i>Infografika</div>
 </div>
 </body></html>`;
 
+const ONLY = process.env.ONLY;
 const tmp = mkdtempSync(join(tmpdir(), 'fizsim-og-'));
-for (const p of PAGES) {
+for (const p of PAGES.filter((q) => !ONLY || q.slug === ONLY)) {
   const html = join(tmp, `${p.slug}.html`);
   writeFileSync(html, page(p));
   const out = join(root, 'assets', 'infografikas', `${p.slug}.png`);
