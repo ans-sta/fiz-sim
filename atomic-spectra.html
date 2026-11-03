@@ -48,7 +48,6 @@
       <div class="m01-group" role="group" aria-labelledby="lightLabel" id="lightGroup">
         <span class="m01-label" id="lightLabel">GAISMA</span>
         <div class="m01-row">
-          <button class="btn e01-tog" id="whiteBtn" type="button" aria-pressed="false"><span aria-hidden="true">☼ </span><span id="whiteW">BALTĀ GAISMA</span></button>
           <span class="a01-ratek" id="rateK" aria-hidden="true">INTENSITĀTE</span>
           <button class="q-step" id="rateMinus" type="button">−</button>
           <span class="m01-val a01-rate" id="rateText" aria-live="off">5 f/s</span>
@@ -69,6 +68,8 @@
       <div class="drawing" id="drawing">
         <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
         <canvas id="scene" role="img" aria-label="Atomu spektri" aria-describedby="sceneDesc"></canvas>
+        <!-- baltā gaisma: kvadrāts staba platumā virs tā, kā punkts uz i (Ansis 04.11.); ☼ izslēgta, ☀ ieslēgta -->
+        <button class="a01-white" id="whiteBtn" type="button" aria-pressed="false"><span aria-hidden="true" id="whiteSym">☼</span></button>
         <input class="a01-lam" id="lam" type="range" min="0" max="1000" step="1" value="500" aria-orientation="vertical">
         <div class="a01-levels" id="levels" role="group"></div>
         <p class="a01-readout" id="readout"></p>

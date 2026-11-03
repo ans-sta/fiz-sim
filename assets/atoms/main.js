@@ -227,6 +227,19 @@ function placeOverlays(lay, legend) {
     const tr = `translate(${Math.round(c.x + c.w / 2 - c.h / 2)}px, ${Math.round(c.y + c.h / 2 - (c.w + 16) / 2)}px) rotate(-90deg)`;
     if (st.transform !== tr) st.transform = tr;
   }
+  // baltās gaismas poga — virs avota staba, aizslīd līdzi
+  const wb = el('whiteBtn');
+  setHidden(wb, ui.slide >= 0.999);
+  if (!wb.hidden) {
+    const q = lay.whiteBtn;
+    const st = wb.style;
+    for (const [k, v] of [['left', q.x], ['top', q.y], ['width', q.w], ['height', q.h]]) {
+      const px = `${Math.round(v)}px`;
+      if (st[k] !== px) st[k] = px;
+    }
+    const fs = `${Math.round(q.w * 0.6)}px`;
+    if (st.fontSize !== fs) st.fontSize = fs;
+  }
   const geo = levelGeometry(atom(), lay.diagram, legend);
   const cur = sim.state.level;
   for (const g of geo) {
@@ -328,15 +341,16 @@ function render() {
   setAttr(el('modeAbs'), 'aria-pressed', !emit);
   setAttr(el('modeEmit'), 'aria-pressed', emit);
   setText(el('lightLabel'), t('bar.light'));
-  setText(el('whiteW'), t('bar.white'));
+  setAttr(el('whiteBtn'), 'aria-label', t('bar.whiteAria'));
   setAttr(el('whiteBtn'), 'aria-pressed', s.white);
+  setText(el('whiteSym'), s.white ? '☀' : '☼');
   setText(el('rateK'), t('bar.rate'));
   setText(el('rateText'), t('bar.rateVal', { n: s.rate }));
   setAttr(el('rateMinus'), 'aria-label', t('dims.decrease', { name: `${t('bar.rateName')}, ${rateAria()}` }));
   setAttr(el('ratePlus'), 'aria-label', t('dims.increase', { name: `${t('bar.rateName')}, ${rateAria()}` }));
   el('rateMinus').disabled = rateIdx() <= 0;
   el('ratePlus').disabled = rateIdx() >= INTENSITIES.length - 1;
-  for (const id of ['whiteBtn', 'rateK', 'rateMinus', 'rateText', 'ratePlus']) setHidden(el(id), emit);
+  for (const id of ['rateK', 'rateMinus', 'rateText', 'ratePlus']) setHidden(el(id), emit);
   setHidden(el('cascadeBtn'), !emit);
   setText(el('cascadeW'), t('bar.cascade'));
   setText(el('toolsLabel'), t('bar.tools'));

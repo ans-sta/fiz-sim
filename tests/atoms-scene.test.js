@@ -78,3 +78,15 @@ test('level geometry: every level of every atom has a line and a label inside th
   assert.equal(columnY({ y: 10, h: 100 }, 1), 10);
   assert.equal(columnY({ y: 10, h: 100 }, 0), 110);
 });
+
+test('room for the white-light button above the absorption column, square and column-wide (Ansis 04.11.: “kā punkts uz i”)', () => {
+  for (const [w, h] of [[1280, 800], [375, 700], [844, 390]]) {
+    const L = sceneLayout(w, h, { slide: 0 });
+    assert.ok(L.whiteBtn, `${w}×${h} has whiteBtn`);
+    assert.equal(L.whiteBtn.w, L.whiteBtn.h, 'square');
+    assert.equal(L.whiteBtn.x, L.absCol.x);
+    assert.equal(L.whiteBtn.w, Math.max(24, L.absCol.w));
+    assert.ok(L.whiteBtn.y >= 0, 'on screen');
+    assert.ok(L.whiteBtn.y + L.whiteBtn.h + 4 <= L.absCol.y, 'above the column with a gap');
+  }
+});

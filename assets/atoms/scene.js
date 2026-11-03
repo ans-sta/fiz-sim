@@ -16,30 +16,37 @@ export function sceneLayout(w, h, { slide = 0, drawScale = 1, topPad = 0 } = {})
     const cw = Math.max(28, Math.min(44, Math.round(w * 0.1)));
     const LX = 44; // vieta nm skalai un slīdņa skaitlim pa kreisi
     const top = Math.max(M + 10, topPad + 6);
-    const colH = Math.max(0, h - top - 58); // apakšā vieta ⚙
-    const absCol = { x: LX - s * (cw + LX + 40), y: top, w: cw, h: colH };
-    const emCol = { x: w - 30 - cw + (1 - s) * (cw + LX + 40), y: top, w: cw, h: colH };
+    const bw = Math.max(24, cw); // baltās gaismas poga virs staba — kvadrāts staba platumā (Ansis 04.11.)
+    const ct = top + bw + 8;
+    const colH = Math.max(0, h - ct - 58); // apakšā vieta ⚙
+    const absCol = { x: LX - s * (cw + LX + 40), y: ct, w: cw, h: colH };
+    const emCol = { x: w - 30 - cw + (1 - s) * (cw + LX + 40), y: ct, w: cw, h: colH };
+    const whiteBtn = { x: absCol.x, y: top, w: bw, h: bw };
     const off = s * (LX + cw + 22 - M);
     const gx = LX + cw + 22 - off;
     const gw = Math.max(0, w - (LX + cw + 22) - M);
     const atomH = Math.round((h - top) * 0.36);
     const atom = { x: gx, y: top, w: gw, h: atomH };
     const diagram = { x: gx, y: top + atomH + 8, w: gw, h: Math.max(0, h - top - atomH - 8 - M) };
-    return { portrait, absCol, emCol, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
+    return { portrait, absCol, emCol, whiteBtn, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
   }
   const cw = Math.round(Math.max(30, Math.min(52, w * 0.035)) * Math.min(1.4, Math.max(0.8, drawScale)));
   const total = cw + COL_PAD;
   const top = Math.max(M + 16, topPad + 10);
-  const colH = Math.max(0, h - top - M - 18);
-  const absCol = { x: M + 30 - s * (total + M + 30), y: top, w: cw, h: colH };
-  const emCol = { x: w - M - 30 - cw + (1 - s) * (total + M + 30), y: top, w: cw, h: colH };
+  const bw = Math.max(24, cw); // baltās gaismas poga virs staba — kvadrāts staba platumā, kā punkts uz i (Ansis 04.11.)
+  const ct = top + bw + 8;
+  const colH = Math.max(0, h - ct - M - 18);
+  const groupH = Math.max(0, h - top - M - 18);
+  const absCol = { x: M + 30 - s * (total + M + 30), y: ct, w: cw, h: colH };
+  const emCol = { x: w - M - 30 - cw + (1 - s) * (total + M + 30), y: ct, w: cw, h: colH };
+  const whiteBtn = { x: absCol.x, y: top, w: bw, h: bw };
   const off = s * (total + GAP);
   const gx = M + 30 + total + GAP - off;
   const groupW = Math.max(0, w - 2 * M - 30 - total - GAP);
   const atomW = Math.round(groupW * 0.42);
-  const atom = { x: gx, y: top, w: atomW, h: colH };
-  const diagram = { x: gx + atomW, y: top, w: Math.max(0, groupW - atomW), h: colH };
-  return { portrait, absCol, emCol, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
+  const atom = { x: gx, y: top, w: atomW, h: groupH };
+  const diagram = { x: gx + atomW, y: top, w: Math.max(0, groupW - atomW), h: groupH };
+  return { portrait, absCol, emCol, whiteBtn, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
 }
 
 export const columnY = (rect, p) => rect.y + rect.h * (1 - p);
@@ -171,11 +178,11 @@ function drawColumnFrame(ctx, r, v, { font, c }, outerLeft) {
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1;
   ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
-  ctx.textAlign = 'center';
+  ctx.textAlign = outerLeft ? 'right' : 'left';
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = c.inkDim;
   ctx.font = font(10);
-  ctx.fillText('nm', r.x + r.w / 2, r.y - 5);
+  ctx.fillText('nm', xo, r.y - 5);
 }
 
 function drawSourceColumn(ctx, r, v, ctxs) {
