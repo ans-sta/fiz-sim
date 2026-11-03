@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ATOMS } from '../assets/atoms/atoms.js';
-import { sceneLayout, levelYs, spreadLabels, columnY, levelGeometry } from '../assets/atoms/scene.js';
+import { sceneLayout, levelYs, spreadLabels, columnY, levelGeometry, seriesSlots } from '../assets/atoms/scene.js';
 
 const right = (r) => r.x + r.w;
 const finite = (r) => ['x', 'y', 'w', 'h'].every((k) => Number.isFinite(r[k]));
@@ -89,4 +89,16 @@ test('room for the white-light button above the absorption column, square and co
     assert.ok(L.whiteBtn.y >= 0, 'on screen');
     assert.ok(L.whiteBtn.y + L.whiteBtn.h + 4 <= L.absCol.y, 'above the column with a gap');
   }
+});
+
+test('hydrogen arrows sit in fixed series slots like the textbook: IR series left, Balmer middle, Lyman right', () => {
+  const rect = { x: 500, y: 60, w: 600, h: 600 };
+  const slots = seriesSlots(ATOMS.H, levelGeometry(ATOMS.H, rect, 1));
+  assert.equal(slots.size, 15);
+  const x = (up, lo) => slots.get(`${up}|${lo}`).x;
+  assert.ok(x(4, 3) < x(3, 2) && x(6, 2) < x(2, 1), 'groups left to right: →3, →2, →1');
+  assert.ok(x(3, 2) < x(4, 2) && x(4, 2) < x(5, 2) && x(5, 2) < x(6, 2), 'a, b, c, d inside Balmer');
+  assert.ok(x(6, 5) < x(5, 4), 'Pfund and Brackett further left');
+  for (const s of slots.values()) assert.ok(s.x > rect.x && s.x < rect.x + rect.w);
+  assert.equal(seriesSlots(ATOMS.Hg, levelGeometry(ATOMS.Hg, rect, 1)), null, 'only for the single-column (Bohr) diagram');
 });

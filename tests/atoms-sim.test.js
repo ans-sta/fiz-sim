@@ -243,3 +243,25 @@ test('an absorbed photon does not vanish at once — its tail sinks into the ato
   assert.ok(p, 'sink photon');
   assert.equal(p.flight, 1.5);
 });
+
+test('every transition leaves its arrow in the diagram until NOTĪRĪT — one trail per mode (Ansis 04.11.)', () => {
+  const sim = sim0();
+  sim.shoot(486.2);
+  run(sim, 2.7);
+  sim.shoot(656.4);
+  run(sim, 2.7);
+  assert.deepEqual([...sim.state.trail.absorb.values()].map((x) => `${x.lo}→${x.up}`).sort(), ['2→3', '2→4']);
+  sim.setMode('emit');
+  sim.setLevel('4');
+  sim.setLevel('2');
+  sim.setLevel('5');
+  sim.setLevel('1');
+  assert.deepEqual([...sim.state.trail.emit.values()].map((x) => `${x.up}→${x.lo}`).sort(), ['4→2', '5→1']);
+  assert.equal(sim.state.trail.absorb.size, 2, 'absorption trail kept across modes');
+  sim.clear();
+  assert.equal(sim.state.trail.absorb.size + sim.state.trail.emit.size, 0);
+  sim.setLevel('3');
+  sim.setLevel('2');
+  sim.setAtom('Na');
+  assert.equal(sim.state.trail.emit.size, 0, 'a new atom starts clean');
+});

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { ATOMS } from '../assets/atoms/atoms.js';
 import {
   absorb, edgeNm, cascadeStep, columnAxis, lambdaToPos, posToLambda, offScale, snap, hintTargets,
-  createWhiteLight, timing, toleranceNm, linesUp, linesDown, isGround, isMetastable, INTENSITIES, DEFAULT_INTENSITY,
+  createWhiteLight, timing, toleranceNm, linesUp, linesDown, isGround, isMetastable, INTENSITIES, DEFAULT_INTENSITY, forbiddenTargets,
 } from '../assets/atoms/model.js';
 import { mulberry32 } from '../assets/measure/rng.js';
 
@@ -128,4 +128,14 @@ test('intensity steps and timing', () => {
   near(timing(20).inFlight, 0.25 * timing(5).inFlight, 1e-12, 'absorption flight at 20 f/s');
   assert.deepEqual(timing(1), timing(5));
   near(timing(5, true).flight, 0.6, 1e-12, 'reduced motion');
+});
+
+test('forbidden targets: levels the electron cannot reach from where it is (red × in the diagram)', () => {
+  assert.deepEqual(forbiddenTargets(H, '4', 'down'), []);
+  assert.deepEqual(forbiddenTargets(H, '2', 'up'), []);
+  assert.deepEqual(forbiddenTargets(Hg, '7³S', 'down').sort(), ['6¹S'].sort());
+  assert.deepEqual(forbiddenTargets(Na, '3s', 'up').sort(), ['4s', '3d', '5s', '4d', '6s', '5d'].sort());
+  assert.ok(forbiddenTargets(He, '3³D', 'down').includes('2³S'), 'D → S is forbidden');
+  assert.ok(!forbiddenTargets(He, '3³D', 'down').includes('2³P'));
+  assert.ok(forbiddenTargets(He, '2³P', 'down').includes('1¹S'), 'ortho → para');
 });

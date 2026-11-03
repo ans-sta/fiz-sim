@@ -21,6 +21,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     white: false, rate: DEFAULT_INTENSITY, photons: [], stripes: new Map(), lines: new Map(),
     counts: { shot: 0, absorbed: 0 }, arrow: null, cascading: false, t: 0,
     allowed: null, // pēc aizliegtas krišanas — līmeņi, uz kuriem var krist (spec. § 7.3)
+    trail: { absorb: new Map(), emit: new Map() }, // katra pāreja atstāj bultu shēmā līdz NOTĪRĪT (Ansis 04.11.)
   };
   let pending = [];
   let busy = null; // { until, kind: 'line' | 'ionise', λ, from }
@@ -74,6 +75,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     if (r.kind === 'line') {
       state.level = r.to;
       state.arrow = { from: state.start, to: r.to, λ: r.λ, up: true };
+      state.trail.absorb.set(`${r.to}|${state.start}`, { up: r.to, lo: state.start, λ: r.λ });
       busy = { until: state.t + tm().hold, kind: 'line', λ: r.λ, from: r.to };
       ev.push({ type: 'absorbed', from: state.start, to: r.to, λ: r.λ });
       return [sink];
@@ -119,6 +121,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     state.allowed = null;
     state.level = to;
     state.arrow = { from, to, λ: d.λ, up: false };
+    state.trail.emit.set(`${from}|${to}`, { up: from, lo: to, λ: d.λ });
     addPhoton({ λ: d.λ, kind: 'emit', dur: tm().flight });
     return { type: 'emitted', from, to, λ: d.λ, metastable: isMetastable(atom(), to) };
   }
@@ -210,6 +213,8 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       state.start = ATOMS[id].start;
       state.stripes.clear();
       state.lines.clear();
+      state.trail.absorb.clear();
+      state.trail.emit.clear();
       state.counts = { shot: 0, absorbed: 0 };
       settle();
     },
@@ -224,6 +229,8 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     clear() {
       state.stripes.clear();
       state.lines.clear();
+      state.trail.absorb.clear();
+      state.trail.emit.clear();
       state.counts = { shot: 0, absorbed: 0 };
     },
   };

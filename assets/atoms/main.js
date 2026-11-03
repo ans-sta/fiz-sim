@@ -3,7 +3,7 @@
 import { createI18n, createTheme, mountHeaderTools, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import { ATOMS } from './atoms.js';
-import { columnAxis, lambdaToPos, posToLambda, hintTargets, snap, edgeNm, levelOf, INTENSITIES, VIS } from './model.js';
+import { columnAxis, lambdaToPos, posToLambda, hintTargets, snap, edgeNm, levelOf, forbiddenTargets, INTENSITIES, VIS } from './model.js';
 import { createSim } from './sim.js';
 import { eventText } from './text.js';
 import { sceneLayout, drawScene, levelGeometry } from './scene.js';
@@ -213,6 +213,13 @@ function buildLevelButtons() {
 }
 buildLevelButtons();
 
+// Līmeņi, uz kuriem no elektrona līmeņa pāriet nevar (shēmā sarkans ×): starošanā — zemākie, absorbcijā — augstākie
+function forbiddenSet() {
+  const s = sim.state;
+  if (s.mode === 'absorb') return s.ionised ? null : new Set(forbiddenTargets(atom(), s.start, 'up'));
+  return s.level ? new Set(forbiddenTargets(atom(), s.level, 'down')) : null;
+}
+
 function placeOverlays(lay, legend) {
   // slīdnis — pagriezts pret pulksteņrādītāja virzienu, lai vērtība aug uz augšu
   const c = lay.absCol;
@@ -242,6 +249,7 @@ function placeOverlays(lay, legend) {
   }
   const geo = levelGeometry(atom(), lay.diagram, legend);
   const cur = sim.state.level;
+  const forb = forbiddenSet();
   for (const g of geo) {
     const b = levelBtns.get(g.id);
     if (!b) continue;
@@ -254,7 +262,7 @@ function placeOverlays(lay, legend) {
     if (s.left !== L) s.left = L;
     if (s.top !== T) s.top = T;
     if (s.width !== W) s.width = W;
-    setAttr(b, 'aria-label', t('lvl.aria', { label: lvl.label, E: fmt(lvl.E, 2) }) + (lvl.metastable ? t('lvl.meta') : '') + (g.id === cur ? t('lvl.here') : ''));
+    setAttr(b, 'aria-label', t('lvl.aria', { label: lvl.label, E: fmt(lvl.E, 2) }) + (lvl.metastable ? t('lvl.meta') : '') + (g.id === cur ? t('lvl.here') : '') + (forb?.has(g.id) ? t('lvl.forbidden') : ''));
     setAttr(b, 'aria-current', g.id === cur ? 'true' : 'false');
   }
 }
@@ -376,12 +384,13 @@ function render() {
     hints: hintTargets(atom(), s.start), showHints: ui.hints && !emit, edge: emit ? NaN : edgeNm(atom(), s.start),
     mode: s.mode, slide: ui.slide, legend, theme: theme.current(), colors: theme.colors(), fmt,
     fmtMicron: (λ) => fmt(λ / 1000, 1),
-    allowed: emit && s.allowed ? new Set(s.allowed) : null,
+    trail: s.trail[s.mode], forbidden: forbiddenSet(),
     jump: ui.jump ? { from: ui.jump.from, k: Math.min(1, (now - ui.jump.t0) / (reduced.matches ? 120 : 320)) } : null,
     aim: !emit && ui.slide < 0.02 ? ui.aim : null,
     labels: {
       ir: t('lbl.ir'), core: t('lbl.core'), notToScale: t('lbl.notToScale'), energyAxis: t('lbl.energyAxis'),
       ionisation: t('lbl.ionisation'), para: t('lbl.para'), ortho: t('lbl.ortho'),
+      series: { 1: t('series.1'), 2: t('series.2'), 3: t('series.3'), 4: t('series.4'), 5: t('series.5') },
       atomName: `${t(`title.${s.atomId}`)} ${s.atomId}`, aim: fmtLam(ui.aim), // bez “nm” — tas ir staba galvā
     },
   });

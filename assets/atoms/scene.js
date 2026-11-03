@@ -99,7 +99,7 @@ export function levelGeometry(atom, rect, legend = 1) {
     const lv = atom.levels.filter((l) => l.col === c.id && l.kind !== 'limit').sort((a, b) => ys.get(a.id) - ys.get(b.id));
     const single = cols.length === 1;
     const x0 = colX(i) + colW * (compact && single ? 0.04 : 0.12);
-    const x1 = single ? x0 + Math.max(40, Math.min(colW * 0.43, colW - 150 * legend)) : colX(i) + colW * 0.62;
+    const x1 = single ? x0 + Math.max(40, Math.min(colW * 0.7, colW - (x0 - colX(i)) - (compact ? 50 : 130) * legend)) : colX(i) + colW * 0.62;
     const items = lv.map((l) => ({ id: l.id, y: ys.get(l.id) }));
     const narrow = !single && colW < 70; // šaurā shēmā uzraksts virs līnijas, nevis blakus
     const spread = spreadLabels(items, gap, rect.y + 4);
@@ -450,9 +450,10 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
   ctx.lineTo(r.x + r.w, y0);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.textAlign = 'right';
+  // jonizācijas uzraksts pa kreisi (labajā pusē ir līmeņu uzraksti); ūdeņradim kopā ar n = ∞
+  ctx.textAlign = 'left';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(v.labels.ionisation, r.x + r.w - 2, y0 - 3);
+  ctx.fillText(a.levels.some((l) => l.kind === 'limit') ? `n = ∞ · ${v.labels.ionisation}` : v.labels.ionisation, ax + 8, y0 - 3);
   // kolonnu virsraksti
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
@@ -478,8 +479,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
       ctx.font = font(11);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
-      ctx.fillText('n = ∞', g.x0 + 4, g.y - 3);
-      continue;
+      continue; // “n = ∞” — pie jonizācijas līnijas uzraksta
     }
     const on = g.id === cur;
     const lvl = levelOf(a, g.id);
@@ -489,13 +489,15 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     ctx.moveTo(g.x0, g.y);
     ctx.lineTo(g.x1, g.y);
     ctx.stroke();
-    // pēc aizliegtas krišanas — līmeņi, uz kuriem var krist (spec. § 7.3)
-    if (v.allowed?.has(g.id)) {
-      ctx.strokeStyle = c.accent;
-      ctx.lineWidth = 2;
-      ctx.setLineDash([4, 3]);
-      ctx.strokeRect(g.x0 - 3, g.y - 5, g.x1 - g.x0 + 6, 10);
-      ctx.setLineDash([]);
+    // uz šo līmeni no elektrona līmeņa pāriet nevar — sarkans × (Ansis 04.11.)
+    if (v.forbidden?.has(g.id)) {
+      const xx = g.x1 - 9;
+      ctx.strokeStyle = dark ? '#ff6b6b' : '#c0262d';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(xx - 5, g.y - 5); ctx.lineTo(xx + 5, g.y + 5);
+      ctx.moveTo(xx + 5, g.y - 5); ctx.lineTo(xx - 5, g.y + 5);
+      ctx.stroke();
     }
     // uzraksts (izvirzīts ar norādi, ja pabīdīts)
     const lx = g.single ? g.labelX : g.x1 + 4;
@@ -526,30 +528,100 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
       ctx.fillText(text, lx, g.labelY);
     }
   }
-  // bulta
-  if (arrow && byId.has(arrow.from) && byId.has(arrow.to)) {
-    const A = byId.get(arrow.from);
-    const B = byId.get(arrow.to);
-    const xa = A.single ? A.x0 + (A.x1 - A.x0) * 0.5 : (A.x0 + A.x1) / 2;
-    const xb = B.single ? xa : (B.x0 + B.x1) / 2;
-    const col = arrow.λ ? rgbCss(photonRGB(arrow.λ, field, dark)) : c.accent;
-    ctx.strokeStyle = col;
-    ctx.fillStyle = col;
-    ctx.lineWidth = 3;
-    ctx.setLineDash(arrow.excite || (arrow.λ && invisible(arrow.λ)) ? [6, 4] : []);
-    ctx.beginPath();
-    ctx.moveTo(xa, A.y);
-    ctx.lineTo(xb, B.y);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    const ang = Math.atan2(B.y - A.y, xb - xa);
-    ctx.beginPath();
-    ctx.moveTo(xb, B.y);
-    ctx.lineTo(xb - 11 * Math.cos(ang - 0.4), B.y - 11 * Math.sin(ang - 0.4));
-    ctx.lineTo(xb - 11 * Math.cos(ang + 0.4), B.y - 11 * Math.sin(ang + 0.4));
-    ctx.closePath();
-    ctx.fill();
+  // bultas: katra pāreja paliek shēmā (pēda), pēdējā — biezāka (Ansis 04.11.: “bultiņas paliek … līdz ir sakrājies pilns zīmējums”)
+  const slots = seriesSlots(a, geo);
+  const colOf = (λ) => rgbCss(photonRGB(λ, field, dark));
+  const draw = (up, lo, λ, w, head, towardUp) => {
+    const U = byId.get(up);
+    const D = byId.get(lo);
+    if (!U || !D) return;
+    let xu = (U.x0 + U.x1) / 2;
+    let xd = (D.x0 + D.x1) / 2;
+    if (slots) xu = xd = slots.get(`${up}|${lo}`).x;
+    const [xa, ya, xb, yb] = towardUp ? [xd, D.y, xu, U.y] : [xu, U.y, xd, D.y];
+    arrowLine(ctx, xa, ya, xb, yb, λ ? colOf(λ) : c.inkDim, w, head);
+  };
+  const trail = v.trail ? [...v.trail.values()] : [];
+  const towardUp = v.mode === 'absorb';
+  for (const tr of trail) draw(tr.up, tr.lo, tr.λ, 2.2, 7, towardUp);
+  // sēriju nosaukumi (ūdeņradis)
+  if (slots && trail.length) {
+    ctx.fillStyle = c.inkDim;
+    ctx.font = font(10);
+    ctx.textBaseline = 'top';
+    for (const lo of new Set(trail.map((x) => x.lo))) {
+      const xs = [...slots.values()].filter((q) => q.lo === lo).map((q) => q.x);
+      const yLo = byId.get(lo).y;
+      const name = Number(lo) <= 3 ? v.labels.series?.[lo] : null; // kā grāmatā — trīs galvenās sērijas
+      if (!name) continue;
+      if (lo === '1') {
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(name, Math.min(...xs) - 6, yLo - 4);
+        ctx.textBaseline = 'top';
+      } else {
+        ctx.textAlign = 'center';
+        ctx.fillText(name, (Math.min(...xs) + Math.max(...xs)) / 2, yLo + 4);
+      }
+    }
   }
+  if (arrow && byId.has(arrow.from) && byId.has(arrow.to)) {
+    if (arrow.excite) {
+      // ierosināšana (izlāde, bez fotona): plāna pelēka bulta līmeņu kreisajā malā
+      const A = byId.get(arrow.from);
+      const B = byId.get(arrow.to);
+      const x = slots ? A.x0 - 10 : (A.x0 + A.x1) / 2 - 6;
+      const xb = slots ? x : (B.x0 + B.x1) / 2 - 6;
+      arrowLine(ctx, x, A.y, xb, B.y, c.inkDim, 1.5, 7);
+    } else {
+      const up = arrow.up ? arrow.to : arrow.from;
+      const lo = arrow.up ? arrow.from : arrow.to;
+      draw(up, lo, arrow.λ, 4.5, 11, arrow.up);
+    }
+  }
+}
+
+// Ūdeņraža bultu vietas kā mācību grāmatā: sērijas no kreisās uz labo — →5, →4, →3 (IS), →2 (Balmera), →1 (Laimana, UV);
+// sērijā augšējais līmenis aug no kreisās uz labo (a, b, c, d). Vietas fiksētas — bultas nelec, kad pieliek jaunu.
+export function seriesSlots(atom, geo) {
+  if (atom.columns.length !== 1) return null;
+  const lv = geo.filter((g) => !g.limit);
+  if (!lv.length) return null;
+  const x0 = Math.min(...lv.map((g) => g.x0)) + 8;
+  const x1 = Math.max(...lv.map((g) => g.x1)) - 8;
+  const ns = lv.map((g) => Number(g.id)).sort((p, q) => p - q);
+  const groups = ns.slice(0, -1).reverse(); // apakšējie līmeņi: 5, 4, 3, 2, 1
+  const n = groups.reduce((sum, lo) => sum + ns.filter((u) => u > lo).length, 0);
+  const GAP = 1.6;
+  const unit = (x1 - x0) / Math.max(1, n - 1 + GAP * (groups.length - 1));
+  const out = new Map();
+  let x = x0;
+  groups.forEach((lo, gi) => {
+    if (gi) x += unit * GAP;
+    for (const up of ns.filter((u) => u > lo)) {
+      out.set(`${up}|${lo}`, { x, up: String(up), lo: String(lo) });
+      x += unit;
+    }
+    x -= unit;
+  });
+  return out;
+}
+
+function arrowLine(ctx, xa, ya, xb, yb, color, w, head) {
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = w;
+  ctx.beginPath();
+  ctx.moveTo(xa, ya);
+  ctx.lineTo(xb, yb);
+  ctx.stroke();
+  const ang = Math.atan2(yb - ya, xb - xa);
+  ctx.beginPath();
+  ctx.moveTo(xb, yb);
+  ctx.lineTo(xb - head * Math.cos(ang - 0.42), yb - head * Math.sin(ang - 0.42));
+  ctx.lineTo(xb - head * Math.cos(ang + 0.42), yb - head * Math.sin(ang + 0.42));
+  ctx.closePath();
+  ctx.fill();
 }
 
 // Viļņa pakete: vijuma garums ekrānā aug ar λ (sarkanam garāki nekā violetam)

@@ -21,6 +21,16 @@ export function linesDown(atom, id) {
   return atom.lines.filter((l) => l.up === id).map((line) => ({ line, to: line.lo, λ: lambdaOf(atom, line) })).sort(byE(atom));
 }
 
+// Līmeņi, uz kuriem no šī pāriet nevar (shēmā sarkans ×): dir 'down' — starošanā uz zemākiem, 'up' — absorbcijā uz augstākiem
+export function forbiddenTargets(atom, id, dir) {
+  const cur = levelOf(atom, id);
+  if (!cur) return [];
+  const ok = new Set((dir === 'down' ? linesDown(atom, id) : linesUp(atom, id)).map((x) => x.to));
+  return atom.levels
+    .filter((l) => l.kind !== 'limit' && l.id !== id && (dir === 'down' ? l.E < cur.E : l.E > cur.E) && !ok.has(l.id))
+    .map((l) => l.id);
+}
+
 export const isGround = (atom, id) => atom.levels.every((l) => l.E >= levelOf(atom, id).E);
 export const isMetastable = (atom, id) => levelOf(atom, id)?.metastable === true;
 
