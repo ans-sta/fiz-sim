@@ -3,7 +3,7 @@
 import { createI18n, createTheme, mountHeaderTools, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import { ATOMS } from './atoms.js';
-import { columnAxis, lambdaToPos, posToLambda, hintTargets, snap, edgeNm, levelOf, forbiddenTargets, INTENSITIES, VIS } from './model.js';
+import { columnAxis, lambdaToPos, posToLambda, hintTargets, snap, edgeNm, levelOf, forbiddenTargets, linesUp, linesDown, INTENSITIES, VIS } from './model.js';
 import { createSim } from './sim.js';
 import { eventText } from './text.js';
 import { sceneLayout, drawScene, levelGeometry } from './scene.js';
@@ -70,16 +70,18 @@ function handle(events, now) {
   for (const e of events) {
     const text = eventText(e, { atom: atom(), t, fmt });
     if (!text) continue;
-    if (sim.state.white && (e.type === 'absorbed' || e.type === 'passed' || e.type === 'ionised' || e.type === 'returned')) {
+    const flow = (sim.state.white && (e.type === 'absorbed' || e.type === 'passed' || e.type === 'ionised' || e.type === 'returned'))
+      || (sim.state.auto && (e.type === 'emitted' || e.type === 'excited' || e.type === 'metastable'));
+    if (flow) {
       // baltajā gaismā rādījums mainās ne biežāk kā 2 reizes sekundē (tikai absorbcija vai jonizācija),
       // ekrāna lasītājam — kopsavilkums ik pēc 2 s
-      if ((e.type === 'absorbed' || e.type === 'ionised') && now - ui.roAt > 500) {
+      if ((e.type === 'absorbed' || e.type === 'ionised' || e.type === 'emitted') && now - ui.roAt > 500) {
         ui.roAt = now;
         ui.readout = text;
       }
       if (now - ui.whiteSaidAt > 2000) {
         ui.whiteSaidAt = now;
-        say(t('live.white', { abs: sim.state.counts.absorbed, shot: sim.state.counts.shot }));
+        say(sim.state.auto ? t('live.auto', { n: sim.state.lines.size }) : t('live.white', { abs: sim.state.counts.absorbed, shot: sim.state.counts.shot }));
       }
       continue;
     }
@@ -116,6 +118,12 @@ function setMode(m) {
 el('modeAbs').addEventListener('click', () => setMode('absorb'));
 el('modeEmit').addEventListener('click', () => setMode('emit'));
 
+el('autoBtn').addEventListener('click', () => {
+  sim.setAuto(!sim.state.auto);
+  ui.whiteSaidAt = performance.now();
+  say(sim.state.auto ? t('live.autoOn', { rate: rateAria() }) : t('live.autoOff'));
+  render();
+});
 el('whiteBtn').addEventListener('click', () => {
   sim.setWhite(!sim.state.white);
   ui.whiteSaidAt = performance.now();
@@ -213,6 +221,13 @@ function buildLevelButtons() {
 }
 buildLevelButtons();
 
+// Līmeņi, uz kuriem var pāriet (shēmā ▼ / ▲)
+function allowedSet() {
+  const s = sim.state;
+  if (s.mode === 'absorb') return s.ionised ? null : new Set(linesUp(atom(), s.start).map((x) => x.to));
+  return s.level ? new Set(linesDown(atom(), s.level).map((x) => x.to)) : null;
+}
+
 // Līmeņi, uz kuriem no elektrona līmeņa pāriet nevar (shēmā sarkans ×): starošanā — zemākie, absorbcijā — augstākie
 function forbiddenSet() {
   const s = sim.state;
@@ -234,11 +249,11 @@ function placeOverlays(lay, legend) {
     const tr = `translate(${Math.round(c.x + c.w / 2 - c.h / 2)}px, ${Math.round(c.y + c.h / 2 - (c.w + 16) / 2)}px) rotate(-90deg)`;
     if (st.transform !== tr) st.transform = tr;
   }
-  // baltās gaismas poga — virs avota staba, aizslīd līdzi
-  const wb = el('whiteBtn');
-  setHidden(wb, ui.slide >= 0.999);
-  if (!wb.hidden) {
-    const q = lay.whiteBtn;
+  // baltās gaismas poga — virs avota staba, AUTO — virs starošanas staba; aizslīd līdzi
+  for (const [id, q, hide] of [['whiteBtn', lay.whiteBtn, ui.slide >= 0.999], ['autoBtn', lay.autoBtn, ui.slide <= 0.001]]) {
+    const wb = el(id);
+    setHidden(wb, hide);
+    if (wb.hidden) continue;
     const st = wb.style;
     for (const [k, v] of [['left', q.x], ['top', q.y], ['width', q.w], ['height', q.h]]) {
       const px = `${Math.round(v)}px`;
@@ -250,6 +265,7 @@ function placeOverlays(lay, legend) {
   const geo = levelGeometry(atom(), lay.diagram, legend);
   const cur = sim.state.level;
   const forb = forbiddenSet();
+  const allow = allowedSet();
   for (const g of geo) {
     const b = levelBtns.get(g.id);
     if (!b) continue;
@@ -263,7 +279,7 @@ function placeOverlays(lay, legend) {
     if (s.left !== L) s.left = L;
     if (s.top !== T) s.top = T;
     if (s.width !== W) s.width = W;
-    setAttr(b, 'aria-label', t('lvl.aria', { label: lvl.label, E: fmt(lvl.E, 2) }) + (lvl.metastable ? t('lvl.meta') : '') + (g.id === cur ? t('lvl.here') : '') + (forb?.has(g.id) ? t('lvl.forbidden') : ''));
+    setAttr(b, 'aria-label', t('lvl.aria', { label: lvl.label, E: fmt(lvl.E, 2) }) + (lvl.metastable ? t('lvl.meta') : '') + (g.id === cur ? t('lvl.here') : '') + (forb?.has(g.id) ? t('lvl.forbidden') : '') + (allow?.has(g.id) ? t('lvl.allowed') : ''));
     setAttr(b, 'aria-current', g.id === cur ? 'true' : 'false');
   }
 }
@@ -353,13 +369,15 @@ function render() {
   setAttr(el('whiteBtn'), 'aria-label', t('bar.whiteAria'));
   setAttr(el('whiteBtn'), 'aria-pressed', s.white);
   setText(el('whiteSym'), s.white ? '☀' : '☼');
+  setAttr(el('autoBtn'), 'aria-label', t('bar.autoAria'));
+  setAttr(el('autoBtn'), 'aria-pressed', s.auto);
+  setText(el('autoSym'), s.auto ? '☀' : '☼');
   setText(el('rateK'), t('bar.rate'));
   setText(el('rateText'), t('bar.rateVal', { n: s.rate }));
   setAttr(el('rateMinus'), 'aria-label', t('dims.decrease', { name: `${t('bar.rateName')}, ${rateAria()}` }));
   setAttr(el('ratePlus'), 'aria-label', t('dims.increase', { name: `${t('bar.rateName')}, ${rateAria()}` }));
   el('rateMinus').disabled = rateIdx() <= 0;
   el('ratePlus').disabled = rateIdx() >= INTENSITIES.length - 1;
-  for (const id of ['rateK', 'rateMinus', 'rateText', 'ratePlus']) setHidden(el(id), emit);
   setHidden(el('cascadeBtn'), !emit);
   setText(el('cascadeW'), t('bar.cascade'));
   setText(el('toolsLabel'), t('bar.tools'));
@@ -385,11 +403,11 @@ function render() {
     hints: hintTargets(atom(), s.start), showHints: ui.hints && !emit, edge: emit ? NaN : edgeNm(atom(), s.start),
     mode: s.mode, slide: ui.slide, legend, theme: theme.current(), colors: theme.colors(), fmt,
     fmtMicron: (λ) => fmt(λ / 1000, 1),
-    trail: s.trail[s.mode], forbidden: forbiddenSet(),
+    trail: s.trail[s.mode], forbidden: forbiddenSet(), allowed: allowedSet(),
     jump: ui.jump ? { from: ui.jump.from, k: Math.min(1, (now - ui.jump.t0) / (reduced.matches ? 120 : 320)) } : null,
     aim: !emit && ui.slide < 0.02 ? ui.aim : null,
     labels: {
-      ir: t('lbl.ir'), core: t('lbl.core'), notToScale: t('lbl.notToScale'), energyAxis: t('lbl.energyAxis'),
+      ir: t('lbl.ir'), core: t('lbl.core'), protons: t('lbl.protons'), neutrons: t('lbl.neutrons'), notToScale: t('lbl.notToScale'), energyAxis: t('lbl.energyAxis'),
       ionisation: t('lbl.ionisation'), para: t('lbl.para'), ortho: t('lbl.ortho'),
       series: { 1: t('series.1'), 2: t('series.2'), 3: t('series.3'), 4: t('series.4'), 5: t('series.5') },
       atomName: `${t(`title.${s.atomId}`)} ${s.atomId}`, aim: fmtLam(ui.aim), // bez “nm” — tas ir staba galvā

@@ -117,7 +117,7 @@ export const ATOMS = {
     ],
     axisBreak: { from: -10, to: -6 }, // ass pārtraukta virs pamatstāvokļa
     inner: { core: 78, rest: 1 },
-    nucleus: { p: 16, n: 24 }, // rāda “daudz” (īstenībā 80 + 120), tā pati attiecība
+    nucleus: { p: 80, n: 122, draw: { p: 16, n: 24 } }, // ²⁰²Hg (biežākais izotops); zīmējumā “daudz”, tā pati attiecība
   },
   He: {
     id: 'He',

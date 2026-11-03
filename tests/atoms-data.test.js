@@ -96,8 +96,8 @@ test('nuclei: protons and neutrons to draw (Ansis 04.11.: “nav obligāti pilns
   assert.deepEqual(ATOMS.H.nucleus, { p: 1, n: 0 });
   assert.deepEqual(ATOMS.He.nucleus, { p: 2, n: 2 });
   assert.deepEqual(ATOMS.Na.nucleus, { p: 11, n: 12 });
-  assert.ok(ATOMS.Hg.nucleus.p + ATOMS.Hg.nucleus.n >= 30, 'mercury: many');
-  assert.ok(Math.abs(ATOMS.Hg.nucleus.n / ATOMS.Hg.nucleus.p - 120 / 80) < 0.1, 'mercury keeps the 80 : 120 mix');
+  assert.deepEqual(ATOMS.Hg.nucleus, { p: 80, n: 122, draw: { p: 16, n: 24 } }, '²⁰²Hg — the most common isotope; the drawing shows “many”');
+  for (const id of ['H', 'He', 'Na']) assert.equal(ATOMS[id].nucleus.draw, undefined, `${id}: all drawn`);
 });
 
 test('ladders: one for hydrogen, sodium and mercury; para | ortho for helium', () => {

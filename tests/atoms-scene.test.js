@@ -127,3 +127,10 @@ test('helium: two ladders; near-coincident n = 3 and n = 4 levels are short segm
   const n = (id) => narrow.find((x) => x.id === id);
   assert.equal(n('3¹P').x0, n('3¹D').x0, 'too narrow to split — full width with spread labels');
 });
+
+test('a matching square AUTO button sits above the emission column', () => {
+  const L = sceneLayout(1280, 800, { slide: 1 });
+  assert.equal(L.autoBtn.x, L.emCol.x);
+  assert.equal(L.autoBtn.w, L.autoBtn.h);
+  assert.ok(L.autoBtn.y + L.autoBtn.h + 4 <= L.emCol.y);
+});

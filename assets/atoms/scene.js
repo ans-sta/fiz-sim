@@ -22,13 +22,14 @@ export function sceneLayout(w, h, { slide = 0, drawScale = 1, topPad = 0 } = {})
     const absCol = { x: LX - s * (cw + LX + 40), y: ct, w: cw, h: colH };
     const emCol = { x: w - 30 - cw + (1 - s) * (cw + LX + 40), y: ct, w: cw, h: colH };
     const whiteBtn = { x: absCol.x, y: top, w: bw, h: bw };
+    const autoBtn = { x: emCol.x, y: top, w: bw, h: bw };
     const off = s * (LX + cw + 22 - M);
     const gx = LX + cw + 22 - off;
     const gw = Math.max(0, w - (LX + cw + 22) - M);
     const atomH = Math.round((h - top) * 0.36);
     const atom = { x: gx, y: top, w: gw, h: atomH };
     const diagram = { x: gx, y: top + atomH + 8, w: gw, h: Math.max(0, h - top - atomH - 8 - M) };
-    return { portrait, absCol, emCol, whiteBtn, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
+    return { portrait, absCol, emCol, whiteBtn, autoBtn, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
   }
   const cw = Math.round(Math.max(30, Math.min(52, w * 0.035)) * Math.min(1.4, Math.max(0.8, drawScale)));
   const total = cw + COL_PAD;
@@ -40,13 +41,14 @@ export function sceneLayout(w, h, { slide = 0, drawScale = 1, topPad = 0 } = {})
   const absCol = { x: M + 30 - s * (total + M + 30), y: ct, w: cw, h: colH };
   const emCol = { x: w - M - 30 - cw + (1 - s) * (total + M + 30), y: ct, w: cw, h: colH };
   const whiteBtn = { x: absCol.x, y: top, w: bw, h: bw };
+  const autoBtn = { x: emCol.x, y: top, w: bw, h: bw }; // AUTO — tāds pats kvadrāts virs starošanas staba
   const off = s * (total + GAP);
   const gx = M + 30 + total + GAP - off;
   const groupW = Math.max(0, w - 2 * M - 30 - total - GAP);
   const atomW = Math.round(groupW * 0.42);
   const atom = { x: gx, y: top, w: atomW, h: groupH };
   const diagram = { x: gx + atomW, y: top, w: Math.max(0, groupW - atomW), h: groupH };
-  return { portrait, absCol, emCol, whiteBtn, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
+  return { portrait, absCol, emCol, whiteBtn, autoBtn, column: s < 0.5 ? absCol : emCol, atom, diagram, offX: -off };
 }
 
 export const columnY = (rect, p) => rect.y + rect.h * (1 - p);
@@ -176,8 +178,9 @@ export function drawScene(ctx, lay, v) {
 
   const geo = levelGeometry(v.atom, lay.diagram, L);
   const byId = new Map(geo.map((g) => [g.id, g]));
-  const atomC = { x: lay.atom.x + lay.atom.w / 2, y: lay.atom.y + 30 * L + (lay.atom.h - 30 * L - 22) / 2 };
-  const rMax = Math.max(20, Math.min(lay.atom.w * 0.92, lay.atom.h - 30 * L - 22) / 2);
+  // virs atoma — nosaukums un kodola sastāvs (2 rindas), zem — “nav mērogā”
+  const atomC = { x: lay.atom.x + lay.atom.w / 2, y: lay.atom.y + 46 * L + (lay.atom.h - 46 * L - 22) / 2 };
+  const rMax = Math.max(20, Math.min(lay.atom.w * 0.92, lay.atom.h - 46 * L - 22) / 2);
 
   drawSourceColumn(ctx, lay.absCol, v, { font, c });
   drawEmissionColumn(ctx, lay.emCol, v, { font, c });
@@ -418,13 +421,36 @@ function drawAtom(ctx, C, rMax, v, { font, c, dark }) {
   ctx.font = font(18, 600);
   ctx.fillStyle = c.ink;
   ctx.textBaseline = 'bottom';
-  ctx.fillText(v.labels.atomName, C.x, C.y - rMax - 8);
+  ctx.fillText(v.labels.atomName, C.x, C.y - rMax - 22 * v.legend);
+  // kodola sastāvs: ● Protoni: 80 · ● Neitroni: 122 (Ansis 04.11.); krāsas kā bumbiņām
+  {
+    const pCol = dark ? '#ff6b6b' : '#c0262d';
+    const parts = [[pCol, `${v.labels.protons}: ${a.nucleus.p}`], [c.inkDim, `${v.labels.neutrons}: ${a.nucleus.n}`]];
+    ctx.font = font(11);
+    const dot = 8;
+    const sep = 14;
+    const widths = parts.map(([, s]) => dot + ctx.measureText(s).width);
+    let x = C.x - (widths[0] + widths[1] + sep) / 2;
+    const y = C.y - rMax - 8 * v.legend;
+    parts.forEach(([col, s], i) => {
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(x + 3, y - 4, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = c.ink;
+      ctx.textAlign = 'left';
+      ctx.fillText(s, x + dot, y);
+      x += widths[i] + sep;
+    });
+    ctx.textAlign = 'center';
+  }
   void dark;
   return { rings, ANG };
 }
 
 // Kodols: protoni (sarkani, ar “+”, ja vieta) un neitroni (pelēki) saulespuķes rakstā — “daudz”, ne obligāti visi (Ansis 04.11.)
-function drawNucleus(ctx, C, rMax, nucleus, { c, dark }) {
+function drawNucleus(ctx, C, rMax, nuc, { c, dark }) {
+  const nucleus = nuc.draw ?? nuc; // dzīvsudrabam zīmē “daudz”, ne visus 202
   const N = nucleus.p + nucleus.n;
   const b = N === 1 ? Math.max(4, rMax * 0.04) : Math.max(2.2, rMax * (N > 20 ? 0.017 : 0.03));
   const pCol = dark ? '#ff6b6b' : '#c0262d';
@@ -544,7 +570,18 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     ctx.moveTo(g.x0, g.y);
     ctx.lineTo(g.x1, g.y);
     ctx.stroke();
-    // uz šo līmeni no elektrona līmeņa pāriet nevar — sarkans × (Ansis 04.11.)
+    // uz šo līmeni var pāriet — ▼ (starošanā) vai ▲ (absorbcijā) akcenta krāsā; nevar — sarkans × (Ansis 04.11.)
+    if (v.allowed?.has(g.id)) {
+      const xx = g.x1 - 9;
+      const d = v.mode === 'emit' ? 1 : -1;
+      ctx.fillStyle = c.accent;
+      ctx.beginPath();
+      ctx.moveTo(xx - 5, g.y - 5 * d);
+      ctx.lineTo(xx + 5, g.y - 5 * d);
+      ctx.lineTo(xx, g.y + 4 * d);
+      ctx.closePath();
+      ctx.fill();
+    }
     if (v.forbidden?.has(g.id)) {
       const xx = g.x1 - 9;
       ctx.strokeStyle = dark ? '#ff6b6b' : '#c0262d';
@@ -604,7 +641,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
       xu = xd = Math.min(D.x1 - 3, Math.max(D.x0 + 3, xu + (k - 1) * 6));
     }
     const [xa, ya, xb, yb] = towardUp ? [xd, D.y, xu, U.y] : [xu, U.y, xd, D.y];
-    arrowLine(ctx, xa, ya, xb, yb, λ ? colOf(λ) : c.inkDim, w, head);
+    arrowLine(ctx, xa, ya, xb, yb, λ ? colOf(λ) : c.inkDim, w, head, λ && invisible(λ)); // UV un IS — raustītas (Ansis 04.11.)
   };
   const trail = v.trail ? [...v.trail.values()] : [];
   const towardUp = v.mode === 'absorb';
@@ -631,14 +668,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     }
   }
   if (arrow && byId.has(arrow.from) && byId.has(arrow.to)) {
-    if (arrow.excite) {
-      // ierosināšana (izlāde, bez fotona): plāna pelēka bulta līmeņu kreisajā malā
-      const A = byId.get(arrow.from);
-      const B = byId.get(arrow.to);
-      const x = slots ? A.x0 - 10 : (A.x0 + A.x1) / 2 - 6;
-      const xb = slots ? x : (B.x0 + B.x1) / 2 - 6;
-      arrowLine(ctx, x, A.y, xb, B.y, c.inkDim, 1.5, 7);
-    } else {
+    if (!arrow.excite) {
       const up = arrow.up ? arrow.to : arrow.from;
       const lo = arrow.up ? arrow.from : arrow.to;
       draw(up, lo, arrow.λ, 4.5, 11, arrow.up);
@@ -672,14 +702,16 @@ export function seriesSlots(atom, geo) {
   return out;
 }
 
-function arrowLine(ctx, xa, ya, xb, yb, color, w, head) {
+function arrowLine(ctx, xa, ya, xb, yb, color, w, head, dashed = false) {
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   ctx.lineWidth = w;
+  ctx.setLineDash(dashed ? [Math.max(4, w * 2), Math.max(3, w * 1.4)] : []);
   ctx.beginPath();
   ctx.moveTo(xa, ya);
   ctx.lineTo(xb, yb);
   ctx.stroke();
+  ctx.setLineDash([]);
   const ang = Math.atan2(yb - ya, xb - xa);
   ctx.beginPath();
   ctx.moveTo(xb, yb);
@@ -728,7 +760,13 @@ function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
       if (p.kind === 'in') {
         packet(ctx, S.x + ux * Math.min(D, s), S.y + uy * Math.min(D, s), ang, p.λ, color, 1, LONG);
       } else if (p.kind === 'pass') {
+        // tikai atoma pusē: aiz atoma labās malas fotons pazūd — pāri līmeņu shēmai nelido (Ansis 04.11.)
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, lay.atom.x + lay.atom.w, ctx.canvas.height);
+        ctx.clip();
         packet(ctx, C.x + ux * s, C.y + uy * s, ang, p.λ, color, 1, LONG);
+        ctx.restore();
       } else if (p.kind === 'sink') {
         // aste turpina kustību, bet viss aiz atoma centra paslēpts — fotons “ieiet” atomā
         ctx.save();
@@ -743,13 +781,22 @@ function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
         ctx.restore();
       } else {
         const a2 = p.dirY < 0 ? -Math.PI / 2 - 0.35 : Math.PI / 2 + 0.35;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(lay.atom.x, lay.atom.y, lay.atom.w, lay.atom.h);
+        ctx.clip();
         packet(ctx, C.x + Math.cos(a2) * s, C.y + Math.sin(a2) * s, a2, p.λ, color, 1, LONG);
+        ctx.restore();
       }
     } else if (p.kind === 'emit') {
+      // no līmeņu shēmas labās malas (bultas vidus augstumā) uz spektra stabu — pāri shēmai nelido (Ansis 04.11.)
       const r = lay.emCol;
       const x1 = r.x - 4;
       const y1 = columnY(r, lambdaToPos(v.axis, Math.min(p.λ, 10000)));
-      packet(ctx, C.x + (x1 - C.x) * k, C.y + (y1 - C.y) * k, Math.atan2(y1 - C.y, x1 - C.x), p.λ, color, 1);
+      const ys = p.up && p.lo ? levelYs(v.atom, lay.diagram) : null;
+      const x0 = lay.diagram.x + lay.diagram.w - 6;
+      const y0 = ys ? (ys.get(p.up) + ys.get(p.lo)) / 2 : y1;
+      packet(ctx, x0 + (x1 - x0) * k, y0 + (y1 - y0) * k, Math.atan2(y1 - y0, x1 - x0), p.λ, color, 1);
     } else if (p.kind === 'free') {
       const r = rMax * (1 + 0.8 * k);
       ctx.globalAlpha = 1 - k;

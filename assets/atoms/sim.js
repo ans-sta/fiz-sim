@@ -8,6 +8,7 @@ export const MAX_PHOTONS = 40;
 // garām lidojošais paliek PASS_K × flight (pietiek, lai aizlidotu aiz ekrāna malas), iegrimstošā aste — SINK_K × flight
 const PASS_K = 3;
 const SINK_K = 0.6;
+const AUTO_K = 0.4; // AUTO starošanā kritieni biežāk — spektrs aizpildās ātri
 const EPS = 1e-9;
 
 // Svītras un līnijas krājas pa λ grupām (redzamajā 0,5 nm, citur 0,1 % no λ) — ilgi spīdot, atmiņa neaug
@@ -18,7 +19,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
   const ground = (atom) => atom.levels.reduce((m, l) => (l.E < m.E ? l : m)).id;
   const state = {
     atomId, mode, start: ATOMS[atomId].start, level: null, ionised: false,
-    white: false, rate: DEFAULT_INTENSITY, photons: [], stripes: new Map(), lines: new Map(),
+    white: false, auto: false, rate: DEFAULT_INTENSITY, photons: [], stripes: new Map(), lines: new Map(),
     counts: { shot: 0, absorbed: 0 }, arrow: null, cascading: false, t: 0,
     allowed: null, // pēc aizliegtas krišanas — līmeņi, uz kuriem var krist (spec. § 7.3)
     trail: { absorb: new Map(), emit: new Map() }, // katra pāreja atstāj bultu shēmā līdz NOTĪRĪT (Ansis 04.11.)
@@ -29,8 +30,10 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
   let whiteAcc = 0;
   let nextId = 1;
   let cascadeFalls = 0;
+  let nextAuto = 0;
   const atom = () => ATOMS[state.atomId];
-  const tm = () => timing(state.white && state.mode === 'absorb' ? state.rate : DEFAULT_INTENSITY, reducedMotion);
+  // intensitāte paātrina tikai plūsmu: balto gaismu absorbcijā un AUTO starošanā
+  const tm = () => timing((state.white && state.mode === 'absorb') || (state.auto && state.mode === 'emit') ? state.rate : DEFAULT_INTENSITY, reducedMotion);
 
   function settle() {
     state.photons = [];
@@ -107,7 +110,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
   function excite(id) {
     const from = state.level;
     state.level = id;
-    state.arrow = { from, to: id, λ: null, up: true, excite: true };
+    state.arrow = null; // pacelšanai bultas nav — bulta parādās tikai krītot (Ansis 04.11.)
     return { type: 'excited', from, to: id };
   }
   function fall(to) {
@@ -122,7 +125,7 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
     state.level = to;
     state.arrow = { from, to, λ: d.λ, up: false };
     state.trail.emit.set(`${from}|${to}`, { up: from, lo: to, λ: d.λ });
-    addPhoton({ λ: d.λ, kind: 'emit', dur: tm().flight });
+    addPhoton({ λ: d.λ, kind: 'emit', dur: tm().flight, up: from, lo: to });
     return { type: 'emitted', from, to, λ: d.λ, metastable: isMetastable(atom(), to) };
   }
   function setLevel(id) {
@@ -183,18 +186,30 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       }
     }
     state.photons = keep;
+    if (state.auto && state.mode === 'emit' && !state.cascading && state.t >= nextAuto - EPS) {
+      const a = atom();
+      const ups = a.levels.filter((l) => l.kind !== 'limit' && !isGround(a, l.id) && linesDown(a, l.id).length);
+      if (!isGround(a, state.level)) toGroundSilently();
+      ev.push(excite(ups[Math.floor(rng() * ups.length)].id));
+      state.cascading = true;
+      cascadeFalls = 0;
+      nextFall = state.t + tm().hold * AUTO_K;
+    }
     if (state.cascading && state.t >= nextFall - EPS) {
       const d = cascadeStep(atom(), state.level, rng);
       if (!d) {
         state.cascading = false;
         nextFall = Infinity;
+        nextAuto = state.t + tm().hold;
         if (!cascadeFalls && isMetastable(atom(), state.level)) ev.push({ type: 'metastable', level: state.level });
       } else {
         ev.push(fall(d.to));
         cascadeFalls += 1;
         const end = isGround(atom(), d.to) || isMetastable(atom(), d.to);
         state.cascading = !end;
-        nextFall = end ? Infinity : state.t + tm().hold;
+        const k = state.auto ? AUTO_K : 1;
+        nextFall = end ? Infinity : state.t + tm().hold * k;
+        if (end) nextAuto = state.t + tm().hold * k;
       }
     }
     return ev;
@@ -222,9 +237,12 @@ export function createSim({ atomId = 'H', mode = 'absorb', rng = Math.random, re
       if (m !== 'absorb' && m !== 'emit') return;
       state.mode = m;
       if (m !== 'absorb') state.white = false;
+      if (m !== 'emit') state.auto = false;
       settle();
     },
     setWhite(on) { state.white = Boolean(on) && state.mode === 'absorb'; whiteAcc = 0; },
+    // AUTO starošanā — apgriezta baltā gaisma: atoms pats ierosinās un krīt, līdz spektrs pilns (Ansis 04.11.)
+    setAuto(on) { state.auto = Boolean(on) && state.mode === 'emit'; nextAuto = state.t; },
     setRate(r) { state.rate = r; },
     clear() {
       state.stripes.clear();

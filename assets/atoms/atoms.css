@@ -49,8 +49,9 @@
   .layout-hud .a01-readout { font-size: calc(11px * min(var(--hud), 1.15)); line-height: 1.3; }
 }
 /* rādījumam vieta rezervēta (2 rindas, telefonā 4) — teksts mainās, zīmējums nelec */
-.layout-hud .a01-readout { min-height: calc(2 * 1.35em + 4px); }
-@media (max-width: 520px) { .layout-hud .a01-readout { min-height: calc(5 * 1.3em + 4px); } }
+/* fiksēts augstums: garš paskaidrojums zīmējumu nepabīda (Ansis 04.11.) */
+.layout-hud .a01-readout { height: calc(2 * 1.35em + 4px); overflow: hidden; }
+@media (max-width: 520px) { .layout-hud .a01-readout { height: calc(5 * 1.3em + 4px); } }
 
 /* baltās gaismas poga: balts kvadrāts staba platumā virs tā (kā punkts uz i); ieslēgta — ☀ un mirdzums ap to (stāvoklis arī formā, ne tikai krāsā) */
 .a01-white {
@@ -61,3 +62,6 @@
 .a01-white[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--accent), 0 0 14px 5px rgba(255, 255, 255, 0.65); }
 .a01-white:focus { outline: none; }
 .a01-white:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+/* AUTO: tas pats kvadrāts, bet melns — kā starošanas stabs */
+.a01-white.a01-auto { background: #000; color: #fff; border-color: var(--ink); }

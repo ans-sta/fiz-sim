@@ -265,3 +265,31 @@ test('every transition leaves its arrow in the diagram until NOTĪRĪT — one t
   sim.setAtom('Na');
   assert.equal(sim.state.trail.emit.size, 0, 'a new atom starts clean');
 });
+
+test('emission: lifting the electron draws no arrow — only the fall does (Ansis 04.11.)', () => {
+  const sim = sim0({ atomId: 'Hg', mode: 'emit' });
+  sim.setLevel('7³S');
+  assert.equal(sim.state.arrow, null);
+  sim.setLevel('6³P₁');
+  assert.equal(sim.state.arrow.up, false);
+});
+
+test('emission AUTO fills the spectrum by itself — the mirror of white light (Ansis 04.11.)', () => {
+  for (const id of ['H', 'Hg', 'He']) {
+    const sim = createSim({ atomId: id, mode: 'emit', rng: mulberry32(9) });
+    sim.setRate(20);
+    sim.setAuto(true);
+    assert.equal(sim.state.auto, true);
+    run(sim, 120, 0.1);
+    const lines = sim.state.lines.size;
+    assert.ok(lines >= (id === 'Hg' ? 7 : 8), `${id}: ${lines} lines`);
+    assert.ok(sim.state.photons.length <= 40);
+  }
+  const sim = sim0({ mode: 'absorb' });
+  sim.setAuto(true);
+  assert.equal(sim.state.auto, false, 'AUTO is for emission only');
+  const e = sim0({ mode: 'emit' });
+  e.setAuto(true);
+  e.setMode('absorb');
+  assert.equal(e.state.auto, false, 'leaving emission stops it');
+});
