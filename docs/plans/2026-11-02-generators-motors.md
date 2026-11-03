@@ -31,29 +31,32 @@ Pirms lapas Ansis ir izstāstījis par Ampēra spēku: uz vadu ar strāvu magnē
 ## 4. Aina (zīmējums)
 
 - **Projekcija** (Rihards, skice 02.11 — Ansis izvēlējās stāvokli A): pasaules asis x — lauka virziens (no N uz S), y — uz augšu, z — rāmīša ass (pret skatītāju). Izometrija: ekrānā x iet pa labi lejup 30°, z pa kreisi lejup 30°, y vertikāli. N magnēts pa kreisi augšā (aizmugurē), S pa labi lejā (priekšā, daļēji caurspīdīgs, lai rāmītis redzams). N zils, S sarkans kā mācību grāmatā, ar burtiem N un S.
-- **Lauks:** 6 līnijas no N uz S ar bultām (slēdzis LAUKS).
+- **Lauks:** 6 līnijas no N uz S ar bultām (slēdzis LAUKS). Posmi, kas aiz priekšējā magnēta, — raustīti (Ansis 03.11.: “Magnētiskā lauka līnijas AIZ tuvākā S magnēta ir raustītas”); bultas tur nezīmē.
+- **Magnēta poli** var būt apmainīti (slēdzis ⇄ N/S, § 5): tad aizmugurē S, priekšā N, lauka bultas uz otru pusi.
 - **Rāmītis:** taisnstūris, garās malas paralēlas asij; malas zīmē pēc dziļuma.
-- **Ass** iet cauri rāmītim; priekšējā galā **kontakti** un **sukas**, no tām vadi uz **avotu** (motors: baterija ar + un −) vai **spuldzīti** (ģenerators). Kontakti: KOLEKTORS izslēgts — divi veseli gredzeni (katrs savai sukai); ieslēgts — viens gredzens, pārgriezts divās pusēs, kas griežas līdzi rāmītim (Rihards).
+- **Ass** iet cauri rāmītim; priekšējā galā **kontakti** un **sukas**, no tām vadi uz **avotu** (motors: baterija ar + un −) vai **spuldzīti** (ģenerators). Kontakti: KOLEKTORS izslēgts — divi veseli gredzeni (katrs savai sukai); ieslēgts — viens gredzens, pārgriezts divās pusēs, kas griežas līdzi rāmītim (Rihards). Sukas abās pusēs pretī viena otrai (±x); kreisā suka un tās vads ir aiz rotora un zīmēti zem tā (Ansis 03.11.: “oglīte nav paslēpta AIZ ROTORA … Vietas ir pareizas, bet slāņi nav”).
+- **Vadi** iet tikai pa x, y, z līnijām (Ansis 03.11.): no sukas uz sāniem, uz leju, pa “grīdu” līdz ierīcei.
 - **Ģeneratorā** uz ass aizmugurējā gala kloķis, kas griežas līdzi — “to griež kāds no ārpuses” (Rihards).
-- **Strāva** (slēdzis STRĀVA): bultas uz visām četrām rāmīša malām un uz vadiem; virziens pēc strāvas zīmes; strāvas nav — bultu nav.
-- **Spēki** (slēdzis SPĒKI): bultas F no garo malu vidus, vienmēr vertikālas, garums ∝ |I|. Pie ass — raustīta pleca līnija no ass līdz spēka taisnei (Rihards: tā skolēni redz, ka sarūk plecs, nevis spēks).
+- **Strāva** (slēdzis STRĀVA): bultas BLAKUS vadiem, nevis uz tiem (Ansis 03.11.) — pie abām garajām malām (aizmugurējā pusē, lai nekrustojas ar F), pie aizmugurējās malas (ar burtu I) un pie abiem ārējiem vadiem; virziens pēc strāvas zīmes; strāvas nav — bultu nav.
+- **Spēki** (slēdzis SPĒKI): bultas F no garo malu vidus, vienmēr vertikālas, garums ∝ |I| (ļoti mazam spēkam īsākā bulta 0,35, lai nesaraujas punktiņā; burts F pa kreisi no bultas). Pie ass — raustīta pleca līnija no ass līdz spēka taisnei (Rihards: tā skolēni redz, ka sarūk plecs, nevis spēks).
 - Uzraksti zīmējumā (N, S, B, F, I, +, −) aug līdzi ⚙ BURTI uz pusi (`legendScale`), zīmējums — līdzi ⚙ ZĪMĒJUMS.
 
 ## 5. Režīms MOTORS
 
 - Sākumā: rāmītis A, nofiksēts, strāva plūst, KOLEKTORS izslēgts, U = 3 V (Rihards).
-- **ATĻAUT KUSTĪBU** (pārslēgs, `aria-pressed`): ieslēdzot rāmītis kustas pēc fizikas (§ 7); izslēdzot — nofiksējas tur, kur ir (Rihards). Pēc KOLEKTORA ieslēgšanas, ja kustība vēl nav atļauta, tā tiek atļauta reizē (Rihards: kolektors bez kustības neko nerāda).
+- **ATĻAUT KUSTĪBU** (pārslēgs, `aria-pressed`): ieslēdzot rāmītis kustas pēc fizikas (§ 7); izslēdzot — nofiksējas tur, kur ir (Rihards). KOLEKTORS un ATĻAUT KUSTĪBU ir neatkarīgi slēdži (Ansis 03.11.: “Tām ir jābūt neatkarīgām lietām”).
 - **KOLEKTORS** (pārslēgs): skat. § 4 un § 7. Ieslēdzot, kad rāmītis stāv B, — sāk griezties pats.
-- **SPRIEGUMS U** (slīdnis ar − +): 1,0–6,0 V, solis 0,1 V (Rihards). Vienmērīgais ātrums ar kolektoru f = U · 0,5 Hz/V — no 0,5 Hz (Ansis: “Minimālā rotācija — 0,5 Hz”) līdz 3 Hz (Rihards: ātrāk acs nevar izsekot, rodas stroboskopa efekts). Jaunu ātrumu sasniedz pakāpeniski (~1 s).
-- **POLARITĀTE** (poga ⇄): apmaina avota + un −. Strāva un spēki apgriežas; motors bremzē, apstājas un griežas uz otru pusi.
-- Rādījums joslā: U un — kad griežas — f (Hz).
+- **SPRIEGUMS U** (slīdnis ar − +): 0,5–6,0 V, solis 0,1 V (Rihards). Vienmērīgais ātrums ar kolektoru f ≈ U · 0,5 Hz/V — no 0,25 Hz (Ansis 03.11.: “Mazākais ātrums uzliec 0.25hz … lai ar acīm var izsekot”; 02.11. bija 0,5 Hz) līdz ~3 Hz (Rihards: ātrāk acs nevar izsekot, rodas stroboskopa efekts). Jaunu ātrumu sasniedz pakāpeniski (~1 s).
+- **⇄ +/−** (poga): apmaina baterijas + un −. Strāva un spēki apgriežas; motors bremzē, apstājas un griežas uz otru pusi.
+- **⇄ N/S** (poga, arī ģeneratorā; Ansis 03.11.: “vēl 1 slēdzis — tas apmaina magnēta polus vietām. Līdz ar to ir 2 polaritātes slēdži: +/- un N/S”): lauks apgriežas; spēki apgriežas, motors griežas uz otru pusi; ģeneratorā ℰ maina zīmi. Abi kopā (+/− un N/S) — virziens tāds pats kā sākumā.
+- Rādījums joslā: U un — kad griežas — f (Hz, divas zīmes aiz komata, vidēji pa pēdējo pilno apgriezienu; vieta rezervēta, lai josla nelec).
 
 ## 6. Režīms ĢENERATORS
 
 ### 6.1 Kustība
 
-- Rāmīti griež ārējs spēks (kloķis). Slīdnis **ĀTRUMS f** 0,5–3 Hz, solis 0,1 Hz (Ansis: “Vecais sprieguma regulators pārvēršas par rotācijas ātruma regulatoru”). Pāreja uz jauno ātrumu ~0,5 s (grafiks nelec).
-- POLARITĀTES vietā **VIRZIENS** ⇄ — griešanās virziens (Rihards).
+- Rāmīti griež ārējs spēks (kloķis). Slīdnis **ĀTRUMS f** 0,25–3 Hz, solis 0,25 Hz (Ansis 03.11.: mazākais 0,25 Hz; Ansis: “Vecais sprieguma regulators pārvēršas par rotācijas ātruma regulatoru”). Pāreja uz jauno ātrumu ~0,5 s (grafiks nelec).
+- ⇄ +/− vietā **⇄ VIRZIENS** — griešanās virziens (Rihards); ⇄ N/S paliek. Formula grafikā ar apmainītiem poliem: ℰ = −ℰm sin ωt.
 - Pārslēdzot uz ģeneratoru, rāmītis sāk no stāvokļa B (Φ max, ℰ = 0), lai grafiks sākas no nulles kā bildē (Rihards). ATĻAUT KUSTĪBU ģeneratorā nav.
 
 ### 6.2 Grafiks (Ansis: “apakšā zīmējas sprieguma grafiks kā bildē”)
@@ -74,11 +77,12 @@ Pirms lapas Ansis ir izstāstījis par Ampēra spēku: uz vadu ar strāvu magnē
 - φ — rāmīša leņķis ap z asi; φ = 0 — stāvoklis A (mala a pie S, mala b pie N). k = BS. Pozitīva strāva: malā a prom no skatītāja (−z), malā b pret skatītāju.
 - Spēks uz malu a: F = I·L·B uz leju (pie I > 0), uz malu b — uz augšu. Griezes moments τ = −k I cos φ. Inducētā EDS ℰ = k ω cos φ (ar to pašu zīmes norunu). Plūsma Φ = k sin φ (A — 0, B — ±max).
 - Kolektors: c = sign(cos φ) (pārslēdz, kad rāmītis iet caur B); bez kolektora c = 1.
-- Motors: I = (c·U − ℰ_pret)/R, kur pretEDS ir ℰ ar pareizo zīmi (formulā I = (c U + k ω cos φ)/R ar ω zīmes norunu); J dω/dt = τ − b ω. Parametri izvēlēti tā, lai ar kolektoru vienmērīgais ātrums f = 0,5 Hz/V · U (±3 %), sasniegšanas laiks ~1 s, un bez kolektora rāmītis no A apstājas ±3° no B 6 s laikā. Miera berze tikai tad, kad rāmītis gandrīz stāv (nemaina vienmērīgo ātrumu).
+- Magnēta poli: lauka zīme s = ±1 (⇄ N/S) reizina k: ℰ = s·k·ω·cos φ, τ = −s·k·I·cos φ, Φ = −s·k·sin φ.
+- Motors: I = (c·U − ℰ_pret)/R, kur pretEDS ir ℰ ar pareizo zīmi (formulā I = (c U + k ω cos φ)/R ar ω zīmes norunu); J dω/dt = τ − b ω. Parametri izvēlēti tā, lai ar kolektoru vienmērīgais ātrums f ≈ 0,5 Hz/V · U (pie 0,5 V tieši 0,25 Hz, līdz +3 %), sasniegšanas laiks ~1 s, un bez kolektora rāmītis no A apstājas ±3° no B 6 s laikā. Miera berze tikai tad, kad rāmītis gandrīz stāv (nemaina vienmērīgo ātrumu).
 - “Nāves punkts”: ja kolektors ieslēgts, rāmītis stāv un ir tuvu B, modelis dod mazu starta momentu griešanās virzienā (Ansis: bez pagrūšanas).
 - Ģenerators: ω uzdots (pāreja ~0,5 s); I = c-neatkarīgi ℰ/R_ķēde rāmītī; ārējā spriegums U_ār = c·ℰ — to rāda grafiks.
 - Tas pats k = BS abos režīmos — viena mašīna (Rihards): ℰm = 0,6 V/Hz · f (pie 3 Hz — 1,8 V); motors ar kolektoru pie 6 V griežas 3 Hz, pretEDS tad ≤ 30 % no U, tāpēc spēku bultas griežoties paliek labi redzamas.
-- Parametri (`assets/emotor/model.js`): R = 1 Ω, b no nosacījuma f = 0,5 Hz/V · U, J = 0,012 → 90 % no jaunā ātruma ~1,2–1,4 s; bez kolektora rāmītis no A pārskrien B līdz −124…−149° un apstājas ~5,5 s laikā ±3° no B; ātruma svārstības pa apgriezienu pie 1 V ~22 %, pie 6 V ~4 %.
+- Parametri (`assets/emotor/model.js`): R = 1 Ω, b = 0,014203 (skaitliski: 0,5 V → vidēji pa apgriezienu tieši 0,25 Hz; formula bez svārstībām dotu 0,241 Hz), J = 0,012 → 90 % no jaunā ātruma ~1,2–1,4 s; bez kolektora rāmītis no A pārskrien B līdz −124…−149° un apstājas ~5,5 s laikā ±3° no B; ātruma svārstības pa apgriezienu pie 0,5 V ~40 %, pie 1 V ~22 %, pie 6 V ~4 %.
 
 ## 8. Lapa
 
@@ -109,8 +113,8 @@ Datorā 1280 px josla ir vienā rindā. Telefonā josla aplaužas (etiķetes pas
 |---|---|---|
 | REŽĪMS | MOTORS · ĢENERATORS | segmentētas pogas (`aria-pressed`) |
 | SPRIEGUMS U / ĀTRUMS f | − slīdnis + vērtība (motorā griežoties arī f, Hz) | § 5 / § 6.1 |
-| SLĒDŽI | ⇄ POLARITĀTE / ⇄ VIRZIENS · KOLEKTORS · ATĻAUT KUSTĪBU (tikai motorā) | § 5 / § 6.1 |
-| RĀDĪT | STRĀVA I · LAUKS B · SPĒKI F · PLŪSMA Φ | pārslēgi ar ✓ (stāvoklis ne tikai krāsā); PLŪSMA tikai ģeneratorā; sākumā ieslēgti STRĀVA, LAUKS, SPĒKI (Rihards). Telefonā (≤ 520 px) redzams ✓ I, ✓ B, ✓ F, ⇄ +/− — vārds paslēpts tikai vizuāli, ekrāna lasītājam nosaukums pilns |
+| SLĒDŽI | ⇄ +/− / ⇄ VIRZIENS · ⇄ N/S · KOLEKTORS · ATĻAUT KUSTĪBU (tikai motorā) | § 5 / § 6.1; pieejamais nosaukums sākas ar redzamo: “+/− — apmainīt baterijas polus”, “N/S — apmainīt magnēta polus” |
+| RĀDĪT | STRĀVA I · LAUKS B · SPĒKI F · PLŪSMA Φ | pārslēgi ar ✓ (stāvoklis ne tikai krāsā); PLŪSMA tikai ģeneratorā; sākumā ieslēgti STRĀVA, LAUKS, SPĒKI (Rihards). Telefonā (≤ 520 px) redzams ✓ I, ✓ B, ✓ F, ⇄ ↻ — vārds paslēpts tikai vizuāli, ekrāna lasītājam nosaukums pilns |
 | — | ⏸/▶, ↺, i | apturēt laiku (arī atstarpe); ↺ NO SĀKUMA — motors: A, nofiksēts, kolektors izslēgts; ģenerators: B, grafiks tukšs (arī R); i — piezīme |
 
 ### 8.3 “i” piezīme (Rihards, īsi)
@@ -133,9 +137,10 @@ Ampēra spēks F = BIL un griezes moments M = BIS cos φ; kolektors; EDS ℰ = B
 
 ## 9. Moduļi un testi
 
-`motor-generator.html`, `assets/emotor/{model,scene,params,i18n,main}.js`, sadaļa `assets/sim-common.css` beigās (E-01), kartīte `index.html` (LV + EN), README rinda / struktūra / “Teacher links (E-01)”. Testi `tests/emotor-{model,params,i18n}.test.js`: vienmērīgais ātrums 0,5 un 3 Hz, apstāšanās pie B, polaritāte, nāves punkts, ℰ = k ω cos φ, kolektora zīme, Lenca bremze, grafika buferis, tipogrāfija.
+`motor-generator.html`, `assets/emotor/{model,scene,params,i18n,main}.js`, sadaļa `assets/sim-common.css` beigās (E-01), kartīte `index.html` (LV + EN), README rinda / struktūra / “Teacher links (E-01)”. Testi `tests/emotor-{model,params,i18n}.test.js`: vienmērīgais ātrums 0,25 Hz pie 0,5 V (vidēji pa apgriezienu) un ~3 Hz pie 6 V, N/S apmaiņa, apstāšanās pie B, polaritāte, nāves punkts, ℰ = k ω cos φ, kolektora zīme, Lenca bremze, grafika buferis, tipogrāfija.
 
 ## 10. Izmaiņas
 
 - 2026-11-02 — pirmā versija no sarunas ar Ansi (skice `sakuma-stavoklis.html`: Ansis izvēlējās A).
 - 2026-11-02 — uzbūvēts (Ansis: “Kad gatavs, droši push. Pārbaudīšu rīt no rīta.”). Būves laikā: ℰm skala no tā paša k kā motoram (§ 7); POLARITĀTE pārcelta uz SLĒDŽI; anotācijas (bultas, B/I/F) zīmē virs S magnēta. Ansis lūdza piekļūstamību (burtu palielināšana, kontrasts) kā aumprakse un ansis.stabingis.lv — pārbaudīts axe (9 stāvokļi, 0), tastatūra, 320 px, BURTI 200 %, tālummaiņa 200 %, kontrasta tabula `scene.js`. Kopīgajā ⚙ pogām A− / A+ nosaukums tagad sākas ar redzamo tekstu (WCAG 2.5.3; skar visas lapas).
+- 2026-11-03 — Anša pārbaude: mazākais ātrums 0,25 Hz (motorā 0,5 V; ģeneratorā solis 0,25 Hz); kreisā suka aiz rotora (slāņi); vadi tikai pa asīm; strāvas bultas blakus vadiem; KOLEKTORS vairs neieslēdz kustību; lauka līnijas aiz priekšējā magnēta raustītas; jauns slēdzis ⇄ N/S (magnēta poli), POLARITĀTE → ⇄ +/−. Rihards: berze b atrasta skaitliski, lai 0,5 V → tieši 0,25 Hz (§ 7, `model.js`; 6 V → ~3,09 Hz); joslā f ar divām zīmēm, vidēji pa apgriezienu; slīdnis 88 px, lai josla 1280 px paliek vienā rindā.

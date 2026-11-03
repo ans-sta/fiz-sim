@@ -218,4 +218,4 @@ Example (open straight in the generator with its voltage graph):
 
     motor-generator.html?mode=generator
 
-In class (spec `docs/plans/2026-11-02-generators-motors.md`): motor — ALLOW MOTION (the coil swings to the position across the field and stops), then COMMUTATOR (it keeps turning; VOLTAGE 1–6 V gives 0.5–3 turns a second, POLARITY reverses it); generator — SPEED 0.5–3 Hz, the graph ℰ(t) below, COMMUTATOR turns alternating into pulsating direct current, FLUX Φ adds Φ(t) to the graph.
+In class (spec `docs/plans/2026-11-02-generators-motors.md`): motor — ALLOW MOTION (the coil swings to the position across the field and stops), then COMMUTATOR (it keeps turning; VOLTAGE 0.5–6 V gives 0.25–3 turns a second, ⇄ +/− swaps the battery terminals and ⇄ N/S the magnet poles — each reverses it); generator — SPEED 0.25–3 Hz, the graph ℰ(t) below, COMMUTATOR turns alternating into pulsating direct current, FLUX Φ adds Φ(t) to the graph.

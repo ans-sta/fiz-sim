@@ -671,8 +671,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .e01-main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .layout-hud .e01-main:focus { outline: none; }
 .layout-hud .e01-bar .m01-row { flex-wrap: wrap; }
-.layout-hud .e01-bar .m01-group { padding-left: calc(9px * var(--hud)); padding-right: calc(9px * var(--hud)); } /* lai josla 1280 px platumā ietilpst vienā rindā */
-.layout-hud .e01-bar .m01-row input.dim-range { width: calc(104px * var(--hud)); }
+.layout-hud .e01-bar .m01-group { padding-left: calc(7px * var(--hud)); padding-right: calc(7px * var(--hud)); } /* lai josla 1280 px platumā ietilpst vienā rindā */
+.layout-hud .e01-bar .m01-row input.dim-range { width: calc(88px * var(--hud)); }
 .layout-hud .e01-bar .m01-row .btn { padding-left: calc(8px * var(--hud)); padding-right: calc(8px * var(--hud)); }
 .layout-hud .e01-seg { gap: 0; }
 .layout-hud .e01-seg .btn + .btn { margin-left: -1px; }
@@ -682,7 +682,8 @@ html.is-fullscreen body.layout-hud header { display: none; }
 .layout-hud .m01-row .btn.e01-info { min-width: calc(34px * var(--hud)); padding-left: 0; padding-right: 0; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(13px * var(--hud)); }
 .layout-hud .m01-row .btn.e01-flip { color: var(--ink); }
 .layout-hud .e01-val { min-width: 0; white-space: nowrap; }
-.layout-hud .e01-freq { color: var(--ink-dim); font-weight: 400; }
+.layout-hud .e01-freq { color: var(--ink-dim); font-weight: 400; display: inline-block; min-width: 7ch; } /* vieta rezervēta — sākot griezties, josla nelec */
+.layout-hud .e01-freq[hidden] { display: none; }
 .layout-hud .e01-work { flex-direction: column; }
 /* zīmējumam vienmēr vismaz puse laukuma; grafiks — trešdaļa (ne vairāk par 340 px), bez pikseļu minimuma, lai zemā ekrānā neizspiež zīmējumu */
 .layout-hud .e01-work > .drawing { flex: 1 1 auto; min-height: 50%; }

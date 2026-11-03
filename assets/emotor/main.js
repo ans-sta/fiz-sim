@@ -3,7 +3,7 @@
 import { createI18n, createTheme, mountHeaderTools, mountTitleCells, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  RANGES, K, R, R_LOAD, TAU, createRotor, step, loopCurrent, externalVoltage, flux, poseOf,
+  RANGES, K, R, R_LOAD, TAU, createRotor, step, loopCurrent, externalVoltage, flux, poseOf, wrapAngle,
   createTrace, resetTrace, pushTrace, traceWindow, bulbStep,
 } from './model.js';
 import { settingsFromURL, warningText } from './params.js';
@@ -36,6 +36,7 @@ const state = {
     U: 3,
     f: 1,
     polarity: 1,
+    field: 1, // 1 — N pa kreisi aizmugurē; −1 — poli apmainīti (Ansis 03.11.: otrs slēdzis N/S)
     dir: 1,
     commutator: false,
     free: false,
@@ -45,6 +46,8 @@ const state = {
   trace: createTrace(),
   bulb: 0,
   fSmooth: 0,
+  turn: 0,   // rad — kopējais pagrieziens (bez 2π lēcieniem), lai ātrumu mērītu pa pilnu apgriezienu
+  hist: [],  // { t, th } — pēdējās ~6 s
   paused: false,
   drawScale: 1,
   wasStuck: false,
@@ -83,13 +86,25 @@ function startMotor() {
   state.s.free = false;
   state.wasStuck = false;
   state.fSmooth = 0;
+  state.hist.length = 0;
+}
+// Griešanās ātrums, vidēji pa pēdējo pilno apgriezienu — lēnā griešanās (0,25 Hz) pa apgriezienu svārstās ±20 %,
+// tāpēc rādījums ar divām zīmēm aiz komata citādi raustītos. Kamēr pilna apgrieziena vēl nav — izlīdzinātais ω.
+function measuredFrequency() {
+  const h = state.hist;
+  const last = h[h.length - 1];
+  for (let i = h.length - 2; i >= 0; i--) {
+    const d = Math.abs(last.th - h[i].th);
+    if (d >= TAU) return d / TAU / (last.t - h[i].t);
+  }
+  return state.fSmooth;
 }
 function setMode(mode) {
   if (state.s.mode === mode) return;
   state.s.mode = mode;
   if (mode === 'generator') startGenerator();
   else {
-    startMotor(); // motors sākas kā ↺: A, nofiksēts, kolektors izslēgts (kolektors bez kustības neko nerāda)
+    startMotor(); // motors sākas kā ↺: A, nofiksēts, kolektors izslēgts
     state.s.commutator = false;
   }
   syncRange();
@@ -143,15 +158,20 @@ el('flipBtn').addEventListener('click', () => {
   if (gen()) { state.s.dir *= -1; say('live.dir'); } else { state.s.polarity *= -1; say('live.polarity'); }
   render();
 });
+el('fieldBtn').addEventListener('click', () => {
+  state.s.field *= -1;
+  say(state.s.field < 0 ? 'live.fieldSwapped' : 'live.fieldNormal');
+  render();
+});
+// kolektors un ATĻAUT KUSTĪBU ir neatkarīgi slēdži (Ansis 03.11.)
 el('commBtn').addEventListener('click', () => {
   state.s.commutator = !state.s.commutator;
-  if (state.s.commutator && !gen()) state.s.free = true; // kolektors bez kustības neko nerāda (spec. § 5)
   say(state.s.commutator ? 'live.commOn' : 'live.commOff');
   render();
 });
 el('freeBtn').addEventListener('click', () => {
   state.s.free = !state.s.free;
-  if (!state.s.free) state.rotor.omega = 0; // nofiksējas, kur ir
+  if (!state.s.free) { state.rotor.omega = 0; state.hist.length = 0; } // nofiksējas, kur ir
   state.wasStuck = false;
   say(state.s.free ? 'live.free' : 'live.locked');
   render();
@@ -222,11 +242,15 @@ const Iref = () => (gen() ? (K * TAU * RANGES.f.max) / R_LOAD : RANGES.U.max / R
 startLoop((dt) => {
   if (!state.paused && dt > 0) {
     const s = physics();
+    const phi0 = state.rotor.phi;
     step(state.rotor, dt, s);
     const r = state.rotor;
+    state.turn += wrapAngle(r.phi - phi0);
+    state.hist.push({ t: r.t, th: state.turn });
+    while (state.hist.length && r.t - state.hist[0].t > 6) state.hist.shift();
     if (gen()) {
       const u = externalVoltage(r, s);
-      pushTrace(state.trace, r.t, u, flux(r.phi) / K);
+      pushTrace(state.trace, r.t, u, flux(r.phi, s.field) / K);
       const pMax = (K * TAU * RANGES.f.max) ** 2 / R_LOAD;
       state.bulb = bulbStep(state.bulb, (u * u) / R_LOAD, pMax, dt);
     } else {
@@ -245,17 +269,18 @@ function describe(now) {
   const r = state.rotor;
   const contacts = t(s.commutator ? 'scene.viaComm' : 'scene.viaRings');
   const dir = t(r.omega < 0 ? 'dir.cw' : 'dir.ccw'); // ω < 0 — pulksteņrādītāja virzienā, skatoties no kontaktu puses
+  const magnets = t(s.field < 0 ? 'scene.magnetsSwapped' : 'scene.magnets');
   if (gen()) {
-    return t('scene.generator', { f: fmt(s.f, 1), dir: t(s.dir < 0 ? 'dir.cw' : 'dir.ccw'), contacts, kind: t(s.commutator ? 'kind.dc' : 'kind.ac') });
+    return t('scene.generator', { magnets, f: fmt(s.f, 2), dir: t(s.dir < 0 ? 'dir.cw' : 'dir.ccw'), contacts, kind: t(s.commutator ? 'kind.dc' : 'kind.ac') });
   }
   const pose = t(`pose.${poseOf(r.phi)}`);
   let st;
   if (!s.free) st = t('scene.locked', { pose });
   else if (Math.abs(r.omega) < 0.05) st = t('scene.still', { pose });
-  else if (s.commutator && state.fSmooth > 0.2) st = t('scene.turning', { f: fmt(state.fSmooth, 1), dir });
+  else if (s.commutator && state.fSmooth > 0.1) st = t('scene.turning', { f: fmt(measuredFrequency(), 2), dir });
   else st = t('scene.swinging', { pose });
   void now;
-  return t('scene.motor', { contacts, state: st, plus: t(s.polarity > 0 ? 'side.right' : 'side.left') });
+  return t('scene.motor', { magnets, contacts, state: st, plus: t(s.polarity > 0 ? 'side.right' : 'side.left') });
 }
 
 function render() {
@@ -273,10 +298,11 @@ function render() {
   const k = key();
   const name = t(g ? 'bar.fname' : 'bar.Uname');
   setText(el('valLabel'), t(g ? 'bar.f' : 'bar.U'));
-  const valStr = g ? `${fmt(s.f, 1)} Hz` : `${fmt(s.U, 1)} V`;
+  const valStr = g ? `${fmt(s.f, 2)} Hz` : `${fmt(s.U, 1)} V`;
   setText(el('valText'), valStr);
   const turning = !g && s.free && s.commutator && state.fSmooth > 0.05; // šūpojoties bez kolektora f nerāda
-  setText(el('freqText'), turning ? `${fmt(state.fSmooth, 1)} Hz` : '');
+  setText(el('freqText'), turning ? `${fmt(measuredFrequency(), 2)} Hz` : '');
+  setHidden(el('freqText'), g);
   if (Math.abs(Number(valRange.value) - s[k]) > RANGES[k].step / 2) valRange.value = String(s[k]);
   setAttr(valRange, 'aria-label', name);
   setAttr(valRange, 'aria-valuetext', valStr);
@@ -286,8 +312,13 @@ function render() {
   valPlus.disabled = s[k] >= RANGES[k].max;
   // galā poga kļūst neaktīva — fokuss pāriet uz slīdni, nevis paliek uz neaktīvas pogas
   if ((valMinus.disabled && document.activeElement === valMinus) || (valPlus.disabled && document.activeElement === valPlus)) valRange.focus();
+  // motorā redzams “+/−” (arī šaurā ekrānā), ģeneratorā “VIRZIENS” (šaurā ekrānā — ↻); pilnais nosaukums sākas ar redzamo
   setText(el('flipW'), t(g ? 'bar.dir' : 'bar.polarity'));
-  setText(el('flipS'), t(g ? 'bar.dirShort' : 'bar.polarityShort'));
+  el('flipW').classList.toggle('e01-word', g);
+  setText(el('flipS'), g ? t('bar.dirShort') : '');
+  setText(el('flipX'), g ? '' : t('bar.polarityX'));
+  setText(el('fieldW'), t('bar.field'));
+  setText(el('fieldX'), t('bar.fieldX'));
   setText(el('circuitLabel'), t('bar.circuit'));
   setText(el('commBtn'), t('bar.commutator'));
   setAttr(el('commBtn'), 'aria-pressed', s.commutator);
@@ -328,7 +359,7 @@ function render() {
     const gl = graphLayout(gs.w, gs.h, legend);
     const emfAmp = K * Math.abs(state.rotor.omega);
     drawGraph(gview.ctx, gl, {
-      trace: state.trace, window: traceWindow(state.trace, state.rotor.t), settings: { commutator: s.commutator, showFlux: s.show.flux },
+      trace: state.trace, window: traceWindow(state.trace, state.rotor.t), settings: { commutator: s.commutator, showFlux: s.show.flux, field: s.field },
       colors: theme.colors(), theme: theme.current(), legend, emfAmp, fmt,
     });
   }

@@ -24,6 +24,9 @@ export const PALETTE = {
   light: { B: '#2a6478', I: '#7a5f00', F: '#a8470d', wire: '#3a3d42', copper: '#8f5222', copper2: '#b9773f', brush: '#6b7178', N: '#3d6aa6', S: '#b5503f', sAlpha: 0.35, glow: '230, 160, 0' },
 };
 
+// Magnēta krāsas: N zils, S sarkans; poli var būt apmainīti (s.field = −1) — tad aizmugurē S, priekšā N.
+// Burts uz aizmugurējā (necaurspīdīgā) magnēta balts: uz N 5,51 : 1, uz S tumšajā 5,78 : 1, gaišajā 5,02 : 1.
+// Burts tintē uz priekšējā (caurspīdīgā) magnēta: uz S 8,74 / 8,82 : 1, uz N 8,32 / 8,78 : 1 (tumšajā / gaišajā).
 // Pasaules izmēri (vienības)
 export const WORLD = {
   R: 2.0,          // pusplatums: garās malas attālums no ass
@@ -31,6 +34,7 @@ export const WORLD = {
   magX0: 3.1, magX1: 4.4, magY: 1.6, magZ: 2.2,
   shaftBack: -3.0, shaftFront: 3.5,
   rc: 0.34,        // kontaktu rādiuss
+  bw: 0.3,         // sukas (oglītes) garums — aizmugurējā redzama aiz rotora
   comm: [2.4, 3.1],                // kolektors (viens gredzens)
   rings: { b: [2.3, 2.62], a: [2.82, 3.14] }, // divi gredzeni (bez kolektora)
   floorY: -2.9, termX: 1.1, termZ: 2.75,
@@ -99,14 +103,41 @@ function arrow(ctx, a, b, color, width, sizeMax, halo) {
   line(ctx, a, end, color, width);
   head(ctx, b, dir, size, color, halo);
 }
-// bultas galviņa vada vidū (strāvas virziens): šaura (virsotne ~35°), lai uz slīpa vada nelasās kā ▲/▼
-function midHead(ctx, a, b, color, size, halo) {
-  const dir = [b[0] - a[0], b[1] - a[1]];
-  const L = Math.hypot(dir[0], dir[1]);
-  const len = size * 1.25;
-  if (L < len * 1.4) return;
-  const m = [(a[0] + b[0]) / 2 + (dir[0] / L) * len * 0.5, (a[1] + b[1]) / 2 + (dir[1] / L) * len * 0.5];
-  head(ctx, m, dir, len, color, halo, 0.3);
+// strāvas bulta BLAKUS vadam (Ansis 03.11.): nogrieznis pa → pb (strāvas virzienā), pārbīdīts perpendikulāri uz to pusi,
+// kur rāda out (ekrāna vektors “uz āru”). Kad vads redzams no gala (out gandrīz gar vadu), bulta pārslīd vienmērīgi.
+function sideArrow(ctx, pa, pb, out, { color, halo, gap, width, head }) {
+  const dx = pb[0] - pa[0];
+  const dy = pb[1] - pa[1];
+  const L = Math.hypot(dx, dy);
+  if (L < 4) return null;
+  const ux = dx / L;
+  const uy = dy / L;
+  const nx = -uy;
+  const ny = ux;
+  const ol = Math.hypot(out[0], out[1]) || 1;
+  const w = Math.max(-1, Math.min(1, (nx * out[0] + ny * out[1]) / (0.35 * ol)));
+  const ox = nx * gap * w;
+  const oy = ny * gap * w;
+  arrow(ctx, [pa[0] + ox, pa[1] + oy], [pb[0] + ox, pb[1] + oy], color, width, head, halo);
+  return { mid: [(pa[0] + pb[0]) / 2 + ox, (pa[1] + pb[1]) / 2 + oy], n: [nx * (w < 0 ? -1 : 1), ny * (w < 0 ? -1 : 1)] };
+}
+// Vai punkts q ir aiz kastes b, skatoties no skatītāja puses (izometrijā skatiena virziens ir (1, 1, 1))?
+function behindBox(q, b) {
+  const lo = Math.max(0, b.x0 - q[0], b.y0 - q[1], b.z0 - q[2]);
+  const hi = Math.min(b.x1 - q[0], b.y1 - q[1], b.z1 - q[2]);
+  return lo < hi;
+}
+// nogriežņa a → b posmi: redzamie un aizsegtie (aiz kastes b) — [{ t0, t1, hidden }], t ∈ [0, 1]
+function hiddenRuns(a, b, box, n = 80) {
+  const at = (t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+  const runs = [];
+  let cur = null;
+  for (let i = 0; i < n; i++) {
+    const hid = behindBox(at((i + 0.5) / n), box);
+    if (cur && cur.hidden === hid) cur.t1 = (i + 1) / n;
+    else { cur = { t0: i / n, t1: (i + 1) / n, hidden: hid }; runs.push(cur); }
+  }
+  return runs.map((r) => ({ ...r, a: at(r.t0), b: at(r.t1) }));
 }
 function label(ctx, text, x, y, { color, size, align = 'center', base = 'middle', weight = 600, font = MONO, halo }) {
   ctx.save();
@@ -197,12 +228,17 @@ export function drawScene(ctx, lay, m) {
   const arrowSize = Math.max(9, 0.32 * s) * Math.min(1.4, k);
   const letter = Math.max(13, 0.42 * s) * k;
   const notes = []; // anotācijas — zīmē beigās
+  const fs = st.field ?? 1; // 1 — N aizmugurē pa kreisi; −1 — poli apmainīti
+  const backN = fs > 0;
+  const poleSize = Math.max(16, 0.62 * s) * Math.min(1.5, k);
+  const frontBox = { x0: W.magX0, x1: W.magX1, y0: -W.magY, y1: W.magY, z0: -W.magZ, z1: W.magZ };
+  const iArrow = { color: pal.I, halo, gap: Math.max(9, 0.3 * s), width: Math.max(2.5, 0.085 * s), head: arrowSize };
   ctx.clearRect(0, 0, w, h);
 
-  // N magnēts (aizmugurē pa kreisi)
-  box(ctx, P, [-W.magX1, -W.magX0], [-W.magY, W.magY], [-W.magZ, W.magZ], { fill: pal.N, stroke: c.inkDim });
+  // aizmugurējais magnēts (pa kreisi): N vai S
+  box(ctx, P, [-W.magX1, -W.magX0], [-W.magY, W.magY], [-W.magZ, W.magZ], { fill: backN ? pal.N : pal.S, stroke: c.inkDim });
   const nC = P(-(W.magX0 + W.magX1) / 2, W.magY, 0);
-  label(ctx, 'N', nC[0], nC[1], { color: '#ffffff', size: Math.max(16, 0.62 * s) * Math.min(1.5, k) });
+  label(ctx, backN ? 'N' : 'S', nC[0], nC[1], { color: '#ffffff', size: poleSize });
 
   // kloķis ģeneratorā (ass aizmugurējā galā, griežas līdzi)
   const zb = W.shaftBack;
@@ -217,19 +253,22 @@ export function drawScene(ctx, lay, m) {
   line(ctx, P(0, 0, zb), P(0, 0, -W.L), c.inkDim, Math.max(3, 0.12 * s));
   line(ctx, P(0, 0, -W.L), P(0, 0, W.L), c.inkDim, 1.2, [4, 4]);
 
-  // lauka līnijas (bultas — anotācijās)
+  // lauka līnijas (bultas — anotācijās); posmi aiz priekšējā magnēta — raustīti (Ansis 03.11.)
   if (m.show.field) {
     const lw = Math.max(1.2, 0.045 * s);
+    const dash = [Math.max(5, 0.17 * s), Math.max(4, 0.13 * s)];
     let first = true;
     for (const y of [1.05, -1.05]) {
       for (const z of [-1.45, 0, 1.45]) {
-        const a = P(-W.magX0, y, z);
-        const b = P(W.magX0, y, z);
-        line(ctx, a, b, pal.B, lw);
-        const dir = [b[0] - a[0], b[1] - a[1]];
-        const h1 = P(-1.0, y, z);
-        const h2 = P(2.35, y, z);
-        notes.push(() => { head(ctx, h1, dir, Math.max(7, 0.2 * s), pal.B); head(ctx, h2, dir, Math.max(8, 0.26 * s), pal.B); });
+        const a3 = [-W.magX0, y, z];
+        const b3 = [W.magX0, y, z];
+        for (const run of hiddenRuns(a3, b3, frontBox)) line(ctx, P(...run.a), P(...run.b), pal.B, lw, run.hidden ? dash : null);
+        const a = P(...a3);
+        const b = P(...b3);
+        const dir = backN ? [b[0] - a[0], b[1] - a[1]] : [a[0] - b[0], a[1] - b[1]]; // lauks no N uz S
+        // apakšējām līnijām pirmā bulta tālāk pa kreisi — neuzkāpj uz kontaktiem un sukas
+        const heads = [[y < 0 ? -2.2 : -1.0, Math.max(7, 0.2 * s)], [2.35, Math.max(8, 0.26 * s)]].filter(([hx]) => !behindBox([hx, y, z], frontBox));
+        notes.push(() => { for (const [hx, size] of heads) head(ctx, P(hx, y, z), dir, size, pal.B); });
         if (first) {
           const tp = P(-2.55, y + 0.34, z);
           notes.push(() => label(ctx, 'B', tp[0], tp[1], { color: pal.B, size: letter, halo, font: SANS }));
@@ -260,25 +299,40 @@ export function drawScene(ctx, lay, m) {
     { a: [ga[0], ga[1], zLeadA], b: [ga[0], ga[1], L], lead: true },
   ].map((e) => ({ ...e, d: e.a[0] + e.b[0] + e.a[1] + e.b[1] + e.a[2] + e.b[2] }))
     .sort((u, v) => u.d - v.d);
-  for (const e of edges) {
-    const pa = P(...e.a);
-    const pb = P(...e.b);
-    line(ctx, pa, pb, pal.wire, e.lead ? Math.max(1.5, wireW * 0.45) : wireW);
-    if (showI && !e.lead) {
-      const [from, to] = I > 0 ? [pa, pb] : [pb, pa];
-      notes.push(() => midHead(ctx, from, to, pal.I, arrowSize, halo));
-    }
-  }
+  for (const e of edges) line(ctx, P(...e.a), P(...e.b), pal.wire, e.lead ? Math.max(1.5, wireW * 0.45) : wireW);
+  // strāvas bultas blakus garajām malām (aizmugurējā pusē, lai nekrustojas ar spēku bultām) un aizmugurējai malai;
+  // virziens pie I > 0: mala a — prom (−z), aizmugurē no a uz b, mala b — pret skatītāju (+z)
   if (showI) {
-    const ip = P(-ax, -ay, 0);
-    notes.push(() => label(ctx, 'I', ip[0] - 0.55 * s, ip[1] + 0.35 * s, { color: pal.I, size: letter, halo, font: SANS }));
+    const cph = Math.cos(phi);
+    const sph = Math.sin(phi);
+    const hl = 0.62; // bultas puse garuma (vienības)
+    const specs = [
+      { c: [ax, ay, -0.5 * L], d: [0, 0, -1], out: [cph, sph, 0] },
+      { c: [-ax, -ay, -0.5 * L], d: [0, 0, 1], out: [-cph, -sph, 0] },
+      { c: [-0.5 * ax, -0.5 * ay, -L], d: [-cph, -sph, 0], out: [0, 0, -1], label: true }, // burts I — pie aizmugurējās malas, prom no F
+    ];
+    for (const sp of specs) {
+      const sg = I > 0 ? 1 : -1;
+      const pa = P(sp.c[0] - sp.d[0] * hl * sg, sp.c[1] - sp.d[1] * hl * sg, sp.c[2] - sp.d[2] * hl * sg);
+      const pb = P(sp.c[0] + sp.d[0] * hl * sg, sp.c[1] + sp.d[1] * hl * sg, sp.c[2] + sp.d[2] * hl * sg);
+      const pc = P(...sp.c);
+      const po = P(sp.c[0] + sp.out[0], sp.c[1] + sp.out[1], sp.c[2] + sp.out[2]);
+      notes.push(() => {
+        const r = sideArrow(ctx, pa, pb, [po[0] - pc[0], po[1] - pc[1]], iArrow);
+        if (r && sp.label) {
+          const off = iArrow.gap * 0.6 + letter * 0.7;
+          label(ctx, 'I', r.mid[0] + r.n[0] * off, r.mid[1] + r.n[1] * off, { color: pal.I, size: letter, halo, font: SANS });
+        }
+      });
+    }
   }
 
   // spēki: vienmēr vertikāli; mala a — uz leju pie I > 0, mala b — uz augšu. Plecs — raustīta līnija no ass.
   if (m.show.force && Math.abs(I) > tiny) {
-    const len = 2.2 * Math.min(1, Math.abs(I) / m.Iref); // F = BIL — garums ∝ |I|
+    // F = BIL — garums ∝ |I|; ļoti mazam spēkam īsākā bulta 0,35 (citādi tā saraujas punktiņā)
+    const len = Math.max(0.35, 2.2 * Math.min(1, Math.abs(I) / m.Iref));
     const sgn = Math.sign(I);
-    for (const [sx, sy, dir] of [[ax, ay, -sgn], [-ax, -ay, sgn]]) {
+    for (const [sx, sy, dir] of [[ax, ay, -sgn * fs], [-ax, -ay, sgn * fs]]) {
       const o = P(0, 0, 0);
       const ov = P(0, sy, 0);
       const os = P(sx, sy, 0);
@@ -291,7 +345,7 @@ export function drawScene(ctx, lay, m) {
           line(ctx, ov, os, pal.F, Math.max(1.5, 0.05 * s), [5, 4]);
         }
         arrow(ctx, from, to, pal.F, Math.max(3, 0.12 * s), Math.max(11, 0.4 * s) * Math.min(1.4, k), halo);
-        label(ctx, 'F', tl[0] + 0.3 * s, tl[1], { color: pal.F, size: letter, halo, font: SANS });
+        label(ctx, 'F', tl[0] - 0.3 * s, tl[1], { color: pal.F, size: letter, halo, font: SANS }); // pa kreisi — strāvas bultas ir pa labi
       });
     }
   }
@@ -299,10 +353,41 @@ export function drawScene(ctx, lay, m) {
   // ass priekša
   line(ctx, P(0, 0, L), P(0, 0, W.shaftFront), c.inkDim, Math.max(3, 0.12 * s));
 
-  // kontakti: kolektors (viens pārgriezts gredzens) vai divi gredzeni; sukas sānos — kreisā (−x) un labā (+x)
-  const bw = 0.2;
-  let zL;
-  let zR;
+  // kontakti: kolektors (viens pārgriezts gredzens) vai divi gredzeni; sukas sānos — kreisā (−x) un labā (+x).
+  // Kreisā suka un tās vads ir aiz rotora — tos zīmē pirms kontaktiem (Ansis 03.11.: oglīte aiz rotora, nevis virs tā).
+  const bw = W.bw;
+  const zL = comm ? (W.comm[0] + W.comm[1]) / 2 : (W.rings.b[0] + W.rings.b[1]) / 2; // gredzens b — kreisā suka
+  const zR = comm ? (W.comm[0] + W.comm[1]) / 2 : (W.rings.a[0] + W.rings.a[1]) / 2; // gredzens a — labā suka
+  // vadi: no sukām uz sāniem (x), uz leju (y), pa “grīdu” (z, x) līdz ierīcei — tikai pa asīm (Ansis 03.11.)
+  const fy = W.floorY;
+  const tz = W.termZ;
+  const tx = W.termX;
+  const ex = tx + 0.35; // vada līkums ārpus ierīces
+  const Iext = commutatorSign(phi, comm) * I; // > 0: no kreisās sukas caur ierīci uz labo
+  const brushAndWire = (isLeft) => {
+    const sx = isLeft ? -1 : 1;
+    const z = isLeft ? zL : zR;
+    box(ctx, P, isLeft ? [-W.rc - bw, -W.rc] : [W.rc, W.rc + bw], [-0.13, 0.13], [z - 0.14, z + 0.14], { fill: pal.brush, stroke: c.inkDim });
+    const wire = [[sx * (W.rc + bw), 0, z], [sx * ex, 0, z], [sx * ex, fy, z], [sx * ex, fy, tz], [sx * tx, fy, tz]];
+    ctx.save();
+    ctx.strokeStyle = pal.wire;
+    ctx.lineWidth = thin;
+    ctx.lineJoin = 'round';
+    path(ctx, wire.map((p) => P(...p)));
+    ctx.stroke();
+    ctx.restore();
+    if (m.show.current && Math.abs(Iext) > tiny) {
+      const down = (Iext > 0) === isLeft; // kreisajā vadā strāva iet uz leju (uz ierīci), labajā — uz augšu
+      const yc = fy / 2;
+      const hl = 0.62;
+      const pa = P(sx * ex, yc + (down ? hl : -hl), z);
+      const pb = P(sx * ex, yc + (down ? -hl : hl), z);
+      const pc = P(sx * ex, yc, z);
+      const po = P(sx * (ex + 1), yc, z);
+      notes.push(() => sideArrow(ctx, pa, pb, [po[0] - pc[0], po[1] - pc[1]], iArrow));
+    }
+  };
+  brushAndWire(true);
   if (comm) {
     const [z0, z1] = W.comm;
     cylinder(ctx, P, W.rc, z0, z1, pal.copper2, c.inkDim);
@@ -320,7 +405,6 @@ export function drawScene(ctx, lay, m) {
       line(ctx, P(0, 0, z1), P(gx, gy, z1), c.field, 2);
       line(ctx, P(gx, gy, z0), P(gx, gy, z1), c.field, 2);
     }
-    zL = zR = (z0 + z1) / 2;
   } else {
     const { a: za, b: zbb } = W.rings;
     for (const [z0, z1] of [zbb, za]) {
@@ -334,37 +418,8 @@ export function drawScene(ctx, lay, m) {
       ctx.fill();
       ctx.restore();
     }
-    zL = (zbb[0] + zbb[1]) / 2; // gredzens b — kreisā suka
-    zR = (za[0] + za[1]) / 2;   // gredzens a — labā suka
   }
-  box(ctx, P, [-W.rc - bw, -W.rc], [-0.13, 0.13], [zL - 0.14, zL + 0.14], { fill: pal.brush, stroke: c.inkDim });
-  box(ctx, P, [W.rc, W.rc + bw], [-0.13, 0.13], [zR - 0.14, zR + 0.14], { fill: pal.brush, stroke: c.inkDim });
-
-  // vadi: no sukām uz sāniem, uz leju līdz ierīcei uz “grīdas”
-  const fy = W.floorY;
-  const tz = W.termZ;
-  const tx = W.termX;
-  const ex = tx + 0.35; // vada līkums ārpus ierīces
-  const wireL = [[-W.rc - bw, 0, zL], [-ex, 0, zL], [-ex, fy, tz], [-tx, fy, tz]];
-  const wireR = [[W.rc + bw, 0, zR], [ex, 0, zR], [ex, fy, tz], [tx, fy, tz]];
-  const Iext = commutatorSign(phi, comm) * I; // > 0: no kreisās sukas caur ierīci uz labo
-  for (const [wire, isLeft] of [[wireL, true], [wireR, false]]) {
-    const pts = wire.map((p) => P(...p));
-    ctx.save();
-    ctx.strokeStyle = pal.wire;
-    ctx.lineWidth = thin;
-    ctx.lineJoin = 'round';
-    path(ctx, pts);
-    ctx.stroke();
-    ctx.restore();
-    if (m.show.current && Math.abs(Iext) > tiny) {
-      const a = pts[1];
-      const b = pts[2];
-      const down = (Iext > 0) === isLeft; // kreisajā vadā strāva iet uz leju (uz ierīci), labajā — uz augšu
-      const [from, to] = down ? [a, b] : [b, a];
-      notes.push(() => midHead(ctx, from, to, pal.I, arrowSize * 0.85, halo));
-    }
-  }
+  brushAndWire(false);
 
   // ierīce uz “grīdas” starp spailēm: baterija (motors) vai spuldzīte (ģenerators)
   if (gen) {
@@ -422,10 +477,10 @@ export function drawScene(ctx, lay, m) {
     label(ctx, '−', pMinus[0], pMinus[1], { color: c.ink, size: sz, halo });
   }
 
-  // S magnēts (priekšā pa labi, daļēji caurspīdīgs)
-  box(ctx, P, [W.magX0, W.magX1], [-W.magY, W.magY], [-W.magZ, W.magZ], { fill: pal.S, alpha: pal.sAlpha, stroke: c.inkDim, width: 1.2 });
+  // priekšējais magnēts (pa labi, daļēji caurspīdīgs): S vai N
+  box(ctx, P, [W.magX0, W.magX1], [-W.magY, W.magY], [-W.magZ, W.magZ], { fill: backN ? pal.S : pal.N, alpha: pal.sAlpha, stroke: c.inkDim, width: 1.2 });
   const sC = P((W.magX0 + W.magX1) / 2, W.magY, 0);
-  label(ctx, 'S', sC[0], sC[1], { color: c.ink, size: Math.max(16, 0.62 * s) * Math.min(1.5, k) });
+  label(ctx, backN ? 'S' : 'N', sC[0], sC[1], { color: c.ink, size: poleSize });
 
   for (const f of notes) f();
 }
@@ -521,7 +576,8 @@ export function drawGraph(ctx, g, m) {
 
   // formula un ℰm augšā pa labi; ar kolektoru zīme no līknes (apgriežot virzienu, līdzstrāva maina polaritāti)
   if (g.compact) return;
-  let formula = 'ℰ = ℰm sin ωt';
+  // maiņstrāva no B: ℰ = k·ω·cos(−π/2 + ωt) = ℰm sin ωt neatkarīgi no virziena; apmainīti magnēta poli — mīnuss
+  let formula = (m.settings.field ?? 1) < 0 ? 'ℰ = −ℰm sin ωt' : 'ℰ = ℰm sin ωt';
   if (m.settings.commutator) {
     const recent = pts.slice(-60);
     const mean = recent.reduce((a, p) => a + p.u, 0) / Math.max(1, recent.length);
