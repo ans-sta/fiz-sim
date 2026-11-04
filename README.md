@@ -23,7 +23,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ⬒ Gas Law (M-02)           | Molecular physics / pV/T = const with a piston | ✅ Live |
 | ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
 | 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | ✅ Live |
-| ⚛ Atomic Spectra (A-01) | Atom / absorption and emission, energy levels and the electron’s jump, ionisation — H, Na, Hg, He | 🟡 Review |
+| ⚛ Atomic Spectra (A-01) | Atom / absorption and emission, energy levels and the electron’s jump, ionisation — H, He, Na, Hg | 🟡 Review |
 
 ## Infographics
 

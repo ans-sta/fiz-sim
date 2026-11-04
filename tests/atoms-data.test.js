@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { ATOMS, ATOM_IDS, HC } from '../assets/atoms/atoms.js';
 
 const lev = (a, id) => a.levels.find((l) => l.id === id);
@@ -7,10 +8,17 @@ const lam = (a, up, lo) => HC / (lev(a, up).E - lev(a, lo).E);
 const line = (a, up, lo) => a.lines.find((l) => l.up === up && l.lo === lo);
 const near = (v, want, tol, msg) => assert.ok(Math.abs(v - want) <= tol, `${msg}: ${v} ≠ ${want} ± ${tol}`);
 
-test('four atoms in the order H, Na, Hg, He; hc = 1239,84 eV·nm', () => {
-  assert.deepEqual(ATOM_IDS, ['H', 'Na', 'Hg', 'He']);
+test('four atoms in periodic-table order H, He, Na, Hg (Ansis 04.11.); hc = 1239,84 eV·nm', () => {
+  assert.deepEqual(ATOM_IDS, ['H', 'He', 'Na', 'Hg']);
   assert.equal(HC, 1239.84);
   for (const id of ATOM_IDS) assert.equal(ATOMS[id].id, id);
+  const z = ATOM_IDS.map((id) => ATOMS[id].nucleus.p);
+  assert.ok(z.every((p, i) => i === 0 || p > z[i - 1]), `proton numbers grow: ${z.join(', ')}`);
+});
+
+test('the atom buttons on the page follow the same order', () => {
+  const html = readFileSync(new URL('../atomic-spectra.html', import.meta.url), 'utf8');
+  assert.deepEqual([...html.matchAll(/data-atom="(\w+)"/g)].map((m) => m[1]), ATOM_IDS);
 });
 
 test('hydrogen: Bohr levels, 15 lines, the October table', () => {

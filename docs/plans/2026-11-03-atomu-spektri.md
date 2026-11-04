@@ -139,7 +139,7 @@ ABSORBCIJA                                        STAROŠANA
 
 ## 8. Vadības josla (Rihards; tāpat kā E-01 — augšā)
 
-`ATOMS  H · Na · Hg · He` | `ABSORBCIJA · STAROŠANA` | `☼ BALTĀ GAISMA` un `INTENSITĀTE − 5 f/s +` (absorbcijā) vai `↯ NEJAUŠA KASKĀDE` (starošanā) | `NOTĪRĪT` | `ATZĪMES` | `i`. ⚙ apakšā pa kreisi kā visām lapām (BURTI, ZĪMĒJUMS, tālummaiņa, ⌘ taustiņi).
+`ATOMS  H · He · Na · Hg` (periodiskās tabulas secībā, Ansis 04.11.) | `ABSORBCIJA · STAROŠANA` | `☼ BALTĀ GAISMA` un `INTENSITĀTE − 5 f/s +` (absorbcijā) vai `↯ NEJAUŠA KASKĀDE` (starošanā) | `NOTĪRĪT` | `ATZĪMES` | `i`. ⚙ apakšā pa kreisi kā visām lapām (BURTI, ZĪMĒJUMS, tālummaiņa, ⌘ taustiņi).
 Pirmais atoms, atverot lapu, — ūdeņradis (saikne ar grāmatu un Rīdberga uzdevumiem) (Rihards).
 
 **Rādījums** (virs zīmējuma): `2 → 4 · ΔE 2,550 eV · λ 486,2 nm · absorbēts` / `izlidoja cauri — starp parādītajiem līmeņiem nav atbilstoša pakāpiena` / `jonizēts — elektrons atbrīvojas` / `4 → 2 · … · izstarots`.

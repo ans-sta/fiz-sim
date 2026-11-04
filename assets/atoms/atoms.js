@@ -187,4 +187,4 @@ export const ATOMS = {
   },
 };
 
-export const ATOM_IDS = ['H', 'Na', 'Hg', 'He'];
+export const ATOM_IDS = ['H', 'He', 'Na', 'Hg']; // periodiskās tabulas secībā (Ansis 04.11.)
