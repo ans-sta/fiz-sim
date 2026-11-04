@@ -165,6 +165,21 @@ test('absorption photons live between the column and the atom: born at the colum
   }
 });
 
+test('helium nucleus is symmetric (Ansis 04.11.): protons left and right, neutrons above and below, mirror-symmetric both ways, protons on top', () => {
+  const R = 30;
+  const { b, balls } = nucleusLayout(ATOMS.He.nucleus, R);
+  const key = (q) => `${Math.round(q.x * 1e6)},${Math.round(q.y * 1e6)},${q.proton}`;
+  const set = new Set(balls.map(key));
+  for (const q of balls) {
+    assert.ok(set.has(key({ ...q, x: -q.x })), 'mirror left–right');
+    assert.ok(set.has(key({ ...q, y: -q.y })), 'mirror up–down');
+  }
+  const pr = balls.filter((q) => q.proton);
+  assert.ok(pr.every((q) => Math.abs(q.y) < 1e-9 && Math.abs(q.x) > b), 'protons on the horizontal axis');
+  assert.ok(balls.filter((q) => !q.proton).every((q) => Math.abs(q.x) < 1e-9), 'neutrons on the vertical axis');
+  assert.deepEqual(balls.map((q) => q.proton), [false, false, true, true], 'neutrons drawn first, so both protons lie on top alike');
+});
+
 test('nucleus: protons are mixed through the ball, not bunched on one side', () => {
   for (const id of ['He', 'Na', 'Hg']) {
     const R = 30;

@@ -458,6 +458,13 @@ export function nucleusLayout(nuc, R) {
   const n = nuc.draw ?? nuc; // dzīvsudrabam zīmē “daudz”, ne visus 202
   const N = n.p + n.n;
   if (N === 1) return { b: R, balls: [{ x: 0, y: 0, proton: n.p === 1 }] };
+  if (n.p === 2 && n.n === 2) {
+    // hēlijs simetriski (Ansis 04.11.): protoni pa kreisi un pa labi, neitroni augšā un apakšā; kaimiņi 1,75 b, tātad pārklājas;
+    // neitronus zīmē pirmos, tāpēc abi protoni guļ virsū vienādi
+    const a = (1.75 / Math.SQRT2) * (R / (1.75 / Math.SQRT2 + 1));
+    const b = R - a;
+    return { b, balls: [{ x: 0, y: -a, proton: false }, { x: 0, y: a, proton: false }, { x: -a, y: 0, proton: true }, { x: a, y: 0, proton: true }] };
+  }
   const STEP = 0.92; // spirāles solis b vienībās
   const b = R / (STEP * Math.sqrt(N - 0.5) + 1);
   const balls = [];
