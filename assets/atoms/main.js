@@ -221,7 +221,7 @@ function buildLevelButtons() {
 }
 buildLevelButtons();
 
-// Līmeņi, uz kuriem var pāriet (shēmā ▲ tikai absorbcijā; starošanā — tikai ekrāna lasītājam)
+// Līmeņi, uz kuriem var pāriet — tikai ekrāna lasītājam (shēmā zīmju nav, tikai × uz aizliegtajiem)
 function allowedSet() {
   const s = sim.state;
   if (s.mode === 'absorb') return s.ionised ? null : new Set(linesUp(atom(), s.start).map((x) => x.to));
@@ -403,7 +403,7 @@ function render() {
     hints: hintTargets(atom(), s.start), showHints: ui.hints && !emit, edge: emit ? NaN : edgeNm(atom(), s.start),
     mode: s.mode, slide: ui.slide, legend, theme: theme.current(), colors: theme.colors(), fmt,
     fmtMicron: (λ) => fmt(λ / 1000, 1),
-    trail: s.trail[s.mode], forbidden: forbiddenSet(), allowed: allowedSet(),
+    trail: s.trail[s.mode], forbidden: forbiddenSet(),
     jump: ui.jump ? { from: ui.jump.from, k: Math.min(1, (now - ui.jump.t0) / (reduced.matches ? 120 : 320)) } : null,
     aim: !emit && ui.slide < 0.02 ? ui.aim : null,
     labels: {

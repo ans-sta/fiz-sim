@@ -588,18 +588,7 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     ctx.moveTo(g.x0, g.y);
     ctx.lineTo(g.x1, g.y);
     ctx.stroke();
-    // uz šo līmeni var pāriet — ▲ absorbcijā akcenta krāsā; nevar — sarkans × (Ansis 04.11.).
-    // Starošanā trijstūru nav — tie saplūda ar krustiņiem (Ansis 04.11.); tur paliek tikai ×.
-    if (v.mode === 'absorb' && v.allowed?.has(g.id)) {
-      const xx = g.x1 - 9;
-      ctx.fillStyle = c.accent;
-      ctx.beginPath();
-      ctx.moveTo(xx - 5, g.y + 5);
-      ctx.lineTo(xx + 5, g.y + 5);
-      ctx.lineTo(xx, g.y - 4);
-      ctx.closePath();
-      ctx.fill();
-    }
+    // uz šo līmeni nevar pāriet — sarkans × (Ansis 04.11.: “TIKAI krustiņus”, trijstūru nav ne starošanā, ne absorbcijā)
     if (v.forbidden?.has(g.id)) {
       const xx = g.x1 - 9;
       ctx.strokeStyle = dark ? '#ff6b6b' : '#c0262d';
