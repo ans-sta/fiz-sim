@@ -221,7 +221,7 @@ function buildLevelButtons() {
 }
 buildLevelButtons();
 
-// Līmeņi, uz kuriem var pāriet (shēmā ▼ / ▲)
+// Līmeņi, uz kuriem var pāriet (shēmā ▲ tikai absorbcijā; starošanā — tikai ekrāna lasītājam)
 function allowedSet() {
   const s = sim.state;
   if (s.mode === 'absorb') return s.ionised ? null : new Set(linesUp(atom(), s.start).map((x) => x.to));

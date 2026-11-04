@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ATOMS } from '../assets/atoms/atoms.js';
-import { sceneLayout, levelYs, spreadLabels, columnY, levelGeometry, seriesSlots } from '../assets/atoms/scene.js';
+import { sceneLayout, levelYs, spreadLabels, columnY, levelGeometry, seriesSlots, nucleusLayout, absorbBand } from '../assets/atoms/scene.js';
 
 const right = (r) => r.x + r.w;
 const finite = (r) => ['x', 'y', 'w', 'h'].every((k) => Number.isFinite(r[k]));
@@ -133,4 +133,49 @@ test('a matching square AUTO button sits above the emission column', () => {
   assert.equal(L.autoBtn.x, L.emCol.x);
   assert.equal(L.autoBtn.w, L.autoBtn.h);
   assert.ok(L.autoBtn.y + L.autoBtn.h + 4 <= L.emCol.y);
+});
+
+test('nucleus: protons and neutrons touch and overlap like a ball, no gaps (Ansis 04.11.)', () => {
+  for (const id of ['He', 'Na', 'Hg']) {
+    const nuc = ATOMS[id].nucleus;
+    const want = nuc.draw ?? nuc;
+    const R = 30;
+    const { b, balls } = nucleusLayout(nuc, R);
+    assert.equal(balls.length, want.p + want.n, `${id} count`);
+    assert.equal(balls.filter((q) => q.proton).length, want.p, `${id} protons`);
+    for (const q of balls) {
+      const near = Math.min(...balls.filter((o) => o !== q).map((o) => Math.hypot(o.x - q.x, o.y - q.y)));
+      assert.ok(near < 2 * b, `${id}: every ball touches a neighbour (${near.toFixed(2)} < ${(2 * b).toFixed(2)})`);
+      assert.ok(Math.hypot(q.x, q.y) + b <= R + 1e-9, `${id}: inside R`);
+    }
+    const d = balls.map((q) => Math.hypot(q.x, q.y));
+    assert.ok(d.every((x, i) => i === 0 || x <= d[i - 1] + 1e-9), `${id}: drawn from the outside in, so the centre is on top`);
+  }
+  const h = nucleusLayout(ATOMS.H.nucleus, 30);
+  assert.equal(h.balls.length, 1);
+  assert.deepEqual([h.balls[0].x, h.balls[0].y, h.balls[0].proton], [0, 0, true]);
+});
+
+test('absorption photons live between the column and the atom: born at the column edge, never over it or over the diagram (Ansis 04.11.)', () => {
+  for (const slide of [0, 0.4]) {
+    const L = sceneLayout(1280, 800, { slide });
+    const band = absorbBand(L);
+    assert.equal(band.x0, right(L.absCol));
+    assert.equal(band.x1, right(L.atom));
+  }
+});
+
+test('nucleus: protons are mixed through the ball, not bunched on one side', () => {
+  for (const id of ['He', 'Na', 'Hg']) {
+    const R = 30;
+    const pr = nucleusLayout(ATOMS[id].nucleus, R).balls.filter((q) => q.proton);
+    const cx = pr.reduce((s, q) => s + q.x, 0) / pr.length;
+    const cy = pr.reduce((s, q) => s + q.y, 0) / pr.length;
+    assert.ok(Math.hypot(cx, cy) < 0.3 * R, `${id}: proton centroid ${Math.hypot(cx, cy).toFixed(1)} from the centre`);
+    if (id === 'He') continue; // četras daļiņas — rādiusu salīdzināt nav jēgas
+    const balls = nucleusLayout(ATOMS[id].nucleus, R).balls;
+    const meanR = (xs) => xs.reduce((s, q) => s + Math.hypot(q.x, q.y), 0) / xs.length;
+    const k = meanR(balls.filter((q) => q.proton)) / meanR(balls.filter((q) => !q.proton));
+    assert.ok(k > 0.8 && k < 1.25, `${id}: protons both inside and at the rim (mean radius ratio ${k.toFixed(2)})`);
+  }
 });

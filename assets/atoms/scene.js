@@ -364,7 +364,10 @@ function drawAtom(ctx, C, rMax, v, { font, c, dark }) {
     ctx.textBaseline = 'top';
     ctx.fillText(v.labels.core, C.x, C.y + r0 * 0.72 + 4); // zem pelēkā diska — kodols ar protoniem un neitroniem paliek redzams
   }
-  drawNucleus(ctx, C, rMax, a.nucleus, { c, dark });
+  // kodols ietilpst iekšpus pirmā iekšējā riņķa (Na), pelēkā diska (Hg) vai pamatstāvokļa riņķa (He); ūdeņradim — viens protons
+  const rIn = a.inner.shells ? r0 * 0.38 : a.inner.core ? r0 * 0.72 : r0;
+  const N = a.nucleus.p + a.nucleus.n;
+  drawNucleus(ctx, C, N === 1 ? Math.max(4, rMax * 0.04) : rIn * 0.72, a.nucleus, { c, dark });
   if (a.inner.shells) {
     a.inner.shells.forEach((n, i) => {
       const r = r0 * (0.38 + 0.32 * i);
@@ -448,26 +451,41 @@ function drawAtom(ctx, C, rMax, v, { font, c, dark }) {
   return { rings, ANG };
 }
 
-// Kodols: protoni (sarkani, ar “+”, ja vieta) un neitroni (pelēki) saulespuķes rakstā — “daudz”, ne obligāti visi (Ansis 04.11.)
-function drawNucleus(ctx, C, rMax, nuc, { c, dark }) {
-  const nucleus = nuc.draw ?? nuc; // dzīvsudrabam zīmē “daudz”, ne visus 202
-  const N = nucleus.p + nucleus.n;
-  const b = N === 1 ? Math.max(4, rMax * 0.04) : Math.max(2.2, rMax * (N > 20 ? 0.017 : 0.03));
-  const pCol = dark ? '#ff6b6b' : '#c0262d';
+// Kodols: protoni (sarkani, ar “+”, ja vieta) un neitroni (pelēki) saulespuķes rakstā — “daudz”, ne obligāti visi (Ansis 04.11.).
+// Kodols ir lode: daļiņas saskaras un pārklājas (kaimiņi ~1,75 b), zīmē no malas uz centru — centrālās virspusē.
+const MIX = (Math.sqrt(13) - 3) / 2; // iracionāls solis: ar zelta leņķi nesakrīt, tāpēc protoni nesakrājas vienā pusē
+export function nucleusLayout(nuc, R) {
+  const n = nuc.draw ?? nuc; // dzīvsudrabam zīmē “daudz”, ne visus 202
+  const N = n.p + n.n;
+  if (N === 1) return { b: R, balls: [{ x: 0, y: 0, proton: n.p === 1 }] };
+  const STEP = 0.92; // spirāles solis b vienībās
+  const b = R / (STEP * Math.sqrt(N - 0.5) + 1);
+  const balls = [];
   for (let i = 0; i < N; i++) {
-    const r = N === 1 ? 0 : b * 1.05 * Math.sqrt(i + 0.5) * 1.75;
+    const r = STEP * b * Math.sqrt(i + 0.5);
     const th = i * 2.39996;
-    const x = C.x + r * Math.cos(th);
-    const y = C.y + r * Math.sin(th);
-    const proton = Math.floor(((i + 1) * nucleus.p) / N) > Math.floor((i * nucleus.p) / N); // protoni vienmērīgi starp neitroniem
-    ctx.fillStyle = proton ? pCol : c.inkDim;
+    balls.push({ x: r * Math.cos(th), y: r * Math.sin(th), proton: false, mix: (i * MIX) % 1 });
+  }
+  // protoni sajaukti pa visu lodi (Ansis 04.11.): p daļiņas ar mazāko frac(i·α) — gan centrā, gan malā, kaimiņi pamīšus
+  [...balls].sort((u, w) => u.mix - w.mix).slice(0, n.p).forEach((q) => (q.proton = true));
+  balls.reverse(); // no malas uz centru — centrālās virspusē
+  return { b, balls };
+}
+
+function drawNucleus(ctx, C, R, nuc, { c, dark }) {
+  const { b, balls } = nucleusLayout(nuc, R);
+  const pCol = dark ? '#ff6b6b' : '#c0262d';
+  for (const q of balls) {
+    const x = C.x + q.x;
+    const y = C.y + q.y;
+    ctx.fillStyle = q.proton ? pCol : c.inkDim;
     ctx.strokeStyle = c.field;
     ctx.lineWidth = 0.8;
     ctx.beginPath();
     ctx.arc(x, y, b, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    if (proton && b >= 3.5) {
+    if (q.proton && b >= 3.5) {
       ctx.strokeStyle = '#fff';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -570,15 +588,15 @@ function drawDiagram(ctx, r, geo, byId, v, { font, c, dark, field }) {
     ctx.moveTo(g.x0, g.y);
     ctx.lineTo(g.x1, g.y);
     ctx.stroke();
-    // uz šo līmeni var pāriet — ▼ (starošanā) vai ▲ (absorbcijā) akcenta krāsā; nevar — sarkans × (Ansis 04.11.)
-    if (v.allowed?.has(g.id)) {
+    // uz šo līmeni var pāriet — ▲ absorbcijā akcenta krāsā; nevar — sarkans × (Ansis 04.11.).
+    // Starošanā trijstūru nav — tie saplūda ar krustiņiem (Ansis 04.11.); tur paliek tikai ×.
+    if (v.mode === 'absorb' && v.allowed?.has(g.id)) {
       const xx = g.x1 - 9;
-      const d = v.mode === 'emit' ? 1 : -1;
       ctx.fillStyle = c.accent;
       ctx.beginPath();
-      ctx.moveTo(xx - 5, g.y - 5 * d);
-      ctx.lineTo(xx + 5, g.y - 5 * d);
-      ctx.lineTo(xx, g.y + 4 * d);
+      ctx.moveTo(xx - 5, g.y + 5);
+      ctx.lineTo(xx + 5, g.y + 5);
+      ctx.lineTo(xx, g.y - 4);
       ctx.closePath();
       ctx.fill();
     }
@@ -744,6 +762,9 @@ function packet(ctx, x, y, ang, λ, color, alpha, cycles = 3) {
 }
 
 const LONG = 9; // absorbcijas fotona vijumi (3× garāks nekā starošanā; Ansis 04.11.)
+// Absorbcijas fotoni dzīvo starp stabu un atoma labo malu: rodas pie staba (pāri stabam nelido) un pāri līmeņu shēmai neaiziet (Ansis 04.11.)
+export const absorbBand = (lay) => ({ x0: lay.absCol.x + lay.absCol.w, x1: lay.atom.x + lay.atom.w });
+
 function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
   const now = v.st.t;
   for (const p of v.st.photons) {
@@ -751,6 +772,11 @@ function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
     const color = rgbCss(photonRGB(p.λ, field, dark));
     if (p.kind === 'in' || p.kind === 'pass' || p.kind === 'sink' || p.kind === 'reemit') {
       const r = lay.absCol;
+      const band = absorbBand(lay);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(band.x0, 0, band.x1 - band.x0, ctx.canvas.height);
+      ctx.clip();
       const S = { x: r.x + r.w + 4, y: columnY(r, lambdaToPos(v.axis, p.λ)) };
       const D = Math.hypot(C.x - S.x, C.y - S.y) || 1;
       const ux = (C.x - S.x) / D;
@@ -760,13 +786,7 @@ function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
       if (p.kind === 'in') {
         packet(ctx, S.x + ux * Math.min(D, s), S.y + uy * Math.min(D, s), ang, p.λ, color, 1, LONG);
       } else if (p.kind === 'pass') {
-        // tikai atoma pusē: aiz atoma labās malas fotons pazūd — pāri līmeņu shēmai nelido (Ansis 04.11.)
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(0, 0, lay.atom.x + lay.atom.w, ctx.canvas.height);
-        ctx.clip();
-        packet(ctx, C.x + ux * s, C.y + uy * s, ang, p.λ, color, 1, LONG);
-        ctx.restore();
+        packet(ctx, C.x + ux * s, C.y + uy * s, ang, p.λ, color, 1, LONG); // aiz atoma labās malas pazūd (josla)
       } else if (p.kind === 'sink') {
         // aste turpina kustību, bet viss aiz atoma centra paslēpts — fotons “ieiet” atomā
         ctx.save();
@@ -788,6 +808,7 @@ function drawPhotons(ctx, lay, C, rMax, rings, v, { field, dark, c, W }) {
         packet(ctx, C.x + Math.cos(a2) * s, C.y + Math.sin(a2) * s, a2, p.λ, color, 1, LONG);
         ctx.restore();
       }
+      ctx.restore();
     } else if (p.kind === 'emit') {
       // no līmeņu shēmas labās malas (bultas vidus augstumā) uz spektra stabu — pāri shēmai nelido (Ansis 04.11.)
       const r = lay.emCol;
