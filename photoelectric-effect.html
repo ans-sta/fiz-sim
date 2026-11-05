@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="lv" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Fotoefekts — FIZ-SIM</title>
+<script>
+  // Tēma pirms pirmā zīmējuma, lai nemirgo; tā pati loģika kā sim-core.js createTheme().
+  try {
+    var saved = localStorage.getItem('fiz-sim-theme');
+    document.documentElement.dataset.theme = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/sim-common.css">
+<link rel="stylesheet" href="assets/photo/photo.css">
+<script type="module" src="assets/photo/main.js"></script>
+</head>
+<!-- body.e01: josla, “pāriet uz saturu”, gaišās tēmas tintes un fokuss — kopīgi ar E-01 un A-01 (sim-common.css); A-02 savs — photo.css -->
+<body class="layout-hud e01 a02">
+<a class="e01-skip" href="#main" data-i18n="page.skip">Pāriet uz saturu</a>
+<div class="frame">
+  <header>
+    <a class="back" href="index.html"><span aria-hidden="true">←&nbsp;</span><span class="e01-backword" data-i18n="page.backWord">SARAKSTS</span></a>
+    <h1 class="e01-h1"><span data-i18n="page.heading">FOTOEFEKTS</span> <span class="sheet-no">A-02</span></h1>
+    <div class="head-tools" id="headTools"></div>
+  </header>
+  <main class="e01-main" id="main" tabindex="-1">
+    <div class="m01-bar e01-bar" id="bar">
+      <div class="m01-group" role="group" aria-labelledby="metalLabel">
+        <span class="m01-label"><span id="metalLabel">METĀLS</span><span class="fix" id="metalFix" hidden></span></span>
+        <div class="m01-row e01-seg" id="metalBtns">
+          <button class="btn" type="button" data-metal="Cs" aria-pressed="false">Cs<span class="e01-sr" data-name></span></button>
+          <button class="btn" type="button" data-metal="Na" aria-pressed="true">Na<span class="e01-sr" data-name></span></button>
+          <button class="btn" type="button" data-metal="Zn" aria-pressed="false">Zn<span class="e01-sr" data-name></span></button>
+          <button class="btn" type="button" data-metal="Cu" aria-pressed="false">Cu<span class="e01-sr" data-name></span></button>
+        </div>
+      </div>
+      <div class="m01-group" role="group" aria-labelledby="lightLabel">
+        <span class="m01-label"><span id="lightLabel">GAISMA</span><span class="fix" id="lightFix" hidden></span></span>
+        <div class="m01-row">
+          <button class="btn e01-tog" id="onBtn" type="button" aria-pressed="true">IESLĒGTA</button>
+          <span class="a02-k" id="brightK" aria-hidden="true">SPOŽUMS</span>
+          <button class="q-step" id="brMinus" type="button">−</button>
+          <input class="dim-range" id="brRange" type="range" min="0" max="100" step="1" value="30">
+          <button class="q-step" id="brPlus" type="button">+</button>
+          <span class="m01-val a02-br" id="brVal">30 %</span>
+        </div>
+      </div>
+      <div class="m01-group m01-end" role="group" aria-labelledby="showLabel">
+        <span class="m01-label" id="showLabel">RĀDĪT</span>
+        <div class="m01-row">
+          <button class="btn e01-tog" id="fenceBtn" type="button" aria-pressed="false">ŽOGS</button>
+          <button class="btn e01-tog" id="predictBtn" type="button" aria-pressed="false">PROGNOZE</button>
+          <button class="btn e01-info" id="infoBtn" type="button">i</button>
+        </div>
+      </div>
+    </div>
+    <dl class="a02-data" id="data">
+      <div class="a02-cell"><dt><i>λ</i> <span id="nLam">viļņa garums</span></dt><dd><span id="vLam"></span></dd></div>
+      <div class="a02-cell"><dt><i>f</i> <span id="nF">frekvence</span></dt><dd><span id="vF" aria-hidden="true"></span><span class="e01-sr" id="sF"></span></dd></div>
+      <div class="a02-cell"><dt><i>W</i> <span id="nW">fotona enerģija</span></dt><dd><span id="vW" aria-hidden="true"></span><span class="e01-sr" id="sW"></span><span class="a02-ev" id="eW" hidden></span></dd></div>
+      <div class="a02-cell"><dt><i>A</i> <span id="nA">izejas darbs</span></dt><dd><span id="vA" aria-hidden="true"></span><span class="e01-sr" id="sA"></span><span class="a02-ev" id="eA" hidden></span></dd></div>
+      <div class="a02-cell"><dt><i>W<sub>k</sub></i> <span id="nWk">kinētiskā enerģija</span></dt><dd><span id="vWk" aria-hidden="true"></span><span class="e01-sr" id="sWk"></span><span class="a02-ev" id="eWk" hidden></span></dd></div>
+      <div class="a02-cell"><dt><i>I</i> <span id="nI">strāva</span></dt><dd><span id="vI" aria-hidden="true"></span><span class="e01-sr" id="sI"></span></dd></div>
+    </dl>
+    <div class="work a02-work" id="work">
+      <div class="drawing" id="drawing">
+        <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
+        <canvas id="scene" role="img" aria-label="Fotoefekts" aria-describedby="sceneDesc"></canvas>
+        <!-- prognozes aizsegs pār cauruli; nospiežot — rezultāts redzams (spec. § 3) -->
+        <button class="a02-cover" id="coverBtn" type="button" hidden><span class="a02-q" aria-hidden="true">?</span><span class="a02-show" id="coverW">RĀDĪT</span></button>
+        <div class="notices" id="notices" role="status" aria-live="polite"></div>
+      </div>
+      <div id="gear"></div>
+    </div>
+    <div class="a02-strip" id="strip" role="group" aria-labelledby="colorLabel">
+      <span class="a02-slabel"><span id="colorLabel">KRĀSA</span><span class="fix" id="lamFix" hidden></span></span>
+      <div class="a02-spec" id="spec">
+        <canvas id="specCanvas" aria-hidden="true"></canvas>
+        <input id="lam" type="range" min="0" max="1000" step="1" value="800">
+      </div>
+      <span class="a02-lamval"><span id="lamVal">650 nm</span><span class="a02-lamf" id="lamF" aria-hidden="true"></span></span>
+      <div class="a02-presets" id="presets">
+        <button class="btn" type="button" data-nm="650"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="red">SARKANS</span> 650</button>
+        <button class="btn" type="button" data-nm="532"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="green">ZAĻŠ</span> 532</button>
+        <button class="btn" type="button" data-nm="450"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="blue">ZILS</span> 450</button>
+        <button class="btn" type="button" data-nm="250"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="uv">UV</span> 250</button>
+      </div>
+    </div>
+    <p class="e01-sr" id="sceneDesc"></p>
+    <p class="e01-sr" id="live" role="status" aria-live="polite"></p>
+  </main>
+</div>
+</body>
+</html>

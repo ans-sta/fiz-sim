@@ -1,0 +1,668 @@
+// assets/photo/scene.js — A-02 kanva: lampa, vakuuma caurule ar plāksni un savācēju, ampērmetrs, fotoni, elektroni
+// un enerģijas žogs (spec. § 2). Izkārtojums ir tīra funkcija no (w, h, fence) — lapa pēc tā novieto pogu “RĀDĪT”.
+import { hexRGB, ensureContrast } from '../spectrum/model.js';
+import { photonRGB, packet } from '../atoms/scene.js';
+import { VIS, photonJ, workJ, I_SCALE } from './model.js';
+import { FLIGHT, HEAT, FENCE_PERIOD } from './sim.js';
+
+const M = 16; // px — mala
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+const rgbCss = ([r, g, b], a = 1) => (a >= 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${a})`);
+const invisible = (λ) => λ < VIS.min || λ > VIS.max;
+export const E_MAX = 9e-19; // J — žoga skalas augša (der varam un 250 nm; īsākiem viļņiem stabiņš ar pārrāvumu)
+
+// Plāksnes krāsa pēc metāla (dekoratīva; kontūru zīmē tinte)
+const METAL_RGB = {
+  dark: { Cs: [205, 182, 110], Na: [190, 196, 204], Zn: [150, 166, 182], Cu: [200, 124, 78] },
+  light: { Cs: [196, 168, 84], Na: [176, 182, 190], Zn: [140, 156, 172], Cu: [190, 110, 62] },
+};
+
+// ── izkārtojums ───────────────────────────────────────────
+export function sceneLayout(w, h, { fence = false } = {}) {
+  let tubeR;
+  let fenceR = null;
+  const side = fence && w >= 640 && w >= h * 1.15;
+  if (fence && side) {
+    const fw = Math.round(clamp(w * 0.36, 260, w * 0.46));
+    tubeR = { x: M, y: M, w: w - fw - 3 * M, h: h - 2 * M };
+    fenceR = { x: w - M - fw, y: M, w: fw, h: h - 2 * M };
+  } else if (fence) {
+    const fh = Math.round(clamp(h * 0.42, 120, h * 0.5));
+    tubeR = { x: M, y: M, w: w - 2 * M, h: h - fh - 2.5 * M };
+    fenceR = { x: M, y: h - M - fh, w: w - 2 * M, h: fh };
+  } else {
+    tubeR = { x: M, y: M, w: w - 2 * M, h: h - 2 * M };
+  }
+  return { w, h, side, tubeR, fenceR, ...tubeGeometry(tubeR) };
+}
+
+function tubeGeometry(R) {
+  const lampH = clamp(R.h * 0.27, 36, 170);
+  const meterR = Math.round(clamp(Math.min(R.w * 0.075, R.h * 0.12), 16, 64));
+  const below = 2 * meterR + 20; // ampērmetrs zem caurules
+  let th = Math.max(40, R.h - lampH - below);
+  let tw = R.w * 0.94;
+  th = Math.min(th, tw * 0.5);
+  tw = Math.min(tw, th * 4.2);
+  const tx = R.x + (R.w - tw) / 2;
+  const ty = R.y + lampH + Math.max(0, (R.h - lampH - below - th) * 0.35);
+  const tube = { x: tx, y: ty, w: tw, h: th };
+  const pw = clamp(tw * 0.03, 10, 22);
+  const plate = { x: tx + tw * 0.1, y: ty + th * 0.16, w: pw, h: th * 0.68 };
+  const cw = clamp(tw * 0.018, 6, 12);
+  const coll = { x: tx + tw * 0.9 - cw, y: plate.y, w: cw, h: plate.h };
+  const face = plate.x + plate.w;
+  const lampR = clamp(lampH * 0.27, 10, 40);
+  const lamp = { x: face + (coll.x - face) * 0.3, y: ty - lampH * 0.42, r: lampR };
+  const meter = { x: tx + tw / 2, y: ty + th + 10 + meterR, r: meterR };
+  const cover = { x: plate.x - 6, y: ty + 3, w: coll.x + coll.w + 6 - (plate.x - 6), h: th - 6 };
+  return { tube, plate, coll, face, lamp, meter, cover };
+}
+
+// Fotona ceļš: no lampas lodziņa (x 0…1) līdz plāksnes priekšai (y 0…1)
+export function photonPath(lay, p) {
+  const { lamp, plate, face } = lay;
+  const S = { x: lamp.x - lamp.r * 0.65 + p.x * lamp.r * 1.3, y: lamp.y + lamp.r * 0.75 };
+  const E = { x: face + 1, y: plate.y + plate.h * p.y };
+  return { S, E };
+}
+
+// ── zīmēšana ──────────────────────────────────────────────
+// v: { st (sim.state), predict, revealed, fence, ev, needle, legend, theme, colors, labels, fmt, sci }
+export function drawScene(ctx, lay, v) {
+  const c = v.colors;
+  const dark = v.theme === 'dark';
+  const field = hexRGB(c.field);
+  const L = v.legend;
+  const font = (px, weight = 400) => `${weight} ${Math.round(px * L)}px 'IBM Plex Mono', ui-monospace, monospace`;
+  const k = { c, dark, field, L, font };
+  ctx.clearRect(0, 0, lay.w, lay.h);
+  ctx.fillStyle = c.field;
+  ctx.fillRect(0, 0, lay.w, lay.h);
+  const hidden = v.predict && !v.revealed;
+
+  drawBeam(ctx, lay, v, k);
+  drawTube(ctx, lay, v, k);
+  if (!hidden) drawHeats(ctx, lay, v, k);
+  drawPhotons(ctx, lay, v, k);
+  if (!hidden) drawElectrons(ctx, lay, v, k);
+  if (hidden) {
+    const r = lay.cover;
+    ctx.fillStyle = c.sheet;
+    ctx.fillRect(r.x, r.y, r.w, r.h);
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = c.inkDim;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
+    ctx.setLineDash([]);
+  }
+  drawLamp(ctx, lay, v, k);
+  drawMeter(ctx, lay, v, k, hidden);
+  if (lay.fenceR) drawFence(ctx, lay.fenceR, v, k, hidden);
+}
+
+function beamRGB(λ, k) {
+  return photonRGB(λ, k.field, k.dark);
+}
+
+function drawBeam(ctx, lay, v, k) {
+  const st = v.st;
+  if (!st.on || st.intensity <= 0) return;
+  const { lamp, plate, face } = lay;
+  const a1 = { x: lamp.x - lamp.r * 0.65, y: lamp.y + lamp.r * 0.75 };
+  const a2 = { x: lamp.x + lamp.r * 0.65, y: lamp.y + lamp.r * 0.75 };
+  const b1 = { x: face, y: plate.y + plate.h * 0.08 };
+  const b2 = { x: face, y: plate.y + plate.h * 0.92 };
+  ctx.beginPath();
+  ctx.moveTo(a1.x, a1.y);
+  ctx.lineTo(a2.x, a2.y);
+  ctx.lineTo(b2.x, b2.y);
+  ctx.lineTo(b1.x, b1.y);
+  ctx.closePath();
+  if (invisible(st.lambda)) {
+    // acs neredz: tikai raustīta kontūra
+    ctx.setLineDash([3, 5]);
+    ctx.strokeStyle = rgbCss(beamRGB(st.lambda, k), 0.7);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    ctx.fillStyle = rgbCss(beamRGB(st.lambda, k), 0.05 + 0.13 * (st.intensity / 100));
+    ctx.fill();
+  }
+}
+
+function drawTube(ctx, lay, v, k) {
+  const { c, font, L, dark } = k;
+  const { tube, plate, coll, meter } = lay;
+  const st = v.st;
+  // vadi: plāksne → ampērmetrs → savācējs
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  const px = plate.x + plate.w / 2;
+  const cx = coll.x + coll.w / 2;
+  ctx.moveTo(px, plate.y + plate.h);
+  ctx.lineTo(px, meter.y);
+  ctx.lineTo(meter.x - meter.r, meter.y);
+  ctx.moveTo(meter.x + meter.r, meter.y);
+  ctx.lineTo(cx, meter.y);
+  ctx.lineTo(cx, coll.y + coll.h);
+  ctx.stroke();
+  // stikla caurule — dubulta kontūra
+  const rr = Math.min(tube.h / 2, 36);
+  ctx.strokeStyle = c.inkDim;
+  ctx.lineWidth = 1;
+  roundRect(ctx, tube.x, tube.y, tube.w, tube.h, rr);
+  ctx.stroke();
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, tube.x - 3, tube.y - 3, tube.w + 6, tube.h + 6, rr + 3);
+  ctx.stroke();
+  // plāksne
+  ctx.fillStyle = rgbCss(METAL_RGB[dark ? 'dark' : 'light'][st.metal]);
+  ctx.fillRect(plate.x, plate.y, plate.w, plate.h);
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(plate.x, plate.y, plate.w, plate.h);
+  // savācējs
+  ctx.fillStyle = c.inkDim;
+  ctx.fillRect(coll.x, coll.y, coll.w, coll.h);
+  ctx.strokeRect(coll.x, coll.y, coll.w, coll.h);
+  // uzraksti: plāksne (metāls) augšā pa kreisi, savācējs augšā pa labi, vakuums caurulē
+  ctx.textBaseline = 'bottom';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = c.inkDim;
+  ctx.font = font(10);
+  const ly = tube.y - 10;
+  const room = lay.lamp.x - lay.lamp.r - 8 - tube.x; // līdz lampai
+  ctx.fillText(v.labels.plate, tube.x, ly - 15 * L);
+  ctx.fillStyle = c.ink;
+  ctx.font = font(13, 600);
+  const title = `${v.labels.metalTitle} · ${st.metal}`;
+  shrinkToFit(ctx, ctx.measureText(title).width <= room ? title : v.labels.metalTitle, room);
+  ctx.fillText(ctx.measureText(title).width <= room ? title : v.labels.metalTitle, tube.x, ly);
+  ctx.textAlign = 'right';
+  ctx.fillStyle = c.inkDim;
+  ctx.font = font(10);
+  ctx.fillText(v.labels.collector, coll.x + coll.w, ly);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(v.labels.vacuum, (lay.face + coll.x) / 2 + (coll.x - lay.face) * 0.12, tube.y + 6);
+}
+
+function drawLamp(ctx, lay, v, k) {
+  const { c, font } = k;
+  const { lamp } = lay;
+  const st = v.st;
+  const lit = st.on && st.intensity > 0;
+  // vads uz augšu un cokols
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(lamp.x, lay.tubeR.y);
+  ctx.lineTo(lamp.x, lamp.y - lamp.r - lamp.r * 0.5);
+  ctx.stroke();
+  const bw = lamp.r * 0.9;
+  ctx.fillStyle = c.sheet;
+  ctx.fillRect(lamp.x - bw / 2, lamp.y - lamp.r - lamp.r * 0.5, bw, lamp.r * 0.6);
+  ctx.strokeRect(lamp.x - bw / 2, lamp.y - lamp.r - lamp.r * 0.5, bw, lamp.r * 0.6);
+  // spuldze
+  ctx.beginPath();
+  ctx.arc(lamp.x, lamp.y, lamp.r, 0, Math.PI * 2);
+  if (lit) {
+    const col = beamRGB(st.lambda, k);
+    ctx.fillStyle = invisible(st.lambda) ? c.sheet : rgbCss(col, 0.35 + 0.65 * (st.intensity / 100));
+    ctx.fill();
+    if (invisible(st.lambda)) {
+      ctx.save();
+      ctx.clip();
+      ctx.strokeStyle = rgbCss(col);
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 3]);
+      for (let i = -lamp.r; i <= lamp.r; i += 6) {
+        ctx.beginPath();
+        ctx.moveTo(lamp.x + i - lamp.r, lamp.y + lamp.r);
+        ctx.lineTo(lamp.x + i + lamp.r, lamp.y - lamp.r);
+        ctx.stroke();
+      }
+      ctx.restore();
+      ctx.setLineDash([]);
+    }
+  } else {
+    ctx.fillStyle = c.sheet;
+    ctx.fill();
+  }
+  ctx.beginPath();
+  ctx.arc(lamp.x, lamp.y, lamp.r, 0, Math.PI * 2);
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // uzraksts pa labi: UV / IS — acs neredz; izslēgta
+  let note = null;
+  if (!st.on) note = v.labels.lampOff;
+  else if (st.intensity <= 0) note = v.labels.dark;
+  else if (invisible(st.lambda)) note = v.labels.invisible;
+  if (note) {
+    // teksts ≥ 4,5 : 1 pret lauku (fotona krāsa — tikai ≥ 3 : 1)
+    ctx.fillStyle = invisible(st.lambda) && st.on && st.intensity > 0 ? rgbCss(ensureContrast(beamRGB(st.lambda, k), [k.field], 4.5, k.dark)) : c.inkDim;
+    ctx.font = font(11, 600);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    // ja sadurtos ar “SAVĀCĒJS” (zema caurule), uzraksts augstāk — pie vada
+    const x = lamp.x + lamp.r + 10;
+    const clash = lamp.y + 8 * k.L > lay.tube.y - 10 - 12 * k.L && x + ctx.measureText(note).width > lay.coll.x - 90 * k.L;
+    ctx.fillText(note, clash ? lamp.x + 8 : x, clash ? lamp.y - lamp.r - lamp.r * 0.5 - 8 * k.L : lamp.y);
+  }
+}
+
+function drawPhotons(ctx, lay, v, k) {
+  const st = v.st;
+  for (const p of st.photons) {
+    const f = clamp((st.t - p.t0) / FLIGHT, 0, 1);
+    const { S, E } = photonPath(lay, p);
+    const x = S.x + (E.x - S.x) * f;
+    const y = S.y + (E.y - S.y) * f;
+    const ang = Math.atan2(E.y - S.y, E.x - S.x);
+    packet(ctx, x, y, ang, p.λ, rgbCss(beamRGB(p.λ, k)), 1, 2);
+  }
+}
+
+function drawHeats(ctx, lay, v, k) {
+  const st = v.st;
+  const col = k.dark ? [255, 106, 61] : [200, 60, 20];
+  for (const h of st.heats) {
+    const f = clamp((st.t - h.t0) / HEAT, 0, 1);
+    const y = lay.plate.y + lay.plate.h * h.y;
+    const g = ctx.createRadialGradient(lay.face, y, 0, lay.face, y, 8);
+    g.addColorStop(0, rgbCss(col, 0.9 * (1 - f)));
+    g.addColorStop(1, rgbCss(col, 0));
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(lay.face, y, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+export const electronRadius = (lay) => clamp(lay.tube.h * 0.032, 4.5, 8);
+
+function electronDot(ctx, x, y, r, c) {
+  ctx.fillStyle = c.accent;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = c.field;
+  ctx.lineWidth = Math.max(1.2, r * 0.3);
+  ctx.beginPath();
+  ctx.moveTo(x - r * 0.5, y);
+  ctx.lineTo(x + r * 0.5, y);
+  ctx.stroke();
+}
+
+function drawElectrons(ctx, lay, v, k) {
+  const st = v.st;
+  const r = electronRadius(lay);
+  const x0 = lay.face + r;
+  const x1 = lay.coll.x - r;
+  for (const e of st.electrons) {
+    const f = clamp((st.t - e.t0) / e.T, 0, 1);
+    electronDot(ctx, x0 + (x1 - x0) * f, lay.plate.y + lay.plate.h * e.y, r, k.c);
+  }
+}
+
+// Ampērmetrs: skala augšējā lokā, rādītājs, cipari lieli (lasāmi no klases aizmugures)
+function drawMeter(ctx, lay, v, k, hidden) {
+  const { c, font } = k;
+  const { meter } = lay;
+  const { x, y, r } = meter;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fillStyle = c.sheet;
+  ctx.fill();
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  if (hidden) {
+    ctx.fillStyle = c.ink;
+    ctx.font = `600 ${Math.round(r * 0.9)}px 'IBM Plex Mono', ui-monospace, monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', x, y + r * 0.05);
+    return;
+  }
+  const a0 = Math.PI * (200 / 180);
+  const a1 = Math.PI * (340 / 180);
+  const ang = (I) => a0 + (a1 - a0) * clamp(I / I_SCALE, 0, 1);
+  const cy = y + r * 0.12;
+  const rs = r * 0.78;
+  ctx.strokeStyle = c.inkDim;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(x, cy, rs, a0, a1);
+  ctx.stroke();
+  for (let i = 0; i <= I_SCALE * 2 + 1e-9; i++) {
+    const a = ang(i / 2);
+    const len = i % 2 === 0 ? 6 : 3.5;
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(a) * rs, cy + Math.sin(a) * rs);
+    ctx.lineTo(x + Math.cos(a) * (rs - len), cy + Math.sin(a) * (rs - len));
+    ctx.stroke();
+  }
+  // rādītājs
+  const a = ang(v.needle);
+  ctx.strokeStyle = c.accent;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x, cy);
+  ctx.lineTo(x + Math.cos(a) * (rs - 4), cy + Math.sin(a) * (rs - 4));
+  ctx.stroke();
+  ctx.fillStyle = c.ink;
+  ctx.beginPath();
+  ctx.arc(x, cy, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  // cipari
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = `600 ${Math.round(r * 0.36)}px 'IBM Plex Mono', ui-monospace, monospace`;
+  ctx.fillText(v.labels.current, x, y + r * 0.55);
+  ctx.fillStyle = c.inkDim;
+  ctx.font = font(9);
+  ctx.textBaseline = 'top';
+  ctx.fillText('µA', x, y + r * 0.6);
+}
+
+// ── enerģijas žogs ────────────────────────────────────────
+export function fenceGeometry(F, L = 1) {
+  const titleH = 26 * L;
+  const bottomH = 40 * L;
+  const axisW = 30 * L;
+  const P = { x: F.x + axisW + 10, y: F.y + titleH + 12, w: Math.max(40, F.w - axisW - 34), h: Math.max(40, F.h - titleH - bottomH - 18) };
+  const fenceX = P.x + P.w * 0.5;
+  const fenceW = clamp(P.w * 0.05, 10, 18);
+  const barW = clamp(P.w * 0.07, 12, 24);
+  const barX = P.x + P.w * 0.22 - barW / 2;
+  return { P, fenceX, fenceW, barX, barW, yE: (E) => P.y + P.h * (1 - clamp(E, 0, E_MAX) / E_MAX) };
+}
+
+// Simbols ar apakšindeksu (Wₖ), kreisā mala x
+function sym(ctx, base, sub, x, y, px, weight = 600) {
+  ctx.font = `${weight} ${Math.round(px)}px 'IBM Plex Mono', ui-monospace, monospace`;
+  ctx.fillText(base, x, y);
+  if (!sub) return ctx.measureText(base).width;
+  const bw = ctx.measureText(base).width;
+  ctx.font = `${weight} ${Math.round(px * 0.7)}px 'IBM Plex Mono', ui-monospace, monospace`;
+  ctx.fillText(sub, x + bw, y + px * 0.28);
+  return bw + ctx.measureText(sub).width;
+}
+
+function arrowHead(ctx, x, y, dir, s = 5) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x - s * 0.6, y - dir * s);
+  ctx.lineTo(x + s * 0.6, y - dir * s);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// Vertikāla izmēra līnija ar bultām no ya līdz yb (rasējuma stilā)
+function dimLine(ctx, x, ya, yb, color) {
+  const top = Math.min(ya, yb);
+  const bot = Math.max(ya, yb);
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x, top);
+  ctx.lineTo(x, bot);
+  ctx.stroke();
+  if (bot - top >= 12) {
+    arrowHead(ctx, x, top, -1);
+    arrowHead(ctx, x, bot, 1);
+  }
+  for (const yy of [top, bot]) {
+    ctx.beginPath();
+    ctx.moveTo(x - 5, yy);
+    ctx.lineTo(x + 5, yy);
+    ctx.stroke();
+  }
+}
+
+const easeOut = (u) => 1 - Math.pow(1 - u, 3);
+const easeIn = (u) => u * u;
+
+function drawFence(ctx, F, v, k, hidden) {
+  const { c, font, L } = k;
+  const st = v.st;
+  ctx.strokeStyle = c.hairline;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(F.x + 0.5, F.y + 0.5, F.w - 1, F.h - 1);
+  ctx.fillStyle = c.inkDim;
+  ctx.font = font(10, 600);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(v.labels.fenceTitle, F.x + 10, F.y + 8);
+  const G = fenceGeometry(F, L);
+  const { P, fenceX, fenceW, barX, barW, yE } = G;
+  if (hidden) {
+    ctx.fillStyle = c.ink;
+    ctx.font = `600 ${Math.round(Math.min(P.h, P.w) * 0.35)}px 'IBM Plex Mono', ui-monospace, monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('?', F.x + F.w / 2, F.y + F.h / 2 + 8);
+    return;
+  }
+  if (v.ev) {
+    ctx.fillStyle = c.ink;
+    ctx.font = font(11, 600);
+    ctx.textAlign = 'right';
+    ctx.fillText(v.labels.formula, F.x + F.w - 10, F.y + 8);
+  }
+  const W = photonJ(st.lambda);
+  const A = workJ(st.metal);
+  const out = W > A;
+  const yA = yE(A);
+  const yW = yE(W);
+  const y0 = yE(0);
+  // ass: 0, 1, 2 … 9 (·10⁻¹⁹ J)
+  ctx.strokeStyle = c.inkDim;
+  ctx.fillStyle = c.inkDim;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(P.x, P.y);
+  ctx.lineTo(P.x, y0);
+  ctx.stroke();
+  const stepE = P.h < 160 ? 3 : P.h < 260 ? 2 : 1;
+  ctx.font = font(9);
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (let e = 0; e <= E_MAX / 1e-19 + 1e-9; e += stepE) {
+    const y = yE(e * 1e-19);
+    ctx.beginPath();
+    ctx.moveTo(P.x - 4, y);
+    ctx.lineTo(P.x, y);
+    ctx.stroke();
+    ctx.fillText(v.fmt(e, 0), P.x - 6, y);
+  }
+  // “10⁻¹⁹ J” virs ass: kāpinātājs mazāks un pacelts (fontā augšraksta cipari izklīst)
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  {
+    const x0 = P.x - 22 * L;
+    const yb = P.y - 6;
+    ctx.font = font(9);
+    ctx.fillText('10', x0, yb);
+    const w10 = ctx.measureText('10').width;
+    ctx.font = font(7);
+    ctx.fillText('−19', x0 + w10, yb - 4 * L);
+    const wE = ctx.measureText('−19').width;
+    ctx.font = font(9);
+    ctx.fillText(' J', x0 + w10 + wE, yb);
+  }
+  // A līmenis visā platumā (raustīts) — virs tā fotona stabiņa daļa kļūst par Wₖ
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(P.x, yA);
+  ctx.lineTo(P.x + P.w, yA);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  // grīda metālā
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(P.x, y0);
+  ctx.lineTo(fenceX, y0);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  for (let x = P.x + 4; x < fenceX; x += 7) {
+    ctx.beginPath();
+    ctx.moveTo(x, y0 + 1);
+    ctx.lineTo(x - 5, y0 + 6);
+    ctx.stroke();
+  }
+  // žogs — svītrots stabs no 0 līdz A
+  ctx.fillStyle = c.sheet;
+  ctx.fillRect(fenceX, yA, fenceW, y0 - yA);
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(fenceX, yA, fenceW, y0 - yA);
+  ctx.clip();
+  ctx.strokeStyle = c.inkDim;
+  for (let yy = yA - fenceW; yy < y0 + fenceW; yy += 5) {
+    ctx.beginPath();
+    ctx.moveTo(fenceX, yy + fenceW);
+    ctx.lineTo(fenceX + fenceW, yy);
+    ctx.stroke();
+  }
+  ctx.restore();
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(fenceX, yA, fenceW, y0 - yA);
+  // A — izmēra līnija pa kreisi no žoga
+  const dimA = fenceX - 12;
+  dimLine(ctx, dimA, y0, yA, c.ink);
+  ctx.fillStyle = c.ink;
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  sym(ctx, 'A', '', dimA - 8 - ctx.measureText('A').width, (y0 + yA) / 2, 15 * L);
+  // fotona stabiņš W
+  const col = beamRGB(st.lambda, k);
+  ctx.textAlign = 'left';
+  if (invisible(st.lambda)) {
+    ctx.setLineDash([3, 3]);
+    ctx.strokeStyle = rgbCss(col);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(barX, yW, barW, y0 - yW);
+    ctx.setLineDash([]);
+  } else {
+    ctx.fillStyle = rgbCss(col, 0.85);
+    ctx.fillRect(barX, yW, barW, y0 - yW);
+  }
+  if (W > E_MAX) {
+    // stabiņš garāks par skalu: pārrāvums (lauka krāsas zigzags) tuvu augšai
+    const yb = P.y + 10;
+    ctx.strokeStyle = c.field;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(barX - 2, yb + 3);
+    ctx.lineTo(barX + barW * 0.33, yb - 3);
+    ctx.lineTo(barX + barW * 0.66, yb + 3);
+    ctx.lineTo(barX + barW + 2, yb - 3);
+    ctx.stroke();
+  }
+  ctx.fillStyle = c.ink;
+  ctx.textBaseline = 'bottom';
+  ctx.font = `600 ${Math.round(15 * L)}px 'IBM Plex Mono', ui-monospace, monospace`;
+  const wW = ctx.measureText('W').width;
+  sym(ctx, 'W', '', barX + barW / 2 - wW / 2, yW - 4, 15 * L);
+  // Wₖ — izmēra līnija pa labi no žoga (tikai, ja W > A)
+  const dimK = fenceX + fenceW + 16;
+  if (out) {
+    dimLine(ctx, dimK, yA, yW, c.accent);
+    ctx.fillStyle = c.accent;
+    ctx.textBaseline = 'middle';
+    sym(ctx, 'W', 'k', dimK + 9, (yA + yW) / 2 - 3, 15 * L);
+  }
+  // apakšā: “metālā” | “vakuumā” un salīdzinājums
+  ctx.fillStyle = c.inkDim;
+  ctx.font = font(10);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText(v.labels.fenceMetal, (P.x + fenceX) / 2, y0 + 9);
+  ctx.fillText(v.labels.fenceVacuum, (fenceX + fenceW + P.x + P.w) / 2, y0 + 9);
+  ctx.fillStyle = out ? c.accent : c.ink;
+  ctx.font = font(11, 600);
+  fitText(ctx, out ? v.labels.fenceAbove : v.labels.fenceBelow, F.x + F.w / 2, y0 + 9 + 17 * L, F.w - 16);
+
+  // elektrons: viena fotona cikls (tikai, ja gaisma deg)
+  const r = clamp(6 * L, 5, 9);
+  const ex0 = barX + barW / 2;
+  const lit = st.on && st.intensity > 0;
+  if (!lit) { electronDot(ctx, ex0, y0 - r - 1, r, c); return; }
+  const u = (((st.t - st.fenceT0) % FENCE_PERIOD) + FENCE_PERIOD) % FENCE_PERIOD / FENCE_PERIOD;
+  const yTop = yW - r - 1 < P.y ? P.y : yW;
+  const floorY = y0 - r - 1;
+  if (u < 0.2) {
+    // fotons lido pie elektrona
+    const f = u / 0.2;
+    const S = { x: P.x + 8, y: P.y + 6 };
+    const E = { x: ex0 - r, y: floorY };
+    packet(ctx, S.x + (E.x - S.x) * f, S.y + (E.y - S.y) * f, Math.atan2(E.y - S.y, E.x - S.x), st.lambda, rgbCss(col), 1, 2);
+    electronDot(ctx, ex0, floorY, r, c);
+    return;
+  }
+  if (u < 0.42) {
+    electronDot(ctx, ex0, floorY + (yTop - floorY) * easeOut((u - 0.2) / 0.22), r, c);
+    return;
+  }
+  if (!out) {
+    if (u < 0.5) electronDot(ctx, ex0, yTop, r, c);
+    else if (u < 0.68) electronDot(ctx, ex0, yTop + (floorY - yTop) * easeIn((u - 0.5) / 0.18), r, c);
+    else electronDot(ctx, ex0, floorY, r, c);
+    return;
+  }
+  // pārlec pāri žogam un lido prom ar ātrumu ∝ √Wₖ
+  const xOver = fenceX + fenceW + 8 + r;
+  let ex;
+  if (u < 0.56) ex = ex0 + (xOver - ex0) * easeOut((u - 0.42) / 0.14);
+  else ex = xOver + P.w * 0.45 * Math.sqrt((W - A) / 1e-19) * (u - 0.56) * FENCE_PERIOD;
+  if (ex < P.x + P.w - r) electronDot(ctx, ex, yTop, r, c);
+  if (u > 0.6) {
+    ctx.globalAlpha = Math.min(1, (u - 0.6) / 0.15);
+    electronDot(ctx, ex0, floorY, r, c); // nākamais elektrons metālā
+    ctx.globalAlpha = 1;
+  }
+}
+
+// Ja teksts par platu — mazāks burts (ne mazāk par 8 px)
+function shrinkToFit(ctx, s, maxW) {
+  const w = ctx.measureText(s).width;
+  if (w <= maxW || maxW <= 0) return;
+  const m = /(\d+)px/.exec(ctx.font);
+  if (m) ctx.font = ctx.font.replace(/\d+px/, `${Math.max(8, Math.floor((Number(m[1]) * maxW) / w))}px`);
+}
+
+// Teksts centrēts; ja par platu — mazāks burts
+function fitText(ctx, s, x, y, maxW) {
+  let w = ctx.measureText(s).width;
+  if (w > maxW) {
+    const m = /(\d+)px/.exec(ctx.font);
+    if (m) ctx.font = ctx.font.replace(/\d+px/, `${Math.max(8, Math.floor((Number(m[1]) * maxW) / w))}px`);
+    w = ctx.measureText(s).width;
+  }
+  ctx.fillText(s, x, y);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arc(x + w - r, y + r, r, -Math.PI / 2, 0);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arc(x + w - r, y + h - r, r, 0, Math.PI / 2);
+  ctx.lineTo(x + r, y + h);
+  ctx.arc(x + r, y + h - r, r, Math.PI / 2, Math.PI);
+  ctx.lineTo(x, y + r);
+  ctx.arc(x + r, y + r, r, Math.PI, Math.PI * 1.5);
+  ctx.closePath();
+}
+

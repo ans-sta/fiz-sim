@@ -24,6 +24,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
 | 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | ✅ Live |
 | ⚛ Atomic Spectra (A-01) | Atom / absorption and emission, energy levels and the electron’s jump, ionisation — H, He, Na, Hg | 🟡 Review |
+| ☀ Photoelectric Effect (A-02) | Atom / photons knock electrons out of a metal plate: threshold colour, brightness vs colour, the energy “fence” — Cs, Na, Zn, Cu | 🟡 Review |
 
 ## Infographics
 
@@ -57,9 +58,10 @@ fiz-sim/
 ├── motor-generator.html            ← Generator and Motor (E-01): assets/emotor/
 ├── sound-spectrum.html             ← Sound Spectrum Analyser (S-03, microphone, https only): assets/spectrum/
 ├── atomic-spectra.html             ← Atomic Spectra (A-01): assets/atoms/ (levels and NIST A values in atoms.js)
+├── photoelectric-effect.html       ← Photoelectric Effect (A-02): assets/photo/ (work functions in model.js)
 ├── infografikas/                   ← Infographics (Latvian): strava-skidrumos, baterijas-un-akumulatori, magnetiskie-materiali
 ├── assets/                         ← Shared modules: sim-core.js, sim-common.css,
-│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, emotor/, spectrum/, atoms/, infografikas/ (preview images)
+│                                     physics/, measure/, rolling-ball/, oscillation/, sound/, brownian/, gas/, emotor/, spectrum/, atoms/, photo/, infografikas/ (preview images)
 ├── tests/                          ← Unit tests (npm test)
 ├── package.json                    ← "type": "module" and the test script
 ├── docs/plans/                     ← Development plans
@@ -241,3 +243,25 @@ Example (only the spectrogram, students cannot switch):
     sound-spectrum.html?view=spectrogram&lock=1
 
 The page needs the microphone, so it works only over https (GitHub Pages) or on `localhost`. Chrome remembers the permission for the site; Safari asks again on every visit unless the site is set to “Allow” (Safari → Settings for This Website… → Microphone → Allow). The sound is not recorded or sent anywhere.
+
+## Teacher links (A-02)
+
+Parameters of `photoelectric-effect.html`. Without `lock` they are only starting values. Unknown parameters are ignored; values outside the range are clamped with a notice.
+
+| Parameter | Meaning |
+| --------- | ------- |
+| `lambda=<150–1200>` | Wavelength of the light, nm (whole nm; default 650) |
+| `intensity=<0–100>` | Brightness, % — photons per second, not their energy (default 30) |
+| `metal=Cs\|Na\|Zn\|Cu` | Plate metal (default `Na`) |
+| `light=0\|1` | Lamp on or off (default on; with “reduce motion” in the system settings the lamp starts off unless the link says `light=1`) |
+| `fence=0\|1` | The energy “fence” diagram next to the tube |
+| `predict=0\|1` | Predict mode: electrons, current, Wₖ and the fence are covered until SHOW is pressed; any change covers them again |
+| `ev=0\|1` | Also show energies in eV, and Einstein’s equation hf = A + Wₖ in the fence and the “i” note (the class has not learnt eV yet) |
+| `lock=metal,lambda,…` | Locks only the listed settings (`lambda`, `intensity`, `metal`, `light`, `fence`, `predict`); greyed out, marked FIKS. |
+| `lock=1` (or `lock=true`) | Locks every setting that is given in the link |
+
+Example (try to knock electrons out of zinc with red light; the metal cannot be changed):
+
+    photoelectric-effect.html?metal=Zn&lambda=650&intensity=100&lock=metal
+
+Work functions (HyperPhysics, “Work Functions for Photoelectric Effect”): Cs 2.1, Na 2.28, Zn 4.3, Cu 4.7 eV. Constants as in the school book: h = 6.63·10⁻³⁴ J·s, c = 3.00·10⁸ m/s, 1 eV = 1.60·10⁻¹⁹ J.

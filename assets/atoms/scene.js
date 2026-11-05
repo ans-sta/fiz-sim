@@ -736,7 +736,7 @@ function arrowLine(ctx, xa, ya, xb, yb, color, w, head, dashed = false) {
 }
 
 // Viļņa pakete: vijuma garums ekrānā aug ar λ (sarkanam garāki nekā violetam)
-function packet(ctx, x, y, ang, λ, color, alpha, cycles = 3) {
+export function packet(ctx, x, y, ang, λ, color, alpha, cycles = 3) {
   const lw = invisible(λ) ? (λ < VIS.min ? 5 : 20) : 6 + (10 * (λ - VIS.min)) / (VIS.max - VIS.min);
   const len = lw * cycles;
   ctx.save();
