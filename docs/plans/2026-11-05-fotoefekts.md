@@ -139,3 +139,5 @@ Kur specifikācija atstāja izvēli, izvēlējos tā. Viss maināms — pasaki.
 - **Kartīte sarakstā:** prožektors un baterija zīmējumā, teikums par bremzējošo spriegumu.
 
 **Labojumi pēc Anša apskates (05.11. vakarā).** Prožektoram noņemta kāja. METĀLS: “izejas darbs” maziem burtiem zem A = … (kā nm skala zem spektra). GAISMA: kvadrātiska poga ⏻ (ieslēgta — pilns kvadrāts), [−] intensitāte [+] 30 %; tieši zem tās [−] spektrs [+] 650 nm (± pa 1 nm); skaitļi pa labi, mērvienības % un nm vienā vertikālē; vārda INTENSITĀTE rindā vairs nav (ekrāna lasītājs to dzird). SPRIEGUMS UN STRĀVA: vārds “anods” aizstāts ar kvadrātu “+/−” (pretēja polaritāte — pilns kvadrāts), vārds “strāva” noņemts (ekrāna lasītājam paliek). ŽOGS: vārda vietā simbols (grīda, svītrots stabs, augstāka zeme, bulta pāri); “i” — taisns burts.
+
+**Pēdējais labojums (05.11.).** SPRIEGUMS UN STRĀVA šaura: [+/−] [−] slīdnis [+], zem tā “I = … µA   U = … V”. ŽOGA simbola līnijas 1 px — tikpat resnas kā pogas rāmis.

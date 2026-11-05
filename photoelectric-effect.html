@@ -15,24 +15,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/sim-common.css">
-<link rel="stylesheet" href="assets/photo/photo.css?v=20261105d">
+<link rel="stylesheet" href="assets/photo/photo.css?v=20261105e">
 <!-- Versija failu adresēs: GitHub Pages ļauj pārlūkam failus paturēt 10 min; Safari pēc atjauninājuma citādi var
      sajaukt jaunu lapu ar vecu main.js un zīmējums paliek tukšs (05.11.). Mainot assets/photo/*, nomaini v visur šeit
      (tests/photo-i18n.test.js pārbauda, ka visās vietās tā pati). -->
 <script type="importmap">
 {
   "imports": {
-    "./assets/photo/main.js": "./assets/photo/main.js?v=20261105d",
-    "./assets/photo/model.js": "./assets/photo/model.js?v=20261105d",
-    "./assets/photo/sim.js": "./assets/photo/sim.js?v=20261105d",
-    "./assets/photo/scene.js": "./assets/photo/scene.js?v=20261105d",
-    "./assets/photo/params.js": "./assets/photo/params.js?v=20261105d",
-    "./assets/photo/i18n.js": "./assets/photo/i18n.js?v=20261105d",
-    "./assets/atoms/scene.js": "./assets/atoms/scene.js?v=20261105d"
+    "./assets/photo/main.js": "./assets/photo/main.js?v=20261105e",
+    "./assets/photo/model.js": "./assets/photo/model.js?v=20261105e",
+    "./assets/photo/sim.js": "./assets/photo/sim.js?v=20261105e",
+    "./assets/photo/scene.js": "./assets/photo/scene.js?v=20261105e",
+    "./assets/photo/params.js": "./assets/photo/params.js?v=20261105e",
+    "./assets/photo/i18n.js": "./assets/photo/i18n.js?v=20261105e",
+    "./assets/atoms/scene.js": "./assets/atoms/scene.js?v=20261105e"
   }
 }
 </script>
-<script type="module" src="assets/photo/main.js?v=20261105d"></script>
+<script type="module" src="assets/photo/main.js?v=20261105e"></script>
 </head>
 <!-- body.e01: josla, “pāriet uz saturu”, gaišās tēmas tintes un fokuss — kopīgi ar E-01 un A-01 (sim-common.css); A-02 savs — photo.css -->
 <body class="layout-hud e01 a02">
@@ -79,14 +79,13 @@
       </div>
       <div class="m01-group a02-col a02-c3" role="group" aria-labelledby="voltLabel">
         <span class="m01-label"><span id="voltLabel">SPRIEGUMS UN STRĀVA</span><span class="fix" id="voltFix" hidden></span></span>
-        <!-- režģis kā GAISMAI: [+/−] [−] spriegums [+] 0,00 V / zem tā I = … µA -->
+        <!-- [+/−] [−] spriegums [+] / zem tā I = … µA, U = … V (kolonna šaura — Ansis 05.11.) -->
         <div class="a02-lgrid a02-vgrid">
           <button class="btn a02-pow a02-pol" id="polBtn" type="button" aria-pressed="false">+/−</button>
           <button class="q-step" id="uMinus" type="button">−</button>
           <input class="dim-range a02-range" id="uRange" type="range" min="0" max="600" step="1" value="0">
           <button class="q-step" id="uPlus" type="button">+</button>
-          <span class="a02-num" id="uVal" aria-hidden="true">0,00</span><span class="a02-unit" aria-hidden="true">V</span>
-          <p class="a02-iline"><span class="e01-sr" id="nI">strāva</span><span class="a02-v"><span aria-hidden="true"><i>I</i> = </span><span id="vI" aria-hidden="true"></span><span class="e01-sr" id="sI"></span></span></p>
+          <p class="a02-iline"><span class="e01-sr" id="nI">strāva</span><span class="a02-v"><span aria-hidden="true"><i>I</i> = </span><span id="vI" aria-hidden="true"></span><span class="e01-sr" id="sI"></span></span><span class="a02-v a02-u"><span aria-hidden="true"><i>U</i> = <span id="uVal">0,00</span>&nbsp;V</span></span></p>
         </div>
       </div>
       <div class="m01-group a02-col a02-c4" role="group" id="showGroup" aria-label="Rādīt">

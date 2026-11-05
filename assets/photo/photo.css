@@ -18,7 +18,7 @@
 }
 
 /* ══ josla: 4 kolonnas — METĀLS · GAISMA · SPRIEGUMS UN STRĀVA · ŽOGS un i; katrā virsraksts un 2 rindas ══ */
-.layout-hud .a02-bar { display: grid; grid-template-columns: max-content minmax(0, 1.25fr) minmax(0, 1fr) max-content; padding: 0; }
+.layout-hud .a02-bar { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content max-content; padding: 0; }
 .layout-hud .a02-bar .m01-group.a02-col { min-width: 0; gap: calc(4px * var(--hud)); padding: calc(6px * var(--hud)) calc(12px * var(--hud)) calc(7px * var(--hud)); border-right: 1px solid var(--hairline); }
 .layout-hud .a02-bar .m01-label { display: block; }
 .layout-hud .a02-k { font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); white-space: nowrap; }
@@ -42,7 +42,9 @@
 .layout-hud .a02-num, .layout-hud .a02-unit { font-size: calc(15px * var(--hud)); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: calc(28px * var(--hud)); }
 .layout-hud .a02-num { justify-self: end; text-align: right; min-width: 4ch; margin-left: calc(4px * var(--hud)); }
 .layout-hud .a02-unit { justify-self: start; margin-left: calc(-2px * var(--hud)); min-width: 2ch; }
-.layout-hud .a02-iline { grid-column: 2 / -1; margin: 0; line-height: calc(28px * var(--hud)); white-space: nowrap; }
+.layout-hud .a02-iline { grid-column: 2 / -1; margin: 0; line-height: calc(28px * var(--hud)); white-space: nowrap; display: flex; gap: calc(18px * var(--hud)); }
+/* SPRIEGUMS UN STRĀVA — šaura: [+/−] [−] slīdnis [+], zem tā I un U */
+.layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(calc(110px * var(--hud)), 1fr) auto; }
 
 /* kvadrātiskās pogas: ⏻ gaisma, +/− polaritāte; ieslēgts — tintes laukums (stāvoklis ne tikai krāsā: pilns pret tukšu) */
 .layout-hud .a02-pow {
@@ -78,8 +80,9 @@
   flex: none; display: grid; place-items: center; width: calc(40px * var(--hud)); height: calc(40px * var(--hud)); min-width: 24px; min-height: 24px; padding: 0;
   background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); font-weight: 600;
 }
-.layout-hud .a02-sq svg { width: 74%; height: 74%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-.layout-hud .a02-sq svg .a02-hop { stroke-width: 1.4; }
+/* ŽOGA simbols: līnijas tikpat resnas kā pogas rāmis (1 px), lai kāds pogas izmērs */
+.layout-hud .a02-sq svg { width: 74%; height: 74%; fill: none; stroke: currentColor; stroke-width: 1px; stroke-linejoin: round; stroke-linecap: round; }
+.layout-hud .a02-sq svg * { vector-effect: non-scaling-stroke; }
 .layout-hud .a02-sq[aria-pressed="false"] { color: var(--ink-dim); border-color: var(--ink-dim); }
 .layout-hud .a02-sq[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
 .layout-hud .a02-sq:hover:not(:disabled) { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
@@ -94,8 +97,8 @@
   .layout-hud .a02-bar .m01-group.a02-c2 { border-right: none; }
   .layout-hud .a02-c4 { grid-area: c4; border-top: 1px solid var(--hairline); }
   .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: row; }
-  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 22rem) auto auto auto 1fr; }
-  .layout-hud .a02-vgrid .a02-iline { grid-row: 1; grid-column: 7; border-left: 1px solid var(--hairline); padding-left: calc(18px * var(--hud)); margin-left: calc(12px * var(--hud)); }
+  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 22rem) auto max-content; }
+  .layout-hud .a02-vgrid .a02-iline { grid-row: 1; grid-column: 5; border-left: 1px solid var(--hairline); padding-left: calc(18px * var(--hud)); margin-left: calc(12px * var(--hud)); }
 }
 /* telefons: kolonnas viena zem otras; METĀLS — pogas un A vienā rindā; ŽOGS · i blakus spriegumam */
 @media (max-width: 640px) {
@@ -104,8 +107,8 @@
   .layout-hud .a02-bar .m01-group.a02-c1 { border-right: none; }
   .layout-hud .a02-c2 { border-top: 1px solid var(--hairline); }
   .layout-hud .a02-bar .m01-group.a02-c3 { border-right: 1px solid var(--hairline); }
-  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 1fr) auto auto auto; }
-  .layout-hud .a02-vgrid .a02-iline { grid-row: 2; grid-column: 2 / -1; border-left: none; padding-left: 0; margin-left: 0; }
+  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 1fr) auto; }
+  .layout-hud .a02-vgrid .a02-iline { grid-row: 2; grid-column: 2 / -1; border-left: none; padding-left: 0; margin-left: 0; gap: 14px; }
   .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: column; padding: calc(4px * var(--hud)) calc(6px * var(--hud)); }
   .layout-hud .a02-c1body { flex-direction: row; flex-wrap: wrap; align-items: flex-start; column-gap: calc(14px * var(--hud)); }
   .layout-hud .a02-v { font-size: calc(15px * var(--hud)); }
@@ -122,8 +125,9 @@
   .layout-hud .a02-c4 { grid-area: c4; border-top: none; }
   .layout-hud .a02-bar .m01-group.a02-col { padding: 3px 8px; gap: 2px; }
   .layout-hud .a02-bar .m01-group.a02-c1, .layout-hud .a02-bar .m01-group.a02-c2, .layout-hud .a02-bar .m01-group.a02-c3 { border-right: 1px solid var(--hairline); }
-  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 18rem) auto auto auto 1fr; }
-  .layout-hud .a02-vgrid .a02-iline { grid-row: 1; grid-column: 7; border-left: 1px solid var(--hairline); padding-left: 12px; margin-left: 8px; }
+  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 1fr) auto max-content; }
+  .layout-hud .a02-iline { gap: 12px; }
+  .layout-hud .a02-vgrid .a02-iline { grid-row: 1; grid-column: 5; border-left: 1px solid var(--hairline); padding-left: 12px; margin-left: 8px; }
   .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: column; gap: 4px; padding: 3px 6px; }
   .layout-hud .a02-bar .m01-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .layout-hud .a02-bar .m01-label:has(.fix:not([hidden])) { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; }
