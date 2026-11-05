@@ -498,11 +498,11 @@ function drawFence(ctx, F, v, k, hidden) {
     ctx.font = font(9);
     ctx.fillText(' J', x0 + w10 + wE, yb);
   }
-  // A līmenis visā platumā (raustīts) — virs tā fotona stabiņa daļa kļūst par Wₖ
+  // A līmenis virs metāla (raustīts) — virs tā fotona stabiņa daļa kļūst par Wₖ
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
   ctx.moveTo(P.x, yA);
-  ctx.lineTo(P.x + P.w, yA);
+  ctx.lineTo(fenceX, yA);
   ctx.stroke();
   ctx.setLineDash([]);
   // grīda metālā
@@ -517,6 +517,20 @@ function drawFence(ctx, F, v, k, hidden) {
     ctx.beginPath();
     ctx.moveTo(x, y0 + 1);
     ctx.lineTo(x - 5, y0 + 6);
+    ctx.stroke();
+  }
+  // vakuuma pusē “zeme” A augstumā: miera stāvoklī izkļuvušam elektronam enerģija ir A, tāpēc Wₖ mēra no A (bedre, ne tikai žogs)
+  ctx.strokeStyle = c.ink;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(fenceX + fenceW, yA);
+  ctx.lineTo(P.x + P.w, yA);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  for (let x = fenceX + fenceW + 6; x < P.x + P.w; x += 7) {
+    ctx.beginPath();
+    ctx.moveTo(x, yA + 1);
+    ctx.lineTo(x - 5, yA + 6);
     ctx.stroke();
   }
   // žogs — svītrots stabs no 0 līdz A
@@ -578,6 +592,19 @@ function drawFence(ctx, F, v, k, hidden) {
   const dimK = fenceX + fenceW + 16;
   if (out) {
     dimLine(ctx, dimK, yA, yW, c.accent);
+    if (W > E_MAX) {
+      // Wₖ garāka par skalu — tāds pats pārrāvums kā stabiņam
+      const yb = P.y + 10;
+      ctx.strokeStyle = c.field;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(dimK - 6, yb + 3);
+      ctx.lineTo(dimK - 2, yb - 3);
+      ctx.lineTo(dimK + 2, yb + 3);
+      ctx.lineTo(dimK + 6, yb - 3);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
     ctx.fillStyle = c.accent;
     ctx.textBaseline = 'middle';
     sym(ctx, 'W', 'k', dimK + 9, (yA + yW) / 2 - 3, 15 * L);
@@ -588,7 +615,7 @@ function drawFence(ctx, F, v, k, hidden) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   ctx.fillText(v.labels.fenceMetal, (P.x + fenceX) / 2, y0 + 9);
-  ctx.fillText(v.labels.fenceVacuum, (fenceX + fenceW + P.x + P.w) / 2, y0 + 9);
+  ctx.fillText(v.labels.fenceVacuum, (fenceX + fenceW + P.x + P.w) / 2 + 10, yA + 9);
   ctx.fillStyle = out ? c.accent : c.ink;
   ctx.font = font(11, 600);
   fitText(ctx, out ? v.labels.fenceAbove : v.labels.fenceBelow, F.x + F.w / 2, y0 + 9 + 17 * L, F.w - 16);

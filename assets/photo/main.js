@@ -192,7 +192,7 @@ function openInfo() {
   ov.body.setAttribute('aria-label', t('info.title'));
   const list = METAL_IDS.map((m) => t('info.metalItem', {
     name: t(`name.${m}`), A: formatSci(workJ(m), i18n.lang()),
-    ev: ui.ev ? ` (${fmt(METALS[m].eV, 2)} eV)` : '', nm: fmt(thresholdNm(m), 0),
+    ev: ui.ev ? ` (${fmt(METALS[m].eV, 2)} eV)` : '', nm: fmt(Math.floor(thresholdNm(m)), 0), // garākais veselais nm, kas vēl izsit (Cs 591,96 → 591)
   })).join('; ');
   for (const k of ['what', 'photon', 'fence', 'bright', 'metals', 'simp']) {
     const sec = document.createElement('section');
@@ -212,10 +212,20 @@ function openInfo() {
 
 // ── skaitļi ───────────────────────────────────────────────
 const UNIT_SR = { lv: { J: 'džouli', Hz: 'herci', uA: 'mikroampēri' }, en: { J: 'joules', Hz: 'hertz', uA: 'microamperes' } };
+// Kāpinātājs balsij: LV — kārtas skaitļa lokatīvs (“mīnus deviņpadsmitajā”), EN — “minus 19”; tikai tie, kas te iespējami
+const ORD_LV = {
+  14: 'četrpadsmitajā', 15: 'piecpadsmitajā', 17: 'septiņpadsmitajā', 18: 'astoņpadsmitajā', 19: 'deviņpadsmitajā', 20: 'divdesmitajā',
+  21: 'divdesmit pirmajā', 22: 'divdesmit otrajā', 23: 'divdesmit trešajā', 24: 'divdesmit ceturtajā', 25: 'divdesmit piektajā',
+};
+function spokenExp(e) {
+  const minus = e < 0 ? (i18n.lang() === 'lv' ? 'mīnus ' : 'minus ') : '';
+  const n = Math.abs(e);
+  return minus + (i18n.lang() === 'lv' ? ORD_LV[n] ?? `${n}.` : String(n));
+}
 const srSci = (v, unit) => {
   const s = sci(v, 3);
   if (!s) return '';
-  return `${t('sr.sci', { m: formatNumber(s.mant, s.dec, i18n.lang()), e: s.exp < 0 ? `−${-s.exp}` : String(s.exp) })} ${UNIT_SR[i18n.lang()][unit]}`;
+  return `${t('sr.sci', { m: formatNumber(s.mant, s.dec, i18n.lang()), e: spokenExp(s.exp) })} ${UNIT_SR[i18n.lang()][unit]}`;
 };
 const evLine = (J) => `= ${fmt(J / EV, 2)}${NB}eV`;
 // Normālforma HTML ar <sup> (fontā augšraksta cipari izklīst); pārzīmē tikai, ja mainījies
@@ -387,6 +397,8 @@ function describe() {
 
 function render() {
   if (!view) return;
+  // Safari moduli palaiž, pirms stili piemēroti — tad CSS mainīgie vēl tukši; pārlasa, līdz ir vērtības
+  if (!colors.field || !colors.ink) { colors = theme.colors(); specKey = ''; }
   const s = sim.state;
   // josla
   setText(el('metalLabel'), t('bar.metal'));

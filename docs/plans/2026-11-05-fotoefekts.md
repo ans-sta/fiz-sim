@@ -104,7 +104,7 @@ Kur specifikācija atstāja izvēli, izvēlējos tā. Viss maināms — pasaki.
 
 **Noklusējums** — § 7 1. solis: nātrijs, 650 nm, spožums 30 %, gaisma ieslēgta. Ja sistēmā ieslēgts “samazināt kustību”, lampa sākumā izslēgta (ja saitē nav `light=1`); lampas slēdzis ir arī animācijas pauze.
 
-**Izejas darbi** — viens avots, HyperPhysics (C. R. Nave, Georgia State University), “Work Functions for Photoelectric Effect”: Cs 2,1 · Na 2,28 · Zn 4,3 · Cu 4,7 eV. Ar skolas konstantēm: A = 3,36 · 3,65 · 6,88 · 7,52 ·10⁻¹⁹ J, sliekšņi 592 · 545 · 289 · 264 nm. Nātrijam 2,28 (nevis 2,3) eV, jo tā avotā; 532 nm joprojām tieši virs sliekšņa (Wₖ = 9,07·10⁻²¹ J). “i” logā avots un piezīme, ka citās tabulās vērtības mazliet atšķiras.
+**Izejas darbi** — viens avots, HyperPhysics (C. R. Nave, Georgia State University), “Work Functions for Photoelectric Effect”: Cs 2,1 · Na 2,28 · Zn 4,3 · Cu 4,7 eV. Ar skolas konstantēm: A = 3,36 · 3,65 · 6,88 · 7,52 ·10⁻¹⁹ J, sliekšņi 591 · 545 · 289 · 264 nm (garākais veselais nm, kas vēl izsit; cēzijam λ₀ = 591,96 nm, tāpēc 592 nm vairs neizsit). Nātrijam 2,28 (nevis 2,3) eV, jo tā avotā; 532 nm joprojām tieši virs sliekšņa (Wₖ = 9,07·10⁻²¹ J). “i” logā avots un piezīme, ka citās tabulās vērtības mazliet atšķiras.
 
 **Viens fotons — viens elektrons.** Katrs fotons ar hf > A izsit elektronu (§ 5 “katrs n-tais” ar n = 1). Ar n = 2 pirmais fotons tikai sildītu, otrais izsistu — tas izskatītos pēc “uzkrāšanās”, ko simulācija tieši gāž. “i” logā (VIENKĀRŠOJUMI) teikts, ka īstā metālā elektronu izsit tikai neliela daļa fotonu. Pie hf = A (precīzi) elektronu nav.
 
@@ -114,9 +114,9 @@ Kur specifikācija atstāja izvēli, izvēlējos tā. Viss maināms — pasaki.
 
 **Strāva** ilustratīva: 100 % spožumā 2,00 µA (skala 0–2,5 µA), proporcionāla spožumam; zem sliekšņa, izslēgtai lampai vai pie 0 % — tieši 0,00 µA. Ampērmetra cipari — uzreiz, rādītājs — ar 0,15 s inerci.
 
-**Fotoni, kas neizsit,** pazūd pie plāksnes ar mazu oranžu “sasilšanas” uzliesmojumu (0,4 s). IS un UV: raustītas viļņu paketes, stars tikai ar raustītu kontūru, spuldze svītrota, blakus “UV — acs neredz” / “IS — acs neredz”. Plāksnes krāsa pēc metāla (cēzijs zeltains, varš vara krāsā).
+**Fotoni, kas neizsit,** pazūd pie plāksnes ar mazu oranžu “sasilšanas” uzliesmojumu (0,4 s); “i” logā — īstā metālā lielākā daļa fotonu atstarojas vai silda. IS un UV: raustītas viļņu paketes, stars tikai ar raustītu kontūru, spuldze svītrota, blakus “UV — acs neredz” / “IS — acs neredz”. Plāksnes krāsa pēc metāla (cēzijs zeltains, varš vara krāsā).
 
-**Žogs.** Enerģijas ass 0–9·10⁻¹⁹ J (der varam un 250 nm; īsākiem viļņiem stabiņš ar pārrāvumu augšā). Grīda — elektrons metālā (0), žogs — svītrots stabs līdz A ar izmēra līniju “A”, raustīta A līnija visā platumā, fotona stabiņš W viļņa krāsā, Wₖ — izmēra līnija no A līdz W (oranža). Viens cikls 2,2 s: fotons atlido, elektrons uzkāpj līdz W; ja W < A — krīt atpakaļ, ja W > A — pārlec un aizlido ar ātrumu ∝ √Wₖ. Apakšā “W < A — elektrons paliek metālā” / “W > A — elektrons izlido”. Formula hf = A + Wₖ — tikai ar `ev=1` (§ 9: lēmums tev; atsevišķa “eksāmena režīma” nav).
+**Žogs.** Enerģijas ass 0–9·10⁻¹⁹ J (der varam un 250 nm; īsākiem viļņiem stabiņš ar pārrāvumu augšā). Grīda — elektrons metālā (0), žogs — svītrots stabs līdz A ar izmēra līniju “A”, vakuuma pusē “zeme” A augstumā (miera stāvoklī izkļuvušam elektronam enerģija ir A — tātad bedre, kā tavā aprakstā), virs metāla raustīta A līnija, fotona stabiņš W viļņa krāsā, Wₖ — izmēra līnija no A līdz W (oranža). Viens cikls 2,2 s: fotons atlido, elektrons uzkāpj līdz W; ja W < A — krīt atpakaļ, ja W > A — pārlec un aizlido ar ātrumu ∝ √Wₖ. Apakšā “W ≤ A — elektrons paliek metālā” / “W > A — elektrons izlido”. Formula hf = A + Wₖ — tikai ar `ev=1` (§ 9: lēmums tev; atsevišķa “eksāmena režīma” nav).
 
 **Prognoze.** Aizsegti: elektroni un plāksne (pelēks laukums ar lielu “?” un pogu RĀDĪT pāri caurulei), ampērmetrs (“?”), datu panelī Wₖ un I (“?”), viss žogs. Redzams paliek tas, ko iestata (λ, f, W, A, lampa un fotoni). Pēc RĀDĪT — jebkura maiņa (krāsa, spožums, metāls, gaisma) atkal aizsedz: nākamā prognoze.
 
@@ -125,3 +125,5 @@ Kur specifikācija atstāja izvēli, izvēlējos tā. Viss maināms — pasaki.
 **Saite.** `lambda`, `intensity`, `metal`, `light` (papildus — “visi iestatījumi”), `fence`, `predict`, `ev`; `lock=metal,lambda` — tikai uzskaitītie, `lock=1` — visi saitē dotie (kā citās lapās). Bloķētās vadīklas pelēkas, pie grupas “FIKS.”. Nederīga vērtība — paziņojums, lieto noklusējumu vai robežu.
 
 **Ārpus šīs kārtas** — § 4 (bremzējošais spriegums, saules elements).
+
+**Pārbaudes 05.11.** Fizikas pārbaude (atsevišķs aģents: skaitļi no § 8, sliekšņi, žogs, teksti) un latviešu valodas redaktors — labojumi iestrādāti: kartītē “zilā izsit” → “ar pietiekami īsu viļņa garumu (nātrijam — zilā, cinkam — tikai ultravioletā)”; cēzija slieksnis 591 nm; žogam vakuuma pusē zeme A līmenī; Halvakss — cinka plāksne un elektroskops; “i” logā: spožums šeit ir fotonu skaits sekundē (ar vienādu jaudu zilās gaismas elektronu būtu mazāk), īstie elektroni lido ar ātrumiem no gandrīz 0, metāls daļu gaismas atstaro; ekrāna lasītājam skaitļi “3,74 reiz desmit mīnus deviņpadsmitajā pakāpē džouli”. Terminus “savācējs” (mācību grāmatās — anods, plāksne — katods) un “spožums” (grāmatās — intensitāte) atstāju kā tavā specifikācijā.
