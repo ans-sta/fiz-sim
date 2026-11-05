@@ -254,11 +254,12 @@ Parameters of `photoelectric-effect.html`. Without `lock` they are only starting
 | `intensity=<0–100>` | Intensity, % — photons per second, not their energy (default 30) |
 | `metal=Cs\|Na\|Zn\|Cu` | Plate metal (default `Na`) |
 | `light=0\|1` | Spotlight on or off (default on; with “reduce motion” in the system settings it starts off unless the link says `light=1`) |
+| `photons=0\|1` | Show the light as separate photons instead of a steady beam (default 0 — beam; only the picture changes) |
 | `voltage=<0–6>` | Battery voltage between the plate and the anode, V (0.01 V steps; default 0) |
 | `reverse=0\|1` | Reverse polarity: the anode is negative and slows the electrons down (default 0 — the anode is positive) |
 | `fence=0\|1` | The energy “fence” diagram next to the tube |
 | `ev=0\|1` | Also show the work function in eV, Einstein’s equation hf = A + Wₖ in the fence and the “i” note, and e·U_b = Wₖ in the note (the class has not learnt eV yet) |
-| `lock=metal,lambda,…` | Locks only the listed settings (`lambda`, `intensity`, `metal`, `light`, `voltage`, `reverse`, `fence`); greyed out, marked FIKS. |
+| `lock=metal,lambda,…` | Locks only the listed settings (`lambda`, `intensity`, `metal`, `light`, `photons`, `voltage`, `reverse`, `fence`); greyed out, marked FIKS. |
 | `lock=1` (or `lock=true`) | Locks every setting that is given in the link |
 
 Example (try to knock electrons out of zinc with red light; the metal cannot be changed):

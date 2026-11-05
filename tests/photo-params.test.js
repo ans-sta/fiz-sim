@@ -5,7 +5,7 @@ import { settingsFromURL, defaultSettings } from '../assets/photo/params.js';
 test('no parameters — the lesson start: sodium, 650 nm, 30 %, light on', () => {
   const { settings, locked, warnings } = settingsFromURL('');
   assert.deepEqual(settings, defaultSettings());
-  assert.deepEqual(settings, { lambda: 650, intensity: 30, metal: 'Na', light: true, voltage: 0, reverse: false, fence: false, ev: false });
+  assert.deepEqual(settings, { lambda: 650, intensity: 30, metal: 'Na', light: true, photons: false, voltage: 0, reverse: false, fence: false, ev: false });
   assert.equal(locked.size, 0);
   assert.equal(warnings.length, 0);
 });

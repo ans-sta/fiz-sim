@@ -154,3 +154,26 @@ test('accelerating voltage: everyone arrives, sooner than without voltage', () =
   run(sim, 10);
   assert.equal(sim.state.counts.returned, 0);
 });
+
+test('steady-beam view: switching off, colour and intensity act on the plate at once (no photons still in flight)', () => {
+  const sim = sim0({ lambda: 532, intensity: 100, metal: 'Na', waves: true });
+  run(sim, 2);
+  sim.setLambda(650); // sarkans — vairs neizsit
+  const n = sim.state.counts.electrons;
+  run(sim, 1);
+  assert.equal(sim.state.counts.electrons, n, 'red right away');
+  sim.setLambda(450);
+  run(sim, 2);
+  sim.setOn(false);
+  const m = sim.state.counts.electrons;
+  run(sim, 2);
+  assert.equal(sim.state.counts.electrons, m, 'off right away');
+  // intensitāte: jaunais ātrums uzreiz
+  const s2 = sim0({ lambda: 450, intensity: 100, metal: 'Na', waves: true });
+  run(s2, 2);
+  s2.setIntensity(20);
+  const a = s2.state.counts.electrons;
+  run(s2, 10);
+  const rate = (s2.state.counts.electrons - a) / 10;
+  assert.ok(Math.abs(rate - 24 * 0.2) < 0.6, `rate ${rate}`);
+});

@@ -94,7 +94,7 @@ export function photonPath(lay, p) {
 }
 
 // ── zīmēšana ──────────────────────────────────────────────
-// v: { st (sim.state), ev, needle, legend, theme, colors, labels, fmt }
+// v: { st (sim.state), ev, needle, photons, legend, theme, colors, labels, fmt } — photons: kūļa vietā atsevišķi fotoni
 export function drawScene(ctx, lay, v) {
   const c = v.colors;
   const dark = v.theme === 'dark';
@@ -106,10 +106,10 @@ export function drawScene(ctx, lay, v) {
   ctx.fillStyle = c.field;
   ctx.fillRect(0, 0, lay.w, lay.h);
 
-  drawBeam(ctx, lay, v, k);
+  if (!v.photons) drawBeam(ctx, lay, v, k);
   drawTube(ctx, lay, v, k);
   drawHeats(ctx, lay, v, k);
-  drawPhotons(ctx, lay, v, k);
+  if (v.photons) drawPhotons(ctx, lay, v, k);
   drawElectrons(ctx, lay, v, k);
   drawProjector(ctx, lay, v, k);
   drawMeter(ctx, lay, v, k);

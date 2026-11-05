@@ -4,12 +4,13 @@
 import { parseParams } from '../measure/url-params.js';
 import { LAMBDA, METAL_IDS, U_MAX } from './model.js';
 
-export const LOCKABLE = ['lambda', 'intensity', 'metal', 'light', 'voltage', 'reverse', 'fence'];
+export const LOCKABLE = ['lambda', 'intensity', 'metal', 'light', 'photons', 'voltage', 'reverse', 'fence'];
 export const PARAM_SCHEMA = {
   lambda: { type: 'number', min: LAMBDA.min, max: LAMBDA.max },
   intensity: { type: 'int', min: 0, max: 100 },
   metal: { type: 'enum', values: METAL_IDS },
   light: { type: 'bool' },
+  photons: { type: 'bool' }, // gaismu rādīt kā atsevišķus fotonus (citādi — vienmērīgs kūlis)
   voltage: { type: 'number', min: 0, max: U_MAX },
   reverse: { type: 'bool' }, // anods − (bremzē)
   fence: { type: 'bool' },
@@ -18,7 +19,7 @@ export const PARAM_SCHEMA = {
 
 // Noklusējums — 7. sadaļas 1. solis: nātrijs, sarkans 650 nm, intensitāte 30 %, gaisma ieslēgta; spriegums 0 V, anods +
 export function defaultSettings() {
-  return { lambda: 650, intensity: 30, metal: 'Na', light: true, voltage: 0, reverse: false, fence: false, ev: false };
+  return { lambda: 650, intensity: 30, metal: 'Na', light: true, photons: false, voltage: 0, reverse: false, fence: false, ev: false };
 }
 
 export function settingsFromURL(search) {

@@ -5,16 +5,17 @@ import { ejects, kineticMaxJ, travelTime, SPEED_SPREAD, EV } from './model.js';
 import { mulberry32 } from '../measure/rng.js';
 
 export const RATE_MAX = 24; // fotoni sekundē ekrānā pie 100 % (5 % — viens ik ~0,8 s)
-export const FLIGHT = 0.7; // s — fotons no prožektora līdz plāksnei
+export const FLIGHT = 1.4; // s — fotons no prožektora līdz plāksnei (Ansis 05.11.: 2× lēnāk)
 export const EVERY = 1; // katrs fotons ar hf > A izsit elektronu (kvantu iznākums konstants; sk. § 10)
 export const HEAT = 0.4; // s — sasilšanas zīme pie plāksnes
 export const FENCE_PERIOD = 2.2; // s — “žoga” viena fotona cikls
 
 export function createSim({
-  lambda = 650, intensity = 30, metal = 'Na', on = true, voltage = 0, reverse = false, rng = mulberry32(20261106),
+  lambda = 650, intensity = 30, metal = 'Na', on = true, voltage = 0, reverse = false, waves = false, rng = mulberry32(20261106),
 } = {}) {
   const state = {
-    t: 0, lambda, intensity, metal, on: false, voltage, reverse,
+    // waves — ekrānā vienmērīgs kūlis: maiņas (izslēgt, krāsa, intensitāte) pie plāksnes ir uzreiz, ne pēc fotonu lidojuma
+    t: 0, lambda, intensity, metal, on: false, voltage, reverse, waves,
     photons: [], // { λ, t0, y } — y: vieta uz plāksnes 0…1
     // { λ, t0, y, x, v, v0, kap } — x: vieta starp plāksni (0) un anodu (1), v: ātrums (daļas sekundē),
     // kap = v0² / Wₖ — ekrāna “masa”: paātrinājums a = ∓kap·e·U / 2, tātad ekrānā enerģija mainās tāpat kā īstajam
@@ -82,6 +83,14 @@ export function createSim({
     arrivals();
   }
 
+  // Vienmērīga plūsma ar pašreizējo ātrumu: pēdējais izlaistais fotons ir acc / r vecs, pārējie ik 1 / r (bez ierašanās)
+  function refill() {
+    const r = rate();
+    state.photons = [];
+    if (r <= 0) return;
+    for (let a = state.acc / r; a < FLIGHT - 1e-9; a += 1 / r) spawn(a);
+  }
+
   function step(dt) {
     if (!(dt > 0)) return;
     state.t += dt;
@@ -101,18 +110,24 @@ export function createSim({
     const was = rate() > 0;
     state.on = Boolean(v);
     if (!state.on) state.acc = 0;
+    if (!state.on && state.waves) state.photons = [];
     if (!was && rate() > 0) lightUp();
   }
   function setIntensity(v) {
     const was = rate() > 0;
     state.intensity = Math.min(100, Math.max(0, Math.round(v)));
     if (!was && rate() > 0) lightUp();
+    else if (state.waves) refill();
   }
-  const setLambda = (nm) => { state.lambda = nm; };
+  const setLambda = (nm) => {
+    state.lambda = nm;
+    if (state.waves) for (const p of state.photons) p.λ = nm;
+  };
+  const setWaves = (b) => { state.waves = Boolean(b); };
   const setMetal = (m) => { state.metal = m; };
   const setVoltage = (u) => { state.voltage = Math.max(0, u); };
   const setReverse = (b) => { state.reverse = Boolean(b); };
 
   setOn(on);
-  return { state, step, setOn, setIntensity, setLambda, setMetal, setVoltage, setReverse, rate };
+  return { state, step, setOn, setIntensity, setLambda, setMetal, setVoltage, setReverse, setWaves, rate };
 }

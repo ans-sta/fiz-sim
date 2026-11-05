@@ -41,7 +41,7 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const startOn = new URLSearchParams(location.search).has('light') ? url.settings.light : url.settings.light && !reduced.matches;
 const sim = createSim({
   lambda: url.settings.lambda, intensity: url.settings.intensity, metal: url.settings.metal, on: startOn,
-  voltage: url.settings.voltage, reverse: url.settings.reverse,
+  voltage: url.settings.voltage, reverse: url.settings.reverse, waves: !url.settings.photons,
 });
 const ui = {
   fence: url.settings.fence,
@@ -129,6 +129,14 @@ el('fenceBtn').addEventListener('click', () => {
   ui.fence = !ui.fence;
   ui.descAt = -Infinity;
   say(t(ui.fence ? 'live.fenceOn' : 'live.fenceOff'));
+  render();
+});
+// viļņi ↔ fotoni: tikai attēlojums (aprēķini tie paši); sākumā — vienmērīgs kūlis
+el('photonBtn').addEventListener('click', () => {
+  if (locked.has('photons')) return;
+  sim.setWaves(!sim.state.waves);
+  ui.descAt = -Infinity;
+  say(t(sim.state.waves ? 'live.waves' : 'live.photons'));
   render();
 });
 el('infoBtn').addEventListener('click', openInfo);
@@ -403,13 +411,16 @@ function render() {
     b.disabled = locked.has('metal') && !on;
     setText(b.querySelector('[data-name]'), ` — ${t(`name.${b.dataset.metal}`)}`);
   }
-  const fixes = { metalFix: ['metal'], lightFix: ['light', 'intensity', 'lambda'], voltFix: ['voltage', 'reverse'] };
+  const fixes = { metalFix: ['metal'], lightFix: ['light', 'photons', 'intensity', 'lambda'], voltFix: ['voltage', 'reverse'] };
   for (const [fixId, keys] of Object.entries(fixes)) {
     setHidden(el(fixId), !keys.some((key) => locked.has(key)));
     setText(el(fixId), t('bar.fixed'));
   }
   setText(el('lightLabel'), t('bar.light'));
   setAttr(el('onBtn'), 'aria-label', t('bar.onAria'));
+  setAttr(el('photonBtn'), 'aria-label', t('bar.photonsAria'));
+  setAttr(el('photonBtn'), 'aria-pressed', !s.waves);
+  el('photonBtn').disabled = locked.has('photons');
   setAttr(el('onBtn'), 'aria-pressed', s.on);
   el('onBtn').disabled = locked.has('light');
   if (Number(brRange.value) !== s.intensity) brRange.value = String(s.intensity);
@@ -467,7 +478,7 @@ function render() {
   ui.layout = lay;
   const legend = w < 520 || h < 420 ? Math.min(1.15, legendScale(gear.textScale())) : legendScale(gear.textScale());
   drawScene(view.ctx, lay, {
-    st: s, ev: ui.ev, needle: ui.needle,
+    st: s, ev: ui.ev, needle: ui.needle, photons: !s.waves,
     legend, theme: theme.current(), colors, fmt,
     labels: {
       plate: t('lbl.plate'), collector: t('lbl.collector'), vacuum: t('lbl.vacuum'), metalTitle: t(`title.${s.metal}`),
