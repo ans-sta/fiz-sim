@@ -127,3 +127,5 @@ Kur specifikācija atstāja izvēli, izvēlējos tā. Viss maināms — pasaki.
 **Ārpus šīs kārtas** — § 4 (bremzējošais spriegums, saules elements).
 
 **Pārbaudes 05.11.** Fizikas pārbaude (atsevišķs aģents: skaitļi no § 8, sliekšņi, žogs, teksti) un latviešu valodas redaktors — labojumi iestrādāti: kartītē “zilā izsit” → “ar pietiekami īsu viļņa garumu (nātrijam — zilā, cinkam — tikai ultravioletā)”; cēzija slieksnis 591 nm; žogam vakuuma pusē zeme A līmenī; Halvakss — cinka plāksne un elektroskops; “i” logā: spožums šeit ir fotonu skaits sekundē (ar vienādu jaudu zilās gaismas elektronu būtu mazāk), īstie elektroni lido ar ātrumiem no gandrīz 0, metāls daļu gaismas atstaro; ekrāna lasītājam skaitļi “3,74 reiz desmit mīnus deviņpadsmitajā pakāpē džouli”. Terminus “savācējs” (mācību grāmatās — anods, plāksne — katods) un “spožums” (grāmatās — intensitāte) atstāju kā tavā specifikācijā.
+
+**Termini (Ansis 05.11. vakarā).** Uz ekrāna, “i” logā, ekrāna lasītāja tekstos un kartītē “savācējs” → “anods”, “spožums” → “intensitāte” (EN — anode, intensity). Plāksne paliek “plāksne”.

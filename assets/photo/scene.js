@@ -249,7 +249,7 @@ function drawLamp(ctx, lay, v, k) {
     ctx.font = font(11, 600);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    // ja sadurtos ar “SAVĀCĒJS” (zema caurule), uzraksts augstāk — pie vada
+    // ja sadurtos ar “ANODS” (zema caurule), uzraksts augstāk — pie vada
     const x = lamp.x + lamp.r + 10;
     const clash = lamp.y + 8 * k.L > lay.tube.y - 10 - 12 * k.L && x + ctx.measureText(note).width > lay.coll.x - 90 * k.L;
     ctx.fillText(note, clash ? lamp.x + 8 : x, clash ? lamp.y - lamp.r - lamp.r * 0.5 - 8 * k.L : lamp.y);

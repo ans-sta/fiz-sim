@@ -24,7 +24,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
 | 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | ✅ Live |
 | ⚛ Atomic Spectra (A-01) | Atom / absorption and emission, energy levels and the electron’s jump, ionisation — H, He, Na, Hg | 🟡 Review |
-| ☀ Photoelectric Effect (A-02) | Atom / photons knock electrons out of a metal plate: threshold colour, brightness vs colour, the energy “fence” — Cs, Na, Zn, Cu | 🟡 Review |
+| ☀ Photoelectric Effect (A-02) | Atom / photons knock electrons out of a metal plate: threshold colour, intensity vs colour, the energy “fence” — Cs, Na, Zn, Cu | 🟡 Review |
 
 ## Infographics
 
@@ -251,7 +251,7 @@ Parameters of `photoelectric-effect.html`. Without `lock` they are only starting
 | Parameter | Meaning |
 | --------- | ------- |
 | `lambda=<150–1200>` | Wavelength of the light, nm (whole nm; default 650) |
-| `intensity=<0–100>` | Brightness, % — photons per second, not their energy (default 30) |
+| `intensity=<0–100>` | Intensity, % — photons per second, not their energy (default 30) |
 | `metal=Cs\|Na\|Zn\|Cu` | Plate metal (default `Na`) |
 | `light=0\|1` | Lamp on or off (default on; with “reduce motion” in the system settings the lamp starts off unless the link says `light=1`) |
 | `fence=0\|1` | The energy “fence” diagram next to the tube |
