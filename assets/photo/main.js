@@ -179,6 +179,9 @@ function setLambda(nm, { fromSlider = false } = {}) {
   changed();
 }
 lam.addEventListener('input', () => setLambda(posToLambda(Number(lam.value) / RES), { fromSlider: true }));
+// − / + pa 1 nm (sliekšņa meklēšanai; lieliem soļiem — slīdnis)
+el('lamMinus').addEventListener('click', () => setLambda(sim.state.lambda - 1));
+el('lamPlus').addEventListener('click', () => setLambda(sim.state.lambda + 1));
 lam.addEventListener('keydown', (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const s = sim.state.lambda;
@@ -406,11 +409,9 @@ function render() {
     setText(el(fixId), t('bar.fixed'));
   }
   setText(el('lightLabel'), t('bar.light'));
-  setText(el('onBtn'), t('bar.on'));
   setAttr(el('onBtn'), 'aria-label', t('bar.onAria'));
   setAttr(el('onBtn'), 'aria-pressed', s.on);
   el('onBtn').disabled = locked.has('light');
-  setText(el('brightK'), t('bar.bright'));
   if (Number(brRange.value) !== s.intensity) brRange.value = String(s.intensity);
   setAttr(brRange, 'aria-label', t('bar.brightName'));
   setAttr(brRange, 'aria-valuetext', t('bar.brightVal', { n: s.intensity }));
@@ -420,17 +421,22 @@ function render() {
   el('brPlus').disabled = brLock || s.intensity >= 100;
   setAttr(el('brMinus'), 'aria-label', t('dims.decrease', { name: t('bar.brightName') }));
   setAttr(el('brPlus'), 'aria-label', t('dims.increase', { name: t('bar.brightName') }));
-  setText(el('brVal'), t('bar.brightVal', { n: s.intensity }));
+  setText(el('brVal'), String(s.intensity));
   // krāsa
   setAttr(lam, 'aria-label', t('slider.name'));
   setAttr(lam, 'aria-valuetext', t('slider.valuetext', { lam: s.lambda, band: t(`band.${bandOf(s.lambda)}`) }));
   lam.disabled = locked.has('lambda');
   if (document.activeElement !== lam && Math.round(posToLambda(Number(lam.value) / RES)) !== s.lambda) lam.value = String(Math.round(lambdaToPos(s.lambda) * RES));
-  setText(el('lamVal'), `${s.lambda}${NB}nm`);
+  setText(el('lamVal'), String(s.lambda));
+  const lamLock = locked.has('lambda');
+  el('lamMinus').disabled = lamLock || s.lambda <= LAMBDA.min;
+  el('lamPlus').disabled = lamLock || s.lambda >= LAMBDA.max;
+  setAttr(el('lamMinus'), 'aria-label', t('dims.decrease', { name: t('bar.lamName') }));
+  setAttr(el('lamPlus'), 'aria-label', t('dims.increase', { name: t('bar.lamName') }));
   // spriegums
   setText(el('voltLabel'), t('bar.volt'));
-  setText(el('polW'), t(s.reverse ? 'bar.anodeMinus' : 'bar.anodePlus'));
-  setText(el('polX'), t('bar.polSr'));
+  setAttr(el('polBtn'), 'aria-label', t('bar.polAria'));
+  setAttr(el('polBtn'), 'aria-pressed', s.reverse);
   el('polBtn').disabled = locked.has('reverse');
   const uLock = locked.has('voltage');
   if (Number(uRange.value) !== Math.round(s.voltage * U_RES)) uRange.value = String(Math.round(s.voltage * U_RES));
@@ -441,10 +447,9 @@ function render() {
   el('uPlus').disabled = uLock || s.voltage >= U_MAX;
   setAttr(el('uMinus'), 'aria-label', t('dims.decrease', { name: t('bar.voltName') }));
   setAttr(el('uPlus'), 'aria-label', t('dims.increase', { name: t('bar.voltName') }));
-  setText(el('uVal'), t('bar.voltVal', { u: fmt(s.voltage, 2) }));
+  setText(el('uVal'), fmt(s.voltage, 2));
   // žogs, i
   setAttr(el('showGroup'), 'aria-label', t('bar.show'));
-  setText(el('fenceBtn'), t('bar.fence'));
   setAttr(el('fenceBtn'), 'aria-label', `${t('bar.fence')}: ${t('bar.fenceAria')}`);
   setAttr(el('fenceBtn'), 'aria-pressed', ui.fence);
   el('fenceBtn').disabled = locked.has('fence');

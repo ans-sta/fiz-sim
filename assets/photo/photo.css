@@ -21,56 +21,71 @@
 .layout-hud .a02-bar { display: grid; grid-template-columns: max-content minmax(0, 1.25fr) minmax(0, 1fr) max-content; padding: 0; }
 .layout-hud .a02-bar .m01-group.a02-col { min-width: 0; gap: calc(4px * var(--hud)); padding: calc(6px * var(--hud)) calc(12px * var(--hud)) calc(7px * var(--hud)); border-right: 1px solid var(--hairline); }
 .layout-hud .a02-bar .m01-label { display: block; }
-.layout-hud .a02-c1body { display: flex; flex-direction: column; gap: calc(4px * var(--hud)); }
-.layout-hud .a02-bar .m01-row.a02-r { flex-wrap: nowrap; gap: calc(6px * var(--hud)); min-width: 0; }
-.layout-hud .a02-bar .a02-r2 { min-height: calc(24px * var(--hud) + 16px); }
 .layout-hud .a02-k { font-size: calc(9.5px * var(--hud)); letter-spacing: 0.14em; color: var(--ink-dim); white-space: nowrap; }
-.layout-hud .a02-line { margin: 0; display: flex; align-items: center; gap: calc(8px * var(--hud)); white-space: nowrap; min-height: calc(24px * var(--hud) + 16px); }
 .layout-hud .a02-v { font-size: calc(17px * var(--hud)); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .layout-hud .a02-v i { font-family: 'IBM Plex Sans', system-ui, sans-serif; }
 .layout-hud .a02-v sup { font-size: 0.62em; line-height: 0; vertical-align: 0.75em; letter-spacing: 0; }
 .layout-hud .a02-ev { font-size: calc(11px * var(--hud)); font-weight: 400; color: var(--ink-dim); }
 .layout-hud .a02-ev[hidden] { display: none; }
-/* skaitlis rindas galā: intensitāte, viļņa garums, spriegums — vienā kolonnā, platums rezervēts */
-.layout-hud .a02-val { flex: none; font-size: calc(15px * var(--hud)); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
-.layout-hud .a02-c2 .a02-val { min-width: 7ch; }
-.layout-hud .a02-c3 .a02-val { min-width: 6ch; }
-.layout-hud .e01-bar .m01-row input.dim-range.a02-range { flex: 1 1 calc(60px * var(--hud)); width: auto; min-width: 44px; }
-.layout-hud .m01-row .btn#onBtn { min-width: 8.6em; }
-.layout-hud .m01-row .btn.a02-pol { min-width: 7.6em; }
 
-/* krāsas slīdnis ar spektru (otrā rinda) */
-.layout-hud .a02-spec { position: relative; flex: 1 1 auto; min-width: 0; height: calc(24px * var(--hud) + 14px); }
+/* 1. kolonna: pogas, zem tām A = … un mazs paraksts “izejas darbs” (kā nm skala zem spektra) */
+.layout-hud .a02-c1body { display: flex; flex-direction: column; gap: calc(5px * var(--hud)); }
+.layout-hud .a02-aline { margin: 0; display: flex; flex-direction: column-reverse; align-items: flex-start; min-height: calc(28px * var(--hud) + 14px); }
+.layout-hud .a02-aline .a02-v { font-size: calc(15px * var(--hud)); line-height: calc(28px * var(--hud)); }
+.layout-hud .a02-aline .a02-k { font-size: calc(9px * var(--hud)); letter-spacing: 0.06em; line-height: 12px; }
+
+/* 2. un 3. kolonna — režģis: [kvadrāts] [−] slīdnis [+] skaitlis mērvienība; 2. rinda sākas zem [−] */
+.layout-hud .a02-lgrid { display: grid; grid-template-columns: auto auto minmax(44px, 1fr) auto auto auto; column-gap: calc(6px * var(--hud)); row-gap: calc(5px * var(--hud)); align-items: start; }
+.layout-hud .a02-lgrid .a02-r2c { grid-column: 2; }
+.layout-hud .a02-lgrid > * { min-width: 0; }
+.layout-hud .a02-lgrid input.dim-range.a02-range { width: 100%; min-width: 44px; height: calc(28px * var(--hud)); }
+.layout-hud .a02-num, .layout-hud .a02-unit { font-size: calc(15px * var(--hud)); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; line-height: calc(28px * var(--hud)); }
+.layout-hud .a02-num { justify-self: end; text-align: right; min-width: 4ch; margin-left: calc(4px * var(--hud)); }
+.layout-hud .a02-unit { justify-self: start; margin-left: calc(-2px * var(--hud)); min-width: 2ch; }
+.layout-hud .a02-iline { grid-column: 2 / -1; margin: 0; line-height: calc(28px * var(--hud)); white-space: nowrap; }
+
+/* kvadrātiskās pogas: ⏻ gaisma, +/− polaritāte; ieslēgts — tintes laukums (stāvoklis ne tikai krāsā: pilns pret tukšu) */
+.layout-hud .a02-pow {
+  flex: none; display: grid; place-items: center; width: calc(28px * var(--hud)); height: calc(28px * var(--hud)); min-width: 24px; min-height: 24px; padding: 0;
+  background: var(--sheet); color: var(--ink-dim); border: 1px solid var(--ink-dim); font-size: calc(11px * var(--hud)); font-weight: 600; letter-spacing: 0;
+}
+.layout-hud .a02-pow svg { width: calc(15px * var(--hud)); height: calc(15px * var(--hud)); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.layout-hud .a02-pow[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.layout-hud .a02-pow:hover:not(:disabled) { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+
+/* krāsas slīdnis ar spektru: josla tikpat augsta kā pogas, zem tās nm skala */
+.layout-hud .a02-spec { position: relative; min-width: 0; height: calc(28px * var(--hud) + 14px); }
 .layout-hud .a02-spec canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .a02 #lam {
-  position: absolute; left: 0; top: 0; width: 100%; height: calc(24px * var(--hud)); margin: 0; padding: 0;
+  position: absolute; left: 0; top: 0; width: 100%; height: calc(28px * var(--hud)); margin: 0; padding: 0;
   -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; touch-action: none;
 }
 .a02 #lam::-webkit-slider-runnable-track { background: transparent; height: 100%; }
 .a02 #lam::-moz-range-track { background: transparent; height: 100%; }
 /* rokturis: lapas krāsas stabiņš ar tintes malu — redzams uz jebkuras krāsas (≥ 3 : 1 vismaz pret vienu malu) */
 .a02 #lam::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none; width: 12px; height: calc(30px * var(--hud)); margin-top: calc(-3px * var(--hud));
+  -webkit-appearance: none; appearance: none; width: 12px; height: calc(34px * var(--hud)); margin-top: calc(-3px * var(--hud));
   background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; box-shadow: 0 0 0 1px var(--sheet);
 }
-.a02 #lam::-moz-range-thumb { width: 8px; height: calc(28px * var(--hud)); background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; box-shadow: 0 0 0 1px var(--sheet); }
+.a02 #lam::-moz-range-thumb { width: 8px; height: calc(32px * var(--hud)); background: var(--sheet); border: 2px solid var(--ink); border-radius: 2px; box-shadow: 0 0 0 1px var(--sheet); }
 .a02 #lam:disabled { cursor: not-allowed; }
 .a02 #lam:focus { outline: none; }
 .a02 #lam:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* 4. kolonna: ŽOGS un i — vienādi kvadrāti viens virs otra */
+/* 4. kolonna: ŽOGS (zīmējums) un i — vienādi kvadrāti viens virs otra */
 .layout-hud .a02-bar .m01-group.a02-c4 { border-right: none; justify-content: center; align-items: center; gap: calc(6px * var(--hud)); padding: calc(6px * var(--hud)) calc(10px * var(--hud)); }
 .layout-hud .a02-sq {
   flex: none; display: grid; place-items: center; width: calc(40px * var(--hud)); height: calc(40px * var(--hud)); min-width: 24px; min-height: 24px; padding: 0;
-  background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); font-size: calc(9.5px * var(--hud)); letter-spacing: 0.04em; font-weight: 600;
+  background: var(--sheet); color: var(--ink); border: 1px solid var(--ink); font-weight: 600;
 }
+.layout-hud .a02-sq svg { width: 74%; height: 74%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.layout-hud .a02-sq svg .a02-hop { stroke-width: 1.4; }
 .layout-hud .a02-sq[aria-pressed="false"] { color: var(--ink-dim); border-color: var(--ink-dim); }
-/* ieslēgts žogs — tintes laukums ar lapas krāsas burtiem (stāvoklis redzams ne tikai krāsā: pilns pret tukšu) */
 .layout-hud .a02-sq[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
 .layout-hud .a02-sq:hover:not(:disabled) { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
-.layout-hud .a02-sq.a02-info { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: italic; font-size: calc(16px * var(--hud)); letter-spacing: 0; }
+.layout-hud .a02-sq.a02-info { font-family: 'IBM Plex Sans', system-ui, sans-serif; font-style: normal; font-size: calc(17px * var(--hud)); letter-spacing: 0; }
 
-/* šaurāks dators / planšete: METĀLS un GAISMA augšā, SPRIEGUMS UN STRĀVA un ŽOGS · i zem tām */
+/* šaurāks dators / planšete: METĀLS un GAISMA augšā, SPRIEGUMS UN STRĀVA (vienā rindā ar I) un ŽOGS · i zem tām */
 @media (max-width: 1060px) {
   .layout-hud .a02-bar { grid-template-columns: max-content minmax(0, 1fr) max-content; grid-template-areas: "c1 c2 c2" "c3 c3 c4"; }
   .layout-hud .a02-c1 { grid-area: c1; }
@@ -79,10 +94,8 @@
   .layout-hud .a02-bar .m01-group.a02-c2 { border-right: none; }
   .layout-hud .a02-c4 { grid-area: c4; border-top: 1px solid var(--hairline); }
   .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: row; }
-  .layout-hud .a02-c3 .a02-r { max-width: 34rem; }
-  .layout-hud .a02-c3 { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: calc(18px * var(--hud)); align-items: center; }
-  .layout-hud .a02-c3 > .m01-label { grid-column: 1 / 3; }
-  .layout-hud .a02-c3 .a02-r2 { min-height: 0; border-left: 1px solid var(--hairline); padding-left: calc(18px * var(--hud)); }
+  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 22rem) auto auto auto 1fr; }
+  .layout-hud .a02-vgrid .a02-iline { grid-row: 1; grid-column: 7; border-left: 1px solid var(--hairline); padding-left: calc(18px * var(--hud)); margin-left: calc(12px * var(--hud)); }
 }
 /* telefons: kolonnas viena zem otras; METĀLS — pogas un A vienā rindā; ŽOGS · i blakus spriegumam */
 @media (max-width: 640px) {
@@ -90,26 +103,15 @@
   .layout-hud .a02-bar .m01-group.a02-col { padding: calc(4px * var(--hud)) calc(8px * var(--hud)) calc(5px * var(--hud)); gap: calc(3px * var(--hud)); }
   .layout-hud .a02-bar .m01-group.a02-c1 { border-right: none; }
   .layout-hud .a02-c2 { border-top: 1px solid var(--hairline); }
-  .layout-hud .a02-c3 { display: flex; flex-direction: column; align-items: stretch; }
-  .layout-hud .a02-c3 .a02-r2 { border-left: none; padding-left: 0; }
   .layout-hud .a02-bar .m01-group.a02-c3 { border-right: 1px solid var(--hairline); }
-  .layout-hud .a02-c3 .a02-r { max-width: none; }
+  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 1fr) auto auto auto; }
+  .layout-hud .a02-vgrid .a02-iline { grid-row: 2; grid-column: 2 / -1; border-left: none; padding-left: 0; margin-left: 0; }
   .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: column; padding: calc(4px * var(--hud)) calc(6px * var(--hud)); }
-  .layout-hud .a02-c1body { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: calc(12px * var(--hud)); }
-  .layout-hud .a02-c1body .a02-line { min-height: 0; }
-  .layout-hud .a02-k#brightK { display: none; } /* vārds INTENSITĀTE — slīdņa nosaukumā; vieta slīdnim */
-  .layout-hud .m01-row .btn#onBtn { min-width: 0; }
-  .layout-hud .m01-row .btn.a02-pol { min-width: 0; }
+  .layout-hud .a02-c1body { flex-direction: row; flex-wrap: wrap; align-items: flex-start; column-gap: calc(14px * var(--hud)); }
   .layout-hud .a02-v { font-size: calc(15px * var(--hud)); }
-  .layout-hud .a02-val { font-size: calc(13px * var(--hud)); }
-  .layout-hud .a02-line { min-height: calc(26px * var(--hud)); }
-  .layout-hud .a02-bar .a02-r2 { min-height: 0; }
+  .layout-hud .a02-num, .layout-hud .a02-unit, .layout-hud .a02-aline .a02-v { font-size: calc(13px * var(--hud)); }
+  .layout-hud .a02-lgrid { column-gap: 4px; }
   .layout-hud .a02-sq { width: calc(36px * var(--hud)); height: calc(36px * var(--hud)); }
-}
-/* vārdi “izejas darbs” un “strāva” — tikai vizuāli paslēpti (ekrāna lasītājam paliek) */
-@media (max-width: 520px) {
-  .layout-hud .a02-k#nA { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .layout-hud .a02-bar .m01-row.a02-r { gap: 4px; }
 }
 /* telefons guļus (zems ekrāns): augšā METĀLS · GAISMA, zem tām SPRIEGUMS UN STRĀVA vienā rindā, ŽOGS · i labajā malā; bez virsrakstiem */
 @media (max-height: 480px) and (orientation: landscape) {
@@ -119,20 +121,16 @@
   .layout-hud .a02-c3 { grid-area: c3; border-top: 1px solid var(--hairline); }
   .layout-hud .a02-c4 { grid-area: c4; border-top: none; }
   .layout-hud .a02-bar .m01-group.a02-col { padding: 3px 8px; gap: 2px; }
-  .layout-hud .a02-bar .m01-group.a02-c1, .layout-hud .a02-bar .m01-group.a02-c2 { border-right: 1px solid var(--hairline); }
-  .layout-hud .a02-bar .m01-group.a02-c3 { border-right: 1px solid var(--hairline); display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 14px; align-items: center; }
-  .layout-hud .a02-c3 .a02-r2 { border-left: 1px solid var(--hairline); padding-left: 14px; }
-  .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: column; border-left: none; gap: 4px; padding: 3px 6px; }
+  .layout-hud .a02-bar .m01-group.a02-c1, .layout-hud .a02-bar .m01-group.a02-c2, .layout-hud .a02-bar .m01-group.a02-c3 { border-right: 1px solid var(--hairline); }
+  .layout-hud .a02-vgrid { grid-template-columns: auto auto minmax(44px, 18rem) auto auto auto 1fr; }
+  .layout-hud .a02-vgrid .a02-iline { grid-row: 1; grid-column: 7; border-left: 1px solid var(--hairline); padding-left: 12px; margin-left: 8px; }
+  .layout-hud .a02-bar .m01-group.a02-c4 { flex-direction: column; gap: 4px; padding: 3px 6px; }
   .layout-hud .a02-bar .m01-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .layout-hud .a02-bar .m01-label:has(.fix:not([hidden])) { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; }
-  .layout-hud .a02-c1body { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; }
-  .layout-hud .a02-k#brightK { display: none; }
-  .layout-hud .a02-k#nA, .layout-hud .a02-k#nI { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .layout-hud .m01-row .btn#onBtn, .layout-hud .m01-row .btn.a02-pol { min-width: 0; }
-  .layout-hud .a02-v { font-size: 13px; }
-  .layout-hud .a02-val { font-size: 12px; }
-  .layout-hud .a02-line, .layout-hud .a02-bar .a02-r2 { min-height: 0; }
-  .layout-hud .a02-spec { height: 34px; }
-  .a02 #lam { height: 22px; }
+  .layout-hud .a02-c1body { flex-direction: column; flex-wrap: nowrap; align-items: flex-start; gap: 2px; }
+  .layout-hud .a02-aline { min-height: 0; }
+  .layout-hud .a02-v, .layout-hud .a02-num, .layout-hud .a02-unit, .layout-hud .a02-aline .a02-v { font-size: 13px; }
+  .layout-hud .a02-spec { height: 38px; }
+  .a02 #lam { height: 24px; }
   .layout-hud .a02-sq { width: 32px; height: 32px; }
 }

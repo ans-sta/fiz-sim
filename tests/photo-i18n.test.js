@@ -15,7 +15,6 @@ test('every key the page uses exists', () => {
   for (const k of ['what', 'photon', 'fence', 'bright', 'volt', 'metals', 'simp']) { used.add(`info.${k}H`); if (k !== 'metals') used.add(`info.${k}`); }
   for (const k of ['all', 'slow', 'some', 'back']) used.add(`flow.${k}`);
   for (const k of ['fwd', 'rev']) used.add(`volt.${k}`);
-  for (const k of ['anodePlus', 'anodeMinus']) used.add(`bar.${k}`);
   for (const r of ['not_number', 'out_of_range', 'not_allowed', 'bad_list', 'none', 'listHint']) used.add(`url.${r}`);
   for (const k of used) assert.ok(k in STRINGS.lv, `missing ${k}`);
   const html = readFileSync(new URL('../photoelectric-effect.html', import.meta.url), 'utf8');

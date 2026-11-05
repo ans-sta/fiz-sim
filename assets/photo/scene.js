@@ -260,13 +260,7 @@ function drawProjector(ctx, lay, v, k) {
     for (const q of pts.slice(1)) ctx.lineTo(q.x, q.y);
     ctx.closePath();
   };
-  // stienis no augšas līdz šarnīram
   ctx.strokeStyle = c.ink;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(proj.P.x, lay.tubeR.y);
-  ctx.lineTo(proj.P.x, proj.P.y);
-  ctx.stroke();
   // klapes: no lēcas malām pa stara malām (tās nosaka, kur stars krīt)
   const { a1, a2, b1, b2 } = beamEdges(lay);
   const flap = 0.9 * proj.r;
