@@ -145,3 +145,5 @@ Kur specifikācija atstāja izvēli, izvēlējos tā. Viss maināms — pasaki.
 **Viļņi ↔ fotoni (Ansis 05.11.: “šis eksperiments taču palīdzēja ATKLĀT fotonus”).** Zem ⏻ kvadrāta poga ar vilnīti (tas pats viļņu paketes zīmējums, kas lido caurulē). Sākumā — vienmērīgs kūlis (sektors, intensitāte maina spilgtumu), fotonu nav; nospiežot (pilns kvadrāts) — kūļa vietā atsevišķi fotoni, 2× lēnāk (1,4 s līdz plāksnei). Tikai attēlojums — elektroni, strāva, aprēķini tie paši. Kūļa režīmā izslēgšana, krāsa un intensitāte pie plāksnes darbojas uzreiz (nav “lidojošu” fotonu). Saitē `photons=1`, bloķējams.
 
 Kūļa režīmā izslēgšana, krāsa un intensitāte pie plāksnes darbojas uzreiz. Žogā fotons lido abos režīmos, jo žogs ir fotona enerģijas modelis. ⚙ ZĪMĒJUMS un saspiešana ar diviem pirkstiem: zem 100 % caurule un žogs mazāki, virs 100 % lielāki elektroni un fotoni.
+
+**Sliekšņu atzīmes (Ansis 05.11.).** Virs spektra katram metālam īsa svītra ar simbolu tā sliekšņa vietā (Cu 264 · Zn 289 · Na 545 · Cs 591 nm); izvēlētais metāls — biezāks, treknāks, oranžs. Ekrāna lasītājam sliekšņi — slīdņa aprakstā.

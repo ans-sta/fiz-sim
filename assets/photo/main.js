@@ -311,21 +311,25 @@ function bandRGB(nm) {
   return spectralRGB(nm);
 }
 let specKey = '';
+const HINT_H = 14; // px — josla virs spektra (tas pats photo.css)
+// Uzraksts pa kreisi vai pa labi no atzīmes: Cu < Zn un Na < Cs ir tuvu, tā pāri nesaduras arī telefonā
+const HINT_SIDE = { Cu: -1, Zn: 1, Na: -1, Cs: 1 };
 function drawSpectrum() {
   const box = el('spec').getBoundingClientRect();
   const w = Math.max(1, Math.round(box.width));
   const h = Math.max(1, Math.round(box.height));
-  const key = `${w}|${h}|${lam.offsetHeight}|${theme.current()}|${i18n.lang()}`;
-  if (key === specKey) return; // pārzīmē tikai, ja mainījies izmērs, tēma vai valoda
+  const key = `${w}|${h}|${lam.offsetHeight}|${theme.current()}|${i18n.lang()}|${sim.state.metal}`;
+  if (key === specKey) return; // pārzīmē tikai, ja mainījies izmērs, tēma, valoda vai metāls
   specKey = key;
   const dpr = window.devicePixelRatio || 1;
-  if (specCanvas.width !== Math.round(w * dpr) || specCanvas.height !== Math.round(h * dpr)) {
+  if (specCanvas.width !== Math.round(w * dpr) || specCanvas.height !== Math.round((h + HINT_H) * dpr)) {
     specCanvas.width = Math.round(w * dpr);
-    specCanvas.height = Math.round(h * dpr);
+    specCanvas.height = Math.round((h + HINT_H) * dpr);
   }
   const ctx = specCtx;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, w, h);
+  // y = 0 — joslas augša; virs tās HINT_H vieta sliekšņu atzīmēm (kanva CSS uzbīdīta tikpat uz augšu)
+  ctx.setTransform(dpr, 0, 0, dpr, 0, HINT_H * dpr);
+  ctx.clearRect(0, -HINT_H, w, h + HINT_H);
   const c = colors;
   const bh = lam.offsetHeight || 28;
   const inset = 6; // pusi roktura platuma: roktura centrs iet no 6 līdz w − 6
@@ -360,6 +364,22 @@ function drawSpectrum() {
     ctx.stroke();
     ctx.textAlign = nm === 1200 ? 'right' : 'center';
     ctx.fillText(String(nm), nm === 1200 ? Math.min(x + 3, w) : x, bh + 3);
+  }
+  // Katra metāla slieksnis virs joslas; izvēlētais — biezāks un treknāks (ne tikai krāsā)
+  ctx.textBaseline = 'alphabetic';
+  for (const m of METAL_IDS) {
+    const on = m === sim.state.metal;
+    const x = Math.round(xOf(thresholdNm(m))) + 0.5;
+    ctx.strokeStyle = on ? c.accent : c.inkDim;
+    ctx.fillStyle = on ? c.accent : c.inkDim;
+    ctx.lineWidth = on ? 2 : 1;
+    ctx.beginPath();
+    ctx.moveTo(x, -HINT_H + 3);
+    ctx.lineTo(x, 0);
+    ctx.stroke();
+    ctx.font = `${on ? 600 : 400} 9px 'IBM Plex Mono', monospace`;
+    ctx.textAlign = HINT_SIDE[m] < 0 ? 'right' : 'left';
+    ctx.fillText(m, x + HINT_SIDE[m] * 3, -5); // virs spektra roktura (tas sniedzas 3 px virs joslas)
   }
 }
 
@@ -436,6 +456,9 @@ function render() {
   // krāsa
   setAttr(lam, 'aria-label', t('slider.name'));
   setAttr(lam, 'aria-valuetext', t('slider.valuetext', { lam: s.lambda, band: t(`band.${bandOf(s.lambda)}`) }));
+  setText(el('lamThr'), t('slider.thresholds', {
+    list: METAL_IDS.map((m) => `${t(`name.${m}`)} ${fmt(Math.floor(thresholdNm(m)), 0)} nm`).join(', '),
+  }));
   lam.disabled = locked.has('lambda');
   if (document.activeElement !== lam && Math.round(posToLambda(Number(lam.value) / RES)) !== s.lambda) lam.value = String(Math.round(lambdaToPos(s.lambda) * RES));
   setText(el('lamVal'), String(s.lambda));

@@ -127,3 +127,10 @@ test('drawing scale: below 100 % the tube and fence shrink around their centres,
   assert.deepEqual(c.tube, d.tube);
   near(electronRadius(c) / electronRadius(d), 1.5, 1e-9, 'electron');
 });
+
+test('threshold order the slider marks rely on: Cu < Zn < Na < Cs, each marked at its own place on the axis', () => {
+  const t = (m) => thresholdNm(m);
+  assert.ok(t('Cu') < t('Zn') && t('Zn') < t('Na') && t('Na') < t('Cs'));
+  assert.ok(lambdaToPos(t('Cu')) < lambdaToPos(t('Zn')) && lambdaToPos(t('Zn')) < 0.22, 'zinc and copper in the UV part');
+  assert.ok(lambdaToPos(t('Na')) > 0.22 && lambdaToPos(t('Cs')) < 0.8, 'sodium and caesium in the visible part');
+});

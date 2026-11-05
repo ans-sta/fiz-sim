@@ -40,6 +40,7 @@ export const STRINGS = {
 
     'slider.name': 'Gaismas krāsa — viļņa garums',
     'slider.valuetext': '{lam} nm, {band}',
+    'slider.thresholds': 'Sliekšņi: {list}.',
     'band.uv': 'ultravioletā',
     'band.violet': 'violeta',
     'band.blue': 'zila',
@@ -114,7 +115,7 @@ export const STRINGS = {
     'info.voltH': 'SPRIEGUMS',
     'info.volt': 'Ķēdē virknē ar ampērmetru ir slēgta baterija. Ja anods ir pievienots baterijas pozitīvajam polam, elektriskais lauks elektronus paātrina, un tie visi sasniedz anodu. Ja polaritāte ir pretēja (anods — negatīvajam polam), lauks elektronus bremzē: tie lido arvien lēnāk, un tie, kuriem kinētiskās enerģijas nepietiek, apstājas un atgriežas uz plāksni. Jo lielāks spriegums, jo mazāk elektronu sasniedz anodu. Bremzējošais spriegums U_b ir mazākais spriegums, pie kura anodu nesasniedz neviens elektrons un strāva ir 0. Jo īsāks gaismas viļņa garums, jo lielāks U_b; intensitāte U_b nemaina.',
     'info.metalsH': 'IZEJAS DARBI',
-    'info.metals': '{list}. Slieksnis (fotoefekta sarkanā robeža) ir garākais viļņa garums, pie kura gaisma vēl izsit elektronus. Avots: HyperPhysics (C. R. Nave, Džordžijas štata universitāte), tabula “Work Functions for Photoelectric Effect”. Citās tabulās vērtības mazliet atšķiras, jo izejas darbs ir atkarīgs no metāla virsmas.',
+    'info.metals': '{list}. Slieksnis (fotoefekta sarkanā robeža) ir garākais viļņa garums, pie kura gaisma vēl izsit elektronus. Virs krāsas slīdņa katram metālam atzīmēts tā slieksnis, izvēlētais metāls izcelts. Avots: HyperPhysics (C. R. Nave, Džordžijas štata universitāte), tabula “Work Functions for Photoelectric Effect”. Citās tabulās vērtības mazliet atšķiras, jo izejas darbs ir atkarīgs no metāla virsmas.',
     'info.metalItem': '{name} — {A} J{ev}, slieksnis {nm} nm',
     'info.simpH': 'VIENKĀRŠOJUMI',
     'info.simp': 'Īstā metālā elektronu izsit tikai neliela daļa fotonu, pārējie atstarojas vai plāksni silda. Šeit katrs fotons ar W > A izsit elektronu, lai būtu redzams: viens fotons — viens elektrons. Izejas darbs A ir mazākais darbs, kas vajadzīgs, lai elektrons izkļūtu; daudzi elektroni, izkļūstot no metāla, zaudē vairāk enerģijas nekā A, tāpēc īstie elektroni lido ar ātrumiem no gandrīz nulles līdz lielākajam. Šeit izkliede ir mazāka (85–100 % no lielākā ātruma), lai krāsas ietekme būtu skaidri redzama. Tāpēc, palielinot spriegumu ar pretējo polaritāti, strāva šeit sāk samazināties tikai tuvu U_b; īstā caurulē tā samazinās pakāpeniski jau no 0 V. Arī bez sprieguma šeit anodu sasniedz visi elektroni; īstā caurulē — ne visi, tāpēc paātrinošs spriegums strāvu vēl nedaudz palielina, līdz tā sasniedz piesātinājumu. Ekrānā elektroni lido ļoti palēnināti, bet to ātrums aug tāpat kā īstajiem — proporcionāli kvadrātsaknei no Wₖ. Intensitāte šeit ir fotonu skaits sekundē. Ja vienāda būtu gaismas jauda, zilās gaismas fotonu un tātad elektronu būtu mazāk, jo katrs zilais fotons nes vairāk enerģijas. Strāvas vērtības ir ilustratīvas (1 µA ≈ 6·10¹² elektronu sekundē).',
@@ -175,6 +176,7 @@ export const STRINGS = {
 
     'slider.name': 'Light colour — wavelength',
     'slider.valuetext': '{lam} nm, {band}',
+    'slider.thresholds': 'Thresholds: {list}.',
     'band.uv': 'ultraviolet',
     'band.violet': 'violet',
     'band.blue': 'blue',
@@ -249,7 +251,7 @@ export const STRINGS = {
     'info.voltH': 'VOLTAGE',
     'info.volt': 'A battery is connected in series with the ammeter. If the anode is connected to the battery’s positive terminal, the electric field speeds the electrons up, and all of them reach the anode. If the polarity is reversed (the anode to the negative terminal), the field slows the electrons down: they fly slower and slower, and those without enough kinetic energy stop and turn back to the plate. The larger the voltage, the fewer electrons reach the anode. The stopping voltage U_b is the smallest voltage at which no electron reaches the anode and the current is 0. The shorter the wavelength, the larger U_b; intensity does not change U_b.',
     'info.metalsH': 'WORK FUNCTIONS',
-    'info.metals': '{list}. The threshold (the red limit of the photoelectric effect) is the longest wavelength at which light still knocks out electrons. Source: HyperPhysics (C. R. Nave, Georgia State University), table “Work Functions for Photoelectric Effect”. Other tables give slightly different values, because the work function depends on the metal surface.',
+    'info.metals': '{list}. The threshold (the red limit of the photoelectric effect) is the longest wavelength at which light still knocks out electrons. Above the colour slider each metal’s threshold is marked, with the chosen metal highlighted. Source: HyperPhysics (C. R. Nave, Georgia State University), table “Work Functions for Photoelectric Effect”. Other tables give slightly different values, because the work function depends on the metal surface.',
     'info.metalItem': '{name} — {A} J{ev}, threshold {nm} nm',
     'info.simpH': 'SIMPLIFICATIONS',
     'info.simp': 'In a real metal only a small share of photons knock out an electron; the rest are reflected or warm the plate. Here every photon with W > A knocks one out, so you can see: one photon — one electron. The work function A is the least work an electron needs to get out; many electrons lose more energy than A on the way, so real electrons fly at speeds from almost zero up to the largest. Here the spread is smaller (85–100 % of the top speed) so the effect of colour stays clear. So as the reverse voltage grows, the current here starts to fall only close to U_b; in a real tube it falls gradually from 0 V. Even without voltage, every electron reaches the anode here; in a real tube not all do, so an accelerating voltage still raises the current a little until it saturates. On screen the electrons are slowed down a lot, but their speed grows as for real ones — in proportion to the square root of Wₖ. Intensity here is the number of photons per second. At equal light power, blue light would have fewer photons, and so fewer electrons, because each blue photon carries more energy. The current values are illustrative (1 µA ≈ 6·10¹² electrons per second).',

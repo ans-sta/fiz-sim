@@ -29,13 +29,13 @@
 .layout-hud .a02-ev[hidden] { display: none; }
 
 /* 1. kolonna: pogas, zem tām A = … un mazs paraksts “izejas darbs” (kā nm skala zem spektra) */
-.layout-hud .a02-c1body { display: flex; flex-direction: column; gap: calc(5px * var(--hud)); }
+.layout-hud .a02-c1body { display: flex; flex-direction: column; gap: calc(8px * var(--hud)); }
 .layout-hud .a02-aline { margin: 0; display: flex; flex-direction: column-reverse; align-items: flex-start; min-height: calc(28px * var(--hud) + 14px); }
 .layout-hud .a02-aline .a02-v { font-size: calc(15px * var(--hud)); line-height: calc(28px * var(--hud)); }
 .layout-hud .a02-aline .a02-k { font-size: calc(9px * var(--hud)); letter-spacing: 0.06em; line-height: 12px; }
 
 /* 2. un 3. kolonna — režģis: [kvadrāts] [−] slīdnis [+] skaitlis mērvienība; 2. rinda sākas zem [−] */
-.layout-hud .a02-lgrid { display: grid; grid-template-columns: auto auto minmax(44px, 1fr) auto auto auto; column-gap: calc(6px * var(--hud)); row-gap: calc(5px * var(--hud)); align-items: start; }
+.layout-hud .a02-lgrid { display: grid; grid-template-columns: auto auto minmax(44px, 1fr) auto auto auto; column-gap: calc(6px * var(--hud)); row-gap: calc(8px * var(--hud)); align-items: start; }
 .layout-hud .a02-lgrid .a02-r2c { grid-column: 2; }
 .layout-hud .a02-lgrid > * { min-width: 0; }
 .layout-hud .a02-lgrid input.dim-range.a02-range { width: 100%; min-width: 44px; height: calc(28px * var(--hud)); }
@@ -57,7 +57,8 @@
 
 /* krāsas slīdnis ar spektru: josla tikpat augsta kā pogas, zem tās nm skala */
 .layout-hud .a02-spec { position: relative; min-width: 0; height: calc(28px * var(--hud) + 14px); }
-.layout-hud .a02-spec canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* kanva sniedzas 14 px virs joslas — sliekšņu atzīmes (HINT_H main.js); klikšķus tā neuztver */
+.layout-hud .a02-spec canvas { position: absolute; left: 0; top: -14px; width: 100%; height: calc(100% + 14px); display: block; pointer-events: none; }
 .a02 #lam {
   position: absolute; left: 0; top: 0; width: 100%; height: calc(28px * var(--hud)); margin: 0; padding: 0;
   -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; touch-action: none;
