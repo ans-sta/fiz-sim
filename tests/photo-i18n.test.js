@@ -38,3 +38,12 @@ test('typography: no straight quotes, no "...", no spaced hyphen, no „low quot
 test('energies are in joules; eV appears only in the eV-mode line', () => {
   for (const [k, v] of Object.entries(STRINGS.lv)) if (k !== 'info.metalItem') assert.ok(!/\beV\b/.test(v), `lv.${k} mentions eV`);
 });
+
+test('page loads every A-02 module and the stylesheet with one shared version mark (fresh files after an update)', () => {
+  const html = readFileSync(new URL('../photoelectric-effect.html', import.meta.url), 'utf8');
+  const marks = new Set([...html.matchAll(/assets\/(?:photo|atoms)\/[\w-]+\.(?:js|css)\?v=([\w-]+)/g)].map((m) => m[1]));
+  assert.equal(marks.size, 1, `version marks: ${[...marks].join(', ')}`);
+  const map = JSON.parse(/<script type="importmap">([\s\S]*?)<\/script>/.exec(html)[1]).imports;
+  for (const f of ['main', 'model', 'sim', 'scene', 'params', 'i18n']) assert.ok(`./assets/photo/${f}.js` in map, `import map misses ${f}.js`);
+  assert.ok(/src="assets\/photo\/main\.js\?v=/.test(html) && /href="assets\/photo\/photo\.css\?v=/.test(html));
+});
