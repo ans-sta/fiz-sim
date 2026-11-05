@@ -114,3 +114,16 @@ test('stopping voltage: current exactly 0 from U_b up (reverse), full with forwa
     prev = I;
   }
 });
+
+test('drawing scale: below 100 % the tube and fence shrink around their centres, above 100 % only electrons and photons grow', async () => {
+  const { sceneLayout, electronRadius } = await import('../assets/photo/scene.js');
+  const a = sceneLayout(1200, 700, { fence: true });
+  const b = sceneLayout(1200, 700, { fence: true, drawScale: 0.6 });
+  near(b.tube.w / a.tube.w, 0.6, 0.05, 'tube width');
+  near(b.tubeR.x + b.tubeR.w / 2, a.tubeR.x + a.tubeR.w / 2, 1e-9, 'centred');
+  near(b.fenceR.w / a.fenceR.w, 0.6, 1e-9, 'fence');
+  const c = sceneLayout(1200, 700, { drawScale: 1.5 });
+  const d = sceneLayout(1200, 700);
+  assert.deepEqual(c.tube, d.tube);
+  near(electronRadius(c) / electronRadius(d), 1.5, 1e-9, 'electron');
+});

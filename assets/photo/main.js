@@ -463,7 +463,7 @@ function render() {
   const gb = el('gear').getBoundingClientRect();
   const cb = canvas.getBoundingClientRect();
   const avoid = gb.width > 0 ? { x: gb.left - cb.left, y: gb.top - cb.top, w: gb.width, h: gb.height } : null;
-  const lay = sceneLayout(w, h, { fence: ui.fence, avoid });
+  const lay = sceneLayout(w, h, { fence: ui.fence, avoid, drawScale: ui.drawScale });
   ui.layout = lay;
   const legend = w < 520 || h < 420 ? Math.min(1.15, legendScale(gear.textScale())) : legendScale(gear.textScale());
   drawScene(view.ctx, lay, {

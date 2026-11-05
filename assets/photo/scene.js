@@ -18,8 +18,10 @@ const METAL_RGB = {
 };
 
 // ── izkārtojums ───────────────────────────────────────────
-// avoid — ⚙ poga kreisajā apakšas stūrī (kanvas koordinātās); žogs zem caurules sākas pa labi no tās
-export function sceneLayout(w, h, { fence = false, avoid = null } = {}) {
+// avoid — ⚙ poga kreisajā apakšas stūrī (kanvas koordinātās); žogs zem caurules sākas pa labi no tās.
+// drawScale — ⚙ ZĪMĒJUMS / tālummaiņa ar diviem pirkstiem: < 1 — caurule un žogs mazāki (centrā),
+// > 1 — elektroni un fotoni lielāki (caurule jau aizņem visu vietu)
+export function sceneLayout(w, h, { fence = false, avoid = null, drawScale = 1 } = {}) {
   let tubeR;
   let fenceR = null;
   const side = fence && w >= 640 && w >= h * 1.15;
@@ -35,7 +37,11 @@ export function sceneLayout(w, h, { fence = false, avoid = null } = {}) {
   } else {
     tubeR = { x: M, y: M, w: w - 2 * M, h: h - 2 * M };
   }
-  return { w, h, side, tubeR, fenceR, ...tubeGeometry(tubeR) };
+  const s = clamp(drawScale, 0.4, 1);
+  const shrink = (R) => (R && s < 1 ? { x: R.x + (R.w * (1 - s)) / 2, y: R.y + (R.h * (1 - s)) / 2, w: R.w * s, h: R.h * s } : R);
+  tubeR = shrink(tubeR);
+  fenceR = shrink(fenceR);
+  return { w, h, side, tubeR, fenceR, zoom: clamp(drawScale, 1, 1.6), ...tubeGeometry(tubeR) };
 }
 
 function tubeGeometry(R) {
@@ -351,7 +357,11 @@ function drawPhotons(ctx, lay, v, k) {
     const x = S.x + (E.x - S.x) * f;
     const y = S.y + (E.y - S.y) * f;
     const ang = Math.atan2(E.y - S.y, E.x - S.x);
-    packet(ctx, x, y, ang, p.λ, rgbCss(beamRGB(p.λ, k)), 1, 2);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(lay.zoom, lay.zoom);
+    packet(ctx, 0, 0, ang, p.λ, rgbCss(beamRGB(p.λ, k)), 1, 2);
+    ctx.restore();
   }
 }
 
@@ -371,7 +381,7 @@ function drawHeats(ctx, lay, v, k) {
   }
 }
 
-export const electronRadius = (lay) => clamp(lay.tube.h * 0.032, 4.5, 8);
+export const electronRadius = (lay) => clamp(lay.tube.h * 0.032, 4.5, 8) * (lay.zoom ?? 1);
 
 function electronDot(ctx, x, y, r, c) {
   ctx.fillStyle = c.accent;
