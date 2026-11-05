@@ -123,7 +123,11 @@ export function createSim({
     state.lambda = nm;
     if (state.waves) for (const p of state.photons) p.λ = nm;
   };
-  const setWaves = (b) => { state.waves = Boolean(b); };
+  // Pārejot uz kūli, lidojošie fotoni atbilst pašreizējai gaismai (krāsa, intensitāte, izslēgta)
+  const setWaves = (b) => {
+    state.waves = Boolean(b);
+    if (state.waves) refill();
+  };
   const setMetal = (m) => { state.metal = m; };
   const setVoltage = (u) => { state.voltage = Math.max(0, u); };
   const setReverse = (b) => { state.reverse = Boolean(b); };
