@@ -28,67 +28,61 @@
     <div class="head-tools" id="headTools"></div>
   </header>
   <main class="e01-main" id="main" tabindex="-1">
-    <div class="m01-bar e01-bar" id="bar">
-      <div class="m01-group" role="group" aria-labelledby="metalLabel">
+    <!-- josla: 4 kolonnas (Ansis 05.11.) — METĀLS · GAISMA · SPRIEGUMS UN STRĀVA · ŽOGS un i; katrā virsraksts un 2 rindas -->
+    <div class="m01-bar e01-bar a02-bar" id="bar">
+      <div class="m01-group a02-col a02-c1" role="group" aria-labelledby="metalLabel">
         <span class="m01-label"><span id="metalLabel">METĀLS</span><span class="fix" id="metalFix" hidden></span></span>
-        <div class="m01-row e01-seg" id="metalBtns">
-          <button class="btn" type="button" data-metal="Cs" aria-pressed="false">Cs<span class="e01-sr" data-name></span></button>
-          <button class="btn" type="button" data-metal="Na" aria-pressed="true">Na<span class="e01-sr" data-name></span></button>
-          <button class="btn" type="button" data-metal="Zn" aria-pressed="false">Zn<span class="e01-sr" data-name></span></button>
-          <button class="btn" type="button" data-metal="Cu" aria-pressed="false">Cu<span class="e01-sr" data-name></span></button>
+        <div class="a02-c1body">
+          <div class="m01-row e01-seg" id="metalBtns">
+            <button class="btn" type="button" data-metal="Cs" aria-pressed="false">Cs<span class="e01-sr" data-name></span></button>
+            <button class="btn" type="button" data-metal="Na" aria-pressed="true">Na<span class="e01-sr" data-name></span></button>
+            <button class="btn" type="button" data-metal="Zn" aria-pressed="false">Zn<span class="e01-sr" data-name></span></button>
+            <button class="btn" type="button" data-metal="Cu" aria-pressed="false">Cu<span class="e01-sr" data-name></span></button>
+          </div>
+          <p class="a02-line"><span class="a02-k" id="nA">izejas darbs</span> <span class="a02-v"><span aria-hidden="true"><i>A</i> = </span><span id="vA" aria-hidden="true"></span><span class="e01-sr" id="sA"></span><span class="a02-ev" id="eA" aria-hidden="true" hidden></span></span></p>
         </div>
       </div>
-      <div class="m01-group" role="group" aria-labelledby="lightLabel">
+      <div class="m01-group a02-col a02-c2" role="group" aria-labelledby="lightLabel">
         <span class="m01-label"><span id="lightLabel">GAISMA</span><span class="fix" id="lightFix" hidden></span></span>
-        <div class="m01-row">
+        <div class="m01-row a02-r">
           <button class="btn e01-tog" id="onBtn" type="button" aria-pressed="true">IESLĒGTA</button>
           <span class="a02-k" id="brightK" aria-hidden="true">INTENSITĀTE</span>
           <button class="q-step" id="brMinus" type="button">−</button>
-          <input class="dim-range" id="brRange" type="range" min="0" max="100" step="1" value="30">
+          <input class="dim-range a02-range" id="brRange" type="range" min="0" max="100" step="1" value="30">
           <button class="q-step" id="brPlus" type="button">+</button>
-          <span class="m01-val a02-br" id="brVal">30 %</span>
+          <span class="a02-val" id="brVal">30 %</span>
+        </div>
+        <div class="m01-row a02-r a02-r2">
+          <div class="a02-spec" id="spec">
+            <canvas id="specCanvas" aria-hidden="true"></canvas>
+            <input id="lam" type="range" min="0" max="1000" step="1" value="800">
+          </div>
+          <span class="a02-val" id="lamVal">650 nm</span>
         </div>
       </div>
-      <div class="m01-group m01-end" role="group" aria-labelledby="showLabel">
-        <span class="m01-label" id="showLabel">RĀDĪT</span>
-        <div class="m01-row">
-          <button class="btn e01-tog" id="fenceBtn" type="button" aria-pressed="false">ŽOGS</button>
-          <button class="btn e01-tog" id="predictBtn" type="button" aria-pressed="false">PROGNOZE</button>
-          <button class="btn e01-info" id="infoBtn" type="button">i</button>
+      <div class="m01-group a02-col a02-c3" role="group" aria-labelledby="voltLabel">
+        <span class="m01-label"><span id="voltLabel">SPRIEGUMS UN STRĀVA</span><span class="fix" id="voltFix" hidden></span></span>
+        <div class="m01-row a02-r">
+          <button class="btn e01-flip a02-pol" id="polBtn" type="button"><span aria-hidden="true">⇄ </span><span id="polW">ANODS +</span><span class="e01-sr" id="polX"></span></button>
+          <button class="q-step" id="uMinus" type="button">−</button>
+          <input class="dim-range a02-range" id="uRange" type="range" min="0" max="600" step="1" value="0">
+          <button class="q-step" id="uPlus" type="button">+</button>
+          <span class="a02-val" id="uVal">0,00 V</span>
         </div>
+        <p class="a02-line a02-r2"><span class="a02-k" id="nI">strāva</span> <span class="a02-v"><span aria-hidden="true"><i>I</i> = </span><span id="vI" aria-hidden="true"></span><span class="e01-sr" id="sI"></span></span></p>
+      </div>
+      <div class="m01-group a02-col a02-c4" role="group" id="showGroup" aria-label="Rādīt">
+        <button class="btn a02-sq" id="fenceBtn" type="button" aria-pressed="false">ŽOGS</button>
+        <button class="btn a02-sq a02-info" id="infoBtn" type="button">i</button>
       </div>
     </div>
-    <dl class="a02-data" id="data">
-      <div class="a02-cell"><dt><i>λ</i> <span id="nLam">viļņa garums</span></dt><dd><span id="vLam"></span></dd></div>
-      <div class="a02-cell"><dt><i>f</i> <span id="nF">frekvence</span></dt><dd><span id="vF" aria-hidden="true"></span><span class="e01-sr" id="sF"></span></dd></div>
-      <div class="a02-cell"><dt><i>W</i> <span id="nW">fotona enerģija</span></dt><dd><span id="vW" aria-hidden="true"></span><span class="e01-sr" id="sW"></span><span class="a02-ev" id="eW" hidden></span></dd></div>
-      <div class="a02-cell"><dt><i>A</i> <span id="nA">izejas darbs</span></dt><dd><span id="vA" aria-hidden="true"></span><span class="e01-sr" id="sA"></span><span class="a02-ev" id="eA" hidden></span></dd></div>
-      <div class="a02-cell"><dt><i>W<sub>k</sub></i> <span id="nWk">kinētiskā enerģija</span></dt><dd><span id="vWk" aria-hidden="true"></span><span class="e01-sr" id="sWk"></span><span class="a02-ev" id="eWk" hidden></span></dd></div>
-      <div class="a02-cell"><dt><i>I</i> <span id="nI">strāva</span></dt><dd><span id="vI" aria-hidden="true"></span><span class="e01-sr" id="sI"></span></dd></div>
-    </dl>
     <div class="work a02-work" id="work">
       <div class="drawing" id="drawing">
         <p class="boot-msg" id="bootMsg">Lapa neielādējās. Atver to caur tīmekļa serveri (piem. ans-sta.github.io/fiz-sim), nevis kā failu no datora. · The page did not load. Open it through a web server, not as a local file.</p>
         <canvas id="scene" role="img" aria-label="Fotoefekts" aria-describedby="sceneDesc"></canvas>
-        <!-- prognozes aizsegs pār cauruli; nospiežot — rezultāts redzams (spec. § 3) -->
-        <button class="a02-cover" id="coverBtn" type="button" hidden><span class="a02-q" aria-hidden="true">?</span><span class="a02-show" id="coverW">RĀDĪT</span></button>
         <div class="notices" id="notices" role="status" aria-live="polite"></div>
       </div>
       <div id="gear"></div>
-    </div>
-    <div class="a02-strip" id="strip" role="group" aria-labelledby="colorLabel">
-      <span class="a02-slabel"><span id="colorLabel">KRĀSA</span><span class="fix" id="lamFix" hidden></span></span>
-      <div class="a02-spec" id="spec">
-        <canvas id="specCanvas" aria-hidden="true"></canvas>
-        <input id="lam" type="range" min="0" max="1000" step="1" value="800">
-      </div>
-      <span class="a02-lamval"><span id="lamVal">650 nm</span><span class="a02-lamf" id="lamF" aria-hidden="true"></span></span>
-      <div class="a02-presets" id="presets">
-        <button class="btn" type="button" data-nm="650"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="red">SARKANS</span> 650</button>
-        <button class="btn" type="button" data-nm="532"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="green">ZAĻŠ</span> 532</button>
-        <button class="btn" type="button" data-nm="450"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="blue">ZILS</span> 450</button>
-        <button class="btn" type="button" data-nm="250"><span class="a02-sw" aria-hidden="true"></span><span class="a02-pw" data-name="uv">UV</span> 250</button>
-      </div>
     </div>
     <p class="e01-sr" id="sceneDesc"></p>
     <p class="e01-sr" id="live" role="status" aria-live="polite"></p>

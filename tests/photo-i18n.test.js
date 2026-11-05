@@ -12,9 +12,10 @@ test('every key the page uses exists', () => {
   const used = new Set([...src.matchAll(/(?<![\w.])t\(\s*'([a-zA-Z0-9.]+)'/g)].map((m) => m[1]));
   for (const id of ['Cs', 'Na', 'Zn', 'Cu']) { used.add(`name.${id}`); used.add(`title.${id}`); used.add(`gen.${id}`); }
   for (const b of ['uv', 'violet', 'blue', 'cyan', 'green', 'yellow', 'orange', 'red', 'ir']) used.add(`band.${b}`);
-  for (const p of ['red', 'green', 'blue', 'uv']) used.add(`preset.${p}`);
-  for (const k of ['what', 'photon', 'fence', 'bright', 'metals', 'simp']) { used.add(`info.${k}H`); if (k !== 'metals') used.add(`info.${k}`); }
-  for (const k of ['lambda', 'f', 'W', 'A', 'Wk', 'I']) used.add(`data.${k}`);
+  for (const k of ['what', 'photon', 'fence', 'bright', 'volt', 'metals', 'simp']) { used.add(`info.${k}H`); if (k !== 'metals') used.add(`info.${k}`); }
+  for (const k of ['all', 'slow', 'some', 'back']) used.add(`flow.${k}`);
+  for (const k of ['fwd', 'rev']) used.add(`volt.${k}`);
+  for (const k of ['anodePlus', 'anodeMinus']) used.add(`bar.${k}`);
   for (const r of ['not_number', 'out_of_range', 'not_allowed', 'bad_list', 'none', 'listHint']) used.add(`url.${r}`);
   for (const k of used) assert.ok(k in STRINGS.lv, `missing ${k}`);
   const html = readFileSync(new URL('../photoelectric-effect.html', import.meta.url), 'utf8');

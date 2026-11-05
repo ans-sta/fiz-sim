@@ -91,3 +91,26 @@ test('screen speed grows with Wₖ (√), is capped near the threshold', () => {
   assert.equal(travelTime(0), T_MAX);
   assert.ok(travelTime(1e-24) <= T_MAX);
 });
+
+test('stopping voltage: current exactly 0 from U_b up (reverse), full with forward voltage, falls only close to U_b', async () => {
+  const { stoppingVoltage, U_MAX } = await import('../assets/photo/model.js');
+  const base = { lambda: 450, intensity: 100, metal: 'Na', on: true };
+  const Ub = stoppingVoltage(450, 'Na');
+  near(Ub, (6.63e-34 * 3e8 / 450e-9 - 2.28 * 1.6e-19) / 1.6e-19, 1e-12, 'U_b = (hf − A)/e');
+  assert.equal(currentMicroA({ ...base, voltage: Ub, reverse: true }), 0);
+  assert.equal(currentMicroA({ ...base, voltage: Ub + 0.01, reverse: true }), 0);
+  assert.ok(currentMicroA({ ...base, voltage: Ub - 0.01, reverse: true }) > 0);
+  assert.equal(currentMicroA({ ...base, voltage: 0.7 * Ub, reverse: true }), 2);
+  assert.equal(currentMicroA({ ...base, voltage: U_MAX, reverse: false }), 2);
+  // intensitāte U_b nemaina, krāsa — maina
+  assert.equal(currentMicroA({ ...base, intensity: 5, voltage: Ub, reverse: true }), 0);
+  assert.ok(currentMicroA({ ...base, intensity: 5, voltage: Ub - 0.01, reverse: true }) > 0);
+  assert.ok(stoppingVoltage(250, 'Na') > Ub);
+  // monotoni krīt
+  let prev = Infinity;
+  for (let u = 0; u <= Ub + 0.05; u += 0.01) {
+    const I = currentMicroA({ ...base, voltage: u, reverse: true });
+    assert.ok(I <= prev + 1e-12);
+    prev = I;
+  }
+});

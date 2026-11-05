@@ -24,7 +24,7 @@ Interactive HTML5 physics simulations for Waldorf education (grades 10–12).
 | ↻ Generator and Motor (E-01) | Electromagnetism / Ampère force on a coil, commutator, induced emf and its graph | 🟡 Review |
 | 🎤 Sound Spectrum Analyser (S-03) | Sound / live microphone spectrum, fundamental, light-colour analogy | ✅ Live |
 | ⚛ Atomic Spectra (A-01) | Atom / absorption and emission, energy levels and the electron’s jump, ionisation — H, He, Na, Hg | 🟡 Review |
-| ☀ Photoelectric Effect (A-02) | Atom / photons knock electrons out of a metal plate: threshold colour, intensity vs colour, the energy “fence” — Cs, Na, Zn, Cu | 🟡 Review |
+| ☀ Photoelectric Effect (A-02) | Atom / photons knock electrons out of a metal plate: threshold colour, intensity vs colour, stopping voltage, the energy “fence” — Cs, Na, Zn, Cu | 🟡 Review |
 
 ## Infographics
 
@@ -253,15 +253,20 @@ Parameters of `photoelectric-effect.html`. Without `lock` they are only starting
 | `lambda=<150–1200>` | Wavelength of the light, nm (whole nm; default 650) |
 | `intensity=<0–100>` | Intensity, % — photons per second, not their energy (default 30) |
 | `metal=Cs\|Na\|Zn\|Cu` | Plate metal (default `Na`) |
-| `light=0\|1` | Lamp on or off (default on; with “reduce motion” in the system settings the lamp starts off unless the link says `light=1`) |
+| `light=0\|1` | Spotlight on or off (default on; with “reduce motion” in the system settings it starts off unless the link says `light=1`) |
+| `voltage=<0–6>` | Battery voltage between the plate and the anode, V (0.01 V steps; default 0) |
+| `reverse=0\|1` | Reverse polarity: the anode is negative and slows the electrons down (default 0 — the anode is positive) |
 | `fence=0\|1` | The energy “fence” diagram next to the tube |
-| `predict=0\|1` | Predict mode: electrons, current, Wₖ and the fence are covered until SHOW is pressed; any change covers them again |
-| `ev=0\|1` | Also show energies in eV, and Einstein’s equation hf = A + Wₖ in the fence and the “i” note (the class has not learnt eV yet) |
-| `lock=metal,lambda,…` | Locks only the listed settings (`lambda`, `intensity`, `metal`, `light`, `fence`, `predict`); greyed out, marked FIKS. |
+| `ev=0\|1` | Also show the work function in eV, Einstein’s equation hf = A + Wₖ in the fence and the “i” note, and e·U_b = Wₖ in the note (the class has not learnt eV yet) |
+| `lock=metal,lambda,…` | Locks only the listed settings (`lambda`, `intensity`, `metal`, `light`, `voltage`, `reverse`, `fence`); greyed out, marked FIKS. |
 | `lock=1` (or `lock=true`) | Locks every setting that is given in the link |
 
 Example (try to knock electrons out of zinc with red light; the metal cannot be changed):
 
     photoelectric-effect.html?metal=Zn&lambda=650&intensity=100&lock=metal
+
+Example (find the stopping voltage for sodium in blue light; the colour and the metal stay fixed):
+
+    photoelectric-effect.html?metal=Na&lambda=450&reverse=1&lock=metal,lambda
 
 Work functions (HyperPhysics, “Work Functions for Photoelectric Effect”): Cs 2.1, Na 2.28, Zn 4.3, Cu 4.7 eV. Constants as in the school book: h = 6.63·10⁻³⁴ J·s, c = 3.00·10⁸ m/s, 1 eV = 1.60·10⁻¹⁹ J.

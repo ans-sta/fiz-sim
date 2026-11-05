@@ -648,11 +648,17 @@
     <a href="photoelectric-effect.html" class="card">
       <div class="card-visual">
         <svg width="200" height="140" viewBox="0 0 200 140">
-          <!-- a lamp above a metal plate in a vacuum tube; blue photons hit the plate and knock out electrons that fly to the anode; an ammeter in the circuit -->
-          <line x1="74" y1="10" x2="74" y2="20" stroke="#5a6d88" stroke-width="1"/>
-          <rect x="69" y="20" width="10" height="6" fill="none" stroke="#5a6d88" stroke-width="0.8"/>
-          <circle cx="74" cy="35" r="9" fill="#3a5bff" stroke="#c8d6e8" stroke-width="1"/>
-          <polygon points="68,42 80,42 47,96 47,68" fill="#3a5bff" opacity="0.12"/>
+          <!-- a spotlight aimed at a metal plate in a vacuum tube; blue photons hit the plate and knock out electrons that fly to the anode; an ammeter and a battery in the circuit -->
+          <line x1="86" y1="8" x2="86" y2="30" stroke="#5a6d88" stroke-width="1"/>
+          <polygon points="73.8,34.6 85,43 47,98 47,66" fill="#3a5bff" opacity="0.12"/>
+          <g transform="translate(86 30) rotate(127)">
+            <rect x="-11" y="-5" width="18" height="10" fill="#060a14" stroke="#c8d6e8" stroke-width="1"/>
+            <rect x="7" y="-6.5" width="3" height="13" fill="#060a14" stroke="#c8d6e8" stroke-width="1"/>
+            <line x1="10.5" y1="-5.5" x2="10.5" y2="5.5" stroke="#3a5bff" stroke-width="2"/>
+            <line x1="10" y1="-6.5" x2="16" y2="-10" stroke="#c8d6e8" stroke-width="1.2"/>
+            <line x1="10" y1="6.5" x2="16" y2="10" stroke="#c8d6e8" stroke-width="1.2"/>
+            <circle cx="0" cy="0" r="1.6" fill="none" stroke="#c8d6e8" stroke-width="0.8"/>
+          </g>
           <rect x="22" y="56" width="156" height="52" rx="18" fill="none" stroke="#c8d6e8" stroke-width="1.2"/>
           <rect x="40" y="64" width="7" height="36" fill="#b9bec4" stroke="#5a6d88" stroke-width="0.8"/>
           <rect x="152" y="64" width="4" height="36" fill="#5a6d88"/>
@@ -662,7 +668,9 @@
           </g>
           <g fill="#ff7a29"><circle cx="66" cy="72" r="3.4"/><circle cx="92" cy="86" r="3.4"/><circle cx="118" cy="76" r="3.4"/><circle cx="140" cy="92" r="3.4"/></g>
           <g stroke="#060a14" stroke-width="1.1"><line x1="64.4" y1="72" x2="67.6" y2="72"/><line x1="90.4" y1="86" x2="93.6" y2="86"/><line x1="116.4" y1="76" x2="119.6" y2="76"/><line x1="138.4" y1="92" x2="141.6" y2="92"/></g>
-          <path d="M 43.5 100 V 124 H 91 M 109 124 H 154 V 100" fill="none" stroke="#5a6d88" stroke-width="1"/>
+          <path d="M 43.5 100 V 124 H 91 M 109 124 H 128 M 134 124 H 154 V 100" fill="none" stroke="#5a6d88" stroke-width="1"/>
+          <line x1="128" y1="120" x2="128" y2="128" stroke="#c8d6e8" stroke-width="2.4"/>
+          <line x1="134" y1="117" x2="134" y2="131" stroke="#c8d6e8" stroke-width="1"/>
           <circle cx="100" cy="124" r="9" fill="none" stroke="#c8d6e8" stroke-width="1"/>
           <text x="100" y="127" text-anchor="middle" font-family="'Orbitron', monospace" font-size="7" fill="#c8d6e8">µA</text>
         </svg>
@@ -670,7 +678,7 @@
       <div class="card-body">
         <div class="card-tag tag-quantum" data-i18n="tagAtom">Atom and universe</div>
         <div class="card-title" data-i18n="a02Title">Photoelectric Effect</div>
-        <p class="card-desc" data-i18n="a02Desc">Shine light on a metal plate: red light never knocks out electrons, however intense, while light of short enough wavelength (blue for sodium, only ultraviolet for zinc) does it at once, even when weak. Intensity changes how many electrons fly out, colour changes how fast.</p>
+        <p class="card-desc" data-i18n="a02Desc">Shine light on a metal plate: red light never knocks out electrons, however intense, while light of short enough wavelength (blue for sodium, only ultraviolet for zinc) does it at once, even when weak. Intensity changes how many electrons fly out, colour changes how fast. A reverse voltage stops them — that is how you find the stopping voltage.</p>
         <div class="card-status status-live">
           <div class="status-dot"></div>
           <span data-i18n="statusLive">Live</span>
@@ -1160,7 +1168,7 @@ const TRANSLATIONS = {
     a01Title: "Atomic Spectra",
     a01Desc: "Fire photons at an atom and watch the electron jump: dark lines in white light and bright lines in emission, for hydrogen, helium, sodium and mercury.",
     a02Title: "Photoelectric Effect",
-    a02Desc: "Shine light on a metal plate: red light never knocks out electrons, however intense, while light of short enough wavelength (blue for sodium, only ultraviolet for zinc) does it at once, even when weak. Intensity changes how many electrons fly out, colour changes how fast.",
+    a02Desc: "Shine light on a metal plate: red light never knocks out electrons, however intense, while light of short enough wavelength (blue for sodium, only ultraviolet for zinc) does it at once, even when weak. Intensity changes how many electrons fly out, colour changes how fast. A reverse voltage stops them — that is how you find the stopping voltage.",
     fieldTitle: "Electric Field",
     fieldDesc: "Place charges freely and visualize the resulting electric field with force vectors. Explore superposition of fields interactively.",
     cannonTitle: "Newton's Cannon",
@@ -1216,7 +1224,7 @@ const TRANSLATIONS = {
     a01Title: "Atomu spektri",
     a01Desc: "Šauj fotonus uz atomu un skaties, kā elektrons pārlec: tumšas līnijas baltajā gaismā un spožas līnijas starošanā — ūdeņradim, hēlijam, nātrijam un dzīvsudrabam.",
     a02Title: "Fotoefekts",
-    a02Desc: "Apgaismo metāla plāksni: sarkanā gaisma, lai cik intensīva, elektronus nekad neizsit, bet gaisma ar pietiekami īsu viļņa garumu (nātrijam — zilā, cinkam — tikai ultravioletā) izsit uzreiz, pat vāja. Intensitāte maina, cik elektronu izlido, krāsa — cik ātri tie lido.",
+    a02Desc: "Apgaismo metāla plāksni: sarkanā gaisma, lai cik intensīva, elektronus nekad neizsit, bet gaisma ar pietiekami īsu viļņa garumu (nātrijam — zilā, cinkam — tikai ultravioletā) izsit uzreiz, pat vāja. Intensitāte maina, cik elektronu izlido, krāsa — cik ātri tie lido. Pretējas polaritātes spriegums tos aptur — tā atrod bremzējošo spriegumu.",
     fieldTitle: "Elektriskais lauks",
     fieldDesc: "Brīvi novieto lādiņus un vizualizē elektrisko lauku ar spēka vektoriem. Interaktīvi izpēti lauku superpozīciju.",
     cannonTitle: "Ņūtona lielgabals",

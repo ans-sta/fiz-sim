@@ -1,4 +1,4 @@
-// assets/photo/model.js — A-02 fotoefekts: konstantes, metāli, f = c/λ, W = hf, slieksnis, Wₖ, strāva,
+// assets/photo/model.js — A-02 fotoefekts: konstantes, metāli, f = c/λ, W = hf, slieksnis, Wₖ, spriegums, strāva,
 // slīdņa ass, elektronu ātrums ekrānā, normālforma (spec. docs/plans/2026-11-05-fotoefekts.md § 5, § 10). Bez DOM.
 import { formatNumber } from '../measure/format.js';
 
@@ -26,21 +26,35 @@ export const thresholdNm = (metal) => ((H * C) / workJ(metal)) * 1e9;
 // Izsit tikai, ja hf > A (pie hf = A — vēl nē)
 export const ejects = (nm, metal) => photonJ(nm) > workJ(metal);
 export const kineticMaxJ = (nm, metal) => Math.max(0, photonJ(nm) - workJ(metal));
+// Elektronu ātrumi nedaudz dažādi: 85–100 % no lielākā (Wₖ 72–100 % no hf − A); lielākais atbilst hf − A
+export const SPEED_SPREAD = 0.15;
 
-// Strāva: 100 % spožumā 2,00 µA (ilustratīvi); zem sliekšņa un bez gaismas — tieši 0
-export const I_FULL = 2.0; // µA
-export const I_SCALE = 2.5; // µA — ampērmetra skala
-export function currentMicroA({ lambda, intensity, metal, on }) {
-  return on && intensity > 0 && ejects(lambda, metal) ? (I_FULL * intensity) / 100 : 0;
+// Spriegums starp plāksni un anodu (baterija ķēdē): 0–6 V; “pretēja” polaritāte (anods −) elektronus bremzē.
+// Bremzējošais spriegums U_b: e·U_b = Wₖ (lielākā) — no U_b anodu nesasniedz neviens elektrons.
+export const U_MAX = 6; // V
+export const stoppingVoltage = (nm, metal) => kineticMaxJ(nm, metal) / EV; // V
+
+// Daļa izsisto elektronu, kas sasniedz anodu. Ātrumi 85–100 % no lielākā (vienmērīgi), Wₖ = u²·Wₖ(lielākā);
+// bremzējot sasniedz tie, kuriem Wₖ > e·U. Paātrinot (vai U = 0) — visi.
+export function reachFraction({ lambda, metal, voltage = 0, reverse = false }) {
+  const wk = kineticMaxJ(lambda, metal);
+  if (wk <= 0) return 0;
+  if (!reverse || voltage <= 0) return 1;
+  const r = (voltage * EV) / wk;
+  if (r >= 1 - 1e-12) return 0; // U ≥ U_b — tieši 0
+  const uMin = Math.sqrt(r);
+  const lo = 1 - SPEED_SPREAD;
+  return uMin <= lo ? 1 : (1 - uMin) / SPEED_SPREAD;
 }
 
-// Ātrās pogas (spec. § 3)
-export const PRESETS = [
-  { id: 'red', nm: 650 },
-  { id: 'green', nm: 532 },
-  { id: 'blue', nm: 450 },
-  { id: 'uv', nm: 250 },
-];
+// Strāva: 100 % intensitātē 2,00 µA (ilustratīvi); zem sliekšņa, bez gaismas vai U ≥ U_b (bremzējot) — tieši 0
+export const I_FULL = 2.0; // µA
+export const I_SCALE = 2.5; // µA — ampērmetra skala
+export function currentMicroA({ lambda, intensity, metal, on, voltage = 0, reverse = false }) {
+  if (!(on && intensity > 0 && ejects(lambda, metal))) return 0;
+  const f = reachFraction({ lambda, metal, voltage, reverse });
+  return f > 0 ? (I_FULL * intensity * f) / 100 : 0;
+}
 
 export function bandOf(nm) {
   if (nm < VIS.min) return 'uv';
@@ -76,15 +90,13 @@ export function posToLambda(p) {
 }
 
 // ── Elektronu ātrums ekrānā ∝ √Wₖ (spec. § 2) ──
-// Ceļa laiks no plāksnes līdz savācējam: T = 1 / (K·√(Wₖ / 10⁻¹⁹ J)) s; ne ilgāk par T_MAX (tieši pie sliekšņa Wₖ → 0)
+// Ceļa laiks no plāksnes līdz anodam bez sprieguma: T = 1 / (K·√(Wₖ / 10⁻¹⁹ J)) s; ne ilgāk par T_MAX (tieši pie sliekšņa Wₖ → 0)
 export const SPEED_K = 0.6;
 export const T_MAX = 10;
 export function travelTime(wkJ) {
   const s = Math.sqrt(Math.max(0, wkJ) / 1e-19);
   return s > 0 ? Math.min(T_MAX, 1 / (SPEED_K * s)) : T_MAX;
 }
-// Elektronu ātrumi nedaudz dažādi: 85–100 % no lielākā (Wₖ 72–100 % no hf − A); lielākais atbilst hf − A
-export const SPEED_SPREAD = 0.15;
 
 // ── Normālforma: a·10ⁿ, 1 ≤ a < 10, 3 zīmīgie cipari ──
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };

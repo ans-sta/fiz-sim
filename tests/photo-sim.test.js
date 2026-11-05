@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createSim, FLIGHT } from '../assets/photo/sim.js';
-import { travelTime, kineticMaxJ, SPEED_SPREAD } from '../assets/photo/model.js';
+import { travelTime, kineticMaxJ, SPEED_SPREAD, stoppingVoltage, reachFraction } from '../assets/photo/model.js';
 import { mulberry32 } from '../assets/measure/rng.js';
 
 function run(sim, seconds, dt = 1 / 60) {
@@ -46,15 +46,15 @@ test('switching on fills the beam: photons already on their way, spaced by the r
 test('brightness does not change electron speed (same Wₖ, same spread)', () => {
   const speeds = (intensity) => {
     const sim = sim0({ lambda: 450, intensity, metal: 'Na' });
-    const Ts = [];
-    for (let i = 0; i < 600; i++) { sim.step(1 / 60); for (const e of sim.state.electrons) Ts.push(e.T); }
-    return Ts;
+    const vs = [];
+    for (let i = 0; i < 600; i++) { sim.step(1 / 60); for (const e of sim.state.electrons) vs.push(e.v0); }
+    return vs;
   };
-  const T0 = travelTime(kineticMaxJ(450, 'Na'));
+  const vMax = 1 / travelTime(kineticMaxJ(450, 'Na'));
   for (const intensity of [5, 100]) {
-    const Ts = speeds(intensity);
-    assert.ok(Ts.length > 0);
-    for (const T of Ts) assert.ok(T >= T0 - 1e-12 && T <= T0 / (1 - SPEED_SPREAD) + 1e-12, `${intensity} %: T ${T}`);
+    const vs = speeds(intensity);
+    assert.ok(vs.length > 0);
+    for (const v of vs) assert.ok(v <= vMax + 1e-12 && v >= vMax * (1 - SPEED_SPREAD) - 1e-12, `${intensity} %: v ${v}`);
   }
 });
 
@@ -103,4 +103,54 @@ test('switching off stops new photons; those in flight still land', () => {
   const n = sim.state.counts.photons;
   run(sim, 2);
   assert.equal(sim.state.counts.photons, n);
+});
+
+test('reverse voltage at or above U_b: every electron stops and turns back, none reaches the anode', () => {
+  for (const [lambda, metal] of [[450, 'Na'], [250, 'Zn'], [532, 'Na']]) {
+    const Ub = stoppingVoltage(lambda, metal);
+    for (const voltage of [Ub, Ub + 0.01, 3]) {
+      if (voltage < Ub) continue;
+      const sim = sim0({ lambda, metal, intensity: 100, voltage, reverse: true });
+      run(sim, 25);
+      assert.equal(sim.state.counts.arrived, 0, `${lambda} nm ${metal} U ${voltage}`);
+      assert.ok(sim.state.counts.returned > 0, 'they did come out and turn back');
+    }
+  }
+});
+
+test('reverse voltage below U_b: the share reaching the anode matches the current formula', () => {
+  const lambda = 250;
+  const metal = 'Na';
+  const Ub = stoppingVoltage(lambda, metal);
+  for (const k of [0.5, 0.8, 0.9, 0.97]) {
+    const voltage = Ub * k;
+    const sim = sim0({ lambda, metal, intensity: 100, voltage, reverse: true });
+    run(sim, 60);
+    const done = sim.state.counts.arrived + sim.state.counts.returned;
+    const share = sim.state.counts.arrived / done;
+    const expect = reachFraction({ lambda, metal, voltage, reverse: true });
+    assert.ok(Math.abs(share - expect) < 0.05, `k ${k}: share ${share.toFixed(3)} expected ${expect.toFixed(3)}`);
+  }
+});
+
+test('electrons turning back stop where Wₖ = e·U·x (half way when e·U = 2·Wₖ)', () => {
+  const lambda = 250;
+  const metal = 'Na';
+  const sim = sim0({ lambda, metal, intensity: 100, voltage: 2 * stoppingVoltage(lambda, metal), reverse: true });
+  let far = 0;
+  for (let i = 0; i < 600; i++) { sim.step(1 / 120); for (const e of sim.state.electrons) far = Math.max(far, e.x); }
+  assert.ok(far > 0.45 && far <= 0.5 + 1e-9, `furthest ${far}`);
+});
+
+test('accelerating voltage: everyone arrives, sooner than without voltage', () => {
+  const time = (voltage) => {
+    const sim = sim0({ lambda: 450, metal: 'Na', intensity: 100, voltage });
+    const t0 = sim.state.t;
+    while (sim.state.counts.arrived === 0) sim.step(1 / 240);
+    return sim.state.t - t0;
+  };
+  assert.ok(time(2) < time(0));
+  const sim = sim0({ lambda: 450, metal: 'Na', intensity: 100, voltage: 6 });
+  run(sim, 10);
+  assert.equal(sim.state.counts.returned, 0);
 });

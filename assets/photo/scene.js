@@ -1,5 +1,5 @@
-// assets/photo/scene.js — A-02 kanva: lampa, vakuuma caurule ar plāksni un savācēju, ampērmetrs, fotoni, elektroni
-// un enerģijas žogs (spec. § 2). Izkārtojums ir tīra funkcija no (w, h, fence) — lapa pēc tā novieto pogu “RĀDĪT”.
+// assets/photo/scene.js — A-02 kanva: prožektors, vakuuma caurule ar plāksni un anodu, ķēdē ampērmetrs un baterija,
+// fotoni, elektroni un enerģijas žogs (spec. § 2). Izkārtojums ir tīra funkcija no (w, h, fence, avoid).
 import { hexRGB, ensureContrast } from '../spectrum/model.js';
 import { photonRGB, packet } from '../atoms/scene.js';
 import { VIS, photonJ, workJ, I_SCALE } from './model.js';
@@ -18,7 +18,8 @@ const METAL_RGB = {
 };
 
 // ── izkārtojums ───────────────────────────────────────────
-export function sceneLayout(w, h, { fence = false } = {}) {
+// avoid — ⚙ poga kreisajā apakšas stūrī (kanvas koordinātās); žogs zem caurules sākas pa labi no tās
+export function sceneLayout(w, h, { fence = false, avoid = null } = {}) {
   let tubeR;
   let fenceR = null;
   const side = fence && w >= 640 && w >= h * 1.15;
@@ -29,7 +30,8 @@ export function sceneLayout(w, h, { fence = false } = {}) {
   } else if (fence) {
     const fh = Math.round(clamp(h * 0.42, 120, h * 0.5));
     tubeR = { x: M, y: M, w: w - 2 * M, h: h - fh - 2.5 * M };
-    fenceR = { x: M, y: h - M - fh, w: w - 2 * M, h: fh };
+    const fx = avoid && avoid.y < h && avoid.x + avoid.w > 0 ? Math.max(M, Math.round(avoid.x + avoid.w + 8)) : M;
+    fenceR = { x: fx, y: h - M - fh, w: w - M - fx, h: fh };
   } else {
     tubeR = { x: M, y: M, w: w - 2 * M, h: h - 2 * M };
   }
@@ -52,23 +54,41 @@ function tubeGeometry(R) {
   const cw = clamp(tw * 0.018, 6, 12);
   const coll = { x: tx + tw * 0.9 - cw, y: plate.y, w: cw, h: plate.h };
   const face = plate.x + plate.w;
-  const lampR = clamp(lampH * 0.27, 10, 40);
-  const lamp = { x: face + (coll.x - face) * 0.3, y: ty - lampH * 0.42, r: lampR };
   const meter = { x: tx + tw / 2, y: ty + th + 10 + meterR, r: meterR };
-  const cover = { x: plate.x - 6, y: ty + 3, w: coll.x + coll.w + 6 - (plate.x - 6), h: th - 6 };
-  return { tube, plate, coll, face, lamp, meter, cover };
+  const proj = projector({ x: face + (coll.x - face) * 0.34, y: ty - lampH * 0.5 }, clamp(Math.min(lampH * 0.24, tw * 0.045), 9, 36), { x: face, y: plate.y + plate.h / 2 });
+  return { tube, plate, coll, face, proj, meter };
 }
 
-// Fotona ceļš: no lampas lodziņa (x 0…1) līdz plāksnes priekšai (y 0…1)
+// Prožektors: korpuss vērsts uz plāksnes vidu, priekšā lēca un divas atlokāmas klapes, kas ierobežo staru.
+// Lokālās koordinātās u — pa asi uz plāksni, w — šķērsām; r — mērogs.
+function projector(P, r, aim) {
+  const ang = Math.atan2(aim.y - P.y, aim.x - P.x);
+  const d = { x: Math.cos(ang), y: Math.sin(ang) };
+  const n = { x: -d.y, y: d.x };
+  const at = (u, w) => ({ x: P.x + d.x * u * r + n.x * w * r, y: P.y + d.y * u * r + n.y * w * r });
+  const body = [at(-1.0, -0.62), at(0.75, -0.8), at(0.75, 0.8), at(-1.0, 0.62)];
+  const back = [at(-1.25, -0.5), at(-1.0, -0.62), at(-1.0, 0.62), at(-1.25, 0.5)];
+  const rim = [at(0.75, -0.9), at(0.98, -0.9), at(0.98, 0.9), at(0.75, 0.9)];
+  const lens = [at(0.98, -0.8), at(0.98, 0.8)];
+  const F = at(0.98, 0); // lēcas centrs — no šejienes izlido fotoni
+  const pts = [...body, ...back, ...rim];
+  const box = {
+    x0: Math.min(...pts.map((q) => q.x)), x1: Math.max(...pts.map((q) => q.x)),
+    y0: Math.min(...pts.map((q) => q.y)), y1: Math.max(...pts.map((q) => q.y)),
+  };
+  return { P, r, ang, d, n, at, body, back, rim, lens, F, box };
+}
+
+// Fotona ceļš: no prožektora lēcas centra līdz plāksnes priekšai (y 0…1)
 export function photonPath(lay, p) {
-  const { lamp, plate, face } = lay;
-  const S = { x: lamp.x - lamp.r * 0.65 + p.x * lamp.r * 1.3, y: lamp.y + lamp.r * 0.75 };
+  const { proj, plate, face } = lay;
+  const S = proj.F;
   const E = { x: face + 1, y: plate.y + plate.h * p.y };
   return { S, E };
 }
 
 // ── zīmēšana ──────────────────────────────────────────────
-// v: { st (sim.state), predict, revealed, fence, ev, needle, legend, theme, colors, labels, fmt, sci }
+// v: { st (sim.state), ev, needle, legend, theme, colors, labels, fmt }
 export function drawScene(ctx, lay, v) {
   const c = v.colors;
   const dark = v.theme === 'dark';
@@ -79,40 +99,35 @@ export function drawScene(ctx, lay, v) {
   ctx.clearRect(0, 0, lay.w, lay.h);
   ctx.fillStyle = c.field;
   ctx.fillRect(0, 0, lay.w, lay.h);
-  const hidden = v.predict && !v.revealed;
 
   drawBeam(ctx, lay, v, k);
   drawTube(ctx, lay, v, k);
-  if (!hidden) drawHeats(ctx, lay, v, k);
+  drawHeats(ctx, lay, v, k);
   drawPhotons(ctx, lay, v, k);
-  if (!hidden) drawElectrons(ctx, lay, v, k);
-  if (hidden) {
-    const r = lay.cover;
-    ctx.fillStyle = c.sheet;
-    ctx.fillRect(r.x, r.y, r.w, r.h);
-    ctx.setLineDash([5, 4]);
-    ctx.strokeStyle = c.inkDim;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1);
-    ctx.setLineDash([]);
-  }
-  drawLamp(ctx, lay, v, k);
-  drawMeter(ctx, lay, v, k, hidden);
-  if (lay.fenceR) drawFence(ctx, lay.fenceR, v, k, hidden);
+  drawElectrons(ctx, lay, v, k);
+  drawProjector(ctx, lay, v, k);
+  drawMeter(ctx, lay, v, k);
+  if (lay.fenceR) drawFence(ctx, lay.fenceR, v, k);
 }
 
 function beamRGB(λ, k) {
   return photonRGB(λ, k.field, k.dark);
 }
 
+// Stara malas: no lēcas malām līdz plāksnes augšai un apakšai (a1 → b1 un a2 → b2 nekrustojas)
+function beamEdges(lay) {
+  const { proj, plate, face } = lay;
+  const b1 = { x: face, y: plate.y + plate.h * 0.08 };
+  const b2 = { x: face, y: plate.y + plate.h * 0.92 };
+  let [a1, a2] = proj.lens;
+  if (Math.hypot(a1.x - b1.x, a1.y - b1.y) > Math.hypot(a2.x - b1.x, a2.y - b1.y)) [a1, a2] = [a2, a1];
+  return { a1, a2, b1, b2 };
+}
+
 function drawBeam(ctx, lay, v, k) {
   const st = v.st;
   if (!st.on || st.intensity <= 0) return;
-  const { lamp, plate, face } = lay;
-  const a1 = { x: lamp.x - lamp.r * 0.65, y: lamp.y + lamp.r * 0.75 };
-  const a2 = { x: lamp.x + lamp.r * 0.65, y: lamp.y + lamp.r * 0.75 };
-  const b1 = { x: face, y: plate.y + plate.h * 0.08 };
-  const b2 = { x: face, y: plate.y + plate.h * 0.92 };
+  const { a1, a2, b1, b2 } = beamEdges(lay);
   ctx.beginPath();
   ctx.moveTo(a1.x, a1.y);
   ctx.lineTo(a2.x, a2.y);
@@ -136,19 +151,23 @@ function drawTube(ctx, lay, v, k) {
   const { c, font, L, dark } = k;
   const { tube, plate, coll, meter } = lay;
   const st = v.st;
-  // vadi: plāksne → ampērmetrs → savācējs
+  // vadi: plāksne → ampērmetrs → baterija → anods
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   const px = plate.x + plate.w / 2;
   const cx = coll.x + coll.w / 2;
+  const bat = batteryGeometry(lay);
   ctx.moveTo(px, plate.y + plate.h);
   ctx.lineTo(px, meter.y);
   ctx.lineTo(meter.x - meter.r, meter.y);
   ctx.moveTo(meter.x + meter.r, meter.y);
+  ctx.lineTo(bat.x - bat.gap / 2, meter.y);
+  ctx.moveTo(bat.x + bat.gap / 2, meter.y);
   ctx.lineTo(cx, meter.y);
   ctx.lineTo(cx, coll.y + coll.h);
   ctx.stroke();
+  drawBattery(ctx, lay, v, k, bat);
   // stikla caurule — dubulta kontūra
   const rr = Math.min(tube.h / 2, 36);
   ctx.strokeStyle = c.inkDim;
@@ -165,17 +184,17 @@ function drawTube(ctx, lay, v, k) {
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1.5;
   ctx.strokeRect(plate.x, plate.y, plate.w, plate.h);
-  // savācējs
+  // anods
   ctx.fillStyle = c.inkDim;
   ctx.fillRect(coll.x, coll.y, coll.w, coll.h);
   ctx.strokeRect(coll.x, coll.y, coll.w, coll.h);
-  // uzraksti: plāksne (metāls) augšā pa kreisi, savācējs augšā pa labi, vakuums caurulē
+  // uzraksti: plāksne (metāls) augšā pa kreisi, anods augšā pa labi, vakuums caurulē
   ctx.textBaseline = 'bottom';
   ctx.textAlign = 'left';
   ctx.fillStyle = c.inkDim;
   ctx.font = font(10);
   const ly = tube.y - 10;
-  const room = lay.lamp.x - lay.lamp.r - 8 - tube.x; // līdz lampai
+  const room = lay.proj.box.x0 - 8 - tube.x; // līdz prožektoram
   ctx.fillText(v.labels.plate, tube.x, ly - 15 * L);
   ctx.fillStyle = c.ink;
   ctx.font = font(13, 600);
@@ -191,54 +210,127 @@ function drawTube(ctx, lay, v, k) {
   ctx.fillText(v.labels.vacuum, (lay.face + coll.x) / 2 + (coll.x - lay.face) * 0.12, tube.y + 6);
 }
 
-function drawLamp(ctx, lay, v, k) {
+// Baterija ķēdē starp ampērmetru un anodu: garā tievā plāksnīte — “+”, īsā resnā — “−”.
+// Anods + (paātrina): “+” anoda pusē; anods − (bremzē): otrādi.
+function batteryGeometry(lay) {
+  const { meter, coll } = lay;
+  const cx = coll.x + coll.w / 2;
+  const s = clamp(meter.r * 0.42, 7, 18);
+  return { x: (meter.x + meter.r + cx) / 2, y: meter.y, s, gap: Math.max(6, s * 0.75) };
+}
+
+function drawBattery(ctx, lay, v, k, b) {
   const { c, font } = k;
-  const { lamp } = lay;
+  const plus = v.st.reverse ? -1 : 1; // +1: “+” plāksnīte pa labi (anoda pusē)
+  const xl = b.x - b.gap / 2;
+  const xr = b.x + b.gap / 2;
+  const xPlus = plus > 0 ? xr : xl;
+  const xMinus = plus > 0 ? xl : xr;
+  ctx.strokeStyle = c.ink;
+  ctx.lineCap = 'butt';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(xPlus, b.y - b.s * 1.1);
+  ctx.lineTo(xPlus, b.y + b.s * 1.1);
+  ctx.stroke();
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(xMinus, b.y - b.s * 0.55);
+  ctx.lineTo(xMinus, b.y + b.s * 0.55);
+  ctx.stroke();
+  ctx.fillStyle = c.ink;
+  ctx.font = font(12, 600);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('+', xPlus + plus * 7, b.y - b.s * 1.1 - 2);
+  ctx.fillText('−', xMinus - plus * 7, b.y - b.s * 1.1 - 2);
+  ctx.textBaseline = 'top';
+  ctx.font = font(11, 600);
+  ctx.fillText(v.labels.voltage, b.x, b.y + b.s * 1.1 + 4);
+}
+
+function drawProjector(ctx, lay, v, k) {
+  const { c, font } = k;
+  const { proj } = lay;
   const st = v.st;
   const lit = st.on && st.intensity > 0;
-  // vads uz augšu un cokols
+  const poly = (pts) => {
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (const q of pts.slice(1)) ctx.lineTo(q.x, q.y);
+    ctx.closePath();
+  };
+  // stienis no augšas līdz šarnīram
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(lamp.x, lay.tubeR.y);
-  ctx.lineTo(lamp.x, lamp.y - lamp.r - lamp.r * 0.5);
+  ctx.moveTo(proj.P.x, lay.tubeR.y);
+  ctx.lineTo(proj.P.x, proj.P.y);
   ctx.stroke();
-  const bw = lamp.r * 0.9;
+  // klapes: no lēcas malām pa stara malām (tās nosaka, kur stars krīt)
+  const { a1, a2, b1, b2 } = beamEdges(lay);
+  const flap = 0.9 * proj.r;
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  for (const [a, b] of [[a1, b1], [a2, b2]]) {
+    const L = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const e = { x: a.x + ((b.x - a.x) / L) * flap, y: a.y + ((b.y - a.y) / L) * flap };
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(e.x, e.y);
+    ctx.stroke();
+  }
+  ctx.lineCap = 'butt';
+  // korpuss, aizmugure, priekšējais gredzens
+  ctx.lineWidth = 1.5;
   ctx.fillStyle = c.sheet;
-  ctx.fillRect(lamp.x - bw / 2, lamp.y - lamp.r - lamp.r * 0.5, bw, lamp.r * 0.6);
-  ctx.strokeRect(lamp.x - bw / 2, lamp.y - lamp.r - lamp.r * 0.5, bw, lamp.r * 0.6);
-  // spuldze
-  ctx.beginPath();
-  ctx.arc(lamp.x, lamp.y, lamp.r, 0, Math.PI * 2);
+  for (const part of [proj.back, proj.body, proj.rim]) {
+    poly(part);
+    ctx.fill();
+    ctx.stroke();
+  }
+  // dzesēšanas ribas
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = c.inkDim;
+  for (const u of [-0.7, -0.45, -0.2]) {
+    const p1 = proj.at(u, -0.62 - (u + 1) * 0.1);
+    const p2 = proj.at(u, 0.62 + (u + 1) * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  }
+  // lēca
+  const [l1, l2] = proj.lens;
+  ctx.lineCap = 'round';
   if (lit) {
     const col = beamRGB(st.lambda, k);
-    ctx.fillStyle = invisible(st.lambda) ? c.sheet : rgbCss(col, 0.35 + 0.65 * (st.intensity / 100));
-    ctx.fill();
     if (invisible(st.lambda)) {
-      ctx.save();
-      ctx.clip();
+      ctx.setLineDash([3, 3]);
       ctx.strokeStyle = rgbCss(col);
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 3]);
-      for (let i = -lamp.r; i <= lamp.r; i += 6) {
-        ctx.beginPath();
-        ctx.moveTo(lamp.x + i - lamp.r, lamp.y + lamp.r);
-        ctx.lineTo(lamp.x + i + lamp.r, lamp.y - lamp.r);
-        ctx.stroke();
-      }
-      ctx.restore();
-      ctx.setLineDash([]);
+    } else {
+      ctx.strokeStyle = rgbCss(col, 0.45 + 0.55 * (st.intensity / 100));
     }
+    ctx.lineWidth = 5;
   } else {
-    ctx.fillStyle = c.sheet;
-    ctx.fill();
+    ctx.strokeStyle = c.inkDim;
+    ctx.lineWidth = 2;
   }
   ctx.beginPath();
-  ctx.arc(lamp.x, lamp.y, lamp.r, 0, Math.PI * 2);
+  ctx.moveTo(l1.x, l1.y);
+  ctx.lineTo(l2.x, l2.y);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.lineCap = 'butt';
+  // šarnīrs
+  ctx.fillStyle = c.sheet;
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(proj.P.x, proj.P.y, Math.max(2.5, proj.r * 0.16), 0, Math.PI * 2);
+  ctx.fill();
   ctx.stroke();
-  // uzraksts pa labi: UV / IS — acs neredz; izslēgta
+  // uzraksts pa labi: UV / IS — acs neredz; izslēgts
   let note = null;
   if (!st.on) note = v.labels.lampOff;
   else if (st.intensity <= 0) note = v.labels.dark;
@@ -249,10 +341,11 @@ function drawLamp(ctx, lay, v, k) {
     ctx.font = font(11, 600);
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    // ja sadurtos ar “ANODS” (zema caurule), uzraksts augstāk — pie vada
-    const x = lamp.x + lamp.r + 10;
-    const clash = lamp.y + 8 * k.L > lay.tube.y - 10 - 12 * k.L && x + ctx.measureText(note).width > lay.coll.x - 90 * k.L;
-    ctx.fillText(note, clash ? lamp.x + 8 : x, clash ? lamp.y - lamp.r - lamp.r * 0.5 - 8 * k.L : lamp.y);
+    // ja sadurtos ar “ANODS” (zema caurule), uzraksts augstāk — virs prožektora
+    const x = proj.box.x1 + 10;
+    const y = proj.P.y;
+    const clash = y + 8 * k.L > lay.tube.y - 10 - 12 * k.L && x + ctx.measureText(note).width > lay.coll.x - 90 * k.L;
+    ctx.fillText(note, clash ? proj.P.x + 8 : x, clash ? Math.max(lay.tubeR.y + 6 * k.L, proj.box.y0 - 10 * k.L) : y);
   }
 }
 
@@ -305,13 +398,12 @@ function drawElectrons(ctx, lay, v, k) {
   const x0 = lay.face + r;
   const x1 = lay.coll.x - r;
   for (const e of st.electrons) {
-    const f = clamp((st.t - e.t0) / e.T, 0, 1);
-    electronDot(ctx, x0 + (x1 - x0) * f, lay.plate.y + lay.plate.h * e.y, r, k.c);
+    electronDot(ctx, x0 + (x1 - x0) * clamp(e.x, 0, 1), lay.plate.y + lay.plate.h * e.y, r, k.c);
   }
 }
 
 // Ampērmetrs: skala augšējā lokā, rādītājs, cipari lieli (lasāmi no klases aizmugures)
-function drawMeter(ctx, lay, v, k, hidden) {
+function drawMeter(ctx, lay, v, k) {
   const { c, font } = k;
   const { meter } = lay;
   const { x, y, r } = meter;
@@ -322,14 +414,6 @@ function drawMeter(ctx, lay, v, k, hidden) {
   ctx.strokeStyle = c.ink;
   ctx.lineWidth = 1.5;
   ctx.stroke();
-  if (hidden) {
-    ctx.fillStyle = c.ink;
-    ctx.font = `600 ${Math.round(r * 0.9)}px 'IBM Plex Mono', ui-monospace, monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('?', x, y + r * 0.05);
-    return;
-  }
   const a0 = Math.PI * (200 / 180);
   const a1 = Math.PI * (340 / 180);
   const ang = (I) => a0 + (a1 - a0) * clamp(I / I_SCALE, 0, 1);
@@ -430,7 +514,7 @@ function dimLine(ctx, x, ya, yb, color) {
 const easeOut = (u) => 1 - Math.pow(1 - u, 3);
 const easeIn = (u) => u * u;
 
-function drawFence(ctx, F, v, k, hidden) {
+function drawFence(ctx, F, v, k) {
   const { c, font, L } = k;
   const st = v.st;
   ctx.strokeStyle = c.hairline;
@@ -443,14 +527,6 @@ function drawFence(ctx, F, v, k, hidden) {
   ctx.fillText(v.labels.fenceTitle, F.x + 10, F.y + 8);
   const G = fenceGeometry(F, L);
   const { P, fenceX, fenceW, barX, barW, yE } = G;
-  if (hidden) {
-    ctx.fillStyle = c.ink;
-    ctx.font = `600 ${Math.round(Math.min(P.h, P.w) * 0.35)}px 'IBM Plex Mono', ui-monospace, monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('?', F.x + F.w / 2, F.y + F.h / 2 + 8);
-    return;
-  }
   if (v.ev) {
     ctx.fillStyle = c.ink;
     ctx.font = font(11, 600);

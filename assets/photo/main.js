@@ -1,16 +1,16 @@
 // assets/photo/main.js — A-02 fotoefekts (spec. docs/plans/2026-11-05-fotoefekts.md).
-// Josla zem galvenes (kā A-01), datu panelis, kanvā caurule un “žogs”, apakšā krāsas slīdnis ar spektru.
+// Josla zem galvenes — 4 kolonnas (Ansis 05.11.): METĀLS (pogas, A) · GAISMA (intensitāte, krāsas slīdnis ar spektru) ·
+// SPRIEGUMS UN STRĀVA (polaritāte, spriegums, I) · ŽOGS un i. Kanvā prožektors, caurule, ķēde ar bateriju, “žogs”.
 import { createI18n, createTheme, mountHeaderTools, setupCanvas, startLoop } from '../sim-core.js';
 import { STRINGS } from './i18n.js';
 import {
-  METAL_IDS, METALS, LAMBDA, VIS, freqOf, photonJ, workJ, kineticMaxJ, currentMicroA, thresholdNm, ejects,
-  bandOf, lambdaToPos, posToLambda, sci, formatSci, EV,
+  METAL_IDS, METALS, LAMBDA, VIS, photonJ, workJ, kineticMaxJ, currentMicroA, reachFraction, thresholdNm, ejects,
+  bandOf, lambdaToPos, posToLambda, sci, formatSci, EV, U_MAX,
 } from './model.js';
 import { createSim } from './sim.js';
 import { settingsFromURL, warningText } from './params.js';
 import { sceneLayout, drawScene } from './scene.js';
-import { photonRGB } from '../atoms/scene.js';
-import { hexRGB, spectralRGB } from '../spectrum/model.js';
+import { spectralRGB } from '../spectrum/model.js';
 import { createSettingsCorner } from '../measure/hud.js';
 import { legendScale } from '../measure/ui-scale.js';
 import { formatNumber } from '../measure/format.js';
@@ -39,11 +39,12 @@ const locked = url.locked;
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 // samazinātai kustībai lampa sākumā izslēgta (ja saite nesaka citādi) — nekas nekustas, kamēr to neieslēdz
 const startOn = new URLSearchParams(location.search).has('light') ? url.settings.light : url.settings.light && !reduced.matches;
-const sim = createSim({ lambda: url.settings.lambda, intensity: url.settings.intensity, metal: url.settings.metal, on: startOn });
+const sim = createSim({
+  lambda: url.settings.lambda, intensity: url.settings.intensity, metal: url.settings.metal, on: startOn,
+  voltage: url.settings.voltage, reverse: url.settings.reverse,
+});
 const ui = {
   fence: url.settings.fence,
-  predict: url.settings.predict,
-  revealed: false,
   ev: url.settings.ev,
   needle: 0,
   drawScale: 1,
@@ -63,24 +64,37 @@ function say(text) {
   liveEl.textContent = '';
   requestAnimationFrame(() => { if (liveText === text) liveEl.textContent = text; });
 }
-const hiddenResult = () => ui.predict && !ui.revealed;
-const current = () => currentMicroA({ lambda: sim.state.lambda, intensity: sim.state.intensity, metal: sim.state.metal, on: sim.state.on });
+const current = () => {
+  const s = sim.state;
+  return currentMicroA({ lambda: s.lambda, intensity: s.intensity, metal: s.metal, on: s.on, voltage: s.voltage, reverse: s.reverse });
+};
+// Kas notiek ar izsistajiem elektroniem: lido uz anodu / palēninās, bet sasniedz / daļa atgriežas / visi atgriežas
+function flowText() {
+  const s = sim.state;
+  const I = fmt(current(), 2);
+  if (!s.reverse || s.voltage <= 0) return t('flow.all', { I });
+  const f = reachFraction({ lambda: s.lambda, metal: s.metal, voltage: s.voltage, reverse: s.reverse });
+  return t(f >= 1 ? 'flow.slow' : f > 0 ? 'flow.some' : 'flow.back', { I });
+}
 function outcome() {
   const s = sim.state;
-  if (hiddenResult()) return t('out.hidden');
   if (!s.on) return t('out.off');
   if (s.intensity <= 0) return t('out.dark');
-  return ejects(s.lambda, s.metal) ? t('out.yes', { I: fmt(current(), 2) }) : t('out.none');
+  return ejects(s.lambda, s.metal) ? flowText() : t('out.none');
 }
-const stateText = () => t('live.state', { name: cap(t(`name.${sim.state.metal}`)), lam: sim.state.lambda, n: sim.state.intensity, out: outcome() });
+const voltText = () => {
+  const s = sim.state;
+  return s.voltage <= 0 ? t('volt.zero') : t(s.reverse ? 'volt.rev' : 'volt.fwd', { u: fmt(s.voltage, 2) });
+};
+const stateText = () => t('live.state', {
+  name: cap(t(`name.${sim.state.metal}`)), lam: sim.state.lambda, n: sim.state.intensity, volt: voltText(), out: outcome(),
+});
 // pēc iestatījuma maiņas (slīdnim — kad apstājas) ekrāna lasītājam īss kopsavilkums
 function sayStateSoon() {
   clearTimeout(ui.sayTimer);
   ui.sayTimer = setTimeout(() => say(stateText()), 600);
 }
-// prognozē jebkura maiņa rezultātu atkal aizsedz — nākamā prognoze
 function changed() {
-  if (ui.predict) ui.revealed = false;
   ui.descAt = -Infinity;
   sayStateSoon();
   render();
@@ -117,26 +131,41 @@ el('fenceBtn').addEventListener('click', () => {
   say(t(ui.fence ? 'live.fenceOn' : 'live.fenceOff'));
   render();
 });
-el('predictBtn').addEventListener('click', () => {
-  if (locked.has('predict')) return;
-  ui.predict = !ui.predict;
-  ui.revealed = false;
-  ui.descAt = -Infinity;
-  say(t(ui.predict ? 'live.predictOn' : 'live.predictOff'));
-  render();
-});
-el('coverBtn').addEventListener('click', () => {
-  ui.revealed = true;
-  ui.descAt = -Infinity;
-  render();
-  el('predictBtn').focus({ preventScroll: true }); // aizsegs pazūd — fokuss uz prognozes pogu
-  say(stateText());
-});
 el('infoBtn').addEventListener('click', openInfo);
 // Pēc peles klikšķa poga atdod fokusu (kā E-01, A-01); ar tastatūru fokuss paliek
-for (const id of ['bar', 'presets']) {
-  el(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && e.detail > 0) b.blur(); });
+el('bar').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b && e.detail > 0) b.blur(); });
+
+// ── spriegums: polaritāte un lielums (APG Slider: native range, 0,01 V solis) ──
+el('polBtn').addEventListener('click', () => {
+  if (locked.has('reverse')) return;
+  sim.setReverse(!sim.state.reverse);
+  changed();
+});
+const uRange = el('uRange');
+const U_RES = 100; // slīdņa vienības voltā
+function setVolt(u) {
+  if (locked.has('voltage')) return;
+  const v = Math.min(U_MAX, Math.max(0, Math.round(u * U_RES) / U_RES));
+  if (Number(uRange.value) !== Math.round(v * U_RES)) uRange.value = String(Math.round(v * U_RES));
+  if (v === sim.state.voltage) return;
+  sim.setVoltage(v);
+  changed();
 }
+uRange.addEventListener('input', () => setVolt(Number(uRange.value) / U_RES));
+uRange.addEventListener('keydown', (e) => {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const s = sim.state.voltage;
+  const next = {
+    ArrowRight: s + 0.01, ArrowUp: s + 0.01, ArrowLeft: s - 0.01, ArrowDown: s - 0.01,
+    PageUp: s + 0.1, PageDown: s - 0.1, Home: 0, End: U_MAX,
+  }[e.key];
+  if (next === undefined) return;
+  e.preventDefault();
+  setVolt(next);
+});
+// − / + pa 0,01 V (precīzam bremzējošajam spriegumam; lieliem soļiem — slīdnis)
+el('uMinus').addEventListener('click', () => setVolt(sim.state.voltage - 0.01));
+el('uPlus').addEventListener('click', () => setVolt(sim.state.voltage + 0.01));
 
 // ── krāsas slīdnis (APG Slider: native range; λ aug pa labi) ──
 const lam = el('lam');
@@ -162,8 +191,6 @@ lam.addEventListener('keydown', (e) => {
   setLambda(next);
   render();
 });
-const presetBtns = [...document.querySelectorAll('#presets [data-nm]')];
-presetBtns.forEach((b) => b.addEventListener('click', () => setLambda(Number(b.dataset.nm))));
 
 // ── ⚙ ────────────────────────────────────────────────────
 const gear = createSettingsCorner(el('gear'), {
@@ -177,7 +204,7 @@ const gear = createSettingsCorner(el('gear'), {
     screen: t('gear.screen'), fullscreen: t('gear.fullscreen'),
   }),
   onDrawScale(v) { ui.drawScale = v; render(); },
-  onTextScale() { colsKey = ''; layoutData(); render(); },
+  onTextScale() { specKey = ''; render(); },
 });
 ui.drawScale = gear.drawScale();
 
@@ -194,28 +221,31 @@ function openInfo() {
     name: t(`name.${m}`), A: formatSci(workJ(m), i18n.lang()),
     ev: ui.ev ? ` (${fmt(METALS[m].eV, 2)} eV)` : '', nm: fmt(Math.floor(thresholdNm(m)), 0), // garākais veselais nm, kas vēl izsit (Cs 591,96 → 591)
   })).join('; ');
-  for (const k of ['what', 'photon', 'fence', 'bright', 'metals', 'simp']) {
+  // “U_b” tekstā — U ar apakšindeksu b
+  const para = (text) => {
+    const p = document.createElement('p');
+    text.split('U_b').forEach((part, i) => {
+      if (i > 0) { const sub = document.createElement('sub'); sub.textContent = 'b'; p.append('U', sub); }
+      p.append(part);
+    });
+    return p;
+  };
+  for (const k of ['what', 'photon', 'fence', 'bright', 'volt', 'metals', 'simp']) {
     const sec = document.createElement('section');
     const h = document.createElement('h3');
     h.textContent = t(`info.${k}H`);
-    const p = document.createElement('p');
-    p.textContent = k === 'metals' ? t('info.metals', { list: cap(list) }) : t(`info.${k}`);
-    sec.append(h, p);
-    if (k === 'fence' && ui.ev) {
-      const f = document.createElement('p');
-      f.textContent = t('info.formula');
-      sec.append(f);
-    }
+    sec.append(h, para(k === 'metals' ? t('info.metals', { list: cap(list) }) : t(`info.${k}`)));
+    if (k === 'fence' && ui.ev) sec.append(para(t('info.formula')));
+    if (k === 'volt' && ui.ev) sec.append(para(t('info.formulaU')));
     ov.body.append(sec);
   }
 }
 
 // ── skaitļi ───────────────────────────────────────────────
-const UNIT_SR = { lv: { J: 'džouli', Hz: 'herci', uA: 'mikroampēri' }, en: { J: 'joules', Hz: 'hertz', uA: 'microamperes' } };
+const UNIT_SR = { lv: { J: 'džouli', uA: 'mikroampēri' }, en: { J: 'joules', uA: 'microamperes' } };
 // Kāpinātājs balsij: LV — kārtas skaitļa lokatīvs (“mīnus deviņpadsmitajā”), EN — “minus 19”; tikai tie, kas te iespējami
 const ORD_LV = {
-  14: 'četrpadsmitajā', 15: 'piecpadsmitajā', 17: 'septiņpadsmitajā', 18: 'astoņpadsmitajā', 19: 'deviņpadsmitajā', 20: 'divdesmitajā',
-  21: 'divdesmit pirmajā', 22: 'divdesmit otrajā', 23: 'divdesmit trešajā', 24: 'divdesmit ceturtajā', 25: 'divdesmit piektajā',
+  18: 'astoņpadsmitajā', 19: 'deviņpadsmitajā', 20: 'divdesmitajā',
 };
 function spokenExp(e) {
   const minus = e < 0 ? (i18n.lang() === 'lv' ? 'mīnus ' : 'minus ') : '';
@@ -227,7 +257,6 @@ const srSci = (v, unit) => {
   if (!s) return '';
   return `${t('sr.sci', { m: formatNumber(s.mant, s.dec, i18n.lang()), e: spokenExp(s.exp) })} ${UNIT_SR[i18n.lang()][unit]}`;
 };
-const evLine = (J) => `= ${fmt(J / EV, 2)}${NB}eV`;
 // Normālforma HTML ar <sup> (fontā augšraksta cipari izklīst); pārzīmē tikai, ja mainījies
 function setSci(node, v, unit) {
   const s = sci(v, 3);
@@ -241,56 +270,20 @@ function setSci(node, v, unit) {
 }
 const setPlain = (node, s) => { if (node.dataset.k !== s) { node.dataset.k = s; node.textContent = s; } };
 
-// Datu panelis: 6, 3 vai 2 kolonnas — pēc platākās iespējamās vērtības (ne pašreizējās), lai, mainoties skaitļiem, nekas nelec
-const dataEl = el('data');
-const probe = document.createElement('span');
-probe.setAttribute('aria-hidden', 'true');
-probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;left:0;top:0';
-probe.innerHTML = '<span>8,88·10<sup>15</sup> Hz</span><br><span>8,88·10<sup>−21</sup> J</span>';
-el('vLam').parentElement.append(probe);
-let colsKey = '';
-function layoutData() {
-  const cell = dataEl.firstElementChild;
-  const cs = getComputedStyle(cell);
-  const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + 2;
-  const need = Math.max(...[...probe.querySelectorAll('span')].map((x) => x.getBoundingClientRect().width)) + pad;
-  const W = dataEl.clientWidth;
-  const key = `${W}|${Math.round(need)}`;
-  if (key === colsKey) return;
-  colsKey = key;
-  const cols = W >= 6 * need ? 6 : W >= 3 * need ? 3 : 2;
-  dataEl.dataset.cols = String(cols);
-  dataEl.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-}
-
-function renderData() {
+// Rādījumi joslā: A (1. kolonna), I (3. kolonna); platums rezervēts CSS — mainoties skaitļiem, nekas nelec
+function renderReadouts() {
   const s = sim.state;
-  const hide = hiddenResult();
-  const out = ejects(s.lambda, s.metal);
-  const W = photonJ(s.lambda);
-  const A = workJ(s.metal);
-  const Wk = kineticMaxJ(s.lambda, s.metal);
   const L = i18n.lang();
-  setText(el('vLam'), `${s.lambda}${NB}nm`);
-  setSci(el('vF'), freqOf(s.lambda), 'Hz');
-  setText(el('sF'), srSci(freqOf(s.lambda), 'Hz'));
-  setSci(el('vW'), W, 'J');
-  setText(el('sW'), srSci(W, 'J'));
+  const A = workJ(s.metal);
   setSci(el('vA'), A, 'J');
   setText(el('sA'), srSci(A, 'J'));
-  if (hide || !out) setPlain(el('vWk'), hide ? '?' : '—');
-  else setSci(el('vWk'), Wk, 'J');
-  setText(el('sWk'), hide ? t('data.hiddenSr') : out ? srSci(Wk, 'J') : t('data.noneSr'));
+  setHidden(el('eA'), !ui.ev);
+  setText(el('eA'), ui.ev ? ` = ${fmt(METALS[s.metal].eV, 2)}${NB}eV` : '');
   const I = current();
-  setPlain(el('vI'), hide ? '?' : `${fmt(I, 2)}${NB}µA`);
-  setText(el('sI'), hide ? t('data.hiddenSr') : `${fmt(I, 2)} ${UNIT_SR[L].uA}`);
-  for (const [id, J, show] of [['eW', W, true], ['eA', A, true], ['eWk', Wk, !hide && out]]) {
-    setHidden(el(id), !ui.ev);
-    // ev=1: rinda paliek arī tad, kad vērtības nav (nekas nelec)
-    setText(el(id), ui.ev ? (show ? (id === 'eA' ? `= ${fmt(METALS[s.metal].eV, 2)}${NB}eV` : evLine(J)) : NB) : '');
-  }
-  for (const [id, k] of [['nLam', 'lambda'], ['nF', 'f'], ['nW', 'W'], ['nA', 'A'], ['nWk', 'Wk'], ['nI', 'I']]) setText(el(id), t(`data.${k}`));
-  setAttr(el('data'), 'aria-label', t('data.group'));
+  setPlain(el('vI'), `${fmt(I, 2)}${NB}µA`);
+  setText(el('sI'), `${fmt(I, 2)} ${UNIT_SR[L].uA}`);
+  setText(el('nA'), t('data.A'));
+  setText(el('nI'), t('data.I'));
 }
 
 // ── spektra josla zem slīdņa ──────────────────────────────
@@ -343,7 +336,7 @@ function drawSpectrum() {
   ctx.fillText(t('lbl.uv'), (xOf(LAMBDA.min) + xOf(VIS.min)) / 2, bh / 2);
   ctx.fillText(t('lbl.ir'), (xOf(VIS.max) + xOf(LAMBDA.max)) / 2, bh / 2);
   // nm skala zem joslas
-  const ticks = w < 420 ? [200, 400, 600, 800, 1200] : [200, 300, 400, 500, 600, 700, 800, 1000, 1200];
+  const ticks = w < 260 ? [200, 400, 600, 1200] : w < 420 ? [200, 400, 600, 800, 1200] : w < 560 ? [200, 300, 400, 500, 600, 700, 800, 1200] : [200, 300, 400, 500, 600, 700, 800, 1000, 1200];
   ctx.fillStyle = c.inkDim;
   ctx.strokeStyle = c.inkDim;
   ctx.font = `400 ${w < 420 ? 9 : 10}px 'IBM Plex Mono', monospace`;
@@ -352,10 +345,10 @@ function drawSpectrum() {
     const x = Math.round(xOf(nm)) + 0.5;
     ctx.beginPath();
     ctx.moveTo(x, bh);
-    ctx.lineTo(x, bh + 4);
+    ctx.lineTo(x, bh + 3);
     ctx.stroke();
     ctx.textAlign = nm === 1200 ? 'right' : 'center';
-    ctx.fillText(String(nm), nm === 1200 ? Math.min(x + 3, w) : x, bh + 5);
+    ctx.fillText(String(nm), nm === 1200 ? Math.min(x + 3, w) : x, bh + 3);
   }
 }
 
@@ -377,15 +370,14 @@ function describe() {
   const s = sim.state;
   const name = t(`gen.${s.metal}`);
   let state;
-  if (hiddenResult()) state = `${t('desc.light', { lam: s.lambda, band: t(`band.${bandOf(s.lambda)}`), n: s.intensity })} ${t('out.hidden')}`;
-  else if (!s.on) state = t('out.off');
+  if (!s.on) state = t('out.off');
   else {
     const light = t('desc.light', { lam: s.lambda, band: t(`band.${bandOf(s.lambda)}`), n: s.intensity });
-    const res = s.intensity <= 0 ? t('out.dark') : ejects(s.lambda, s.metal) ? t('desc.yes', { I: fmt(current(), 2) }) : t('desc.none');
+    const res = s.intensity <= 0 ? t('out.dark') : ejects(s.lambda, s.metal) ? `${t('desc.yes')} ${flowText()}` : t('desc.none');
     state = `${light} ${res}`;
   }
-  let text = t('desc.scene', { name, state });
-  if (ui.fence && !hiddenResult()) {
+  let text = t('desc.scene', { name, volt: voltText(), state });
+  if (ui.fence) {
     const out = ejects(s.lambda, s.metal);
     text += ` ${t('desc.fence', {
       W: srSci(photonJ(s.lambda), 'J'), A: srSci(workJ(s.metal), 'J'),
@@ -408,9 +400,9 @@ function render() {
     b.disabled = locked.has('metal') && !on;
     setText(b.querySelector('[data-name]'), ` — ${t(`name.${b.dataset.metal}`)}`);
   }
-  for (const [fixId, key] of [['metalFix', 'metal'], ['lightFix', 'light'], ['lamFix', 'lambda']]) {
-    const lockedHere = key === 'light' ? locked.has('light') || locked.has('intensity') : locked.has(key);
-    setHidden(el(fixId), !lockedHere);
+  const fixes = { metalFix: ['metal'], lightFix: ['light', 'intensity', 'lambda'], voltFix: ['voltage', 'reverse'] };
+  for (const [fixId, keys] of Object.entries(fixes)) {
+    setHidden(el(fixId), !keys.some((key) => locked.has(key)));
     setText(el(fixId), t('bar.fixed'));
   }
   setText(el('lightLabel'), t('bar.light'));
@@ -429,70 +421,58 @@ function render() {
   setAttr(el('brMinus'), 'aria-label', t('dims.decrease', { name: t('bar.brightName') }));
   setAttr(el('brPlus'), 'aria-label', t('dims.increase', { name: t('bar.brightName') }));
   setText(el('brVal'), t('bar.brightVal', { n: s.intensity }));
-  setText(el('showLabel'), t('bar.show'));
-  setText(el('fenceBtn'), t('bar.fence'));
-  setAttr(el('fenceBtn'), 'aria-label', `${t('bar.fence')}: ${t('bar.fenceAria')}`);
-  setAttr(el('fenceBtn'), 'aria-pressed', ui.fence);
-  el('fenceBtn').disabled = locked.has('fence');
-  setText(el('predictBtn'), t('bar.predict'));
-  setAttr(el('predictBtn'), 'aria-label', `${t('bar.predict')}: ${t('bar.predictAria')}`);
-  setAttr(el('predictBtn'), 'aria-pressed', ui.predict);
-  el('predictBtn').disabled = locked.has('predict');
-  setAttr(el('infoBtn'), 'aria-label', t('info.btnAria'));
-
-  // krāsas josla
-  setText(el('colorLabel'), t('strip.label'));
+  // krāsa
   setAttr(lam, 'aria-label', t('slider.name'));
   setAttr(lam, 'aria-valuetext', t('slider.valuetext', { lam: s.lambda, band: t(`band.${bandOf(s.lambda)}`) }));
   lam.disabled = locked.has('lambda');
   if (document.activeElement !== lam && Math.round(posToLambda(Number(lam.value) / RES)) !== s.lambda) lam.value = String(Math.round(lambdaToPos(s.lambda) * RES));
   setText(el('lamVal'), `${s.lambda}${NB}nm`);
-  setSci(el('lamF'), freqOf(s.lambda), 'Hz');
-  const dark = theme.current() === 'dark';
-  const field = hexRGB(colors.field);
-  for (const b of presetBtns) {
-    const nm = Number(b.dataset.nm);
-    const w = b.querySelector('[data-name]');
-    setText(w, t(`preset.${w.dataset.name}`));
-    b.disabled = locked.has('lambda');
-    const [r, g, bb] = photonRGB(nm, field, dark);
-    const sw = b.querySelector('.a02-sw');
-    const bg = nm < VIS.min ? `repeating-linear-gradient(45deg, rgb(${r}, ${g}, ${bb}) 0 2px, transparent 2px 4px)` : `rgb(${r}, ${g}, ${bb})`;
-    if (sw.style.background !== bg) sw.style.background = bg;
-  }
+  // spriegums
+  setText(el('voltLabel'), t('bar.volt'));
+  setText(el('polW'), t(s.reverse ? 'bar.anodeMinus' : 'bar.anodePlus'));
+  setText(el('polX'), t('bar.polSr'));
+  el('polBtn').disabled = locked.has('reverse');
+  const uLock = locked.has('voltage');
+  if (Number(uRange.value) !== Math.round(s.voltage * U_RES)) uRange.value = String(Math.round(s.voltage * U_RES));
+  setAttr(uRange, 'aria-label', t('bar.voltName'));
+  setAttr(uRange, 'aria-valuetext', t('bar.voltValSr', { u: fmt(s.voltage, 2) }));
+  uRange.disabled = uLock;
+  el('uMinus').disabled = uLock || s.voltage <= 0;
+  el('uPlus').disabled = uLock || s.voltage >= U_MAX;
+  setAttr(el('uMinus'), 'aria-label', t('dims.decrease', { name: t('bar.voltName') }));
+  setAttr(el('uPlus'), 'aria-label', t('dims.increase', { name: t('bar.voltName') }));
+  setText(el('uVal'), t('bar.voltVal', { u: fmt(s.voltage, 2) }));
+  // žogs, i
+  setAttr(el('showGroup'), 'aria-label', t('bar.show'));
+  setText(el('fenceBtn'), t('bar.fence'));
+  setAttr(el('fenceBtn'), 'aria-label', `${t('bar.fence')}: ${t('bar.fenceAria')}`);
+  setAttr(el('fenceBtn'), 'aria-pressed', ui.fence);
+  el('fenceBtn').disabled = locked.has('fence');
+  setAttr(el('infoBtn'), 'aria-label', t('info.btnAria'));
   drawSpectrum();
-  renderData();
+  renderReadouts();
 
   // kanva
   const { w, h } = view.size();
-  const lay = sceneLayout(w, h, { fence: ui.fence });
+  // ⚙ poga kreisajā apakšas stūrī virs zīmējuma — žogs zem caurules no tās izvairās
+  const gb = el('gear').getBoundingClientRect();
+  const cb = canvas.getBoundingClientRect();
+  const avoid = gb.width > 0 ? { x: gb.left - cb.left, y: gb.top - cb.top, w: gb.width, h: gb.height } : null;
+  const lay = sceneLayout(w, h, { fence: ui.fence, avoid });
   ui.layout = lay;
   const legend = w < 520 || h < 420 ? Math.min(1.15, legendScale(gear.textScale())) : legendScale(gear.textScale());
   drawScene(view.ctx, lay, {
-    st: s, predict: ui.predict, revealed: ui.revealed, ev: ui.ev, needle: ui.needle,
+    st: s, ev: ui.ev, needle: ui.needle,
     legend, theme: theme.current(), colors, fmt,
     labels: {
       plate: t('lbl.plate'), collector: t('lbl.collector'), vacuum: t('lbl.vacuum'), metalTitle: t(`title.${s.metal}`),
       invisible: t('lbl.invisible', { band: s.lambda < VIS.min ? t('lbl.uv') : t('lbl.ir') }), lampOff: t('lbl.lampOff'), dark: t('lbl.dark'),
       current: fmt(current(), 2), // cipari — tieši; rādītājs — ar nelielu inerci
+      voltage: `${fmt(s.voltage, 2)}${NB}V`,
       fenceTitle: t('fence.title'), fenceAxis: t('fence.axis'), fenceMetal: t('fence.metal'), fenceVacuum: t('fence.vacuum'),
       fenceAbove: t('fence.above'), fenceBelow: t('fence.below'), formula: 'hf = A + Wₖ',
     },
   });
-  // aizsegs prognozei
-  const cover = el('coverBtn');
-  setHidden(cover, !hiddenResult());
-  if (!cover.hidden) {
-    const r = lay.cover;
-    const st = cover.style;
-    for (const [k, v] of [['left', r.x], ['top', r.y], ['width', r.w], ['height', r.h]]) {
-      const px = `${Math.round(v)}px`;
-      if (st[k] !== px) st[k] = px;
-    }
-    st.setProperty('--q', `${Math.round(Math.min(r.h * 0.42, 72))}px`);
-    setText(el('coverW'), t('cover.show'));
-    setAttr(cover, 'aria-label', t('cover.aria'));
-  }
   setAttr(canvas, 'aria-label', t('page.heading'));
   const now = performance.now();
   if (now - ui.descAt > 1000) {
@@ -503,12 +483,11 @@ function render() {
 
 theme.onChange(() => { colors = theme.colors(); render(); });
 i18n.onChange(() => { ui.descAt = -Infinity; notices.refresh(); render(); });
-document.fonts.ready.then(() => { colsKey = ''; specKey = ''; layoutData(); render(); });
-new ResizeObserver(() => layoutData()).observe(dataEl);
+document.fonts.ready.then(() => { specKey = ''; render(); });
 new ResizeObserver(() => render()).observe(el('bar'));
 new ResizeObserver(() => render()).observe(el('spec'));
 lam.value = String(Math.round(lambdaToPos(sim.state.lambda) * RES));
+uRange.value = String(Math.round(sim.state.voltage * U_RES));
 ui.needle = current();
-layoutData();
 render();
 window.__a02 = { sim, ui }; // pārbaudēm (Playwright)
